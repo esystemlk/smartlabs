@@ -1,0 +1,21 @@
+{
+    "name": "Smart Labs",
+    "short_name": "SmartLabs",
+    "description": "Smart Labs - Your Partner in Test Preparation",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#3b82f6",
+    "icons": [
+        {
+            "src": "/logo.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/logo.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

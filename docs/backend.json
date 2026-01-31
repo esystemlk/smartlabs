@@ -1,0 +1,907 @@
+
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the Smart Labs platform.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "User's first name."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "User's last name."
+        },
+        "dateJoined": {
+          "type": "string",
+          "description": "Date the user joined the platform.",
+          "format": "date-time"
+        },
+        "hasCompletedOnboarding": {
+            "type": "boolean",
+            "description": "Indicates if the user has completed the initial onboarding flow."
+        },
+        "role": {
+            "type": "string",
+            "description": "The user's role on the platform.",
+            "enum": ["user", "student", "teacher", "admin", "developer"]
+        },
+        "achievements": {
+          "type": "array",
+          "description": "List of badge IDs the user has earned.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "targetExam": {
+            "type": "string",
+            "description": "The user's target exam (e.g., IELTS, PTE)."
+        },
+        "targetScore": {
+            "type": "string",
+            "description": "The user's target score for their exam."
+        },
+        "examDate": {
+            "type": "string",
+            "description": "The user's planned exam date.",
+            "format": "date"
+        },
+        "phone": {
+            "type": "string",
+            "description": "User's primary contact number."
+        },
+        "homeContact": {
+            "type": "string",
+            "description": "User's secondary/home contact number."
+        },
+        "address": {
+            "type": "string",
+            "description": "User's physical address."
+        },
+        "country": {
+            "type": "string",
+            "description": "User's country of residence."
+        },
+        "aboutSelf": {
+            "type": "string",
+            "description": "A short bio or note from the user about their goals."
+        }
+      },
+      "required": [
+        "id",
+        "email"
+      ]
+    },
+    "Course": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Course",
+      "type": "object",
+      "description": "Represents a course offered on the Smart Labs platform (e.g., IELTS, TOEFL).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the course."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the course (e.g., IELTS)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the course."
+        },
+        "duration": {
+          "type": "string",
+          "description": "Duration of the course (e.g., 6 weeks)."
+        },
+        "price": {
+            "type": "number",
+            "description": "Price of the course in LKR."
+        },
+        "syllabus": {
+          "type": "string",
+          "description": "Course syllabus details."
+        },
+        "targetAudience": {
+          "type": "string",
+          "description": "Target audience for the course."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "duration",
+        "price"
+      ]
+    },
+     "Batch": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Batch",
+      "type": "object",
+      "description": "Represents a specific batch or class group for a course.",
+      "properties": {
+        "id": { "type": "string" },
+        "courseId": { "type": "string" },
+        "name": { "type": "string", "description": "Name of the batch (e.g., Weekend Batch, April Intake)." },
+        "schedule": { "type": "string", "description": "Schedule details for the batch." },
+        "teacherId": { "type": "string" },
+        "zoomLink": { "type": "string", "format": "uri" }
+      },
+      "required": ["id", "courseId", "name"]
+    },
+    "StudyPlan": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "StudyPlan",
+      "type": "object",
+      "description": "Represents a personalized study plan for a student.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the study plan."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N StudyPlan)"
+        },
+        "courseId": {
+          "type": "string",
+          "description": "Reference to Course. (Relationship: Course 1:N StudyPlan)"
+        },
+        "startDate": {
+          "type": "string",
+          "description": "Start date of the study plan.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "End date of the study plan.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "courseId",
+        "startDate",
+        "endDate"
+      ]
+    },
+    "Enrollment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Enrollment",
+      "type": "object",
+      "description": "Represents a student's enrollment in a course.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the enrollment record."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Enrollment)"
+        },
+        "courseId": {
+          "type": "string",
+          "description": "Reference to Course. (Relationship: Course 1:N Enrollment)"
+        },
+        "batchId": {
+          "type": "string",
+          "description": "Reference to the specific Batch the user is enrolled in."
+        },
+        "batchName": {
+          "type": "string",
+          "description": "Denormalized name of the batch for easier display."
+        },
+        "enrollmentDate": {
+          "type": "string",
+          "description": "Date of enrollment.",
+          "format": "date-time"
+        },
+        "paymentStatus": {
+          "type": "string",
+          "description": "Payment status for the enrollment."
+        },
+        "enrollmentStatus": {
+          "type": "string",
+          "description": "The verification status of the enrollment, controlled by an admin.",
+          "enum": ["pending", "active"]
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "courseId",
+        "batchId",
+        "enrollmentDate",
+        "paymentStatus"
+      ]
+    },
+    "Payment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Payment",
+      "type": "object",
+      "description": "Represents a payment transaction processed through the gateway.",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the payment (e.g., from Payhere)." },
+        "userId": { "type": "string" },
+        "courseId": { "type": "string" },
+        "orderId": { "type": "string" },
+        "amount": { "type": "string" },
+        "currency": { "type": "string" },
+        "statusCode": { "type": "string" },
+        "paymentTimestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "courseId", "orderId", "amount", "currency", "statusCode", "paymentTimestamp"]
+    },
+    "Resource": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Resource",
+      "type": "object",
+      "description": "Represents a downloadable or embedded resource for courses.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the resource."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the resource."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the resource."
+        },
+        "url": {
+          "type": "string",
+          "description": "URL of the resource (for file-based resources like images, videos, PDFs).",
+          "format": "uri"
+        },
+        "htmlContent": {
+            "type": "string",
+            "description": "HTML content for embedded resources."
+        },
+        "resourceType": {
+          "type": "string",
+          "description": "Type of resource (e.g., html, image, video, document)."
+        },
+        "courseId": {
+          "type": "string",
+          "description": "Reference to Course. (Relationship: Course 1:N Resource)"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "resourceType",
+        "courseId"
+      ]
+    },
+    "BlogPost": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BlogPost",
+      "type": "object",
+      "description": "Represents a blog post on the Smart Labs platform.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Title of the blog post."
+        },
+        "slug": {
+          "type": "string",
+          "description": "URL-friendly slug for the blog post."
+        },
+        "content": {
+          "type": "string",
+          "description": "Content of the blog post in HTML format."
+        },
+        "excerpt": {
+          "type": "string",
+          "description": "A short summary of the blog post."
+        },
+        "image": {
+          "type": "string",
+          "description": "URL for the blog post's feature image.",
+          "format": "uri"
+        },
+        "authorId": {
+          "type": "string",
+          "description": "Reference to User (assumed to be the author). (Relationship: User 1:N BlogPost)"
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of the blog post (e.g., IELTS, PTE)."
+        },
+        "publishDate": {
+          "type": "string",
+          "description": "Date the blog post was published.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "title",
+        "slug",
+        "content",
+        "excerpt",
+        "image",
+        "authorId",
+        "category",
+        "publishDate"
+      ]
+    },
+    "PracticeTest": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PracticeTest",
+      "type": "object",
+      "description": "Represents a practice test that users can take.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the practice test."
+        },
+        "courseId": {
+          "type": "string",
+          "description": "Reference to Course. (Relationship: Course 1:N PracticeTest)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the practice test."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the practice test."
+        },
+        "questions": {
+          "type": "array",
+          "description": "List of question id's associated with the practice test. (Relationship: Question N:N PracticeTest)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "courseId",
+        "name"
+      ]
+    },
+    "Question": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Question",
+      "type": "object",
+      "description": "Represents a question within a practice test.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the question."
+        },
+        "testId": {
+          "type": "string",
+          "description": "Reference to PracticeTest. (Relationship: PracticeTest 1:N Question)"
+        },
+        "text": {
+          "type": "string",
+          "description": "The text of the question."
+        },
+        "correctAnswer": {
+          "type": "string",
+          "description": "The correct answer to the question."
+        },
+        "options": {
+          "type": "array",
+          "description": "The multiple choice options available for the user to select.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "testId",
+        "text",
+        "correctAnswer",
+        "options"
+      ]
+    },
+    "UserTestResult": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserTestResult",
+      "type": "object",
+      "description": "Stores the results of a user taking a practice test.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user's test result."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N UserTestResult)"
+        },
+        "testId": {
+          "type": "string",
+          "description": "Reference to PracticeTest. (Relationship: PracticeTest 1:N UserTestResult)"
+        },
+        "score": {
+          "type": "number",
+          "description": "The user's score on the test."
+        },
+        "submissionDate": {
+          "type": "string",
+          "description": "Date the user submitted the test.",
+          "format": "date-time"
+        },
+        "answers": {
+          "type": "array",
+          "description": "List of question id's that correspond to the user's answers. (Relationship: Question N:N UserTestResult)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "testId",
+        "score",
+        "submissionDate",
+        "answers"
+      ]
+    },
+    "SupportThread": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SupportThread",
+      "type": "object",
+      "description": "Represents a support chat thread between a user and support staff.",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who initiated the chat."
+        },
+        "userName": {
+          "type": "string",
+          "description": "The name of the user."
+        },
+        "userEmail": {
+          "type": "string",
+          "description": "The email of the user."
+        },
+        "lastMessage": {
+          "type": "string",
+          "description": "A snippet of the last message sent in the thread."
+        },
+        "lastMessageTimestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the last message."
+        },
+         "isReadByAdmin": {
+          "type": "boolean",
+          "description": "Indicates if the last message has been read by an admin."
+        }
+      },
+      "required": ["userId", "userName", "lastMessage", "lastMessageTimestamp"]
+    },
+    "ChatMessage": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ChatMessage",
+      "type": "object",
+      "description": "Represents a single message within a support chat thread.",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "The content of the chat message."
+        },
+        "senderId": {
+          "type": "string",
+          "description": "The ID of the user or admin who sent the message."
+        },
+        "senderRole": {
+          "type": "string",
+          "enum": ["user", "admin", "teacher"],
+          "description": "The role of the sender."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The time the message was sent."
+        }
+      },
+      "required": ["text", "senderId", "senderRole", "timestamp"]
+    },
+    "ForumPost": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ForumPost",
+      "type": "object",
+      "description": "Represents a discussion thread within a course forum.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the forum post."
+        },
+        "content": {
+          "type": "string",
+          "description": "The main content of the post."
+        },
+        "authorId": {
+          "type": "string",
+          "description": "The ID of the user who created the post."
+        },
+        "authorName": {
+          "type": "string",
+          "description": "The display name of the author."
+        },
+        "courseId": {
+          "type": "string",
+          "description": "The course this post belongs to."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the post was created."
+        }
+      },
+      "required": ["title", "content", "authorId", "authorName", "courseId", "createdAt"]
+    },
+    "ForumReply": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ForumReply",
+      "type": "object",
+      "description": "Represents a reply to a forum post.",
+      "properties": {
+        "postId": {
+          "type": "string",
+          "description": "The ID of the parent forum post."
+        },
+        "content": {
+          "type": "string",
+          "description": "The content of the reply."
+        },
+        "authorId": {
+          "type": "string",
+          "description": "The ID of the user who wrote the reply."
+        },
+        "authorName": {
+          "type": "string",
+          "description": "The display name of the author."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the reply was created."
+        }
+      },
+      "required": ["postId", "content", "authorId", "authorName", "createdAt"]
+    },
+    "CourseReview": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CourseReview",
+      "type": "object",
+      "description": "Represents a student's review of a course.",
+      "properties": {
+        "courseId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "rating": { "type": "number", "minimum": 1, "maximum": 5 },
+        "comment": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["courseId", "userId", "userName", "rating", "createdAt"]
+    },
+    "Badge": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Badge",
+      "type": "object",
+      "description": "Represents an achievement or badge that can be awarded to users.",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "iconUrl": { "type": "string", "format": "uri" }
+      },
+      "required": ["name", "description", "iconUrl"]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. Only the user can read/write their own profile.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/active_courses/{courseId}",
+        "definition": {
+          "description": "Denormalized data for checking active course enrollments in security rules. Document ID is the course ID. Writable only by trusted backend processes.",
+           "params": [
+            { "name": "userId", "description": "The user's unique ID." },
+            { "name": "courseId", "description": "The course ID." }
+          ]
+        }
+      },
+      {
+        "path": "/courses/{courseId}",
+        "definition": {
+          "entityName": "Course",
+          "schema": {
+            "$ref": "#/backend/entities/Course"
+          },
+          "description": "Stores course information. Accessible to all users.",
+          "params": [
+            {
+              "name": "courseId",
+              "description": "The unique identifier of the course."
+            }
+          ]
+        }
+      },
+       {
+        "path": "/courses/{courseId}/batches/{batchId}",
+        "definition": {
+          "entityName": "Batch",
+          "schema": {
+            "$ref": "#/backend/entities/Batch"
+          },
+          "description": "Stores batches for each course. Publicly readable.",
+          "params": [
+            {
+              "name": "courseId",
+              "description": "The unique identifier of the course."
+            },
+            {
+              "name": "batchId",
+              "description": "The unique identifier of the batch."
+            }
+          ]
+        }
+      },
+       {
+        "path": "/payments/{paymentId}",
+        "definition": {
+          "entityName": "Payment",
+          "schema": { "$ref": "#/backend/entities/Payment" },
+          "description": "Stores all payment transactions. Read-only for admins.",
+          "params": [
+            { "name": "paymentId", "description": "The unique payment ID from the gateway." }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/study_plans/{studyPlanId}",
+        "definition": {
+          "entityName": "StudyPlan",
+          "schema": {
+            "$ref": "#/backend/entities/StudyPlan"
+          },
+          "description": "Stores study plans for each user. Only the user can access their own study plans. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "studyPlanId",
+              "description": "The unique identifier of the study plan."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/enrollments/{enrollmentId}",
+        "definition": {
+          "entityName": "Enrollment",
+          "schema": {
+            "$ref": "#/backend/entities/Enrollment"
+          },
+          "description": "Stores enrollment information for each user. Only the user can access their own enrollment records. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "enrollmentId",
+              "description": "The unique identifier of the enrollment."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/resources/{resourceId}",
+        "definition": {
+          "entityName": "Resource",
+          "schema": {
+            "$ref": "#/backend/entities/Resource"
+          },
+          "description": "Stores resources for each course. Accessible to all users. Includes denormalized 'courseId' for easy access by course.",
+          "params": [
+            {
+              "name": "resourceId",
+              "description": "The unique identifier of the resource."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/blog_posts/{blogPostId}",
+        "definition": {
+          "entityName": "BlogPost",
+          "schema": {
+            "$ref": "#/backend/entities/BlogPost"
+          },
+          "description": "Stores blog posts.  Accessible to all users.",
+          "params": [
+            {
+              "name": "blogPostId",
+              "description": "The unique identifier of the blog post."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/courses/{courseId}/practice_tests/{practiceTestId}",
+        "definition": {
+          "entityName": "PracticeTest",
+          "schema": {
+            "$ref": "#/backend/entities/PracticeTest"
+          },
+          "description": "Stores practice tests for each course. Accessible to all users.",
+          "params": [
+            {
+              "name": "courseId",
+              "description": "The unique identifier of the course."
+            },
+            {
+              "name": "practiceTestId",
+              "description": "The unique identifier of the practice test."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/courses/{courseId}/practice_tests/{practiceTestId}/questions/{questionId}",
+        "definition": {
+          "entityName": "Question",
+          "schema": {
+            "$ref": "#/backend/entities/Question"
+          },
+          "description": "Stores questions for each practice test. Accessible to all users enrolled in a course.",
+          "params": [
+            {
+              "name": "courseId",
+              "description": "The unique identifier of the course."
+            },
+            {
+              "name": "practiceTestId",
+              "description": "The unique identifier of the practice test."
+            },
+            {
+              "name": "questionId",
+              "description": "The unique identifier of the question."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/test_results/{userTestResultId}",
+        "definition": {
+          "entityName": "UserTestResult",
+          "schema": {
+            "$ref": "#/backend/entities/UserTestResult"
+          },
+          "description": "Stores test results for each user. Only the user can access their own test results. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "userTestResultId",
+              "description": "The unique identifier of the user test result."
+            }
+          ]
+        }
+      },
+       {
+        "path": "/support_chats/{userId}",
+        "definition": {
+          "entityName": "SupportThread",
+          "schema": { "$ref": "#/backend/entities/SupportThread" },
+          "description": "Top-level collection for support chat threads. Document ID is the user's UID.",
+          "params": [
+            { "name": "userId", "description": "The user's unique ID." }
+          ]
+        }
+      },
+      {
+        "path": "/support_chats/{userId}/messages/{messageId}",
+        "definition": {
+          "entityName": "ChatMessage",
+          "schema": { "$ref": "#/backend/entities/ChatMessage" },
+          "description": "Sub-collection for messages within a support thread.",
+           "params": [
+            { "name": "userId", "description": "The user's unique ID." },
+            { "name": "messageId", "description": "The message's unique ID." }
+          ]
+        }
+      },
+      {
+        "path": "/courses/{courseId}/forum_posts/{postId}",
+        "definition": {
+          "entityName": "ForumPost",
+          "schema": { "$ref": "#/backend/entities/ForumPost" },
+          "description": "Stores forum posts for a specific course.",
+          "params": [
+            { "name": "courseId", "description": "The course ID." },
+            { "name": "postId", "description": "The forum post ID." }
+          ]
+        }
+      },
+      {
+        "path": "/courses/{courseId}/forum_posts/{postId}/replies/{replyId}",
+        "definition": {
+          "entityName": "ForumReply",
+          "schema": { "$ref": "#/backend/entities/ForumReply" },
+          "description": "Stores replies for a specific forum post.",
+          "params": [
+            { "name": "courseId", "description": "The course ID." },
+            { "name": "postId", "description": "The forum post ID." },
+            { "name": "replyId", "description": "The reply ID." }
+          ]
+        }
+      },
+      {
+        "path": "/courses/{courseId}/reviews/{reviewId}",
+        "definition": {
+          "entityName": "CourseReview",
+          "schema": { "$ref": "#/backend/entities/CourseReview" },
+          "description": "Stores reviews for a specific course.",
+          "params": [
+            { "name": "courseId", "description": "The course ID." },
+            { "name": "reviewId", "description": "The review ID." }
+          ]
+        }
+      },
+      {
+        "path": "/badges/{badgeId}",
+        "definition": {
+          "entityName": "Badge",
+          "schema": { "$ref": "#/backend/entities/Badge" },
+          "description": "Stores available badges for gamification.",
+          "params": [
+            { "name": "badgeId", "description": "The badge ID." }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure has been updated to support a batch system for courses. \n\n**New `Batch` Entity and Subcollection:**\n* A `Batch` entity has been added to represent specific class groups with their own schedule and Zoom links.\n* These are stored in a subcollection: `/courses/{courseId}/batches/{batchId}`. This creates a clear hierarchical relationship.\n\n**Updated Enrollment Structure:**\n* The `Enrollment` path has been changed to `/users/{userId}/enrollments/{enrollmentId}` to allow for multiple enrollments per user, even in the same course (e.g., retakes or different batches). The `enrollmentId` is a unique ID (e.g., the payment ID).\n* The `Enrollment` entity now includes `batchId` and `batchName` to link an enrollment to a specific batch.\n\n**Security Rule Denormalization:**\n* To efficiently check if a user is enrolled in a course within security rules (e.g., for resource access), a new denormalized path has been added: `/users/{userId}/active_courses/{courseId}`.\n* When an admin approves an enrollment, a backend process will create a document at this path. This allows the `isEnrolled(courseId)` security rule function to use a simple and performant `exists()` check, avoiding disallowed queries in rules.\n* This `active_courses` collection is read-only for the user and writable only by the backend, ensuring data integrity.\n\nThis revised structure provides the flexibility to manage multiple batches per course while maintaining a secure and performant way to check enrollment status for access control."
+  }
+}
