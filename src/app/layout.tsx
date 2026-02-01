@@ -9,6 +9,7 @@ import { CookieBanner } from '@/components/cookie-banner';
 import { LayoutManager } from '@/components/layout/layout-manager';
 import { WindowControls } from '@/components/layout/window-controls';
 import { AccessibilityWidget } from '@/components/accessibility/accessibility-widget';
+import { CommandPalette } from '@/components/layout/command-palette';
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
@@ -53,6 +54,7 @@ export default function RootLayout({
         <FirebaseClientProvider>
           <WindowControls />
           <AccessibilityWidget />
+          <CommandPalette />
           <LayoutManager />
           <Header />
           <main className="flex-1">{children}</main>
