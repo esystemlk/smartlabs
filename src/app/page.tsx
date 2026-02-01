@@ -3,11 +3,11 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useEffect } from "react";
 import Image from 'next/image';
-import { 
+import {
   Book,
   Feather,
-  Award, 
-  Star, 
+  Award,
+  Star,
   ArrowRight,
   Play,
   Sparkles,
@@ -97,27 +97,27 @@ const features = [
 ];
 
 const testimonials = [
-    {
-        name: 'Priya Sharma',
-        role: 'PTE Score: 85 | Sri Lanka',
-        content: 'Smart Labs transformed my preparation journey. The AI feedback and personalized study plan helped me achieve my target score in just 3 weeks!',
-        avatar: 'PS',
-        color: 'from-accent-1/80 to-accent-3/80',
-    },
-    {
-        name: 'Liam Smith',
-        role: 'IELTS Band: 8.5 | Australia',
-        content: 'The instructors are incredibly knowledgeable. Their strategies for the speaking section were game-changers. Highly recommended for anyone in Australia!',
-        avatar: 'LS',
-        color: 'from-accent-2/80 to-accent-4/80',
-    },
-    {
-        name: 'Nimali Perera',
-        role: 'CELPIP Score: 12 | Sri Lanka',
-        content: 'The self-paced CELPIP course was perfect for my schedule. The materials are comprehensive and the practice tests are very close to the real exam.',
-        avatar: 'NP',
-        color: 'from-primary/80 to-accent-2/80',
-    },
+  {
+    name: 'Priya Sharma',
+    role: 'PTE Score: 85 | Sri Lanka',
+    content: 'Smart Labs transformed my preparation journey. The AI feedback and personalized study plan helped me achieve my target score in just 3 weeks!',
+    avatar: 'PS',
+    color: 'from-accent-1/80 to-accent-3/80',
+  },
+  {
+    name: 'Liam Smith',
+    role: 'IELTS Band: 8.5 | Australia',
+    content: 'The instructors are incredibly knowledgeable. Their strategies for the speaking section were game-changers. Highly recommended for anyone in Australia!',
+    avatar: 'LS',
+    color: 'from-accent-2/80 to-accent-4/80',
+  },
+  {
+    name: 'Nimali Perera',
+    role: 'CELPIP Score: 12 | Sri Lanka',
+    content: 'The self-paced CELPIP course was perfect for my schedule. The materials are comprehensive and the practice tests are very close to the real exam.',
+    avatar: 'NP',
+    color: 'from-primary/80 to-accent-2/80',
+  },
 ];
 
 const containerVariants = {
@@ -200,12 +200,12 @@ export default function Home() {
     const bgInterval = setInterval(() => {
       setImgIndex((prevIndex) => (prevIndex + 1) % backgroundImages.length);
     }, 5500); // Change image every 5.5 seconds
-    
+
     return () => {
       clearInterval(bgInterval);
     };
   }, []);
-  
+
   return (
     <>
       {/* Hero Section */}
@@ -223,63 +223,65 @@ export default function Home() {
           />
         </AnimatePresence>
         {/* Glass overlay effect */}
-        <div className="absolute inset-0 -z-10 bg-background/50 backdrop-blur-sm" />
+        <div className="absolute inset-0 -z-10 bg-background/60 backdrop-blur-md" />
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-32">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
             {/* Left Content */}
-             <motion.div
+            <motion.div
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
-              className="glass-card rounded-3xl p-6 md:p-8"
+              className="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-                <Sparkles className="h-4 w-4" />
-                <span>Achieve Your Target Score with the Right Guidance.</span>
+              <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium mb-4 sm:mb-6">
+                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="leading-tight">Achieve Your Target Score</span>
               </div>
-              
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6">
+
+              <h1 className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-4 sm:mb-6">
                 Master Your{" "}
                 <span className="gradient-text">English Exams</span>{" "}
-                with a Splash of Fun
+                <span className="block sm:inline">with a Splash of Fun</span>
               </h1>
-              
-              <p className="text-lg xl:text-xl text-muted-foreground mb-8 max-w-lg xl:max-w-xl">
+
+              <p className="text-sm sm:text-base lg:text-lg xl:text-xl text-muted-foreground mb-6 sm:mb-8 leading-relaxed">
                 Join thousands of successful students who achieved their dream scores with our AI-powered learning platform, expert instructors, and proven strategies.
               </p>
 
-              <div className="flex flex-col items-center sm:items-start sm:flex-row flex-wrap gap-4 mb-10">
-                <Button variant="hero" size="lg" asChild>
+              <div className="flex flex-col gap-3 sm:gap-4 mb-6 sm:mb-10">
+                <Button variant="hero" size="lg" className="w-full sm:w-auto text-sm sm:text-base" asChild>
                   <Link href="/signup">
                     Start Free Trial
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                   </Link>
                 </Button>
-                <Button variant="outline" size="lg" asChild>
-                  <Link href="/dashboard/practice-tests">
-                    <Sparkles className="mr-2 h-5 w-5" />
-                    Explore AI Tests
-                  </Link>
-                </Button>
-                <Button variant="outline" size="lg" asChild>
-                  <a href="https://register.smartlabs.lk" target="_blank" rel="noopener noreferrer">
-                    Book Your Individual Session Now
-                  </a>
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto text-sm sm:text-base" asChild>
+                    <Link href="/dashboard/practice-tests">
+                      <Sparkles className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                      Explore AI Tests
+                    </Link>
+                  </Button>
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto text-xs sm:text-sm whitespace-normal sm:whitespace-nowrap h-auto py-3 sm:py-2" asChild>
+                    <a href="https://register.smartlabs.lk" target="_blank" rel="noopener noreferrer">
+                      Book Individual Session
+                    </a>
+                  </Button>
+                </div>
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
                 {stats.map((stat, index) => (
                   <motion.div
                     key={stat.label}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 + index * 0.1 }}
-                    className="text-center sm:text-left"
+                    className="text-center sm:text-left bg-background/40 backdrop-blur-sm rounded-xl p-3 sm:p-0 sm:bg-transparent"
                   >
-                    <div className={`text-3xl sm:text-4xl font-bold ${stat.color}`}>
+                    <div className={`text-2xl sm:text-3xl md:text-4xl font-bold ${stat.color} leading-tight`}>
                       {stat.value ? (
                         <AnimatedNumber value={stat.value} decimals={stat.decimals || 0} />
                       ) : (
@@ -287,7 +289,7 @@ export default function Home() {
                       )}
                       {stat.suffix}
                     </div>
-                    <div className="text-sm text-muted-foreground">{stat.label}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground mt-1 leading-tight">{stat.label}</div>
                   </motion.div>
                 ))}
               </div>
@@ -295,76 +297,76 @@ export default function Home() {
 
             {/* Right Content - Course Cards (Desktop) */}
             <div className="hidden lg:flex items-center justify-center">
-                <div className="grid gap-6 w-full max-w-sm">
-                    {heroCards.map((card, index) => (
-                        <motion.div
-                            key={card.title}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.5, delay: 0.4 + index * 0.2 }}
-                            className={cn(
-                                "glass-card rounded-3xl p-6 flex items-center gap-4 shadow-xl border-2",
-                                card.style.borderColor
-                            )}
-                        >
-                            <div className={cn("p-3 rounded-xl", card.style.bgColor)}>
-                                <card.icon className={cn("h-8 w-8", card.style.textColor)} />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-xl text-foreground">{card.title}</h3>
-                                <p className={cn("text-sm font-semibold", card.style.textColor)}>{card.line1}</p>
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
+              <div className="grid gap-5 w-full max-w-sm">
+                {heroCards.map((card, index) => (
+                  <motion.div
+                    key={card.title}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: 0.4 + index * 0.2 }}
+                    className={cn(
+                      "glass-card rounded-2xl lg:rounded-3xl p-5 lg:p-6 flex items-center gap-3 lg:gap-4 shadow-xl border-2 hover:scale-105 transition-transform duration-300",
+                      card.style.borderColor
+                    )}
+                  >
+                    <div className={cn("p-2.5 lg:p-3 rounded-xl flex-shrink-0", card.style.bgColor)}>
+                      <card.icon className={cn("h-7 w-7 lg:h-8 lg:w-8", card.style.textColor)} />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-lg lg:text-xl text-foreground leading-tight">{card.title}</h3>
+                      <p className={cn("text-xs lg:text-sm font-semibold leading-tight", card.style.textColor)}>{card.line1}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Mobile-only Course Cards */}
-      <section className="relative lg:hidden px-4 sm:px-6 pb-20">
-        <div className="grid gap-6 w-full max-w-sm mx-auto">
-            {heroCards.map((card, index) => (
-                <motion.div
-                    key={card.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className={cn(
-                        "glass-card rounded-3xl p-6 flex items-center gap-4 shadow-xl border-2",
-                        card.style.borderColor
-                    )}
-                >
-                    <div className={cn("p-3 rounded-xl", card.style.bgColor)}>
-                        <card.icon className={cn("h-8 w-8", card.style.textColor)} />
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-xl text-foreground">{card.title}</h3>
-                        <p className={cn("text-sm font-semibold", card.style.textColor)}>{card.line1}</p>
-                    </div>
-                </motion.div>
-            ))}
+      <section className="relative lg:hidden px-3 sm:px-6 pb-12 sm:pb-16">
+        <div className="grid gap-4 sm:gap-6 w-full max-w-sm mx-auto">
+          {heroCards.map((card, index) => (
+            <motion.div
+              key={card.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className={cn(
+                "glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex items-center gap-3 sm:gap-4 shadow-xl border-2 active:scale-95 transition-transform duration-200",
+                card.style.borderColor
+              )}
+            >
+              <div className={cn("p-2.5 sm:p-3 rounded-xl flex-shrink-0", card.style.bgColor)}>
+                <card.icon className={cn("h-6 w-6 sm:h-8 sm:w-8", card.style.textColor)} />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-bold text-lg sm:text-xl text-foreground leading-tight">{card.title}</h3>
+                <p className={cn("text-xs sm:text-sm font-semibold leading-tight", card.style.textColor)}>{card.line1}</p>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </section>
 
       {/* Courses Section */}
-      <section className="relative py-20 lg:py-28 bg-secondary/30 overflow-hidden">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="relative py-12 sm:py-16 lg:py-28 bg-secondary/30 overflow-hidden">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-10 sm:mb-16"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-              <Book className="h-4 w-4" />
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium mb-3 sm:mb-4">
+              <Book className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
               <span>Our Courses</span>
             </div>
-            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3 sm:mb-4 px-2">
               Choose Your Path to Success
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto px-2">
               Expert-crafted courses designed to help you achieve your target scores in PTE, IELTS, and CELPIP exams.
             </p>
           </motion.div>
@@ -374,33 +376,33 @@ export default function Home() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="grid md:grid-cols-3 gap-8"
+            className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8"
           >
             {courses.map((course) => (
               <motion.div key={course.title} variants={itemVariants}>
                 <Link
                   href={course.href}
-                  className="group block h-full glass-card rounded-3xl p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-gradient-to-br"
+                  className="group block h-full glass-card rounded-2xl sm:rounded-3xl p-5 sm:p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-gradient-to-br"
                 >
-                  <div className={`w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-md`}>
-                    <course.icon className={`h-8 w-8 ${course.iconColor}`} />
+                  <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-white flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform shadow-md`}>
+                    <course.icon className={`h-6 w-6 sm:h-8 sm:w-8 ${course.iconColor}`} />
                   </div>
-                  <h3 className="font-display text-xl font-bold text-foreground mb-3">
+                  <h3 className="font-display text-lg sm:text-xl font-bold text-foreground mb-2 sm:mb-3">
                     {course.title}
                   </h3>
-                  <p className="text-muted-foreground mb-6">
+                  <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 leading-relaxed">
                     {course.description}
                   </p>
-                  <ul className="space-y-2 mb-6">
+                  <ul className="space-y-1.5 sm:space-y-2 mb-4 sm:mb-6">
                     {course.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-2 text-sm">
+                      <li key={feature} className="flex items-center gap-2 text-xs sm:text-sm">
                         <AnimatedCheckmark className={course.iconColor} />
                         <span className="text-muted-foreground">{feature}</span>
                       </li>
                     ))}
                   </ul>
-                  <div className="flex items-center text-primary font-semibold group-hover:gap-3 gap-2 transition-all mt-auto">
-                    Learn More <ArrowRight className="h-4 w-4" />
+                  <div className="flex items-center text-primary font-semibold group-hover:gap-3 gap-2 transition-all mt-auto text-sm sm:text-base">
+                    Learn More <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </div>
                 </Link>
               </motion.div>
@@ -410,27 +412,27 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="relative py-20 lg:py-28 overflow-hidden">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <section className="relative py-12 sm:py-16 lg:py-28 overflow-hidden">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-10 sm:gap-16 items-center">
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-                <Sparkles className="h-4 w-4" />
+              <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium mb-3 sm:mb-4">
+                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 <span>Why Choose Us</span>
               </div>
-              <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+              <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 sm:mb-6">
                 Everything You Need to{" "}
                 <span className="gradient-text">Succeed</span>
               </h2>
-              <p className="text-lg text-muted-foreground mb-8">
+              <p className="text-sm sm:text-base lg:text-lg text-muted-foreground mb-6 sm:mb-8 leading-relaxed">
                 Our comprehensive platform combines cutting-edge technology with expert instruction to deliver the most effective exam preparation experience.
               </p>
 
-              <div className="grid sm:grid-cols-2 gap-6">
+              <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
                 {features.map((feature, index) => (
                   <motion.div
                     key={feature.title}
@@ -438,9 +440,9 @@ export default function Home() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1 }}
-                    className="flex gap-4"
+                    className="flex gap-3 sm:gap-4"
                   >
-                    <motion.div 
+                    <motion.div
                       className={`flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center ${feature.color}`}
                       animate={{ scale: [1, 1.05, 1] }}
                       transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: index * 0.5 }}
@@ -462,14 +464,14 @@ export default function Home() {
               viewport={{ once: true }}
               className="relative"
             >
-              <div className="glass-card rounded-3xl p-8 shadow-xl">
-                <div className="aspect-video bg-gradient-to-br from-accent-3/20 to-primary/20 rounded-2xl flex items-center justify-center mb-6">
-                  <div className="w-20 h-20 rounded-full bg-white/90 shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
-                    <Play className="h-8 w-8 text-primary ml-1" />
+              <div className="glass-card rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-xl">
+                <div className="aspect-video bg-gradient-to-br from-accent-3/20 to-primary/20 rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/90 shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+                    <Play className="h-6 w-6 sm:h-8 sm:w-8 text-primary ml-1" />
                   </div>
                 </div>
-                <h3 className="font-display text-xl font-bold mb-2">See How It Works</h3>
-                <p className="text-muted-foreground">Watch our 2-minute overview to learn how Smart Labs can help you achieve your goals.</p>
+                <h3 className="font-display text-lg sm:text-xl font-bold mb-2">See How It Works</h3>
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Watch our 2-minute overview to learn how Smart Labs can help you achieve your goals.</p>
               </div>
             </motion.div>
           </div>
@@ -512,28 +514,28 @@ export default function Home() {
               <p className="text-muted-foreground mb-8 leading-relaxed">
                 Our Founder and Director, Lahiruka Weeraratne, known in the industry as Laheer, is a distinguished expert trainer officially trained by Pearson UK. She specializes in PTE, IELTS, and CELPIP exams—the essential pathways for students and professionals seeking to study, migrate, or settle abroad. With over 6 years of professional experience, she has successfully trained more than 5,000 students, empowering them to achieve their global aspirations.
               </p>
-              
+
               <h3 className="font-semibold text-xl mb-4">Areas of Expertise</h3>
               <ul className="space-y-2">
-                  <li className="flex items-start gap-4 p-4 rounded-2xl transition-all duration-300 hover:bg-muted/50 hover:shadow-inner cursor-pointer">
-                      <div className="p-3 bg-accent-1/10 rounded-xl"><GraduationCap className="h-5 w-5 text-accent-1" /></div>
-                      <div>
-                          <h4 className="font-semibold">Competency Test Training</h4>
-                          <p className="text-sm text-muted-foreground">PTE, IELTS, CELPIP</p>
-                      </div>
-                  </li>
-                  <li className="flex items-start gap-4 p-4 rounded-2xl transition-all duration-300 hover:bg-muted/50 hover:shadow-inner cursor-pointer">
-                      <div className="p-3 bg-accent-2/10 rounded-xl"><Briefcase className="h-5 w-5 text-accent-2" /></div>
-                      <div>
-                          <h4 className="font-semibold">Corporate Language & Communication Development</h4>
-                      </div>
-                  </li>
-                  <li className="flex items-start gap-4 p-4 rounded-2xl transition-all duration-300 hover:bg-muted/50 hover:shadow-inner cursor-pointer">
-                      <div className="p-3 bg-accent-3/10 rounded-xl"><Globe className="h-5 w-5 text-accent-3" /></div>
-                      <div>
-                          <h4 className="font-semibold">Study Abroad & Migration Guidance</h4>
-                      </div>
-                  </li>
+                <li className="flex items-start gap-4 p-4 rounded-2xl transition-all duration-300 hover:bg-muted/50 hover:shadow-inner cursor-pointer">
+                  <div className="p-3 bg-accent-1/10 rounded-xl"><GraduationCap className="h-5 w-5 text-accent-1" /></div>
+                  <div>
+                    <h4 className="font-semibold">Competency Test Training</h4>
+                    <p className="text-sm text-muted-foreground">PTE, IELTS, CELPIP</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4 p-4 rounded-2xl transition-all duration-300 hover:bg-muted/50 hover:shadow-inner cursor-pointer">
+                  <div className="p-3 bg-accent-2/10 rounded-xl"><Briefcase className="h-5 w-5 text-accent-2" /></div>
+                  <div>
+                    <h4 className="font-semibold">Corporate Language & Communication Development</h4>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4 p-4 rounded-2xl transition-all duration-300 hover:bg-muted/50 hover:shadow-inner cursor-pointer">
+                  <div className="p-3 bg-accent-3/10 rounded-xl"><Globe className="h-5 w-5 text-accent-3" /></div>
+                  <div>
+                    <h4 className="font-semibold">Study Abroad & Migration Guidance</h4>
+                  </div>
+                </li>
               </ul>
             </motion.div>
           </div>
@@ -541,22 +543,22 @@ export default function Home() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="relative py-20 lg:py-28 bg-secondary/30 overflow-hidden">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="relative py-12 sm:py-16 lg:py-28 bg-secondary/30 overflow-hidden">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-10 sm:mb-16"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-4/10 text-accent-4 text-sm font-medium mb-4">
-              <Star className="h-4 w-4" />
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent-4/10 text-accent-4 text-xs sm:text-sm font-medium mb-3 sm:mb-4">
+              <Star className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
               <span>Success Stories</span>
             </div>
-            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3 sm:mb-4 px-2">
               What Our Students Say
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto px-2">
               Join thousands of successful students who transformed their futures with Smart Labs.
             </p>
           </motion.div>
@@ -566,27 +568,27 @@ export default function Home() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="grid md:grid-cols-3 gap-8"
+            className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8"
           >
             {testimonials.slice(0, 3).map((testimonial) => (
               <motion.div
                 key={testimonial.name}
                 variants={itemVariants}
-                className="glass-card rounded-3xl p-8 h-full flex flex-col"
+                className="glass-card rounded-2xl sm:rounded-3xl p-5 sm:p-8 h-full flex flex-col"
               >
-                <div className="flex items-center gap-1 text-accent-4 mb-4">
+                <div className="flex items-center gap-0.5 sm:gap-1 text-accent-4 mb-3 sm:mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-current" />
+                    <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
                   ))}
                 </div>
-                <p className="text-foreground mb-6 leading-relaxed flex-grow">"{testimonial.content}"</p>
-                <div className="flex items-center gap-4 mt-auto">
-                  <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${testimonial.color} flex items-center justify-center text-white font-bold`}>
+                <p className="text-sm sm:text-base text-foreground mb-4 sm:mb-6 leading-relaxed flex-grow">"{testimonial.content}"</p>
+                <div className="flex items-center gap-3 sm:gap-4 mt-auto">
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br ${testimonial.color} flex items-center justify-center text-white font-bold text-sm sm:text-base flex-shrink-0`}>
                     {testimonial.avatar}
                   </div>
-                  <div>
-                    <div className="font-semibold text-foreground">{testimonial.name}</div>
-                    <div className="text-sm text-primary font-medium">{testimonial.role}</div>
+                  <div className="min-w-0">
+                    <div className="font-semibold text-sm sm:text-base text-foreground leading-tight">{testimonial.name}</div>
+                    <div className="text-xs sm:text-sm text-primary font-medium leading-tight">{testimonial.role}</div>
                   </div>
                 </div>
               </motion.div>
@@ -618,8 +620,8 @@ export default function Home() {
                 Join thousands of successful students. Start your free trial today and take the first step towards achieving your dream score.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button 
-                  size="xl" 
+                <Button
+                  size="xl"
                   className="bg-white text-primary hover:bg-white/90 shadow-xl"
                   asChild
                 >
@@ -628,9 +630,9 @@ export default function Home() {
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
-                <Button 
+                <Button
                   variant="default"
-                  size="xl" 
+                  size="xl"
                   className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl"
                   asChild
                 >

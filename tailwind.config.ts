@@ -17,6 +17,9 @@ export default {
       },
     },
     extend: {
+      screens: {
+        'xs': '480px',
+      },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['Poppins', 'system-ui', 'sans-serif'],
