@@ -1,6 +1,6 @@
-import { Play, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { getLatestVideos } from '@/app/actions/get-youtube-videos';
+import { VideoGallery } from '@/components/video-gallery';
 
 // Mock Data as Fallback
 const mockVideos = [
@@ -23,11 +23,20 @@ export default async function VideosPage() {
             <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/10 p-4">
                 <div className="container mx-auto flex items-center justify-between px-4">
                     <div className="flex items-center gap-2 font-bold text-xl">
-                        <span className="text-red-600">Smart</span>Tube
+                        <Link href="/" className="flex items-center gap-1">
+                            <span className="text-red-600">Smart</span>Tube
+                        </Link>
                     </div>
                     <nav className="flex gap-6 text-sm font-medium">
                         <Link href="/" className="hover:text-red-500 transition-colors">Home</Link>
                         <Link href="/dashboard" className="hover:text-red-500 transition-colors">Dashboard</Link>
+                        <Link
+                            href="https://www.youtube.com/@SmartLabs-Official"
+                            target="_blank"
+                            className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-full text-white transition-colors"
+                        >
+                            Subscribe
+                        </Link>
                     </nav>
                 </div>
             </header>
@@ -43,48 +52,11 @@ export default async function VideosPage() {
                     </p>
                 </section>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {displayVideos.map((video, idx) => (
-                        <Link
-                            href={`https://www.youtube.com/watch?v=${video.id}`}
-                            target="_blank"
-                            key={video.id || idx}
-                            className="group relative bg-zinc-900 rounded-xl overflow-hidden shadow-2xl border border-white/5 hover:border-red-600/50 transition-all duration-300 hover:-translate-y-2 cursor-pointer block"
-                        >
-                            {/* Thumbnail */}
-                            <div className="aspect-video relative overflow-hidden bg-zinc-800">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                    src={video.thumbnail}
-                                    alt={video.title}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-100"
-                                />
-                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <div className="bg-red-600 p-4 rounded-full shadow-lg transform scale-50 group-hover:scale-100 transition-transform duration-300">
-                                        <Play className="fill-white text-white h-8 w-8 ml-1" />
-                                    </div>
-                                </div>
-                                <div className="absolute top-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-bold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <ExternalLink className="w-3 h-3" /> YouTube
-                                </div>
-                            </div>
-
-                            <div className="p-6">
-                                <h3 className="font-bold text-lg mb-3 line-clamp-2 leading-tight group-hover:text-red-500 transition-colors">
-                                    {video.title}
-                                </h3>
-                                <div className="flex items-center justify-between text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                                    <span>{video.views}</span>
-                                    <span>{video.date}</span>
-                                </div>
-                            </div>
-                        </Link>
-                    ))}
-                </div>
+                <VideoGallery videos={displayVideos} />
 
                 <div className="mt-16 text-center">
-                    <Link href="https://youtube.com" target="_blank" className="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white transition-all duration-200 bg-red-600 rounded-full hover:bg-red-700 hover:shadow-lg hover:shadow-red-600/30">
-                        Visit Our YouTube Channel
+                    <Link href="https://www.youtube.com/@SmartLabs-Official" target="_blank" className="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white transition-all duration-200 bg-red-600 rounded-full hover:bg-red-700 hover:shadow-lg hover:shadow-red-600/30">
+                        Visit Our Official YouTube Channel
                     </Link>
                 </div>
             </main>

@@ -30,7 +30,7 @@ const socialLinks = [
   { icon: Facebook, href: "#", label: "Facebook" },
   { icon: Instagram, href: "#", label: "Instagram" },
   { icon: Linkedin, href: "#", label: "LinkedIn" },
-  { icon: Youtube, href: "#", label: "YouTube" },
+  { icon: Youtube, href: "https://www.youtube.com/@SmartLabs-Official", label: "YouTube" },
 ];
 
 export default function Footer() {
@@ -40,7 +40,7 @@ export default function Footer() {
   if (isSpecialLayout) {
     return null;
   }
-  
+
   return (
     <footer className="bg-card border-t border-border">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
@@ -48,12 +48,12 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
-               <Image src="/logo.png" alt="Smart Labs Logo" width={40} height={40} />
+              <Image src="/logo.png" alt="Smart Labs Logo" width={40} height={40} />
             </Link>
             <p className="text-muted-foreground mb-6 max-w-sm">
               Empowering learners worldwide with expert-led exam preparation and professional development courses.
             </p>
-            
+
             {/* Contact Info */}
             <div className="space-y-3 mb-6">
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -130,16 +130,16 @@ export default function Footer() {
         <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-sm text-muted-foreground text-center sm:text-left">
             <p>© {new Date().getFullYear()} Smart Labs. All rights reserved.</p>
-             <p>
-                Website Powered and Hosted by{' '}
-                <a
-                    href="https://www.esystemlk.xyz"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold text-primary hover:underline"
-                >
-                    Esystemlk
-                </a>
+            <p>
+              Website Powered and Hosted by{' '}
+              <a
+                href="https://www.esystemlk.xyz"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary hover:underline"
+              >
+                Esystemlk
+              </a>
             </p>
           </div>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">

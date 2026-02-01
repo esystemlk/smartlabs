@@ -363,7 +363,7 @@ export default function Home() {
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
               </span>
               <span className="text-sm font-medium bg-gradient-to-r from-primary to-accent-3 bg-clip-text text-transparent">
-                Introducing Smart Labs AI 2.0
+                Introducing Smart Labs 2.0
               </span>
             </motion.div>
 
