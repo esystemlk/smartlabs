@@ -34,6 +34,7 @@ const courses = [
 const navLinks = [
   { name: "About", href: "/about" },
   { name: "Apps", href: "/apps" },
+  { name: "Videos", href: "/videos" },
   { name: "Corporate Training", href: "/corporate-training" },
   { name: "Mock Tests", href: "/mock-tests" },
   { name: "Blog", href: "/blog" },
@@ -65,7 +66,7 @@ export default function Header() {
     await signOut(auth);
     router.push('/login');
   };
-  
+
   const isSpecialLayout = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/welcome' || pathname.startsWith('/payment');
 
   if (isSpecialLayout) {
@@ -75,7 +76,7 @@ export default function Header() {
   const isDesktopClient = isElectron && !isMac;
 
   return (
-    <header 
+    <header
       className={cn(
         "fixed left-0 right-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50",
         isDesktopClient ? "top-8" : "top-0"
@@ -91,7 +92,7 @@ export default function Header() {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-1">
             {/* Courses Dropdown */}
-            <div 
+            <div
               className="relative"
               onMouseEnter={() => setCoursesOpen(true)}
               onMouseLeave={() => setCoursesOpen(false)}
@@ -103,7 +104,7 @@ export default function Header() {
                 Courses
                 <ChevronDown className={cn("h-4 w-4 transition-transform", coursesOpen && "rotate-180")} />
               </button>
-              
+
               <AnimatePresence>
                 {coursesOpen && (
                   <motion.div
@@ -119,8 +120,8 @@ export default function Header() {
                         href={course.href}
                         className={cn(
                           "block px-4 py-3 rounded-lg transition-colors",
-                          pathname === course.href 
-                            ? "bg-primary/10 text-primary" 
+                          pathname === course.href
+                            ? "bg-primary/10 text-primary"
                             : "hover:bg-muted"
                         )}
                       >
@@ -228,7 +229,7 @@ export default function Header() {
                   </Link>
                 ))}
               </div>
-              
+
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -247,9 +248,9 @@ export default function Header() {
                       <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>Dashboard</Link>
                     </Button>
                     <Button variant="outline" className="w-full" onClick={async () => {
-                        await handleLogout();
-                        setMobileMenuOpen(false);
-                      }}>
+                      await handleLogout();
+                      setMobileMenuOpen(false);
+                    }}>
                       <LogOut className="mr-2 h-4 w-4" />
                       Sign Out
                     </Button>

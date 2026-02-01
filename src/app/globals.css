@@ -112,4 +112,60 @@
   .accent-glow {
     box-shadow: 0 0 60px -15px hsl(var(--accent-1) / 0.5);
   }
+  
+  /* Futuristic Grid Background */
+  .bg-grid-white {
+    background-size: 40px 40px;
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.5) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 1px, transparent 1px);
+  }
+  
+  .bg-grid-black {
+    background-size: 40px 40px;
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  }
+
+  /* 3D Transform Utilities */
+  .transform-style-3d {
+    transform-style: preserve-3d;
+  }
+  
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  
+  .rotate-y-12 {
+    transform: rotateY(12deg);
+  }
+  
+  .rotate-x-12 {
+    transform: rotateX(12deg);
+  }
+}
+
+@layer utilities {
+  .animate-float-slow {
+    animation: float 8s ease-in-out infinite;
+  }
+  
+  .animate-float-medium {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-float-fast {
+    animation: float 4s ease-in-out infinite;
+  }
+  
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
 }
