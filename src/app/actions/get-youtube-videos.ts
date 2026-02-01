@@ -32,7 +32,8 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
         if (!response.ok) {
             const errorData = await response.json();
             console.error("YouTube API Error Details:", JSON.stringify(errorData, null, 2));
-            throw new Error(`YouTube API Error: ${response.status} ${response.statusText}`);
+            // Allow fallback to mock data instead of crashing
+            return [];
         }
 
         const data = await response.json();
