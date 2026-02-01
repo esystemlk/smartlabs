@@ -13,6 +13,10 @@ const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const CHANNEL_ID = process.env.NEXT_PUBLIC_YOUTUBE_CHANNEL_ID;
 
 export async function getLatestVideos(): Promise<YouTubeVideo[]> {
+    console.log("--- DEBUGGING YOUTUBE ---");
+    console.log("API KEY (Exists?):", !!YOUTUBE_API_KEY);
+    console.log("CHANNEL ID:", CHANNEL_ID);
+
     // Fallback to empty array if keys are missing, allowing UI to show mock data
     if (!YOUTUBE_API_KEY || !CHANNEL_ID) {
         console.log("YouTube API keys missing, using mock data mode.");
@@ -22,12 +26,12 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
     try {
         const response = await fetch(
             `https://www.googleapis.com/youtube/v3/search?key=${YOUTUBE_API_KEY}&channelId=${CHANNEL_ID}&part=snippet,id&order=date&maxResults=9&type=video`,
-            { next: { revalidate: 3600 } } // Cache for 1 hour to avoid quota limits
+            { next: { revalidate: 0 } } // No cache for debug
         );
 
         if (!response.ok) {
             const errorData = await response.json();
-            console.error("YouTube API Error Details:", errorData);
+            console.error("YouTube API Error Details:", JSON.stringify(errorData, null, 2));
             throw new Error(`YouTube API Error: ${response.status} ${response.statusText}`);
         }
 
