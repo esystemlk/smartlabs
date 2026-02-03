@@ -600,11 +600,11 @@ export default function Home() {
                   transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
                   className="space-y-3"
                 >
-                  <h1 className="font-display text-6xl sm:text-7xl lg:text-9xl font-black tracking-tighter text-foreground dark:text-white leading-[0.85]">
+                  <h1 className="font-display text-5xl sm:text-7xl lg:text-9xl font-black tracking-tighter text-foreground dark:text-white leading-[0.85]">
                     ELEVATE
                   </h1>
                   <div className="flex items-center gap-6">
-                    <h1 className="font-display text-6xl sm:text-7xl lg:text-9xl font-black tracking-tighter leading-[0.85]">
+                    <h1 className="font-display text-5xl sm:text-7xl lg:text-9xl font-black tracking-tighter leading-[0.85]">
                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 animate-gradient">
                         YOUR
                       </span>
@@ -638,7 +638,7 @@ export default function Home() {
                 >
                   <TypewriterEffect
                     words={[
-                      { text: "ENGLISH", className: "text-5xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-foreground dark:text-white" },
+                      { text: "ENGLISH", className: "text-4xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-foreground dark:text-white" },
                     ]}
                     className="text-5xl sm:text-6xl lg:text-8xl font-black"
                     cursorClassName="bg-primary h-10 sm:h-14 lg:h-20 w-1 sm:w-2"
@@ -845,7 +845,7 @@ export default function Home() {
       </section>
 
       {/* Meet Our Founder Section */}
-      <section className="py-24 sm:py-32 relative overflow-hidden bg-background">
+      <section className="py-16 sm:py-24 lg:py-32 relative overflow-hidden bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
             {/* Founder Image with Decorative Plates */}
@@ -936,7 +936,7 @@ export default function Home() {
       </section>
 
       {/* Success Roadmap - Enhanced Design */}
-      <section className="py-24 sm:py-32 relative overflow-hidden bg-muted/20">
+      <section className="py-16 sm:py-24 lg:py-32 relative overflow-hidden bg-muted/20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 sm:mb-24">
             <motion.div
@@ -1019,7 +1019,7 @@ export default function Home() {
       </section>
 
       {/* The Smart Labs Advantage - Detailed Feature Grid */}
-      <section className="py-24 sm:py-32 relative overflow-hidden">
+      <section className="py-16 sm:py-24 lg:py-32 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-primary/5 blur-[120px] rounded-full" />
         <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-accent-3/5 blur-[120px] rounded-full" />
 
@@ -1031,7 +1031,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 gap-8">
             {features.map((feature, i) => (
-              <SpotlightCard key={i} className="p-8 sm:p-12 rounded-[40px] border border-border/50 bg-white/5 flex flex-col sm:flex-row gap-8 group">
+              <SpotlightCard key={i} className="p-6 sm:p-12 rounded-[40px] border border-border/50 bg-white/5 flex flex-col sm:flex-row gap-8 group">
                 <div className={cn("w-20 h-20 rounded-3xl shrink-0 flex items-center justify-center bg-gradient-to-br transition-all group-hover:scale-110 shadow-xl", feature.color)}>
                   <feature.icon className={cn("h-10 w-10", feature.iconColor)} />
                 </div>
@@ -1046,7 +1046,7 @@ export default function Home() {
       </section>
 
       {/* Comparison Section - Smart Labs vs Traditional */}
-      <section className="py-24 sm:py-32 bg-secondary/20">
+      <section className="py-16 sm:py-24 lg:py-32 bg-secondary/20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
             <div>
@@ -1066,8 +1066,8 @@ export default function Home() {
             </div>
 
             <div className="glass-card rounded-[40px] overflow-hidden border border-border/50 shadow-[0_40px_80px_rgba(0,0,0,0.1)]">
-              <div className="p-8 sm:p-12">
-                <table className="w-full text-left">
+              <div className="p-6 sm:p-12 overflow-x-auto">
+                <table className="w-full text-left min-w-[600px]">
                   <thead>
                     <tr className="border-b border-border/50">
                       <th className="pb-8 font-black uppercase text-[10px] tracking-[0.2em] text-muted-foreground">Standard Feature</th>
@@ -1102,7 +1102,7 @@ export default function Home() {
       </section>
 
       {/* AI Lab Section - Transforming the Scorer */}
-      <section className="relative py-24 sm:py-32 bg-[#020617] overflow-hidden border-b border-white/5">
+      <section className="relative py-16 sm:py-24 lg:py-32 bg-[#020617] overflow-hidden border-b border-white/5">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(79,70,229,0.1),transparent_50%)]" />
         <div className="absolute inset-0 bg-grid-white/[0.02]" />
 
@@ -1787,7 +1787,7 @@ export default function Home() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-24 sm:py-32 relative overflow-hidden">
+      <section className="py-16 sm:py-24 lg:py-32 relative overflow-hidden">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-3/10 text-accent-3 text-xs font-black uppercase tracking-widest mb-6">
@@ -1814,7 +1814,7 @@ export default function Home() {
       </section>
 
       {/* Premium CTA Section */}
-      <section className="relative py-24 sm:py-32 overflow-hidden bg-background">
+      <section className="relative py-16 sm:py-24 lg:py-32 overflow-hidden bg-background">
         <div className="absolute inset-0 bg-gradient-to-b from-secondary/30 to-background" />
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
