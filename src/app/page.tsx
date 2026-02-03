@@ -58,6 +58,8 @@ import { AnimatedNumber } from "@/components/ui/animated-number";
 import { AnimatedCheckmark } from "@/components/ui/animated-checkmark";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Layout, Check, X, HelpCircle, ChevronRight, PlayCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { auth, db } from '@/lib/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -65,6 +67,9 @@ import { doc, getDoc, updateDoc, setDoc, increment } from 'firebase/firestore';
 import { scorePteWriteEssay } from '@/ai/flows/score-pte-writing-write-essay';
 import type { PteWriteEssayOutput } from '@/ai/flows/pte-writing.types';
 import { useToast } from "@/hooks/use-toast";
+import { useSiteStats } from "@/hooks/use-site-stats";
+import { useTestimonials } from "@/hooks/use-testimonials";
+import { logTestCompletion } from "@/lib/services/activity.service";
 
 const sampleTopics = [
   "Some people think that technology has made communication easier, while others believe it has made us more isolated. Discuss both views.",
@@ -108,7 +113,7 @@ const courses = [
     color: "from-accent-2/20 to-accent-2/5",
     iconColor: "text-accent-2",
     bgGradient: "from-accent-2/10 via-accent-2/5 to-transparent",
-    features: ["Speaking Practice", "Writing Feedback", "Mock Tests", "Band 9 Strategies"],
+    features: ["Speaking Practice", "Writing Feedback", "Full Materials", "Band 8.5+ Strategies"],
   },
   {
     title: "CELPIP Prep",
@@ -193,27 +198,85 @@ const skillModules = [
   {
     icon: Headphones,
     title: "Listening",
-    description: "Advanced listening comprehension techniques",
+    description: "Multi-layered listening exercises designed to mirror real-world accents and exam conditions.",
     color: "text-accent-1"
   },
   {
     icon: MessageSquare,
     title: "Speaking",
-    description: "Fluency and pronunciation mastery",
+    description: "AI-powered pronunciation analysis with real-time feedback on your rhythm and intonation.",
     color: "text-accent-2"
   },
   {
     icon: BookOpen,
     title: "Reading",
-    description: "Speed reading and comprehension strategies",
+    description: "Speed reading strategies and comprehensive vocabulary building for complex academic texts.",
     color: "text-accent-3"
   },
   {
     icon: PenTool,
     title: "Writing",
-    description: "Essay writing and grammar perfection",
+    description: "From structural templates to grammar clinic refinements—master the art of academic writing.",
     color: "text-accent-4"
   },
+];
+
+const comparisons = [
+  { item: "AI Feedback", traditional: "Once a week/Delayed", smartlabs: "Instant & 24/7", highlight: true },
+  { item: "Practice Tests", traditional: "Limited availability", smartlabs: "Unlimited access", highlight: true },
+  { item: "Mock Test Scoring", traditional: "3-5 days wait", smartlabs: "Generated in seconds", highlight: true },
+  { item: "Study Schedule", traditional: "Generic class speed", smartlabs: "AI-Personalized flow", highlight: true },
+  { item: "Course Materials", traditional: "Physical textbooks", smartlabs: "LMS Digital Hub", highlight: true },
+];
+
+const faqs = [
+  {
+    q: "How accurate is the AI scoring engine?",
+    a: "Our AI scoring engine is built using advanced natural language processing and is continuously refined based on official PTE, IELTS, and CELPIP scoring rubrics. It provides detailed feedback on grammar, vocabulary, coherence, and task achievement to help you improve effectively."
+  },
+  {
+    q: "Can I switch between individual and group classes?",
+    a: "Yes! Smart Labs offers ultimate flexibility. You can start with our recorded classes and upgrade to 1-on-1 individual mentorship sessions at any point during your preparation."
+  },
+  {
+    q: "Is there a trial period available?",
+    a: "Absolutely. You can sign up for free and get access to our diagnostic test immediately. This helps you understand your current level and experience our platform's capabilities before committing to a full course."
+  },
+  {
+    q: "Do you provide assistance with exam booking?",
+    a: "Yes, our support team guides you through the official registration process for PTE, IELTS, and CELPIP to ensure all your details are correct for the test day."
+  }
+];
+
+const features = [
+  {
+    title: "AI Ecosystem",
+    description: "Not just a scorer, but a complete feedback loop that learns your weaknesses.",
+    icon: Cpu,
+    color: "from-blue-500/20 to-cyan-500/20",
+    iconColor: "text-blue-500"
+  },
+  {
+    title: "Expert Mentors",
+    description: "Learn from trainers who have consistently achieved Band 9 and PTE 90 scores.",
+    icon: GraduationCap,
+    color: "from-purple-500/20 to-pink-500/20",
+    iconColor: "text-purple-500"
+  },
+  {
+    title: "Smart LMS",
+    description: "A central dashboard for all your videos, progress reports, and practice materials.",
+    icon: Layout,
+    color: "from-amber-500/20 to-orange-500/20",
+    iconColor: "text-amber-500"
+  },
+  {
+    title: "Real Exam Simulation",
+    description: "Practice in an environment that looks and feels exactly like the actual testing center.",
+    icon: Monitor,
+    color: "from-emerald-500/20 to-teal-500/20",
+    iconColor: "text-emerald-500"
+  }
 ];
 
 const testimonials = [
@@ -260,6 +323,10 @@ export default function Home() {
   const { toast } = useToast();
   const [user, loading] = useAuthState(auth);
 
+  // Fetch real data from Firebase
+  const { stats: siteStats } = useSiteStats();
+  const { testimonials: realTestimonials } = useTestimonials(3);
+
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
   const [aiText, setAiText] = useState("");
@@ -270,6 +337,35 @@ export default function Home() {
   const [usageCount, setUsageCount] = useState<number | null>(null);
 
   const { scrollYProgress } = useScroll();
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 20,
+        y: (e.clientY / window.innerHeight - 0.5) * 20,
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  const [particles, setParticles] = useState<Array<{
+    left: string;
+    top: string;
+    duration: number;
+    delay: number;
+  }>>([]);
+
+  useEffect(() => {
+    setParticles([...Array(30)].map(() => ({
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      duration: 3 + Math.random() * 4,
+      delay: Math.random() * 2,
+    })));
+  }, []);
+
   const y1 = useTransform(scrollYProgress, [0, 0.5], [0, 200]);
   const y2 = useTransform(scrollYProgress, [0, 0.5], [0, -100]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
@@ -375,6 +471,14 @@ export default function Home() {
       setAnalysisComplete(true);
       setIsAnalyzing(false);
 
+      // Log the test completion activity
+      await logTestCompletion(
+        user.uid,
+        'PTE Write Essay - AI Scoring',
+        result.overallScore,
+        'PTE Writing'
+      );
+
       toast({
         title: "Analysis Complete",
         description: "Your essay has been successfully scored.",
@@ -392,255 +496,607 @@ export default function Home() {
   };
   return (
     <>
-      {/* Hero Section - The Intelligent Future */}
-      <section className="relative overflow-hidden min-h-[95vh] flex items-center justify-center bg-background py-12">
-        {/* Futuristic Grid Background with Parallax */}
-        <motion.div style={{ y: y1 }} className="absolute inset-0 -z-20 bg-grid-black/[0.05] dark:bg-grid-white/[0.05]" />
-        <div className="absolute inset-0 -z-20 bg-gradient-to-b from-background via-transparent to-background" />
+      {/* Hero Section - Ultra Advanced */}
+      <section className="relative overflow-hidden min-h-[100vh] flex items-center bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-[#020617] dark:via-[#0a0e27] dark:to-[#0f0a1e] py-20">
+        {/* Animated Particle System */}
+        <div className="absolute inset-0 -z-30">
+          {particles.map((particle, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 bg-primary/30 rounded-full"
+              style={{
+                left: particle.left,
+                top: particle.top,
+              }}
+              animate={{
+                y: [0, -30, 0],
+                opacity: [0.2, 0.8, 0.2],
+                scale: [1, 1.5, 1],
+              }}
+              transition={{
+                duration: particle.duration,
+                repeat: Infinity,
+                delay: particle.delay,
+              }}
+            />
+          ))}
+        </div>
 
-        {/* Ambient Glows with Parallax */}
-        <motion.div style={{ y: y2 }} className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-primary/20 blur-[120px] rounded-full opacity-50 pointer-events-none" />
-        <motion.div style={{ y: y1 }} className="absolute bottom-0 left-0 w-[800px] h-[600px] bg-accent-3/10 blur-[100px] rounded-full opacity-40 pointer-events-none" />
-        <motion.div style={{ y: y2 }} className="absolute bottom-0 right-0 w-[800px] h-[600px] bg-accent-1/10 blur-[100px] rounded-full opacity-40 pointer-events-none" />
-
+        {/* Advanced Grid Pattern */}
         <motion.div
-          style={{ opacity: heroOpacity, scale: heroScale }}
-          className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 relative z-10"
+          style={{ y: y1 }}
+          className="absolute inset-0 -z-20 opacity-[0.02] dark:opacity-[0.08]"
+          animate={{
+            backgroundPosition: ["0% 0%", "100% 100%"]
+          }}
+          transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
         >
-          <div className="text-center max-w-5xl mx-auto mb-16 sm:mb-24">
-            {/* New Generation Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border-primary/20 mb-8 hover:scale-105 transition-transform cursor-default"
-            >
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
-              </span>
-              <span className="text-sm font-medium bg-gradient-to-r from-primary to-accent-3 bg-clip-text text-transparent">
-                Introducing Smart Labs 2.0
-              </span>
-            </motion.div>
-
-            {/* Massive Headline */}
-            <motion.h1
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.1 }}
-              className="font-display text-5xl sm:text-7xl lg:text-8xl font-bold tracking-tight mb-8 leading-[1.1]"
-            >
-              The New Standard in <br />
-              <div className="mt-2">
-                <TypewriterEffect
-                  words={[
-                    { text: "English", className: "text-blue-400 dark:text-blue-400" },
-                    { text: "Mastery", className: "text-purple-400 dark:text-purple-400" },
-                  ]}
-                  className="text-5xl sm:text-7xl lg:text-8xl font-bold tracking-tight"
-                  cursorClassName="bg-purple-400 h-10 lg:h-24 w-1 lg:w-2"
-                />
-              </div>
-            </motion.h1>
-
-            {/* Subtext */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-              className="text-lg sm:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto mb-10 leading-relaxed"
-            >
-              Experience the convergence of expert pedagogy and advanced AI. <br className="hidden sm:block" />
-              Real-time scoring. Infinite practice. Guaranteed results.
-            </motion.p>
-
-            {/* Futuristic CTA Group */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-            >
-              <Button
-                size="xl"
-                className="h-14 px-8 rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 text-lg w-full sm:w-auto transition-all hover:scale-105"
-                asChild
-              >
-                <Link href="/signup">
-                  Get Started Free
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-              <Button
-                variant="outline"
-                size="xl"
-                className="h-14 px-8 rounded-2xl border-2 border-primary/20 hover:bg-primary/5 backdrop-blur-sm text-lg w-full sm:w-auto transition-all hover:scale-105 text-primary"
-                asChild
-              >
-                <a href="https://register.smartlabs.lk" target="_blank" rel="noopener noreferrer">
-                  Book Individual Class
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </a>
-              </Button>
-            </motion.div>
-          </div>
-
-          {/* 3D Floating Interface Visual */}
-          <div className="relative perspective-1000 h-[400px] sm:h-[500px] lg:h-[600px] w-full max-w-6xl mx-auto mt-10 sm:mt-0">
-            {/* Main Dashboard Card */}
-            <motion.div
-              initial={{ opacity: 0, rotateX: 20, y: 100 }}
-              animate={{ opacity: 1, rotateX: 10, y: 0 }}
-              transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
-              className="absolute inset-x-4 top-0 bottom-20 bg-background/80 backdrop-blur-xl rounded-t-3xl border border-white/20 shadow-2xl overflow-hidden transform-style-3d group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
-
-              {/* Fake UI Header */}
-              <div className="h-12 border-b border-border/50 flex items-center px-6 gap-4 bg-white/50">
-                <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-400" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                  <div className="w-3 h-3 rounded-full bg-green-400" />
-                </div>
-                <div className="h-2 w-32 bg-border rounded-full opacity-50" />
-              </div>
-
-              {/* Dashboard Content */}
-              <div className="p-8 grid grid-cols-3 gap-8 h-full">
-                {/* Sidebar */}
-                <div className="hidden md:block col-span-1 border-r border-border/50 pr-8 space-y-6 opacity-60">
-                  <div className="h-8 w-3/4 bg-primary/20 rounded-lg animate-pulse" />
-                  <div className="space-y-3">
-                    <div className="h-4 w-full bg-border/50 rounded" />
-                    <div className="h-4 w-5/6 bg-border/50 rounded" />
-                    <div className="h-4 w-4/6 bg-border/50 rounded" />
-                  </div>
-                </div>
-
-                {/* Main Area */}
-                <div className="col-span-3 md:col-span-2 space-y-6">
-                  <div className="flex justify-between items-center mb-8">
-                    <div>
-                      <div className="h-4 w-24 bg-primary/20 rounded mb-2" />
-                      <div className="text-3xl font-bold font-display">Target Score Analysis</div>
-                    </div>
-                    <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-bold animate-pulse">Live</div>
-                  </div>
-
-                  {/* Graph Concept */}
-                  <div className="h-48 w-full bg-gradient-to-r from-primary/5 via-accent-3/5 to-accent-1/5 rounded-2xl border border-border/50 relative overflow-hidden flex items-end justify-between px-6 pb-0 pt-10">
-                    {[40, 65, 50, 80, 75, 90, 85].map((h, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ height: 0 }}
-                        animate={{ height: `${h}%` }}
-                        transition={{ duration: 1, delay: 0.8 + i * 0.1 }}
-                        className="w-8 bg-gradient-to-t from-primary to-accent-3 rounded-t-lg opacity-80"
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Floating Card 1: Success Rate */}
-            <motion.div
-              animate={{ y: [-10, 10, -10] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -left-4 top-20 w-64 glass-card p-5 rounded-2xl border-l-4 border-accent-2 shadow-xl hidden lg:block"
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-accent-2/20 rounded-lg">
-                  <TrendingUp className="h-6 w-6 text-accent-2" />
-                </div>
-                <div className="font-bold text-lg">95% Success</div>
-              </div>
-              <p className="text-sm text-muted-foreground">Students reaching target score within 6 weeks</p>
-            </motion.div>
-
-            {/* Floating Card 2: AI Feedback */}
-            <motion.div
-              animate={{ y: [10, -10, 10] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              className="absolute -right-4 top-40 w-72 glass-card p-5 rounded-2xl border-l-4 border-accent-1 shadow-xl hidden lg:block"
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-accent-1/20 rounded-lg">
-                  <Brain className="h-6 w-6 text-accent-1" />
-                </div>
-                <div className="font-bold text-lg">AI Analysis</div>
-              </div>
-              <div className="space-y-2 mt-2">
-                <div className="flex justify-between text-sm">
-                  <span>Pronunciation</span>
-                  <span className="font-bold text-accent-1">92/90</span>
-                </div>
-                <div className="h-1.5 w-full bg-border rounded-full overflow-hidden">
-                  <div className="h-full w-[92%] bg-accent-1 rounded-full" />
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Floating Card 3: Live Classes */}
-            <motion.div
-              animate={{ y: [-15, 5, -15] }}
-              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-              className="absolute left-20 bottom-32 w-56 glass-card p-4 rounded-2xl border-l-4 border-accent-3 shadow-xl hidden lg:block z-20"
-            >
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white overflow-hidden">
-                    {/* Avatar placeholder */}
-                    <div className="w-full h-full bg-gradient-to-br from-accent-3 to-primary" />
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full" />
-                </div>
-                <div>
-                  <div className="font-bold text-sm">Live Class</div>
-                  <div className="text-xs text-muted-foreground font-medium">with Mr. Lahiruka</div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:64px_64px]" />
         </motion.div>
+
+        {/* Dynamic Gradient Orbs */}
+        <motion.div
+          animate={{
+            x: [0, 100, 0],
+            y: [0, -50, 0],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/4 left-1/4 w-[800px] h-[800px] bg-gradient-to-r from-primary/20 via-accent-3/20 to-accent-1/20 blur-[150px] rounded-full opacity-60 pointer-events-none"
+        />
+        <motion.div
+          animate={{
+            x: [0, -80, 0],
+            y: [0, 60, 0],
+            scale: [1, 1.3, 1],
+          }}
+          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut", delay: 5 }}
+          className="absolute bottom-1/4 right-1/4 w-[700px] h-[700px] bg-gradient-to-l from-accent-2/15 via-primary/15 to-accent-4/15 blur-[140px] rounded-full opacity-50 pointer-events-none"
+        />
+
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+          <div className="grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+
+            {/* Left Content Column - Enhanced */}
+            <motion.div
+              style={{ opacity: heroOpacity }}
+              className="lg:col-span-7 text-left space-y-10"
+            >
+              {/* Premium Badge with Live Indicator */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="inline-flex items-center gap-4 px-5 py-3 rounded-full bg-gradient-to-r from-primary/10 via-accent-3/10 to-accent-1/10 border border-primary/20 backdrop-blur-xl shadow-lg"
+              >
+                <div className="flex items-center gap-2">
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="w-2 h-2 rounded-full bg-green-500"
+                  />
+                  <span className="text-xs font-bold text-foreground/70 dark:text-white/70 uppercase tracking-wider">Live Now</span>
+                </div>
+                <div className="h-4 w-px bg-border" />
+                <div className="flex -space-x-3">
+                  {[1, 2, 3, 4].map((i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: i * 0.1 }}
+                      className="w-7 h-7 rounded-full border-2 border-background bg-gradient-to-br from-primary via-accent-3 to-accent-1"
+                    />
+                  ))}
+                </div>
+                <span className="text-xs font-bold text-foreground dark:text-white tracking-wider">{siteStats?.studentsCount?.toLocaleString() || '5,000'}+ Active Learners</span>
+              </motion.div>
+
+              {/* Ultra-Advanced Headline */}
+              <div className="space-y-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                  className="space-y-3"
+                >
+                  <h1 className="font-display text-6xl sm:text-7xl lg:text-9xl font-black tracking-tighter text-foreground dark:text-white leading-[0.85]">
+                    ELEVATE
+                  </h1>
+                  <div className="flex items-center gap-6">
+                    <h1 className="font-display text-6xl sm:text-7xl lg:text-9xl font-black tracking-tighter leading-[0.85]">
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 animate-gradient">
+                        YOUR
+                      </span>
+                    </h1>
+                    <motion.div
+                      animate={{ rotate: [0, 5, 0, -5, 0] }}
+                      transition={{ duration: 5, repeat: Infinity }}
+                      className="hidden sm:block"
+                    >
+                      <div className="px-6 py-3 bg-primary/10 border border-primary/30 rounded-2xl backdrop-blur-sm">
+                        <Sparkles className="h-8 w-8 text-primary" />
+                      </div>
+                    </motion.div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: "100%" }}
+                      transition={{ delay: 0.5, duration: 1 }}
+                      className="h-1 bg-gradient-to-r from-primary via-accent-3 to-transparent rounded-full"
+                    />
+                  </div>
+                </motion.div>
+
+                {/* Animated Typewriter */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.8 }}
+                  className="flex items-center gap-4"
+                >
+                  <TypewriterEffect
+                    words={[
+                      { text: "ENGLISH", className: "text-5xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-foreground dark:text-white" },
+                    ]}
+                    className="text-5xl sm:text-6xl lg:text-8xl font-black"
+                    cursorClassName="bg-primary h-10 sm:h-14 lg:h-20 w-1 sm:w-2"
+                  />
+                  <motion.div
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="text-4xl"
+                  >
+                    🚀
+                  </motion.div>
+                </motion.div>
+              </div>
+
+              {/* Enhanced Description */}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1 }}
+                className="text-xl sm:text-2xl text-muted-foreground dark:text-white/70 max-w-2xl leading-relaxed font-medium"
+              >
+                Experience the convergence of{" "}
+                <span className="text-primary font-bold">AI-powered precision</span> and{" "}
+                <span className="text-accent-3 font-bold">world-class expertise</span>.
+                Real-time scoring, unlimited practice, guaranteed results.
+              </motion.p>
+
+              {/* Advanced CTA Section */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.2 }}
+                className="space-y-6"
+              >
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Button
+                    size="xl"
+                    className="group relative h-16 px-10 rounded-2xl bg-gradient-to-r from-primary via-accent-3 to-primary bg-[length:200%_100%] hover:bg-[position:100%_0] text-white text-lg font-bold transition-all duration-500 hover:scale-105 active:scale-95 shadow-[0_20px_60px_rgba(79,70,229,0.4)]"
+                    asChild
+                  >
+                    <Link href="/signup">
+                      <span className="relative z-10">Start Free Trial</span>
+                      <ArrowRight className="ml-2 h-6 w-6 group-hover:translate-x-2 transition-transform relative z-10" />
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/50 to-accent-3/50 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="xl"
+                    className="group h-16 px-10 rounded-2xl border-2 border-primary/30 bg-background/80 hover:bg-primary/5 backdrop-blur-xl text-lg text-primary font-bold transition-all hover:scale-105 active:scale-95 hover:border-primary/60"
+                    asChild
+                  >
+                    <a href="https://register.smartlabs.lk" target="_blank" rel="noopener noreferrer">
+                      Book Consultation
+                      <PlayCircle className="ml-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                    </a>
+                  </Button>
+                </div>
+
+                {/* Trust Indicators */}
+                <div className="flex flex-wrap items-center gap-6 pt-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                      ))}
+                    </div>
+                    <span className="text-sm font-bold text-foreground dark:text-white">{siteStats?.rating || 5.0}</span>
+                    <span className="text-sm text-muted-foreground">({siteStats?.reviewsCount || 1200}+ reviews)</span>
+                  </div>
+                  <div className="h-4 w-px bg-border" />
+                  <div className="flex items-center gap-2">
+                    <Award className="h-5 w-5 text-primary" />
+                    <span className="text-sm font-semibold text-foreground dark:text-white">Pearson Trained Educator</span>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+
+            {/* Right Visual Column - Ultra Advanced Dashboard */}
+            <motion.div
+              style={{
+                opacity: heroOpacity,
+                scale: heroScale,
+              }}
+              className="lg:col-span-5 relative hidden lg:block"
+            >
+              {/* Main 3D Dashboard Card */}
+              <motion.div
+                animate={{
+                  rotateX: mousePosition.y * 0.3,
+                  rotateY: -mousePosition.x * 0.3,
+                }}
+                transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                className="relative z-10 perspective-1000"
+                style={{ transformStyle: "preserve-3d" }}
+              >
+                <div className="relative w-full aspect-square bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-[#0a0e27] dark:via-[#0f172a] dark:to-[#0a0e27] rounded-[48px] border border-white/10 shadow-[0_50px_100px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-xl">
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent-3/5" />
+
+                  {/* Dashboard Content */}
+                  <div className="relative p-8 space-y-6 h-full">
+                    {/* Header */}
+                    <div className="flex justify-between items-center">
+                      <div className="space-y-1">
+                        <div className="h-3 w-24 bg-white/10 rounded-full animate-pulse" />
+                        <div className="text-xs font-bold text-white/50 uppercase tracking-widest">Performance Analytics</div>
+                      </div>
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                        className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/20 to-accent-3/20 border border-primary/30 flex items-center justify-center"
+                      >
+                        <Activity className="h-6 w-6 text-primary" />
+                      </motion.div>
+                    </div>
+
+                    {/* Live Metrics Grid */}
+                    <div className="grid grid-cols-2 gap-4">
+                      {[
+                        { label: "Avg Score", value: "85", color: "from-primary/30 to-primary/10", icon: Target },
+                        { label: "Response Time", value: "1.2s", color: "from-accent-3/30 to-accent-3/10", icon: Zap },
+                        { label: "Success Rate", value: "95%", color: "from-accent-1/30 to-accent-1/10", icon: TrendingUp },
+                        { label: "Students", value: "5K+", color: "from-accent-2/30 to-accent-2/10", icon: Users },
+                      ].map((metric, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 1.5 + i * 0.1 }}
+                          className={`relative p-5 bg-gradient-to-br ${metric.color} rounded-3xl border border-white/10 backdrop-blur-sm group hover:scale-105 transition-transform`}
+                        >
+                          <metric.icon className="h-5 w-5 text-white/40 mb-2" />
+                          <div className="text-3xl font-black text-white mb-1">{metric.value}</div>
+                          <div className="text-[9px] font-bold tracking-widest text-white/40 uppercase">{metric.label}</div>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    {/* Animated Chart */}
+                    <div className="relative h-48 bg-white/5 rounded-3xl border border-white/10 p-6 backdrop-blur-sm overflow-hidden">
+                      <div className="absolute top-4 left-6 text-xs font-bold text-white/50 uppercase tracking-widest">Weekly Progress</div>
+                      <div className="h-full flex items-end justify-between gap-3 pt-8">
+                        {[65, 45, 85, 75, 55, 90, 80].map((h, i) => (
+                          <motion.div
+                            key={i}
+                            initial={{ height: 0 }}
+                            animate={{ height: `${h}%` }}
+                            transition={{ duration: 1, delay: 2 + i * 0.1, ease: "easeOut" }}
+                            className="relative flex-1 bg-gradient-to-t from-primary via-accent-3 to-accent-1 rounded-t-xl group"
+                          >
+                            <motion.div
+                              animate={{ opacity: [0, 1, 0] }}
+                              transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
+                              className="absolute inset-0 bg-white/20 rounded-t-xl"
+                            />
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Floating Achievement Badges */}
+              <motion.div
+                animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -top-8 -right-8 p-5 bg-gradient-to-br from-primary/90 to-accent-3/90 rounded-3xl border border-white/20 shadow-2xl backdrop-blur-xl z-20"
+              >
+                <Trophy className="h-10 w-10 text-white" />
+              </motion.div>
+
+              <motion.div
+                animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="absolute -bottom-6 -left-6 p-5 bg-gradient-to-br from-accent-1/90 to-accent-2/90 rounded-3xl border border-white/20 shadow-2xl backdrop-blur-xl z-20"
+              >
+                <Brain className="h-10 w-10 text-white" />
+              </motion.div>
+
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 3, repeat: Infinity }}
+                className="absolute top-1/2 -left-12 px-4 py-3 bg-gradient-to-r from-green-500/90 to-emerald-500/90 rounded-2xl shadow-xl backdrop-blur-xl z-20"
+              >
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-white" />
+                  <span className="text-sm font-bold text-white whitespace-nowrap">AI-Powered</span>
+                </div>
+              </motion.div>
+              <motion.div
+                animate={{ y: [0, 20, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="absolute -bottom-10 -left-10 p-8 glass-card rounded-[40px] border-accent-3/30 z-20 shadow-2xl"
+              >
+                <Brain className="h-12 w-12 text-accent-3" />
+              </motion.div>
+            </motion.div>
+
+          </div>
+        </div>
       </section>
 
-      {/* Success Roadmap - Your Path to Excellence */}
-      <section className="py-24 relative overflow-hidden bg-muted/30">
+      {/* Meet Our Founder Section */}
+      <section className="py-24 sm:py-32 relative overflow-hidden bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">Your Path to <span className="text-primary italic">Excellence</span></h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">A proven four-step strategy to mastering English proficiency exams.</p>
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            {/* Founder Image with Decorative Plates */}
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="relative"
+            >
+              <div className="absolute -top-6 -left-6 w-full h-full bg-accent-3/20 rounded-[48px] -z-10 animate-pulse-glow" />
+              <div className="absolute -bottom-6 -right-6 w-full h-full bg-primary/10 rounded-[48px] -z-10" />
+
+              <div className="relative aspect-[4/5] overflow-hidden rounded-[40px] shadow-2xl border border-white/20">
+                <Image
+                  src="/la.png"
+                  alt="Lahiruka Weeraratne - Founder of Smart Labs"
+                  fill
+                  className="object-cover transition-transform duration-700 hover:scale-105"
+                  priority
+                />
+              </div>
+            </motion.div>
+
+            {/* Founder Content */}
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="space-y-10"
+            >
+              <div className="space-y-6">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-xs font-black uppercase tracking-widest">
+                  <User className="h-4 w-4" />
+                  <span>Meet Our Founder</span>
+                </div>
+
+                <h2 className="text-4xl sm:text-6xl font-black tracking-tight leading-tight">
+                  Lahiruka Weeraratne <br />
+                  <span className="text-primary italic">(Laheer)</span>
+                </h2>
+
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  Our Founder and Director, Lahiruka Weeraratne, known in the industry as Laheer, is a distinguished expert trainer officially trained by Pearson UK. She specializes in PTE, IELTS, and CELPIP exams—the essential pathways for students and professionals seeking to study, migrate, or settle abroad. With over 6 years of professional experience, she has successfully trained more than 5,000 students, empowering them to achieve their global aspirations.
+                </p>
+              </div>
+
+              <div className="space-y-8">
+                <h3 className="text-2xl font-black tracking-tight">Areas of Expertise</h3>
+
+                <div className="grid gap-6">
+                  {[
+                    {
+                      icon: GraduationCap,
+                      title: "Competency Test Training",
+                      desc: "PTE, IELTS, CELPIP Mastery",
+                      color: "bg-accent-1/10 text-accent-1"
+                    },
+                    {
+                      icon: Briefcase,
+                      title: "Corporate Language & Communication",
+                      desc: "Professional English Development",
+                      color: "bg-accent-2/10 text-accent-2"
+                    },
+                    {
+                      icon: Globe,
+                      title: "Study Abroad & Migration Guidance",
+                      desc: "Complete Pathways Coaching",
+                      color: "bg-accent-3/10 text-accent-3"
+                    }
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-start gap-6 group">
+                      <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all group-hover:scale-110", item.color)}>
+                        <item.icon className="h-7 w-7" />
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="font-bold text-lg leading-none">{item.title}</h4>
+                        <p className="text-muted-foreground font-medium">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Success Roadmap - Enhanced Design */}
+      <section className="py-24 sm:py-32 relative overflow-hidden bg-muted/20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 sm:mb-24">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest mb-4"
+            >
+              The Methodology
+            </motion.div>
+            <h2 className="text-4xl sm:text-6xl font-black tracking-tight mb-6">Your Path to <span className="text-primary italic">Excellence</span></h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">A proven four-step strategy that has helped over 5,000 students achieve their dreams.</p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 relative items-start">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 relative items-stretch">
             {roadmapSteps.map((step, idx) => (
               <motion.div
                 key={step.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="relative group p-8 rounded-[40px] bg-background border hover:border-primary/50 transition-all hover:shadow-2xl hover:shadow-primary/10"
+                transition={{ delay: idx * 0.1, duration: 0.5 }}
+                whileHover={{ y: -8 }}
+                className="relative group p-8 sm:p-10 rounded-[40px] bg-background border border-border/50 hover:border-primary/50 transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] flex flex-col"
               >
-                <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-transform group-hover:scale-110", step.bg, step.color)}>
-                  <step.icon className="h-8 w-8" />
+                <div className={cn("w-14 h-14 sm:w-16 sm:h-16 rounded-3xl flex items-center justify-center mb-8 transition-all group-hover:scale-110 shadow-lg group-hover:shadow-primary/20", step.bg, step.color)}>
+                  <step.icon className="h-7 w-7 sm:h-8 sm:w-8" />
                 </div>
-                <div className="text-[40px] font-black opacity-10 absolute top-8 right-8 group-hover:opacity-20 transition-opacity">
+                <div className="text-[60px] font-black opacity-[0.03] absolute top-4 right-8 group-hover:opacity-[0.06] transition-opacity select-none italic">
                   {step.id}
                 </div>
-                <h3 className="text-xl font-bold mb-3 tracking-tight">{step.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
-
-                {idx < roadmapSteps.length - 1 && (
-                  <div className="hidden lg:block absolute top-1/2 -right-4 translate-x-1/2 -translate-y-1/2 z-20">
-                    <ArrowRight className="h-6 w-6 text-muted-foreground/30 animate-pulse" />
-                  </div>
-                )}
+                <h3 className="text-xl sm:text-2xl font-black mb-4 tracking-tighter">{step.title}</h3>
+                <p className="text-base text-muted-foreground leading-relaxed flex-grow">{step.desc}</p>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Bar - Data Driven Excellence */}
+      <section className="py-12 border-y bg-background/50 backdrop-blur-sm">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {[
+              {
+                value: siteStats?.studentsCount || 5000,
+                suffix: "+",
+                label: "Students Trained",
+                color: "text-accent-1"
+              },
+              {
+                value: siteStats?.successRate || 95,
+                suffix: "%",
+                label: "Success Rate",
+                color: "text-accent-2"
+              },
+              {
+                valueString: siteStats?.targetWeeks || "6–8",
+                suffix: " Weeks",
+                label: "Target Achievement",
+                color: "text-accent-3"
+              },
+              {
+                value: 24,
+                suffix: "/7",
+                label: "AI Support",
+                color: "text-accent-4"
+              },
+            ].map((stat, i) => (
+              <div key={i} className="text-center group">
+                <div className={cn("text-3xl sm:text-4xl font-black mb-1 transition-transform group-hover:scale-110", stat.color)}>
+                  {stat.value ? <AnimatedNumber value={stat.value} /> : stat.valueString}
+                  {stat.suffix}
+                </div>
+                <div className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-widest">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* The Smart Labs Advantage - Detailed Feature Grid */}
+      <section className="py-24 sm:py-32 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-primary/5 blur-[120px] rounded-full" />
+        <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-accent-3/5 blur-[120px] rounded-full" />
+
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
+          <div className="text-center mb-16 sm:mb-24">
+            <h2 className="text-4xl sm:text-6xl font-black mb-6 italic">Built for <span className="gradient-text not-italic">Results</span></h2>
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">Discover the proprietary technology and expert-led methodologies that make Smart Labs the industry leader.</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {features.map((feature, i) => (
+              <SpotlightCard key={i} className="p-8 sm:p-12 rounded-[40px] border border-border/50 bg-white/5 flex flex-col sm:flex-row gap-8 group">
+                <div className={cn("w-20 h-20 rounded-3xl shrink-0 flex items-center justify-center bg-gradient-to-br transition-all group-hover:scale-110 shadow-xl", feature.color)}>
+                  <feature.icon className={cn("h-10 w-10", feature.iconColor)} />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black mb-4">{feature.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed text-lg">{feature.description}</p>
+                </div>
+              </SpotlightCard>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Comparison Section - Smart Labs vs Traditional */}
+      <section className="py-24 sm:py-32 bg-secondary/20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            <div>
+              <h2 className="text-4xl sm:text-6xl font-black mb-8 leading-tight">Forget the <br /><span className="text-primary italic">Old Way</span> of Learning</h2>
+              <p className="text-lg text-muted-foreground mb-10 leading-relaxed max-w-xl">Traditional coaching is often disconnected from the actual exam algorithms. Smart Labs bridges that gap with data-driven precision.</p>
+
+              <div className="space-y-6">
+                {comparisons.slice(0, 3).map((item, i) => (
+                  <div key={i} className="flex items-center gap-4 p-5 rounded-3xl bg-white/50 border border-white/20 backdrop-blur-sm shadow-sm">
+                    <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center text-green-600 shrink-0">
+                      <Check className="h-6 w-6" />
+                    </div>
+                    <div className="font-bold text-lg">{item.item}: <span className="text-primary">{item.smartlabs}</span></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="glass-card rounded-[40px] overflow-hidden border border-border/50 shadow-[0_40px_80px_rgba(0,0,0,0.1)]">
+              <div className="p-8 sm:p-12">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-border/50">
+                      <th className="pb-8 font-black uppercase text-[10px] tracking-[0.2em] text-muted-foreground">Standard Feature</th>
+                      <th className="pb-8 font-black uppercase text-[10px] tracking-[0.2em] text-muted-foreground">Local Center</th>
+                      <th className="pb-8 font-black uppercase text-[10px] tracking-[0.2em] text-primary">Smart Labs</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/20">
+                    {comparisons.map((row, i) => (
+                      <tr key={i} className="group hover:bg-white/40 transition-colors">
+                        <td className="py-6 font-bold text-sm">{row.item}</td>
+                        <td className="py-6 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <X className="h-3 w-3 text-red-400" />
+                            {row.traditional}
+                          </div>
+                        </td>
+                        <td className="py-6 font-black text-sm text-primary">
+                          <div className="flex items-center gap-2">
+                            <Check className="h-4 w-4 text-green-500" />
+                            {row.smartlabs}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -663,21 +1119,21 @@ export default function Home() {
                 <span>Smart Labs AI Lab v2.0</span>
               </div>
 
-              <h2 className="font-display text-3xl sm:text-6xl font-black text-white mb-8 leading-tight text-center lg:text-left">
-                Precision <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 uppercase">Scoring Matrix</span>
+              <h2 className="font-display text-4xl sm:text-6xl font-black text-white mb-8 leading-tight text-center lg:text-left">
+                Advanced <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 uppercase">Scoring Engine</span>
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-12">
                 <div className="p-6 rounded-3xl bg-white/5 border border-white/10 hover:border-primary/50 transition-colors group">
                   <Database className="h-6 w-6 text-primary mb-4 group-hover:scale-110 transition-transform" />
-                  <h4 className="font-bold text-white mb-2">Dataset Training</h4>
-                  <p className="text-xs text-muted-foreground">Trained on 10M+ authentic exam samples for unmatched accuracy.</p>
+                  <h4 className="font-bold text-white mb-2">Deep Learning</h4>
+                  <p className="text-xs text-muted-foreground">Trained on 10M+ authentic exam samples for industry-leading accuracy.</p>
                 </div>
                 <div className="p-6 rounded-3xl bg-white/5 border border-white/10 hover:border-primary/50 transition-colors group">
                   <ShieldCheck className="h-6 w-6 text-accent-1 mb-4 group-hover:scale-110 transition-transform" />
-                  <h4 className="font-bold text-white mb-2">Matrix Scoring</h4>
-                  <p className="text-xs text-muted-foreground">Evaluating grammar, syntax, and cohesion through multi-layer analysis.</p>
+                  <h4 className="font-bold text-white mb-2">Instant Feedback</h4>
+                  <p className="text-xs text-muted-foreground">Evaluating grammar, syntax, and cohesion with multi-layer linguistic analysis.</p>
                 </div>
               </div>
 
@@ -709,7 +1165,7 @@ export default function Home() {
                       <Terminal className="h-4 w-4 text-primary shrink-0" />
                       <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${user ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-red-500'} animate-pulse`} />
-                        <span className="font-black text-[10px] text-white uppercase tracking-widest whitespace-nowrap">{user ? 'System Online' : 'Access Denied'}</span>
+                        <span className="font-black text-[10px] text-white uppercase tracking-widest whitespace-nowrap">{user ? 'Engine Ready' : 'Authentication Required'}</span>
                       </div>
                     </div>
                     <Button
@@ -737,7 +1193,7 @@ export default function Home() {
                       <Code2 className="h-3 w-3 text-primary" />
                       <span className="text-[8px] font-mono text-primary uppercase">Topic_ID: {topicId || "----"}</span>
                     </div>
-                    <div className="text-[9px] font-black text-primary mb-2 uppercase tracking-[0.2em]">Matrix Query</div>
+                    <div className="text-[9px] font-black text-primary mb-2 uppercase tracking-[0.2em]">Sample Question</div>
                     <p className="text-sm text-white/90 leading-relaxed font-medium italic">"{topic}"</p>
                   </div>
 
@@ -773,12 +1229,12 @@ export default function Home() {
                     {!isAnalyzing && !analysisComplete && (
                       <Button
                         onClick={handleAnalyze}
-                        className="w-full h-14 bg-gradient-to-r from-primary to-accent-3 hover:scale-[1.02] transition-all text-white font-black uppercase tracking-[0.2em] shadow-[0_10px_40px_rgba(79,70,229,0.4)] border-none rounded-2xl"
+                        className="w-full h-14 bg-gradient-to-r from-primary to-accent-3 hover:scale-[1.02] active:scale-95 transition-all text-white font-black uppercase tracking-[0.2em] shadow-[0_10px_40px_rgba(79,70,229,0.4)] border-none rounded-2xl"
                         size="lg"
                         disabled={!user || aiText.length < 50}
                       >
                         <Zap className="h-4 w-4 mr-2 fill-white" />
-                        INITIALIZE MATRIX ANALYSIS
+                        ANALYZE NOW
                       </Button>
                     )}
 
@@ -791,15 +1247,15 @@ export default function Home() {
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
                           <div className="p-4 bg-black/40 rounded-2xl flex flex-col items-center justify-center border border-white/5">
                             <div className="text-2xl font-black text-primary">{aiResult.overallScore}</div>
-                            <div className="text-[9px] font-bold text-white/50 uppercase tracking-tighter">Matrix_Score</div>
+                            <div className="text-[9px] font-bold text-white/50 uppercase tracking-tighter">Overall Score</div>
                           </div>
                           <div className="p-4 bg-black/40 rounded-2xl flex flex-col items-center justify-center border border-white/5">
                             <div className="text-2xl font-black text-accent-1">{aiResult.grammarScore}</div>
-                            <div className="text-[9px] font-bold text-white/50 uppercase tracking-tighter">Syntax_V1</div>
+                            <div className="text-[9px] font-bold text-white/50 uppercase tracking-tighter">Grammar</div>
                           </div>
                           <div className="p-4 bg-black/40 rounded-2xl flex flex-col items-center justify-center border border-white/5">
                             <div className="text-2xl font-black text-accent-3">{aiResult.vocabularyScore}</div>
-                            <div className="text-[9px] font-bold text-white/50 uppercase tracking-tighter">Lexical_L3</div>
+                            <div className="text-[9px] font-bold text-white/50 uppercase tracking-tighter">Vocabulary</div>
                           </div>
                         </div>
                         <div className="relative bg-black/40 p-5 rounded-2xl border border-white/5 group">
@@ -808,7 +1264,7 @@ export default function Home() {
                               <Lightbulb className="h-4 w-4 text-primary" />
                             </div>
                             <div className="flex flex-col gap-2">
-                              <span className="text-[10px] font-black text-primary uppercase tracking-widest">AI Lab Feedback</span>
+                              <span className="text-[10px] font-black text-primary uppercase tracking-widest">Tutor Recommendations</span>
                               <p className="text-xs leading-relaxed opacity-80">{aiResult.feedback}</p>
                             </div>
                           </div>
@@ -841,12 +1297,12 @@ export default function Home() {
               <GraduationCap className="h-4 w-4" />
               <span>Our Premium Courses</span>
             </div>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4">
+            <h2 className="font-display text-4xl sm:text-6xl font-black text-foreground mb-6">
               Choose Your{" "}
               <span className="gradient-text">Success Path</span>
             </h2>
-            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto">
-              World-class preparation for PTE, IELTS, and CELPIP with AI-powered practice and expert guidance
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
+              World-class preparation for PTE, IELTS, and CELPIP with AI-powered practice and expert guidance from international trainers.
             </p>
           </motion.div>
 
@@ -932,12 +1388,12 @@ export default function Home() {
               <Sparkles className="h-4 w-4" />
               <span>Flexible Learning Options</span>
             </div>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4">
+            <h2 className="font-display text-4xl sm:text-6xl font-black text-foreground mb-6">
               Learn Your{" "}
               <span className="gradient-text">Way</span>
             </h2>
-            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto">
-              From recorded classes to individual sessions, AI tests to grammar clinics - everything you need in one place
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
+              From recorded classes to individual 1-on-1 sessions, AI tests to specialized grammar clinics.
             </p>
           </motion.div>
 
@@ -999,9 +1455,9 @@ export default function Home() {
             viewport={{ once: true }}
             className="my-20 sm:my-32"
           >
-            <div className="text-center mb-16">
-              <h2 className="font-display text-3xl sm:text-4xl font-bold mb-4">Your Path to <span className="gradient-text">Success</span></h2>
-              <p className="text-muted-foreground">The proven 4-step framework we use to guarantee results</p>
+            <div className="text-center mb-12 sm:mb-20">
+              <h2 className="font-display text-3xl sm:text-5xl font-black mb-6">Expert <span className="gradient-text">Lifecycle</span></h2>
+              <p className="text-lg text-muted-foreground">The proven ecosystem we use to guarantee student success.</p>
             </div>
 
             <div className="relative">
@@ -1100,12 +1556,12 @@ export default function Home() {
               <Target className="h-4 w-4" />
               <span>Complete Skill Development</span>
             </div>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4">
-              Master All Four{" "}
-              <span className="gradient-text">Skills</span>
+            <h2 className="font-display text-4xl sm:text-6xl font-black text-foreground mb-6">
+              Master All{" "}
+              <span className="gradient-text">Four Skills</span>
             </h2>
-            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto">
-              Comprehensive training in Listening, Speaking, Reading, and Writing with AI-powered feedback
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
+              Comprehensive training in Listening, Speaking, Reading, and Writing with immersive AI feedback loops.
             </p>
           </motion.div>
 
@@ -1170,7 +1626,7 @@ export default function Home() {
             viewport={{ once: true }}
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
           >
-            {testimonials.map((testimonial, index) => (
+            {(realTestimonials.length > 0 ? realTestimonials : testimonials).map((testimonial, index) => (
               <motion.div
                 key={testimonial.name}
                 variants={itemVariants}
@@ -1233,13 +1689,13 @@ export default function Home() {
                   <span>Desktop Native Experience</span>
                 </div>
 
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
-                  The Full Power of Smart Labs <br />
-                  <span className="gradient-text">On Your Windows PC</span>
+                <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight">
+                  Smart Labs <br />
+                  <span className="gradient-text">On Your PC</span>
                 </h2>
 
-                <p className="text-lg text-white/70 leading-relaxed max-w-xl">
-                  Take your practice to the next level with our native Windows application. Optimized for the best performance, lowest latency, and a distraction-free learning environment.
+                <p className="text-lg sm:text-xl text-white/70 leading-relaxed max-w-xl">
+                  Get the most optimized experience with our native Windows application. Built for performance, focus, and seamless learning.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -1330,73 +1786,103 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section - Futuristic Design */}
-      <section className="relative py-16 sm:py-20 lg:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-secondary/50 to-background" />
+      {/* FAQ Section */}
+      <section className="py-24 sm:py-32 relative overflow-hidden">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-3/10 text-accent-3 text-xs font-black uppercase tracking-widest mb-6">
+              <HelpCircle className="h-4 w-4" />
+              <span>Questions & Answers</span>
+            </div>
+            <h2 className="text-4xl sm:text-5xl font-black mb-6">Common <span className="gradient-text">Inquiries</span></h2>
+            <p className="text-muted-foreground">Everything you need to know about our platform and process.</p>
+          </div>
 
-        <div className="relative mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+          <Accordion type="single" collapsible className="space-y-4">
+            {faqs.map((faq, i) => (
+              <AccordionItem key={i} value={`item-${i}`} className="border rounded-[24px] bg-white/40 px-6 sm:px-8 hover:border-primary/50 transition-all data-[state=open]:border-primary/50 data-[state=open]:bg-white overflow-hidden">
+                <AccordionTrigger className="text-left font-bold text-lg hover:no-underline py-6">
+                  {faq.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground leading-relaxed pb-6 text-base">
+                  {faq.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </section>
+
+      {/* Premium CTA Section */}
+      <section className="relative py-24 sm:py-32 overflow-hidden bg-background">
+        <div className="absolute inset-0 bg-gradient-to-b from-secondary/30 to-background" />
+
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.98 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="relative overflow-hidden rounded-3xl"
+            className="relative overflow-hidden rounded-[48px] shadow-[0_50px_100px_rgba(0,0,0,0.1)]"
           >
-            {/* Animated Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary via-accent-3 to-accent-1" />
-            <div className="absolute inset-0 opacity-20">
-              <div className="absolute top-0 left-1/4 w-64 h-64 bg-white rounded-full blur-3xl animate-pulse-glow" />
-              <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-white rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: '1s' }} />
+            {/* Animated Background Mesh */}
+            <div className="absolute inset-0 bg-[#0f172a]" />
+            <div className="absolute inset-0 opacity-40">
+              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,hsl(var(--primary)/0.4),transparent_50%)]" />
+              <div className="absolute -top-1/2 -right-1/4 w-[800px] h-[800px] bg-accent-3/20 blur-[120px] rounded-full animate-float-slow" />
+              <div className="absolute -bottom-1/2 -left-1/4 w-[600px] h-[600px] bg-accent-1/20 blur-[100px] rounded-full animate-float-medium" />
             </div>
 
-            <div className="relative z-10 p-8 sm:p-12 lg:p-16 text-center">
+            <div className="relative z-10 p-12 sm:p-20 lg:p-24 text-center">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
-                  Ready to Transform Your Future?
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white text-xs font-black uppercase tracking-[0.3em] mb-8">
+                  Available Worldwide
+                </div>
+                <h2 className="font-display text-4xl sm:text-6xl lg:text-7xl font-black text-white mb-8 leading-[1.1] max-w-4xl mx-auto">
+                  Ready to Transform Your <span className="text-primary italic">Future?</span>
                 </h2>
-                <p className="text-base sm:text-lg lg:text-xl text-white/90 max-w-3xl mx-auto mb-8 sm:mb-10 leading-relaxed">
-                  Join thousands of successful students. Start your free trial today with AI-powered tests, expert instruction, and personalized learning paths.
+                <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto mb-12 leading-relaxed">
+                  Join the elite group of students who have mastered English proficiency with our AI-powered ecosystem.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
                   <Button
                     size="xl"
-                    className="group bg-white text-primary hover:bg-white/90 shadow-2xl text-base sm:text-lg px-8 py-6 w-full sm:w-auto"
+                    className="group bg-primary text-white hover:bg-primary/90 shadow-[0_20px_50px_rgba(79,70,229,0.4)] text-lg px-12 h-16 rounded-2xl w-full sm:w-auto font-bold"
                     asChild
                   >
                     <Link href="/signup">
-                      <Rocket className="mr-2 h-5 w-5 sm:h-6 sm:w-6 group-hover:animate-bounce" />
-                      Start Free Trial Now
-                      <ArrowRight className="ml-2 h-5 w-5 sm:h-6 sm:w-6 group-hover:translate-x-1 transition-transform" />
+                      Start Free Trial
+                      <Rocket className="ml-2 h-5 w-5 group-hover:animate-bounce" />
                     </Link>
                   </Button>
                   <Button
                     variant="outline"
                     size="xl"
-                    className="bg-white/10 text-white border-2 border-white/30 hover:bg-white/20 backdrop-blur-xl shadow-xl text-base sm:text-lg px-8 py-6 w-full sm:w-auto"
+                    className="bg-white/5 text-white border-2 border-white/20 hover:bg-white/10 backdrop-blur-xl text-lg px-12 h-16 rounded-2xl w-full sm:w-auto font-bold"
                     asChild
                   >
                     <a href="https://register.smartlabs.lk" target="_blank" rel="noopener noreferrer">
-                      Book Individual Session
+                      Contact Sales
                     </a>
                   </Button>
                 </div>
 
                 {/* Trust Indicators */}
-                <div className="mt-10 sm:mt-12 flex flex-wrap items-center justify-center gap-6 sm:gap-8 text-white/80 text-sm sm:text-base">
+                <div className="mt-16 flex flex-wrap items-center justify-center gap-8 text-white/40 text-xs font-black uppercase tracking-widest">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-white" />
-                    <span>No Credit Card Required</span>
+                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                    <span>No Credit Card</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-white" />
-                    <span>Cancel Anytime</span>
+                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                    <span>Instant Access</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-white" />
-                    <span>24/7 Support</span>
+                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                    <span>Expert Support</span>
                   </div>
                 </div>
               </motion.div>

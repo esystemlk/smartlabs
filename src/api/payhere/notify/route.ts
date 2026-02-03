@@ -29,14 +29,14 @@ export async function POST(request: NextRequest) {
         }
 
         const local_md5sig = md5(
-            merchant_id +
-            order_id +
-            payhere_amount +
-            payhere_currency +
-            status_code +
+            String(merchant_id) +
+            String(order_id) +
+            String(payhere_amount) +
+            String(payhere_currency) +
+            String(status_code) +
             md5(merchantSecret)
         );
-        
+
         if (local_md5sig !== md5sig) {
             console.warn(`MD5 signature mismatch for order ${order_id}.`);
             return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
@@ -45,15 +45,15 @@ export async function POST(request: NextRequest) {
         if (status_code === '2') { // Payment success
             try {
                 const [userId, courseId, batchId] = (order_id as string).split('__');
-                
+
                 if (!userId || !courseId || !batchId) {
                     throw new Error(`Invalid order_id format: ${order_id}`);
                 }
-                
+
                 if (!adminDb) {
                     throw new Error("Firebase Admin DB is not initialized.");
                 }
-                
+
                 // 1. Fetch the batch name. This is a single, isolated read operation.
                 const batchRef = adminDb.collection('courses').doc(courseId).collection('batches').doc(batchId);
                 const batchDoc = await batchRef.get();
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
                 // 2. Prepare the data payloads and document references.
                 const enrollmentRef = adminDb.collection('users').doc(userId).collection('enrollments').doc(payment_id as string);
                 const paymentRef = adminDb.collection('payments').doc(payment_id as string);
-                
+
                 const enrollmentData = {
                     userId: userId,
                     courseId: courseId,
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
                     orderId: order_id,
                     paymentId: payment_id,
                 };
-                
+
                 const paymentData = {
                     id: payment_id,
                     userId: userId,
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
                 const writeBatch = adminDb.batch();
                 writeBatch.set(enrollmentRef, enrollmentData);
                 writeBatch.set(paymentRef, paymentData);
-                
+
                 await writeBatch.commit();
 
                 console.log(`Successfully created pending enrollment for user ${userId} in course ${courseId}`);

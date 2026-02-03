@@ -6,7 +6,7 @@ import { Command } from "cmdk";
 import {
     Target, Globe, Zap, Sparkles, Video, Search,
     Home, Book, LayoutDashboard, Settings, User, LogOut,
-    ArrowRight
+    ArrowRight, Bot, MessageSquare
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -82,6 +82,8 @@ export function CommandPalette() {
                                     <div className="grid grid-cols-2 gap-2 mt-2">
                                         <SearchItem icon={Home} label="Home Page" onSelect={() => runCommand(() => router.push("/"))} />
                                         <SearchItem icon={LayoutDashboard} label="Admin Portal" onSelect={() => runCommand(() => router.push("/admin"))} />
+                                        <SearchItem icon={Bot} label="AI Tutor Hub" onSelect={() => runCommand(() => router.push("/dashboard/ai-tutor"))} />
+                                        <SearchItem icon={Sparkles} label="Score Master" onSelect={() => runCommand(() => router.push("/dashboard/ai-score-test"))} />
                                     </div>
                                 </Command.Group>
 

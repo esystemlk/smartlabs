@@ -10,6 +10,8 @@ import { LayoutManager } from '@/components/layout/layout-manager';
 import { WindowControls } from '@/components/layout/window-controls';
 import { AccessibilityWidget } from '@/components/accessibility/accessibility-widget';
 import { CommandPalette } from '@/components/layout/command-palette';
+import { MouseSpotlight } from '@/components/ui/mouse-spotlight';
+import { FloatingAI } from '@/components/ui/floating-ai';
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
@@ -52,6 +54,7 @@ export default function RootLayout({
         )}
       >
         <FirebaseClientProvider>
+          <MouseSpotlight />
           <WindowControls />
           <AccessibilityWidget />
           <CommandPalette />
@@ -61,6 +64,7 @@ export default function RootLayout({
           <Footer />
           <Toaster />
           <CookieBanner />
+          <FloatingAI />
         </FirebaseClientProvider>
       </body>
     </html>

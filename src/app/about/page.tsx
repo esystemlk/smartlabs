@@ -1,10 +1,10 @@
 'use client';
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { 
-  GraduationCap, 
-  Target, 
-  Users, 
+import {
+  GraduationCap,
+  Target,
+  Users,
   Award,
   ArrowRight,
   CheckCircle,
@@ -37,19 +37,7 @@ const values = [
   },
 ];
 
-const milestones = [
-  { year: "2018", title: "Founded", description: "Smart Labs was established with a mission to transform exam preparation" },
-  { year: "2020", title: "10,000 Students", description: "Reached our first major milestone of training 10,000 students" },
-  { year: "2022", title: "AI Integration", description: "Launched AI-powered scoring and feedback systems" },
-  { year: "2024", title: "Corporate Training", description: "Expanded to serve organizations with professional training" },
-];
 
-const team = [
-  { name: "Vishwa Kumara", role: "Founder & Lead Instructor", avatar: "VK" },
-  { name: "Priya Fernando", role: "IELTS Specialist", avatar: "PF" },
-  { name: "Ahmed Rasheed", role: "PTE Expert", avatar: "AR" },
-  { name: "Sarah Wong", role: "Student Success Manager", avatar: "SW" },
-];
 
 export default function About() {
   return (
@@ -71,12 +59,12 @@ export default function About() {
               <GraduationCap className="h-4 w-4" />
               <span>About Smart Labs</span>
             </div>
-            
+
             <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6">
               Empowering Learners to{" "}
               <span className="gradient-text">Achieve Their Dreams</span>
             </h1>
-            
+
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               We're on a mission to make quality exam preparation accessible to everyone, using innovative teaching methods and cutting-edge technology.
             </p>
@@ -106,7 +94,7 @@ export default function About() {
               <p className="text-muted-foreground mb-6 leading-relaxed">
                 Today, we offer expert-led courses for PTE, IELTS, CELPIP, and corporate training, combining traditional teaching excellence with modern AI-powered learning tools.
               </p>
-              
+
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button variant="hero" asChild>
                   <Link href="/contact">
@@ -187,86 +175,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* Timeline Section */}
-      <section className="py-20 bg-secondary/30">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              Our Journey
-            </h2>
-          </motion.div>
 
-          <div className="max-w-3xl mx-auto">
-            {milestones.map((milestone, index) => (
-              <motion.div
-                key={milestone.year}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="flex gap-6 mb-8 last:mb-0"
-              >
-                <div className="flex-shrink-0 w-20 text-right">
-                  <span className="text-2xl font-bold text-primary">{milestone.year}</span>
-                </div>
-                <div className="flex-shrink-0 flex flex-col items-center">
-                  <div className="w-4 h-4 rounded-full bg-primary" />
-                  {index < milestones.length - 1 && (
-                    <div className="w-0.5 h-full bg-primary/20 mt-2" />
-                  )}
-                </div>
-                <div className="pb-8">
-                  <h3 className="font-semibold text-foreground mb-1">{milestone.title}</h3>
-                  <p className="text-muted-foreground">{milestone.description}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Team Section */}
-      <section className="py-20 lg:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 text-accent text-sm font-medium mb-4">
-              <Users className="h-4 w-4" />
-              <span>Our Team</span>
-            </div>
-            <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              Meet the Experts
-            </h2>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {team.map((member, index) => (
-              <motion.div
-                key={member.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="glass-card rounded-2xl p-6 text-center"
-              >
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-xl font-bold mx-auto mb-4">
-                  {member.avatar}
-                </div>
-                <h3 className="font-semibold text-foreground mb-1">{member.name}</h3>
-                <p className="text-sm text-muted-foreground">{member.role}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
       <section className="py-20 bg-secondary/30">

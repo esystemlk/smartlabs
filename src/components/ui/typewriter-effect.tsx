@@ -2,6 +2,7 @@
 
 import { motion, stagger, useAnimate, useInView } from "framer-motion";
 import { useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 export const TypewriterEffect = ({
     words,
@@ -66,7 +67,7 @@ export const TypewriterEffect = ({
                                         opacity: 0,
                                     }}
                                     key={`char-${index}`}
-                                    className={`dark:text-white text-black opacity-0 ${word.className}`}
+                                    className={cn("opacity-0", word.className)}
                                 >
                                     {char}
                                 </motion.span>

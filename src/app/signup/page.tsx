@@ -36,6 +36,8 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, UserPlus } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { incrementStudentCount } from '@/lib/services/stats.service';
+import { logUserActivity } from '@/lib/services/activity.service';
 
 const signupSchema = z.object({
   displayName: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -61,13 +63,13 @@ export default function SignupPage() {
 
   const handleAuthSuccess = async (user: User, displayNameFromForm?: string) => {
     if (!firestore) {
-        handleAuthError(new Error("Firestore is not initialized."));
-        return;
+      handleAuthError(new Error("Firestore is not initialized."));
+      return;
     }
     try {
       const userRef = doc(firestore, 'users', user.uid);
       const userDoc = await getDoc(userRef);
-      
+
       const finalDisplayName = displayNameFromForm || user.displayName;
 
       if (!userDoc.exists()) {
@@ -75,8 +77,8 @@ export default function SignupPage() {
         let userRole = 'user';
         let hasCompletedOnboarding = false;
         if (ADMIN_EMAILS.includes(userEmail)) {
-           userRole = userEmail === "thimira.vishwa2003@gmail.com" ? 'developer' : 'admin';
-           hasCompletedOnboarding = true; // Admins skip onboarding
+          userRole = userEmail === "thimira.vishwa2003@gmail.com" ? 'developer' : 'admin';
+          hasCompletedOnboarding = true; // Admins skip onboarding
         }
         await setDoc(userRef, {
           uid: user.uid,
@@ -89,35 +91,47 @@ export default function SignupPage() {
           hasCompletedOnboarding: hasCompletedOnboarding,
         });
 
+        // Increment global student count
+        await incrementStudentCount();
+
+        // Log signup activity
+        await logUserActivity(
+          user.uid,
+          'enrollment',
+          'Account Created',
+          'Welcome to Smart Labs!',
+          { role: userRole }
+        );
+
         setIsLoading(false);
         toast({
           title: 'Account Created!',
           description: 'Welcome to Smart Labs!',
         });
-        
+
         if (userRole === 'admin' || userRole === 'developer') {
-            router.push('/admin/dashboard');
+          router.push('/admin/dashboard');
         } else {
-            router.push('/welcome');
+          router.push('/welcome');
         }
       } else {
         // User already exists, treat as login
         setIsLoading(false);
         toast({
-            title: 'Login Successful!',
-            description: `Welcome back, ${finalDisplayName || user.email}!`,
+          title: 'Login Successful!',
+          description: `Welcome back, ${finalDisplayName || user.email}!`,
         });
         const userData = userDoc.data();
         if (userData.role === 'admin' || userData.role === 'developer') {
-            router.push('/admin/dashboard');
+          router.push('/admin/dashboard');
         } else if (userData.hasCompletedOnboarding) {
-            router.push('/dashboard');
+          router.push('/dashboard');
         } else {
-            router.push('/welcome');
+          router.push('/welcome');
         }
       }
     } catch (error) {
-        handleAuthError(error);
+      handleAuthError(error);
     }
   };
 
@@ -126,7 +140,7 @@ export default function SignupPage() {
     toast({
       variant: 'destructive',
       title: 'Uh oh! Something went wrong.',
-      description: error.code === 'auth/email-already-in-use' 
+      description: error.code === 'auth/email-already-in-use'
         ? 'This email is already registered. Please login instead.'
         : error.message || 'There was a problem with your request.',
     });
@@ -228,7 +242,7 @@ export default function SignupPage() {
                 Sign up with Google
               </Button>
 
-               <div className="mt-6 text-center text-sm text-muted-foreground">
+              <div className="mt-6 text-center text-sm text-muted-foreground">
                 <p className="mb-2">
                   Already have an account?{' '}
                   <Link href="/login" className="font-semibold text-primary hover:underline">

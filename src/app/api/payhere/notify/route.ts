@@ -29,14 +29,14 @@ export async function POST(request: NextRequest) {
         }
 
         const local_md5sig = md5(
-            merchant_id +
-            order_id +
-            payhere_amount +
-            payhere_currency +
-            status_code +
+            String(merchant_id) +
+            String(order_id) +
+            String(payhere_amount) +
+            String(payhere_currency) +
+            String(status_code) +
             md5(merchantSecret)
         );
-        
+
         if (local_md5sig !== md5sig) {
             console.warn(`MD5 signature mismatch for order ${order_id}.`);
             return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
@@ -45,11 +45,11 @@ export async function POST(request: NextRequest) {
         if (status_code === '2') { // Payment success
             try {
                 const [userId, courseId, batchId] = (order_id as string).split('__');
-                
+
                 if (!userId || !courseId || !batchId) {
                     throw new Error(`Invalid order_id format: ${order_id}`);
                 }
-                
+
                 if (!adminDb) {
                     throw new Error("Firebase Admin DB is not initialized.");
                 }
@@ -57,12 +57,12 @@ export async function POST(request: NextRequest) {
                 // Use the unique payment_id from Payhere as the enrollment document ID
                 const enrollmentRef = adminDb.collection('users').doc(userId).collection('enrollments').doc(payment_id as string);
                 const paymentRef = adminDb.collection('payments').doc(payment_id as string);
-                
+
                 await adminDb.runTransaction(async (transaction) => {
-                    const batchRef = adminDb.collection('courses').doc(courseId).collection('batches').doc(batchId);
+                    const batchRef = adminDb!.collection('courses').doc(courseId).collection('batches').doc(batchId);
                     const batchDoc = await transaction.get(batchRef);
                     const batchName = batchDoc.exists ? batchDoc.data()?.name : 'Default Batch';
-                    
+
                     // Create enrollment record with 'pending' status
                     transaction.set(enrollmentRef, {
                         userId: userId,
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
                         orderId: order_id,
                         paymentId: payment_id,
                     });
-                    
+
                     // Create payment log record
                     transaction.set(paymentRef, {
                         id: payment_id,

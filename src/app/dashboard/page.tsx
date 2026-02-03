@@ -15,12 +15,17 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SpotlightCard } from '@/components/ui/spotlight-card';
-import { ChevronRight, ListVideo, FileText, BookOpen, BarChart3, Calendar, MessageSquare, Briefcase, GraduationCap, Clock, Home, BookCheck, Check, Globe } from 'lucide-react';
+import { ChevronRight, ListVideo, FileText, BookOpen, BarChart3, Calendar, MessageSquare, Briefcase, GraduationCap, Clock, Home, BookCheck, Check, Globe, Zap, Target, Bot, Sparkles, Play, Columns } from 'lucide-react';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { motion } from 'framer-motion';
+import { PerformanceOverview } from '@/components/dashboard/PerformanceOverview';
+import { RecentActivity } from '@/components/dashboard/RecentActivity';
 
 const lmsFeatures = [
+    { title: 'Learn with AI Tutor', description: 'Personalized neural faculty for PTE, IELTS, and CELPIP.', href: '/dashboard/ai-tutor', icon: Bot, color: "text-accent-1", bg: "bg-accent-1/10", border: "hover:border-accent-1/50", gradient: "from-accent-1/20 to-transparent" },
+    { title: 'AI Score Master', description: 'Precision PTE practice with the neural scoring matrix.', href: '/dashboard/ai-score-test', icon: Target, color: "text-indigo-500", bg: "bg-indigo-500/10", border: "hover:border-indigo-500/50", gradient: "from-indigo-500/20 to-transparent" },
     { title: 'Video Gallery', description: 'Watch our latest educational videos and updates.', href: '/videos', icon: ListVideo, color: "text-red-500", bg: "bg-red-500/10", border: "hover:border-red-500/50", gradient: "from-red-500/20 to-transparent" },
     { title: 'Practice Test Area', description: 'Access the AI Scoring Engine and practice materials.', href: '/dashboard/practice-tests', icon: BookOpen, color: "text-purple-500", bg: "bg-purple-500/10", border: "hover:border-purple-500/50", gradient: "from-purple-500/20 to-transparent" },
     { title: 'Smart Connect Portal', description: 'Login to the main student management system.', href: 'https://portal.smartlabs.lk', icon: Globe, color: "text-blue-500", bg: "bg-blue-500/10", border: "hover:border-blue-500/50", gradient: "from-blue-500/20 to-transparent" },
@@ -89,105 +94,166 @@ export default function DashboardPage() {
     return (
         <>
             {/* Colorful Header */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 p-8 sm:p-12 mb-12 shadow-2xl animate-fade-in">
-                <div className="relative z-10 text-white">
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 font-display">Welcome back, {user?.displayName?.split(' ')[0]}!</h1>
-                    <p className="text-blue-100 text-lg max-w-2xl">Ready to continue your journey to English mastery? Pick a module below to get started.</p>
+            <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-600 via-blue-600 to-cyan-500 p-8 sm:p-12 mb-12 shadow-2xl border border-white/10 group">
+                {/* Animated Background Elements */}
+                <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white/10 blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
+                <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-40 w-40 rounded-full bg-black/20 blur-2xl group-hover:scale-125 transition-transform duration-700"></div>
+                <div className="absolute inset-0 bg-grid-white/[0.1] -z-0"></div>
+
+                <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8 text-white">
+                    <div className="max-w-2xl">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 border border-white/20 text-[10px] font-black uppercase tracking-widest mb-6"
+                        >
+                            <Zap className="h-3 w-3 fill-white" /> AI Enhanced Platform
+                        </motion.div>
+                        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 font-display tracking-tight leading-tight">
+                            Welcome back, <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">
+                                {user?.displayName?.split(' ')[0]}!
+                            </span>
+                        </h1>
+                        <p className="text-blue-50 text-base sm:text-lg max-w-xl font-medium opacity-90 leading-relaxed">
+                            Your linguistic intelligence has increased by <span className="font-bold underline decoration-accent-2 underline-offset-4">12%</span> this week. Keep up the momentum!
+                        </p>
+                    </div>
+
+                    <div className="hidden lg:flex flex-col items-end gap-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="glass-card bg-white/10 border-white/20 p-4 rounded-3xl min-w-[140px] text-center">
+                                <div className="text-2xl font-black">740</div>
+                                <div className="text-[10px] font-bold uppercase opacity-60">Mock Credits</div>
+                            </div>
+                            <div className="glass-card bg-white/10 border-white/20 p-4 rounded-3xl min-w-[140px] text-center">
+                                <div className="text-2xl font-black">Day 12</div>
+                                <div className="text-[10px] font-bold uppercase opacity-60">Study Streak</div>
+                            </div>
+                        </div>
+                        <Button className="bg-white text-primary hover:bg-white/90 rounded-2xl h-12 px-6 font-bold shadow-xl">
+                            Resume Last Lesson
+                        </Button>
+                    </div>
                 </div>
-                <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
-                <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-40 w-40 rounded-full bg-black/10 blur-2xl"></div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+                {/* Advanced Analytics */}
+                <PerformanceOverview />
+
+                {/* Recent Activity */}
+                <RecentActivity />
             </div>
 
             {isAdminOrDev && (
-                <Card className="mb-8 border-amber-500 bg-amber-500/10">
+                <Card className="mb-12 overflow-hidden border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent relative group">
+                    <div className="absolute inset-y-0 right-0 w-64 bg-gradient-to-l from-primary/10 to-transparent -z-10 group-hover:w-96 transition-all" />
                     <CardHeader className="flex-row items-center justify-between">
-                        <div>
-                            <CardTitle>Admin Access</CardTitle>
-                            <CardDescription>Manage users and content from the admin panel.</CardDescription>
+                        <div className="space-y-1">
+                            <CardTitle className="text-xl font-bold flex items-center gap-2">
+                                <Briefcase className="h-5 w-5 text-primary" /> Multi-Role Terminal
+                            </CardTitle>
+                            <CardDescription>Administrative functions are unlocked for your account.</CardDescription>
                         </div>
-                        <Button asChild>
+                        <Button asChild className="rounded-xl px-8 h-12 bg-primary group-hover:scale-105 transition-transform">
                             <Link href="/admin/dashboard" className="flex items-center gap-2">
-                                <Briefcase /> Go to Admin
+                                Launch Admin Panel <ChevronRight className="h-4 w-4" />
                             </Link>
                         </Button>
                     </CardHeader>
                 </Card>
             )}
 
-            {/* Enrollment Status - Compact */}
+            {/* Main Menu Grid with Premium Styling */}
             <div className="mb-12">
-                <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                    <GraduationCap className="h-6 w-6 text-primary" /> Current Status
-                </h2>
-                <Card className="overflow-hidden border-none shadow-md bg-card/50 backdrop-blur-sm">
-                    <CardContent className="p-6">
-                        {enrollments && enrollments.length > 0 ? (
-                            <div className="space-y-4">
-                                {enrollments.map(e => (
-                                    <div key={e.id}>
-                                        {e.enrollmentStatus === 'pending' ? (
-                                            <Alert variant="default" className="border-amber-500 bg-amber-500/10">
-                                                <Clock className="h-4 w-4" />
-                                                <AlertTitle>{e.courseId} ({e.batchName}) - Pending Verification</AlertTitle>
-                                                <AlertDescription>We're confirming your payment. Access will be granted shortly.</AlertDescription>
-                                            </Alert>
-                                        ) : (
-                                            <Alert variant="default" className="border-green-500 bg-green-500/10 text-green-900 dark:text-green-100">
-                                                <Check className="h-4 w-4 text-green-600" />
-                                                <AlertTitle>{e.courseId} ({e.batchName}) - Active</AlertTitle>
-                                                <AlertDescription>You have full access to this course.</AlertDescription>
-                                            </Alert>
-                                        )}
+                <div className="flex justify-between items-end mb-8">
+                    <div>
+                        <h2 className="text-2xl font-black font-display tracking-tight flex items-center gap-2">
+                            <Zap className="h-6 w-6 text-primary" /> Command Center
+                        </h2>
+                        <p className="text-sm text-muted-foreground mt-1 font-medium">Access your learning modules and portals</p>
+                    </div>
+                    <Button variant="ghost" className="text-xs font-bold uppercase tracking-widest hover:bg-primary/5">View All Modules</Button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                    {lmsFeatures.map((feature, idx) => {
+                        const Icon = feature.icon;
+                        return (
+                            <Link href={feature.href} key={idx} className="block cursor-pointer group">
+                                <SpotlightCard className={`h-full rounded-[2rem] border-2 bg-card/40 backdrop-blur-md p-8 flex flex-col transition-all duration-500 ${feature.border} group-hover:-translate-y-2 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)]`}>
+                                    <div className={`relative z-10 w-14 h-14 rounded-2xl ${feature.bg} flex items-center justify-center mb-6 transition-all group-hover:rotate-12 group-hover:scale-110 shadow-lg`}>
+                                        <Icon className={`h-7 w-7 ${feature.color}`} />
                                     </div>
+
+                                    <div className="relative z-10 flex-grow">
+                                        <h3 className="text-lg font-black mb-2 group-hover:text-primary transition-colors leading-tight">{feature.title}</h3>
+                                        <p className="text-xs text-muted-foreground font-medium leading-relaxed opacity-80">{feature.description}</p>
+                                    </div>
+
+                                    <div className="relative z-10 mt-6 flex items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">
+                                        Initialize <ChevronRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-2" />
+                                    </div>
+                                </SpotlightCard>
+                            </Link>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Enrollment Status - Modern Section */}
+            <div className="mb-12">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <h2 className="text-2xl font-black font-display tracking-tight flex items-center gap-2">
+                        <GraduationCap className="h-6 w-6 text-primary" /> Academic Enrollment
+                    </h2>
+                </div>
+
+                <Card className="overflow-hidden border-2 border-dashed bg-muted/20 backdrop-blur-sm rounded-[2.5rem]">
+                    <CardContent className="p-10">
+                        {enrollments && enrollments.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {enrollments.map(e => (
+                                    <motion.div
+                                        key={e.id}
+                                        whileHover={{ scale: 1.02 }}
+                                        className={`p-6 rounded-3xl border ${e.enrollmentStatus === 'pending' ? 'bg-amber-500/5 border-amber-500/20' : 'bg-green-500/5 border-green-500/20'}`}
+                                    >
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div>
+                                                <Badge variant={e.enrollmentStatus === 'pending' ? 'outline' : 'default'} className={e.enrollmentStatus === 'pending' ? 'text-amber-600 border-amber-500' : 'bg-green-500 hover:bg-green-600'}>
+                                                    {e.enrollmentStatus.toUpperCase()}
+                                                </Badge>
+                                                <h4 className="text-xl font-black mt-2">{e.courseId}</h4>
+                                                <p className="text-sm font-bold opacity-60">{e.batchName}</p>
+                                            </div>
+                                            <div className={`p-3 rounded-2xl ${e.enrollmentStatus === 'pending' ? 'bg-amber-100' : 'bg-green-100'}`}>
+                                                {e.enrollmentStatus === 'pending' ? <Clock className="h-6 w-6 text-amber-600" /> : <Check className="h-6 w-6 text-green-600" />}
+                                            </div>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground font-medium mb-6">
+                                            {e.enrollmentStatus === 'pending' ? "Security verification in progress. Access will be granted shortly." : "Full academic access granted. All modules are unlocked."}
+                                        </p>
+                                        <Button className="w-full rounded-2xl font-bold h-12" variant={e.enrollmentStatus === 'pending' ? 'outline' : 'default'}>
+                                            {e.enrollmentStatus === 'pending' ? "Check Status" : "Enter Classroom"}
+                                        </Button>
+                                    </motion.div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-4">
-                                <p className="text-sm text-muted-foreground mb-4">You are not enrolled in any courses yet.</p>
-                                <Button asChild variant="outline"><Link href="/courses">Explore Courses</Link></Button>
+                            <div className="text-center py-8">
+                                <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <BookCheck className="h-10 w-10 text-primary" />
+                                </div>
+                                <h3 className="text-2xl font-black mb-2">Initialize Your Journey</h3>
+                                <p className="text-muted-foreground font-medium mb-8 max-w-sm mx-auto">You haven't enrolled in any courses yet. Unlock your potential today.</p>
+                                <Button asChild size="lg" className="rounded-2xl px-10 h-14 font-black tracking-widest shadow-xl shadow-primary/20"><Link href="/courses">BROWSE ACADEMIC COURSES</Link></Button>
                             </div>
                         )}
                     </CardContent>
                 </Card>
             </div>
-
-            {/* Main Menu Grid with Spotlight Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {lmsFeatures.map((feature, idx) => {
-                    const Icon = feature.icon;
-                    return (
-                        <Link href={feature.href} key={idx} className="block h-full cursor-pointer group">
-                            <SpotlightCard className={`h-full rounded-2xl border bg-card/50 backdrop-blur-sm p-6 flex flex-col transition-all duration-300 ${feature.border} group-hover:-translate-y-1 group-hover:shadow-lg`}>
-                                {/* Gradient Background Effect */}
-                                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-
-                                <div className={`relative z-10 w-12 h-12 rounded-xl ${feature.bg} flex items-center justify-center mb-4 transition-transform group-hover:scale-110 duration-300`}>
-                                    <Icon className={`h-6 w-6 ${feature.color}`} />
-                                </div>
-
-                                <div className="relative z-10 flex-grow">
-                                    <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">{feature.title}</h3>
-                                    <p className="text-sm text-muted-foreground">{feature.description}</p>
-                                </div>
-
-                                <div className="relative z-10 mt-4 flex items-center text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">
-                                    Open <ChevronRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
-                                </div>
-                            </SpotlightCard>
-                        </Link>
-                    );
-                })}
-            </div>
-
-            {/* Empty State Fallback Logic */}
-            {activeEnrollments.length === 0 && pendingEnrollments.length === 0 && (
-                <div className="mt-12 p-8 text-center bg-muted/30 rounded-2xl border border-dashed">
-                    <BookCheck className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">Start Your Learning Journey</h3>
-                    <p className="text-muted-foreground mb-6">Enroll in a course to unlock full access to lectures and exams.</p>
-                    <Button asChild><Link href="/courses">View Courses</Link></Button>
-                </div>
-            )}
         </>
     );
 }
