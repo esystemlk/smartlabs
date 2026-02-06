@@ -18,7 +18,8 @@ import {
     Save,
     CheckCircle2,
     Calendar,
-    Sparkles
+    Sparkles,
+    Download
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
@@ -50,6 +51,12 @@ export default function SessionManagerPage() {
         [firestore]
     );
     const { data: events, isLoading } = useCollection(eventsQuery);
+
+    const usersQuery = useMemoFirebase(() =>
+        firestore ? collection(firestore, 'users') : null,
+        [firestore]
+    );
+    const { data: users } = useCollection(usersQuery);
 
     const filteredEvents = events?.filter(event =>
         event.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -95,6 +102,59 @@ export default function SessionManagerPage() {
                 variant: "destructive"
             });
         }
+    };
+
+    const exportToCSV = (event: any) => {
+        if (!event?.registrations || event.registrations.length === 0) {
+            toast({
+                title: "No Data",
+                description: "There are no attendees to export.",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        const headers = [
+            "Name",
+            "Email",
+            "Phone",
+            "Address",
+            "Country",
+            "Target Exam",
+            "Target Score",
+            "Exam Date",
+            "Registration Date"
+        ];
+
+        const rows = event.registrations.map((reg: any) => {
+            const userProfile = users?.find(u => u.uid === reg.uid) || {};
+            return [
+                reg.name || userProfile.displayName || "",
+                reg.email || userProfile.email || "",
+                userProfile.phone || "",
+                userProfile.address || "",
+                userProfile.country || "",
+                userProfile.targetExam || "",
+                userProfile.targetScore || "",
+                userProfile.examDate || "",
+                new Date(reg.timestamp).toLocaleString()
+            ].map(val => `"${String(val).replace(/"/g, '""')}"`); // Escape quotes
+        });
+
+        const csvContent = [
+            headers.join(","),
+            ...rows.map((r: any) => r.join(","))
+        ].join("\n");
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `${event.title.replace(/\s+/g, '_')}_Attendees.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     if (isLoading) {
@@ -238,17 +298,26 @@ export default function SessionManagerPage() {
                 <Dialog open={!!selectedEvent} onOpenChange={(open) => !open && setSelectedEvent(null)}>
                     <DialogContent className="max-w-2xl rounded-[32px] border-border/50 shadow-2xl p-0 overflow-hidden bg-card">
                         <DialogHeader className="p-8 pb-0">
-                            <div className="flex items-center gap-4 mb-2">
-                                <div className="p-3 bg-primary/10 rounded-2xl">
-                                    <Users className="h-6 w-6 text-primary" />
+                            <div className="flex items-center justify-between gap-4 mb-2">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-primary/10 rounded-2xl">
+                                        <Users className="h-6 w-6 text-primary" />
+                                    </div>
+                                    <div>
+                                        <DialogTitle className="text-2xl font-black tracking-tight">Attendee List</DialogTitle>
+                                        <DialogDescription className="font-bold flex items-center gap-2">
+                                            {selectedEvent?.title}
+                                            <Badge variant="outline" className="h-5 text-[10px]">{selectedEvent?.registrations?.length || 0} Total</Badge>
+                                        </DialogDescription>
+                                    </div>
                                 </div>
-                                <div>
-                                    <DialogTitle className="text-2xl font-black tracking-tight">Attendee List</DialogTitle>
-                                    <DialogDescription className="font-bold flex items-center gap-2">
-                                        {selectedEvent?.title}
-                                        <Badge variant="outline" className="h-5 text-[10px]">{selectedEvent?.registrations?.length || 0} Total</Badge>
-                                    </DialogDescription>
-                                </div>
+                                <Button
+                                    onClick={() => exportToCSV(selectedEvent)}
+                                    className="rounded-xl bg-accent-3 text-white font-bold h-10 px-4 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                                >
+                                    <Download className="h-4 w-4" />
+                                    Export Excel
+                                </Button>
                             </div>
                         </DialogHeader>
 
