@@ -5,8 +5,9 @@ import { motion } from 'framer-motion';
 import { Calendar, Clock, MapPin, ArrowRight, Sparkles, Target, Globe, Zap, Award, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirebase, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
@@ -35,6 +36,8 @@ const categoryColors: Record<string, string> = {
 
 export default function EventsPage() {
     const { firestore } = useFirebase();
+    const { user } = useUser();
+    const router = useRouter();
 
     const eventsQuery = useMemoFirebase(() =>
         firestore ? query(collection(firestore, 'events'), orderBy('createdAt', 'desc')) : null,
@@ -123,13 +126,18 @@ export default function EventsPage() {
 
                                             <div className="pt-4 flex items-center justify-between">
                                                 <Button
-                                                    asChild
-                                                    className="rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold group/btn"
+                                                    onClick={() => {
+                                                        if (!user) {
+                                                            const currentPath = window.location.pathname;
+                                                            router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+                                                            return;
+                                                        }
+                                                        window.open(event.link, '_blank');
+                                                    }}
+                                                    className="rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold group/btn cursor-pointer"
                                                 >
-                                                    <Link href={event.link}>
-                                                        {event.buttonText}
-                                                        <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
-                                                    </Link>
+                                                    {event.buttonText}
+                                                    <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
                                                 </Button>
                                                 <div className="h-10 w-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors cursor-pointer">
                                                     <Zap className="h-4 w-4" />

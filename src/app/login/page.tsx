@@ -13,7 +13,7 @@ import {
   User,
 } from 'firebase/auth';
 import { useAuth, useFirebase } from '@/firebase';
-import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "firebase/firestore"; 
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -65,7 +65,7 @@ export default function LoginPage() {
     try {
       const userRef = doc(firestore, 'users', user.uid);
       const userDoc = await getDoc(userRef);
-      
+
       let userRole = 'user';
       let hasCompletedOnboarding = false;
 
@@ -73,14 +73,14 @@ export default function LoginPage() {
         const userData = userDoc.data();
         userRole = userData.role || 'user';
         hasCompletedOnboarding = userData.hasCompletedOnboarding || false;
-        
+
         await updateDoc(userRef, { lastLogin: serverTimestamp() });
 
       } else {
         const userEmail = user.email || '';
         if (ADMIN_EMAILS.includes(userEmail)) {
-            userRole = userEmail === "thimira.vishwa2003@gmail.com" ? 'developer' : 'admin';
-            hasCompletedOnboarding = true; // Admins skip onboarding
+          userRole = userEmail === "thimira.vishwa2003@gmail.com" ? 'developer' : 'admin';
+          hasCompletedOnboarding = true; // Admins skip onboarding
         }
         await setDoc(userRef, {
           uid: user.uid,
@@ -100,7 +100,12 @@ export default function LoginPage() {
         description: `Welcome back, ${user.displayName || user.email}!`,
       });
 
-      if (userRole === 'admin' || userRole === 'developer') {
+      const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+      const redirectPath = searchParams?.get('redirect');
+
+      if (redirectPath) {
+        router.push(redirectPath);
+      } else if (userRole === 'admin' || userRole === 'developer') {
         router.push('/admin/dashboard');
       } else if (hasCompletedOnboarding) {
         router.push('/dashboard');
@@ -115,12 +120,12 @@ export default function LoginPage() {
   const handleAuthError = (error: any) => {
     setIsLoading(false);
     console.error("Login Error:", error);
-    
+
     let description = 'An unexpected error occurred.';
     const invalidCredentialCodes = ['auth/wrong-password', 'auth/user-not-found', 'auth/invalid-credential'];
 
     if (invalidCredentialCodes.includes(error.code)) {
-        description = 'Invalid email or password. Please try again.';
+      description = 'Invalid email or password. Please try again.';
     }
 
     toast({
@@ -184,14 +189,14 @@ export default function LoginPage() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                         <div className="flex items-center justify-between">
-                            <FormLabel>Password</FormLabel>
-                            <Link
-                                href="/forgot-password"
-                                className="text-sm font-medium text-primary hover:underline"
-                            >
-                                Forgot password?
-                            </Link>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>Password</FormLabel>
+                          <Link
+                            href="/forgot-password"
+                            className="text-sm font-medium text-primary hover:underline"
+                          >
+                            Forgot password?
+                          </Link>
                         </div>
                         <FormControl>
                           <Input type="password" placeholder="••••••••" {...field} />
@@ -218,7 +223,7 @@ export default function LoginPage() {
                 <Image src="/google-logo.svg" alt="Google" width={20} height={20} className="mr-2" />
                 Sign in with Google
               </Button>
-               <div className="mt-6 text-center text-sm text-muted-foreground">
+              <div className="mt-6 text-center text-sm text-muted-foreground">
                 <p className="mb-2">
                   Don't have an account?{' '}
                   <Link href="/signup" className="font-semibold text-primary hover:underline">

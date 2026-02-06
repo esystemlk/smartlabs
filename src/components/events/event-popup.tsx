@@ -2,18 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight, Calendar, ArrowRight, Sparkles } from 'lucide-center'; // Note: corrected from lucide-center to lucide-react if needed, but I'll check imports
 import { X as XIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Calendar as CalendarIcon, ArrowRight as ArrowRightIcon, Sparkles as SparklesIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirebase, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 
 export function EventPopup() {
     const [isOpen, setIsOpen] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
     const { firestore } = useFirebase();
+    const { user } = useUser();
+    const router = useRouter();
 
     const eventsQuery = useMemoFirebase(() =>
         firestore ? query(collection(firestore, 'events'), orderBy('createdAt', 'desc')) : null,
@@ -134,13 +136,19 @@ export function EventPopup() {
 
                                         <div className="pt-4 flex flex-col gap-3">
                                             <Button
-                                                asChild
-                                                className="h-12 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold group"
+                                                onClick={() => {
+                                                    if (!user) {
+                                                        const currentPath = window.location.pathname;
+                                                        router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+                                                        return;
+                                                    }
+                                                    window.open(currentEvent.link, '_blank');
+                                                    handleClose();
+                                                }}
+                                                className="h-12 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold group cursor-pointer"
                                             >
-                                                <Link href={currentEvent.link} onClick={handleClose}>
-                                                    {currentEvent.buttonText}
-                                                    <ArrowRightIcon className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                                                </Link>
+                                                {currentEvent.buttonText}
+                                                <ArrowRightIcon className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                             </Button>
                                             <Link
                                                 href="/events"
