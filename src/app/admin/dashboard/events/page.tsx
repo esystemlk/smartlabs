@@ -342,6 +342,15 @@ export default function AdminEventsPage() {
                                                 </label>
                                             </Button>
                                         </div>
+                                        <Button
+                                            type="button"
+                                            variant="secondary"
+                                            className="rounded-xl font-bold transition-all hover:bg-secondary/80 active:scale-95 px-4 h-10 flex items-center gap-2 shrink-0"
+                                            onClick={() => setFormData(prev => ({ ...prev, image: '/pst.jpeg' }))}
+                                        >
+                                            <ImageIcon className="h-4 w-4" />
+                                            Use Default
+                                        </Button>
                                     </div>
 
                                     {/* Preview Small */}
