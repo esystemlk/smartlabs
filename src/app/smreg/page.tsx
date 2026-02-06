@@ -183,7 +183,7 @@ function RegistrationContent() {
                                         asChild
                                         className="bg-white text-primary hover:bg-white/90 font-black rounded-2xl h-16 px-8"
                                     >
-                                        <a href={event.link} target="_blank" rel="noopener noreferrer">
+                                        <a href={event.zoomLink || '#'} target="_blank" rel="noopener noreferrer">
                                             <Video className="mr-2 h-6 w-6" />
                                             Launch Session
                                         </a>
@@ -193,8 +193,12 @@ function RegistrationContent() {
                                         size="xl"
                                         className="border-white/30 bg-white/10 text-white hover:bg-white/20 font-black rounded-2xl h-16 px-8 backdrop-blur-sm"
                                         onClick={() => {
-                                            navigator.clipboard.writeText(event.link);
-                                            toast({ title: "Copied!", description: "Link copied to clipboard." });
+                                            if (event.zoomLink) {
+                                                navigator.clipboard.writeText(event.zoomLink);
+                                                toast({ title: "Copied!", description: "Link copied to clipboard." });
+                                            } else {
+                                                toast({ title: "No Link", description: "Zoom link not provided yet.", variant: "destructive" });
+                                            }
                                         }}
                                     >
                                         <LinkIcon className="mr-2 h-5 w-5" />

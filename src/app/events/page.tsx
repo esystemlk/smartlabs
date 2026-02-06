@@ -96,8 +96,8 @@ export default function EventsPage() {
                                     variants={itemVariants}
                                     className="group relative bg-card/50 backdrop-blur-xl border border-border/50 rounded-[32px] overflow-hidden hover:border-primary/50 transition-all duration-500 shadow-xl"
                                 >
-                                    {/* Image Wrap - Forced to show well but the user wants 9:16 aspect in admin, so we'll accommodate that layout here too */}
-                                    <div className="relative aspect-[9/16] overflow-hidden">
+                                    {/* Image Wrap */}
+                                    <div className="relative aspect-[870/1080] overflow-hidden">
                                         <Image
                                             src={event.image}
                                             alt={event.title}

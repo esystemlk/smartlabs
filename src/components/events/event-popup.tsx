@@ -23,36 +23,39 @@ export function EventPopup() {
     );
     const { data: events, isLoading } = useCollection(eventsQuery);
 
+    // Filter out expired events
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const activeEvents = events?.filter((event: any) => {
+        if (!event.expiryDate) return true; // Show if no expiry set (fallback)
+        return event.expiryDate >= today;
+    }) || [];
+
     useEffect(() => {
-        if (events && events.length > 0) {
+        if (activeEvents.length > 0) {
             const timer = setTimeout(() => {
-                const shown = sessionStorage.getItem('event-popup-shown');
-                if (!shown) {
-                    setIsOpen(true);
-                }
+                setIsOpen(true);
             }, 2000);
             return () => clearTimeout(timer);
         }
-    }, [events]);
+    }, [activeEvents.length]);
 
     const handleClose = () => {
         setIsOpen(false);
-        sessionStorage.setItem('event-popup-shown', 'true');
     };
 
     const nextEvent = () => {
-        if (!events) return;
-        setCurrentIndex((prev) => (prev + 1) % events.length);
+        if (activeEvents.length === 0) return;
+        setCurrentIndex((prev) => (prev + 1) % activeEvents.length);
     };
 
     const prevEvent = () => {
-        if (!events) return;
-        setCurrentIndex((prev) => (prev - 1 + events.length) % events.length);
+        if (activeEvents.length === 0) return;
+        setCurrentIndex((prev) => (prev - 1 + activeEvents.length) % activeEvents.length);
     };
 
-    if (isLoading || !events || events.length === 0) return null;
+    if (isLoading || activeEvents.length === 0) return null;
 
-    const currentEvent = events[currentIndex];
+    const currentEvent = activeEvents[currentIndex % activeEvents.length];
 
     return (
         <AnimatePresence>
@@ -76,7 +79,7 @@ export function EventPopup() {
                     >
                         <div className="flex flex-col md:flex-row h-full">
                             {/* Image Side */}
-                            <div className="relative w-full md:w-1/2 h-64 md:h-auto overflow-hidden">
+                            <div className="relative w-full md:w-1/2 aspect-[870/1080] md:h-auto overflow-hidden">
                                 <AnimatePresence mode="wait">
                                     <motion.div
                                         key={currentEvent.id}
@@ -167,7 +170,7 @@ export function EventPopup() {
                                 </AnimatePresence>
 
                                 {/* Navigation Arrows */}
-                                {events.length > 1 && (
+                                {activeEvents.length > 1 && (
                                     <div className="absolute bottom-6 left-6 md:left-auto md:right-10 flex gap-2">
                                         <button
                                             onClick={prevEvent}
@@ -186,7 +189,7 @@ export function EventPopup() {
 
                                 {/* Dots Indicator */}
                                 <div className="absolute bottom-10 right-28 hidden md:flex items-center gap-1.5">
-                                    {events.map((_, i) => (
+                                    {activeEvents.map((_, i) => (
                                         <div
                                             key={i}
                                             className={`h-1.5 rounded-full transition-all duration-300 ${i === currentIndex ? "w-4 bg-primary" : "w-1.5 bg-border"

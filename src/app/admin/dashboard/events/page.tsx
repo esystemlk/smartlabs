@@ -25,7 +25,8 @@ import {
     Sparkles,
     Pencil,
     Upload,
-    HelpCircle
+    HelpCircle,
+    Video
 } from 'lucide-react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Link from 'next/link';
@@ -67,7 +68,9 @@ export default function AdminEventsPage() {
         date: '',
         link: '/signup',
         buttonText: 'Register Now',
-        bindRegistration: false
+        bindRegistration: false,
+        zoomLink: '',
+        expiryDate: ''
     });
 
     const eventsQuery = useMemoFirebase(() =>
@@ -121,7 +124,9 @@ export default function AdminEventsPage() {
                 date: '',
                 link: '/signup',
                 buttonText: 'Register Now',
-                bindRegistration: false
+                bindRegistration: false,
+                zoomLink: '',
+                expiryDate: ''
             });
         } catch (error) {
             console.error("Error saving event:", error);
@@ -144,6 +149,8 @@ export default function AdminEventsPage() {
             date: event.date,
             link: event.link,
             buttonText: event.buttonText,
+            zoomLink: event.zoomLink || '',
+            expiryDate: event.expiryDate || '',
             bindRegistration: event.bindRegistration || false
         });
         setEditingId(event.id);
@@ -236,7 +243,9 @@ export default function AdminEventsPage() {
                                 date: '',
                                 link: '/signup',
                                 buttonText: 'Register Now',
-                                bindRegistration: false
+                                bindRegistration: false,
+                                zoomLink: '',
+                                expiryDate: ''
                             });
                         }
                     }}>
@@ -355,7 +364,7 @@ export default function AdminEventsPage() {
 
                                     {/* Preview Small */}
                                     {formData.image && (
-                                        <div className="relative h-20 w-32 rounded-lg overflow-hidden border border-border/50 bg-muted">
+                                        <div className="relative w-24 aspect-[870/1080] rounded-lg overflow-hidden border border-border/50 bg-muted">
                                             <Image
                                                 src={formData.image}
                                                 alt="Preview"
@@ -367,24 +376,41 @@ export default function AdminEventsPage() {
                                     )}
                                 </div>
 
+                                <div className="space-y-2">
+                                    <Label htmlFor="date" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Date / Time</Label>
+                                    <div className="relative">
+                                        <Input
+                                            id="date"
+                                            name="date"
+                                            value={formData.date}
+                                            onChange={handleInputChange}
+                                            placeholder="e.g. Feb 25, 6:00 PM"
+                                            required
+                                            className="rounded-xl pl-10"
+                                        />
+                                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="expiryDate" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Stop Showing Popup After (Expiry Date)</Label>
+                                    <div className="relative">
+                                        <Input
+                                            id="expiryDate"
+                                            name="expiryDate"
+                                            type="date"
+                                            value={formData.expiryDate}
+                                            onChange={handleInputChange}
+                                            required
+                                            className="rounded-xl pl-10"
+                                        />
+                                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    </div>
+                                </div>
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="date" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Date / Time</Label>
-                                        <div className="relative">
-                                            <Input
-                                                id="date"
-                                                name="date"
-                                                value={formData.date}
-                                                onChange={handleInputChange}
-                                                placeholder="e.g. Feb 25, 6:00 PM"
-                                                required
-                                                className="rounded-xl pl-10"
-                                            />
-                                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="link" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Redirect Link</Label>
+                                        <Label htmlFor="link" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Redirect/Register Link</Label>
                                         <div className="relative">
                                             <Input
                                                 id="link"
@@ -396,6 +422,20 @@ export default function AdminEventsPage() {
                                                 className="rounded-xl pl-10"
                                             />
                                             <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="zoomLink" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Internal Zoom/Session Link</Label>
+                                        <div className="relative">
+                                            <Input
+                                                id="zoomLink"
+                                                name="zoomLink"
+                                                value={formData.zoomLink}
+                                                onChange={handleInputChange}
+                                                placeholder="Zoom/Meet URL (Hidden inside smreg)"
+                                                className="rounded-xl pl-10 border-accent-3/30 focus:ring-accent-3"
+                                            />
+                                            <Video className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-accent-3" />
                                         </div>
                                     </div>
                                 </div>

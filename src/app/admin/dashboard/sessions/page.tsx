@@ -60,7 +60,7 @@ export default function SessionManagerPage() {
         setIsUpdating(eventId);
         try {
             await updateDoc(doc(firestore, 'events', eventId), {
-                link: newLink
+                zoomLink: newLink
             });
             toast({
                 title: "Link Updated",
@@ -196,10 +196,11 @@ export default function SessionManagerPage() {
                                             <div className="relative flex-1">
                                                 <Video className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                                                 <Input
-                                                    defaultValue={event.link}
+                                                    defaultValue={event.zoomLink || ''}
+                                                    placeholder="Zoom Link..."
                                                     className="h-8 rounded-lg pl-9 text-xs font-medium focus:ring-1"
                                                     onBlur={(e) => {
-                                                        if (e.target.value !== event.link) {
+                                                        if (e.target.value !== (event.zoomLink || '')) {
                                                             handleUpdateLink(event.id, e.target.value);
                                                         }
                                                     }}
