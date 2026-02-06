@@ -8,7 +8,7 @@ import { doc, getDoc, collection } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { signOut } from 'firebase/auth';
-import { LogOut, Users, UserCog, MessageSquare, GraduationCap, FileText, Library, DollarSign, UserCheck, Home, LayoutDashboard, Sparkles } from 'lucide-react';
+import { LogOut, Users, UserCog, MessageSquare, GraduationCap, FileText, Library, DollarSign, UserCheck, Home, LayoutDashboard, Sparkles, Video } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -191,6 +191,18 @@ export default function AdminDashboardPage() {
                                 <CardContent>
                                     <div className="text-2xl font-bold">Manage</div>
                                     <p className="text-xs text-muted-foreground">Manage popups & events.</p>
+                                </CardContent>
+                            </Link>
+                        </Card>
+                        <Card className="hover:bg-muted/50 transition-colors border-accent-3/20 bg-accent-3/5">
+                            <Link href="/admin/dashboard/sessions">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Session Manager</CardTitle>
+                                    <Video className="h-4 w-4 text-accent-3" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">Zoom Links</div>
+                                    <p className="text-xs text-muted-foreground">Manage active session links.</p>
                                 </CardContent>
                             </Link>
                         </Card>

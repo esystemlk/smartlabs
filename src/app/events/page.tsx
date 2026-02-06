@@ -103,6 +103,7 @@ export default function EventsPage() {
                                             alt={event.title}
                                             fill
                                             className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                            unoptimized={event.image?.startsWith('/')}
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                                         <div className="absolute top-4 left-4">

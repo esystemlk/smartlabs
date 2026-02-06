@@ -108,6 +108,7 @@ function RegistrationContent() {
                     alt={event.title}
                     fill
                     className="object-cover"
+                    unoptimized={event.image?.startsWith('/')}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
                 <div className="absolute bottom-10 left-10 right-10 flex flex-col md:flex-row md:items-end justify-between gap-6">

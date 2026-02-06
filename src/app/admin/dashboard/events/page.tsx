@@ -23,8 +23,11 @@ import {
     Loader2,
     ChevronRight,
     Sparkles,
-    Pencil
+    Pencil,
+    Upload,
+    HelpCircle
 } from 'lucide-react';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -48,11 +51,12 @@ import {
 
 export default function AdminEventsPage() {
     const { user, isUserLoading } = useUser();
-    const { firestore } = useFirebase();
+    const { firestore, storage } = useFirebase();
     const { toast } = useToast();
     const router = useRouter();
 
     const [isAdding, setIsAdding] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
@@ -144,6 +148,33 @@ export default function AdminEventsPage() {
         });
         setEditingId(event.id);
         setIsAdding(true);
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !storage) return;
+
+        setIsUploading(true);
+        try {
+            const storageRef = ref(storage, `events/${Date.now()}-${file.name}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(snapshot.ref);
+
+            setFormData(prev => ({ ...prev, image: downloadURL }));
+            toast({
+                title: "Image Uploaded",
+                description: "Your local image is now hosted and ready.",
+            });
+        } catch (error) {
+            console.error("Upload error:", error);
+            toast({
+                title: "Upload Failed",
+                description: "Failed to upload image. Please check your connection.",
+                variant: "destructive"
+            });
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     const handleDelete = async (id: string) => {
@@ -268,19 +299,63 @@ export default function AdminEventsPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="image" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Image URL (9:16 recommended)</Label>
-                                    <div className="relative">
-                                        <Input
-                                            id="image"
-                                            name="image"
-                                            value={formData.image}
-                                            onChange={handleInputChange}
-                                            placeholder="https://images.unsplash.com/..."
-                                            required
-                                            className="rounded-xl pl-10"
-                                        />
-                                        <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <div className="flex items-center justify-between">
+                                        <Label htmlFor="image" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Image Resource</Label>
+                                        <div className="flex items-center gap-1 text-[10px] text-primary font-bold cursor-help group/tip relative">
+                                            <HelpCircle className="h-3 w-3" />
+                                            Local Path Info
+                                            <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-card border rounded-lg shadow-xl opacity-0 group-hover/tip:opacity-100 transition-opacity pointer-events-none z-50">
+                                                Place images in <code>public/</code> folder. Ex: <code>/bs.png</code>
+                                            </div>
+                                        </div>
                                     </div>
+                                    <div className="flex gap-2">
+                                        <div className="relative flex-1">
+                                            <Input
+                                                id="image"
+                                                name="image"
+                                                value={formData.image}
+                                                onChange={handleInputChange}
+                                                placeholder="https://... or /local-img.png"
+                                                required
+                                                className="rounded-xl pl-10"
+                                            />
+                                            <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        </div>
+                                        <div className="relative">
+                                            <input
+                                                type="file"
+                                                id="file-upload"
+                                                className="hidden"
+                                                accept="image/*"
+                                                onChange={handleFileUpload}
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                className="rounded-xl border-dashed border-2 px-3"
+                                                asChild
+                                            >
+                                                <label htmlFor="file-upload" className="cursor-pointer flex items-center gap-2">
+                                                    {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                                    <span className="hidden sm:inline">Upload</span>
+                                                </label>
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    {/* Preview Small */}
+                                    {formData.image && (
+                                        <div className="relative h-20 w-32 rounded-lg overflow-hidden border border-border/50 bg-muted">
+                                            <Image
+                                                src={formData.image}
+                                                alt="Preview"
+                                                fill
+                                                className="object-cover"
+                                                unoptimized={formData.image.startsWith('/')}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
