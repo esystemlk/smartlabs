@@ -70,6 +70,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useSiteStats } from "@/hooks/use-site-stats";
 import { useTestimonials } from "@/hooks/use-testimonials";
 import { logTestCompletion } from "@/lib/services/activity.service";
+import { EventPopup } from "@/components/events/event-popup";
+
 
 const sampleTopics = [
   "Some people think that technology has made communication easier, while others believe it has made us more isolated. Discuss both views.",
@@ -496,6 +498,7 @@ export default function Home() {
   };
   return (
     <>
+      <EventPopup />
       {/* Hero Section - Ultra Advanced */}
       <section className="relative overflow-hidden min-h-[100vh] flex items-center bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-[#020617] dark:via-[#0a0e27] dark:to-[#0f0a1e] py-20">
         {/* Animated Particle System */}
@@ -643,13 +646,6 @@ export default function Home() {
                     className="text-5xl sm:text-6xl lg:text-8xl font-black"
                     cursorClassName="bg-primary h-10 sm:h-14 lg:h-20 w-1 sm:w-2"
                   />
-                  <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="text-4xl"
-                  >
-                    🚀
-                  </motion.div>
                 </motion.div>
               </div>
 

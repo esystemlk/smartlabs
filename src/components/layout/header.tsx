@@ -89,6 +89,7 @@ const navLinks = [
   { name: "LMS Portal", href: "https://lms.smartlabs.lk", external: true },
   { name: "Windows App", href: "/download/windows" },
   { name: "Live Classroom", href: "/classroom", isLive: true },
+  { name: "Events", href: "/events" },
   { name: "About", href: "/about" },
   { name: "Help", href: "/support", icon: HelpCircle },
 ];
