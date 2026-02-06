@@ -22,7 +22,8 @@ import {
     AlertCircle,
     Loader2,
     ChevronRight,
-    Sparkles
+    Sparkles,
+    Pencil
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -52,6 +53,7 @@ export default function AdminEventsPage() {
     const router = useRouter();
 
     const [isAdding, setIsAdding] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
@@ -60,7 +62,8 @@ export default function AdminEventsPage() {
         category: 'Workshop',
         date: '',
         link: '/signup',
-        buttonText: 'Register Now'
+        buttonText: 'Register Now',
+        bindRegistration: false
     });
 
     const eventsQuery = useMemoFirebase(() =>
@@ -84,17 +87,28 @@ export default function AdminEventsPage() {
 
         setIsSubmitting(true);
         try {
-            await addDoc(collection(firestore, 'events'), {
-                ...formData,
-                createdAt: serverTimestamp(),
-            });
-
-            toast({
-                title: "Success",
-                description: "Event has been added successfully.",
-            });
+            if (editingId) {
+                await updateDoc(doc(firestore, 'events', editingId), {
+                    ...formData,
+                    updatedAt: serverTimestamp(),
+                });
+                toast({
+                    title: "Updated",
+                    description: "Event has been updated successfully.",
+                });
+            } else {
+                await addDoc(collection(firestore, 'events'), {
+                    ...formData,
+                    createdAt: serverTimestamp(),
+                });
+                toast({
+                    title: "Success",
+                    description: "Event has been added successfully.",
+                });
+            }
 
             setIsAdding(false);
+            setEditingId(null);
             setFormData({
                 title: '',
                 description: '',
@@ -102,18 +116,34 @@ export default function AdminEventsPage() {
                 category: 'Workshop',
                 date: '',
                 link: '/signup',
-                buttonText: 'Register Now'
+                buttonText: 'Register Now',
+                bindRegistration: false
             });
         } catch (error) {
-            console.error("Error adding event:", error);
+            console.error("Error saving event:", error);
             toast({
                 title: "Error",
-                description: "Failed to add event. Please try again.",
+                description: "Failed to save event. Please try again.",
                 variant: "destructive"
             });
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const startEdit = (event: any) => {
+        setFormData({
+            title: event.title,
+            description: event.description,
+            image: event.image,
+            category: event.category,
+            date: event.date,
+            link: event.link,
+            buttonText: event.buttonText,
+            bindRegistration: event.bindRegistration || false
+        });
+        setEditingId(event.id);
+        setIsAdding(true);
     };
 
     const handleDelete = async (id: string) => {
@@ -163,7 +193,22 @@ export default function AdminEventsPage() {
                         <p className="text-muted-foreground font-medium">Manage your website's events, popups, and announcements.</p>
                     </div>
 
-                    <Dialog open={isAdding} onOpenChange={setIsAdding}>
+                    <Dialog open={isAdding} onOpenChange={(open) => {
+                        setIsAdding(open);
+                        if (!open) {
+                            setEditingId(null);
+                            setFormData({
+                                title: '',
+                                description: '',
+                                image: '',
+                                category: 'Workshop',
+                                date: '',
+                                link: '/signup',
+                                buttonText: 'Register Now',
+                                bindRegistration: false
+                            });
+                        }
+                    }}>
                         <DialogTrigger asChild>
                             <Button size="lg" className="rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold px-8 shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95">
                                 <Plus className="mr-2 h-5 w-5" />
@@ -172,9 +217,11 @@ export default function AdminEventsPage() {
                         </DialogTrigger>
                         <DialogContent className="max-w-xl rounded-[32px] border-border/50 shadow-2xl overflow-hidden p-0 bg-card">
                             <DialogHeader className="p-8 pb-0">
-                                <DialogTitle className="text-2xl font-black tracking-tight">Create New Event</DialogTitle>
+                                <DialogTitle className="text-2xl font-black tracking-tight">
+                                    {editingId ? 'Edit Event' : 'Create New Event'}
+                                </DialogTitle>
                                 <DialogDescription className="font-medium">
-                                    Fill in the details below to add a new event to the landing page and popup.
+                                    {editingId ? 'Modify the details of your existing event.' : 'Fill in the details below to add a new event to the landing page and popup.'}
                                 </DialogDescription>
                             </DialogHeader>
                             <form onSubmit={handleSubmit} className="p-8 pt-6 space-y-6">
@@ -282,14 +329,27 @@ export default function AdminEventsPage() {
                                     />
                                 </div>
 
+                                <div className="flex items-center justify-between p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                                    <div className="space-y-0.5">
+                                        <Label className="text-sm font-bold">Bind Registration Page</Label>
+                                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Redirects to /smreg with zoom access</p>
+                                    </div>
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.bindRegistration}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, bindRegistration: e.target.checked }))}
+                                        className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
+                                    />
+                                </div>
+
                                 <DialogFooter className="bg-muted/30 p-8 pt-6 border-t border-border/50">
                                     <Button
                                         type="submit"
                                         disabled={isSubmitting}
                                         className="w-full h-12 rounded-2xl bg-primary text-white font-bold transition-all hover:scale-[1.02]"
                                     >
-                                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
-                                        Create Event
+                                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (editingId ? <Pencil className="mr-2 h-4 w-4" /> : <Plus className="mr-2 h-4 w-4" />)}
+                                        {editingId ? 'Update Event' : 'Create Event'}
                                     </Button>
                                 </DialogFooter>
                             </form>
@@ -343,12 +403,20 @@ export default function AdminEventsPage() {
                                     </p>
                                 </div>
 
-                                <button
-                                    onClick={() => handleDelete(event.id)}
-                                    className="absolute top-4 right-4 h-10 w-10 flex items-center justify-center bg-red-500/20 hover:bg-red-500 backdrop-blur-md border border-red-500/30 rounded-full text-white transition-all opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
+                                <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                                    <button
+                                        onClick={() => startEdit(event)}
+                                        className="h-10 w-10 flex items-center justify-center bg-primary/20 hover:bg-primary backdrop-blur-md border border-primary/30 rounded-full text-white transition-all scale-90 hover:scale-105"
+                                    >
+                                        <Pencil className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(event.id)}
+                                        className="h-10 w-10 flex items-center justify-center bg-red-500/20 hover:bg-red-500 backdrop-blur-md border border-red-500/30 rounded-full text-white transition-all scale-90 hover:scale-105"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Status/Footer info */}

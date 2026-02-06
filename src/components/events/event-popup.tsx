@@ -142,7 +142,11 @@ export function EventPopup() {
                                                         router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
                                                         return;
                                                     }
-                                                    window.open(currentEvent.link, '_blank');
+                                                    if (currentEvent.bindRegistration) {
+                                                        router.push(`/smreg?id=${currentEvent.id}`);
+                                                    } else {
+                                                        window.open(currentEvent.link, '_blank');
+                                                    }
                                                     handleClose();
                                                 }}
                                                 className="h-12 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold group cursor-pointer"

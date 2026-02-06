@@ -132,7 +132,11 @@ export default function EventsPage() {
                                                             router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
                                                             return;
                                                         }
-                                                        window.open(event.link, '_blank');
+                                                        if (event.bindRegistration) {
+                                                            router.push(`/smreg?id=${event.id}`);
+                                                        } else {
+                                                            window.open(event.link, '_blank');
+                                                        }
                                                     }}
                                                     className="rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold group/btn cursor-pointer"
                                                 >
