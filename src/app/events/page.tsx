@@ -128,11 +128,15 @@ export default function EventsPage() {
                                             <div className="pt-4 flex items-center justify-between">
                                                 <Button
                                                     onClick={() => {
+                                                        const targetPath = event.bindRegistration
+                                                            ? `/smreg?id=${event.id}`
+                                                            : event.link;
+
                                                         if (!user) {
-                                                            const currentPath = window.location.pathname;
-                                                            router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+                                                            router.push(`/login?redirect=${encodeURIComponent(targetPath)}`);
                                                             return;
                                                         }
+
                                                         if (event.bindRegistration) {
                                                             router.push(`/smreg?id=${event.id}`);
                                                         } else {

@@ -1,7 +1,7 @@
 'use client';
 
-import { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useUser, useFirebase, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -32,6 +32,14 @@ function RegistrationContent() {
     const { user, isUserLoading } = useUser();
     const { firestore } = useFirebase();
     const { toast } = useToast();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!isUserLoading && !user) {
+            const currentPath = window.location.pathname + window.location.search;
+            router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+        }
+    }, [user, isUserLoading, router]);
 
     const eventDocPath = eventId ? `events/${eventId}` : null;
     const eventDocRef = useMemoFirebase(() =>
@@ -138,7 +146,7 @@ function RegistrationContent() {
                 </div>
             </motion.div>
 
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-3 gap-8 px-4 sm:px-0">
                 {/* Main Info */}
                 <div className="md:col-span-2 space-y-8">
                     <div className="space-y-4">

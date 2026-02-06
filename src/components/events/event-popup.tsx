@@ -75,11 +75,11 @@ export function EventPopup() {
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="relative w-full max-w-2xl bg-card border border-border/50 rounded-[40px] shadow-2xl overflow-hidden pointer-events-auto"
+                        className="relative w-full max-w-2xl bg-card border border-border/50 rounded-[32px] md:rounded-[40px] shadow-2xl overflow-hidden pointer-events-auto max-h-[90vh] overflow-y-auto no-scrollbar"
                     >
-                        <div className="flex flex-col md:flex-row h-full">
+                        <div className="flex flex-col md:flex-row min-h-full">
                             {/* Image Side */}
-                            <div className="relative w-full md:w-1/2 aspect-[870/1080] md:h-auto overflow-hidden">
+                            <div className="relative w-full md:w-1/2 aspect-[870/1080] md:h-auto overflow-hidden shrink-0">
                                 <AnimatePresence mode="wait">
                                     <motion.div
                                         key={currentEvent.id}
@@ -141,11 +141,15 @@ export function EventPopup() {
                                         <div className="pt-4 flex flex-col gap-3">
                                             <Button
                                                 onClick={() => {
+                                                    const targetPath = currentEvent.bindRegistration
+                                                        ? `/smreg?id=${currentEvent.id}`
+                                                        : currentEvent.link;
+
                                                     if (!user) {
-                                                        const currentPath = window.location.pathname;
-                                                        router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+                                                        router.push(`/login?redirect=${encodeURIComponent(targetPath)}`);
                                                         return;
                                                     }
+
                                                     if (currentEvent.bindRegistration) {
                                                         router.push(`/smreg?id=${currentEvent.id}`);
                                                     } else {
