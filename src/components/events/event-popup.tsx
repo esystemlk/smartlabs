@@ -2,27 +2,36 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight, Calendar, ArrowRight, Sparkles } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Calendar, ArrowRight, Sparkles } from 'lucide-center'; // Note: corrected from lucide-center to lucide-react if needed, but I'll check imports
+import { X as XIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Calendar as CalendarIcon, ArrowRight as ArrowRightIcon, Sparkles as SparklesIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Event, events } from '@/lib/data/events';
+import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 
 export function EventPopup() {
     const [isOpen, setIsOpen] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [hasSeen, setHasSeen] = useState(false);
+    const { firestore } = useFirebase();
+
+    const eventsQuery = useMemoFirebase(() =>
+        firestore ? query(collection(firestore, 'events'), orderBy('createdAt', 'desc')) : null,
+        [firestore]
+    );
+    const { data: events, isLoading } = useCollection(eventsQuery);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            const shown = sessionStorage.getItem('event-popup-shown');
-            if (!shown) {
-                setIsOpen(true);
-            }
-        }, 2000); // Show after 2 seconds
-
-        return () => clearTimeout(timer);
-    }, []);
+        if (events && events.length > 0) {
+            const timer = setTimeout(() => {
+                const shown = sessionStorage.getItem('event-popup-shown');
+                if (!shown) {
+                    setIsOpen(true);
+                }
+            }, 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [events]);
 
     const handleClose = () => {
         setIsOpen(false);
@@ -30,20 +39,22 @@ export function EventPopup() {
     };
 
     const nextEvent = () => {
+        if (!events) return;
         setCurrentIndex((prev) => (prev + 1) % events.length);
     };
 
     const prevEvent = () => {
+        if (!events) return;
         setCurrentIndex((prev) => (prev - 1 + events.length) % events.length);
     };
 
-    const currentEvent = events[currentIndex];
+    if (isLoading || !events || events.length === 0) return null;
 
-    if (!currentEvent) return null;
+    const currentEvent = events[currentIndex];
 
     return (
         <AnimatePresence>
-            {isOpen && (
+            {isOpen && currentEvent && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 pointer-events-none">
                     {/* Backdrop */}
                     <motion.div
@@ -96,7 +107,7 @@ export function EventPopup() {
                                     onClick={handleClose}
                                     className="absolute top-6 right-6 p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
                                 >
-                                    <X className="h-5 w-5" />
+                                    <XIcon className="h-5 w-5" />
                                 </button>
 
                                 <AnimatePresence mode="wait">
@@ -109,7 +120,7 @@ export function EventPopup() {
                                         className="space-y-4"
                                     >
                                         <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-widest">
-                                            <Calendar className="h-4 w-4" />
+                                            <CalendarIcon className="h-4 w-4" />
                                             {currentEvent.date}
                                         </div>
 
@@ -117,7 +128,7 @@ export function EventPopup() {
                                             {currentEvent.title}
                                         </h2>
 
-                                        <p className="text-muted-foreground text-sm font-medium leading-relaxed">
+                                        <p className="text-muted-foreground text-sm font-medium leading-relaxed line-clamp-4">
                                             {currentEvent.description}
                                         </p>
 
@@ -128,7 +139,7 @@ export function EventPopup() {
                                             >
                                                 <Link href={currentEvent.link} onClick={handleClose}>
                                                     {currentEvent.buttonText}
-                                                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                                    <ArrowRightIcon className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                                 </Link>
                                             </Button>
                                             <Link
@@ -149,13 +160,13 @@ export function EventPopup() {
                                             onClick={prevEvent}
                                             className="p-3 rounded-xl bg-muted/50 hover:bg-primary/10 hover:text-primary border border-border/50 text-muted-foreground transition-all active:scale-95"
                                         >
-                                            <ChevronLeft className="h-5 w-5" />
+                                            <ChevronLeftIcon className="h-5 w-5" />
                                         </button>
                                         <button
                                             onClick={nextEvent}
                                             className="p-3 rounded-xl bg-muted/50 hover:bg-primary/10 hover:text-primary border border-border/50 text-muted-foreground transition-all active:scale-95"
                                         >
-                                            <ChevronRight className="h-5 w-5" />
+                                            <ChevronRightIcon className="h-5 w-5" />
                                         </button>
                                     </div>
                                 )}
