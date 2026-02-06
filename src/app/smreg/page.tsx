@@ -101,38 +101,38 @@ function RegistrationContent() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="relative aspect-[16/9] md:aspect-[21/9] rounded-[48px] overflow-hidden shadow-2xl border border-border/50"
+                className="relative aspect-[870/1080] md:max-h-[800px] rounded-[48px] overflow-hidden shadow-2xl border border-border/50 bg-black/5"
             >
                 <Image
                     src={event.image}
                     alt={event.title}
                     fill
-                    className="object-cover"
+                    className="object-contain"
                     unoptimized={event.image?.startsWith('/')}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
-                <div className="absolute bottom-10 left-10 right-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div className="space-y-3">
-                        <Badge className="bg-primary/20 backdrop-blur-md border border-primary/30 text-white font-black uppercase tracking-widest px-4 py-1.5">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                <div className="absolute bottom-12 left-10 right-10 flex flex-col md:flex-row md:items-end justify-between gap-6 z-10">
+                    <div className="space-y-4">
+                        <Badge className="bg-primary border border-primary/30 text-white font-black uppercase tracking-widest px-4 py-1.5">
                             {event.category}
                         </Badge>
-                        <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter leading-none">
+                        <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter leading-tight drop-shadow-2xl max-w-xl">
                             {event.title}
                         </h1>
                     </div>
                     {isRegistered ? (
-                        <div className="flex items-center gap-2 px-6 py-3 bg-green-500/10 border border-green-500/30 rounded-2xl backdrop-blur-md">
-                            <CheckCircle2 className="h-5 w-5 text-green-500" />
-                            <span className="font-black text-green-500 uppercase tracking-widest text-sm">Registered</span>
+                        <div className="flex items-center gap-2 px-8 py-4 bg-green-500/20 border-2 border-green-500 text-white rounded-3xl backdrop-blur-xl shrink-0">
+                            <CheckCircle2 className="h-6 w-6 text-green-400" />
+                            <span className="font-black uppercase tracking-widest text-base">Registered</span>
                         </div>
                     ) : (
                         <Button
                             size="xl"
                             onClick={handleRegister}
-                            className="h-16 px-10 rounded-2xl bg-primary text-white font-black text-lg transition-all hover:scale-105 active:scale-95 shadow-xl shadow-primary/20"
+                            className="h-20 px-12 rounded-3xl bg-primary text-white font-black text-xl transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-primary/40 border-b-4 border-primary-foreground/20"
                         >
                             Confirm Attendance
-                            <ArrowRight className="ml-2 h-6 w-6" />
+                            <ArrowRight className="ml-3 h-7 w-7" />
                         </Button>
                     )}
                 </div>
