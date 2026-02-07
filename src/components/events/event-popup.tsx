@@ -145,6 +145,15 @@ export function EventPopup() {
                                                         ? `/smreg?id=${currentEvent.id}`
                                                         : currentEvent.link;
 
+                                                    if (currentEvent.registrationClosed) {
+                                                        const isRegistered = currentEvent.registrations?.some((reg: any) => reg.uid === user?.uid);
+                                                        if (!isRegistered) {
+                                                            router.push(targetPath);
+                                                            handleClose();
+                                                            return;
+                                                        }
+                                                    }
+
                                                     if (!user) {
                                                         router.push(`/login?redirect=${encodeURIComponent(targetPath)}`);
                                                         return;
@@ -157,9 +166,9 @@ export function EventPopup() {
                                                     }
                                                     handleClose();
                                                 }}
-                                                className="h-12 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold group cursor-pointer"
+                                                className={`h-12 rounded-2xl font-bold group cursor-pointer ${currentEvent.registrationClosed && !currentEvent.registrations?.some((reg: any) => reg.uid === user?.uid) ? 'bg-muted text-muted-foreground hover:bg-muted/80' : 'bg-primary hover:bg-primary/90 text-white'}`}
                                             >
-                                                {currentEvent.buttonText}
+                                                {currentEvent.registrationClosed && !currentEvent.registrations?.some((reg: any) => reg.uid === user?.uid) ? 'View Details' : currentEvent.buttonText}
                                                 <ArrowRightIcon className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                             </Button>
                                             <Link

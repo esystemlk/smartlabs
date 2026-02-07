@@ -106,10 +106,15 @@ export default function EventsPage() {
                                             unoptimized={event.image?.startsWith('/')}
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                                        <div className="absolute top-4 left-4">
+                                        <div className="absolute top-4 left-4 flex flex-col gap-2">
                                             <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${categoryColors[event.category] || categoryColors['Workshop']}`}>
                                                 {event.category}
                                             </span>
+                                            {event.registrationClosed && (
+                                                <span className="px-4 py-1.5 rounded-full bg-red-500/80 text-white text-[10px] font-black uppercase tracking-widest border border-red-600/30">
+                                                    Closed
+                                                </span>
+                                            )}
                                         </div>
 
                                         {/* Content Over Image for 9:16 style */}
@@ -132,6 +137,15 @@ export default function EventsPage() {
                                                             ? `/smreg?id=${event.id}`
                                                             : event.link;
 
+                                                        if (event.registrationClosed) {
+                                                            const isRegistered = event.registrations?.some((reg: any) => reg.uid === user?.uid);
+                                                            if (!isRegistered) {
+                                                                // Allow them to go to the page to see details, but they won't be able to register
+                                                                router.push(targetPath);
+                                                                return;
+                                                            }
+                                                        }
+
                                                         if (!user) {
                                                             router.push(`/login?redirect=${encodeURIComponent(targetPath)}`);
                                                             return;
@@ -143,9 +157,9 @@ export default function EventsPage() {
                                                             window.open(event.link, '_blank');
                                                         }
                                                     }}
-                                                    className="rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold group/btn cursor-pointer"
+                                                    className={`rounded-2xl font-bold group/btn cursor-pointer ${event.registrationClosed && !event.registrations?.some((reg: any) => reg.uid === user?.uid) ? 'bg-muted text-muted-foreground hover:bg-muted/80' : 'bg-primary hover:bg-primary/90 text-white'}`}
                                                 >
-                                                    {event.buttonText}
+                                                    {event.registrationClosed && !event.registrations?.some((reg: any) => reg.uid === user?.uid) ? 'View Details' : event.buttonText}
                                                     <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
                                                 </Button>
                                                 <div className="h-10 w-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors cursor-pointer">

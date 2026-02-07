@@ -70,7 +70,8 @@ export default function AdminEventsPage() {
         buttonText: 'Register Now',
         bindRegistration: false,
         zoomLink: '',
-        expiryDate: ''
+        expiryDate: '',
+        registrationClosed: false
     });
 
     const eventsQuery = useMemoFirebase(() =>
@@ -126,7 +127,8 @@ export default function AdminEventsPage() {
                 buttonText: 'Register Now',
                 bindRegistration: false,
                 zoomLink: '',
-                expiryDate: ''
+                expiryDate: '',
+                registrationClosed: false
             });
         } catch (error) {
             console.error("Error saving event:", error);
@@ -151,7 +153,8 @@ export default function AdminEventsPage() {
             buttonText: event.buttonText,
             zoomLink: event.zoomLink || '',
             expiryDate: event.expiryDate || '',
-            bindRegistration: event.bindRegistration || false
+            bindRegistration: event.bindRegistration || false,
+            registrationClosed: event.registrationClosed || false
         });
         setEditingId(event.id);
         setIsAdding(true);
@@ -245,7 +248,8 @@ export default function AdminEventsPage() {
                                 buttonText: 'Register Now',
                                 bindRegistration: false,
                                 zoomLink: '',
-                                expiryDate: ''
+                                expiryDate: '',
+                                registrationClosed: false
                             });
                         }
                     }}>
@@ -466,6 +470,19 @@ export default function AdminEventsPage() {
                                     />
                                 </div>
 
+                                <div className="flex items-center justify-between p-4 bg-red-500/5 rounded-2xl border border-red-500/10">
+                                    <div className="space-y-0.5">
+                                        <Label className="text-sm font-bold text-red-600">Close Registration</Label>
+                                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider text-red-500/70">Prevents new signups while keeping access for registered users</p>
+                                    </div>
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.registrationClosed}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, registrationClosed: e.target.checked }))}
+                                        className="h-5 w-5 rounded border-red-300 text-red-600 focus:ring-red-500"
+                                    />
+                                </div>
+
                                 <DialogFooter className="bg-muted/30 p-8 pt-6 border-t border-border/50">
                                     <Button
                                         type="submit"
@@ -512,6 +529,11 @@ export default function AdminEventsPage() {
                                     <Badge className="bg-primary/20 backdrop-blur-md border-primary/30 text-white font-black uppercase tracking-widest px-3 py-1">
                                         {event.category}
                                     </Badge>
+                                    {event.registrationClosed && (
+                                        <Badge className="bg-red-500/80 backdrop-blur-md border-red-600/30 text-white font-black uppercase tracking-widest px-3 py-1">
+                                            Closed
+                                        </Badge>
+                                    )}
                                 </div>
 
                                 <div className="absolute bottom-6 left-6 right-6 space-y-2">

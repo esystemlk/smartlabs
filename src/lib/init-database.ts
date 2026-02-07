@@ -92,6 +92,75 @@ export async function initializeDatabase() {
         }
         console.log('✓ Testimonials initialized');
 
+        // 3. Initialize Notifications
+        const notifications = [
+            {
+                title: 'AI Analysis Complete',
+                message: 'Your latest PTE Essay analysis is now available in your dashboard.',
+                type: 'success',
+                isActive: true,
+                createdAt: new Date(),
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+            },
+            {
+                title: 'New Mock Test Available',
+                message: 'A new PTE Full Mock Test (Practice Test 4) has been added to your library.',
+                type: 'info',
+                isActive: true,
+                createdAt: new Date(),
+            },
+            {
+                title: 'System Maintenance',
+                message: 'The AI scoring system will be undergoing brief maintenance this Sunday at 2 AM UTC.',
+                type: 'warning',
+                isActive: true,
+                createdAt: new Date(),
+            }
+        ];
+
+        const notificationsRef = collection(db, 'notifications');
+        for (const notification of notifications) {
+            await addDoc(notificationsRef, notification);
+        }
+        console.log('✓ Notifications initialized');
+
+        // 4. Initialize Resources
+        const resources = [
+            {
+                type: 'test',
+                title: 'IELTS Academic - Sample Test',
+                format: 'PDF',
+                url: 'https://example.com/ielts-test.pdf',
+                category: 'IELTS',
+                isActive: true,
+                createdAt: new Date(),
+            },
+            {
+                type: 'test',
+                title: 'PTE Academic - Full Mock Test',
+                format: 'PDF',
+                url: 'https://example.com/pte-test.pdf',
+                category: 'PTE',
+                isActive: true,
+                createdAt: new Date(),
+            },
+            {
+                type: 'video',
+                title: 'PTE Speaking - Strategy Session',
+                format: 'Video',
+                url: 'https://youtube.com/watch?v=example',
+                category: 'PTE',
+                isActive: true,
+                createdAt: new Date(),
+            }
+        ];
+
+        const resourcesRef = collection(db, 'resources');
+        for (const resource of resources) {
+            await addDoc(resourcesRef, resource);
+        }
+        console.log('✓ Resources initialized');
+
         console.log('Database initialization complete!');
         return { success: true };
     } catch (error) {

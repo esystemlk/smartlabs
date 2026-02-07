@@ -37,6 +37,8 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { useNotifications } from "@/hooks/use-notifications";
+
 
 const courses = [
   {
@@ -93,43 +95,15 @@ const navLinks = [
   { name: "Help", href: "/support", icon: HelpCircle },
 ];
 
-const mockNotifications = [
-  {
-    id: 1,
-    title: "AI Analysis Complete",
-    desc: "Your PTE Essay 'Technology' score is 79/90.",
-    time: "2 mins ago",
-    type: "result",
-    icon: Sparkles,
-    color: "text-accent-1",
-    bgColor: "bg-accent-1/10"
-  },
-  {
-    id: 2,
-    title: "Live Class Starting",
-    desc: "IELTS Speaking Masterclass is starting in 10 mins.",
-    time: "15 mins ago",
-    type: "event",
-    icon: Video,
-    color: "text-accent-2",
-    bgColor: "bg-accent-2/10"
-  },
-  {
-    id: 3,
-    title: "New Achievement",
-    desc: "You've completed 7 days of consecutive practice!",
-    time: "2 hours ago",
-    type: "milestone",
-    icon: Trophy,
-    color: "text-accent-3",
-    bgColor: "bg-accent-3/10"
-  }
-];
+// Mock notifications moved to Firebase service
+
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [coursesOpen, setCoursesOpen] = useState(false);
   const [notifsOpen, setNotifsOpen] = useState(false);
+  const { notifications, loading: notifsLoading } = useNotifications();
+
   const [announcementDismissed, setAnnouncementDismissed] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -311,12 +285,6 @@ export default function Header() {
                 )}
               >
                 {link.name}
-                {link.isLive && (
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                  </span>
-                )}
               </Link>
             ))}
           </div>
@@ -357,23 +325,39 @@ export default function Header() {
                   <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase text-primary tracking-widest px-2 h-7 hover:bg-primary/10">Mark All Seen</Button>
                 </div>
                 <div className="max-h-[400px] overflow-y-auto no-scrollbar py-2">
-                  {mockNotifications.map((n) => (
-                    <DropdownMenuItem key={n.id} className="p-4 mx-2 rounded-2xl cursor-pointer hover:bg-muted/50 focus:bg-muted/50 border-transparent border transition-all active:scale-[0.98] mb-1">
-                      <div className="flex gap-4">
-                        <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0", n.bgColor, n.color)}>
-                          <n.icon className="h-5 w-5" />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-bold text-xs">{n.title}</span>
-                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">{n.time}</span>
+                  {notifications.length > 0 ? (
+                    notifications.map((n) => (
+                      <DropdownMenuItem key={n.id} className="p-4 mx-2 rounded-2xl cursor-pointer hover:bg-muted/50 focus:bg-muted/50 border-transparent border transition-all active:scale-[0.98] mb-1">
+                        <div className="flex gap-4">
+                          <div className={cn(
+                            "h-10 w-10 rounded-xl flex items-center justify-center shrink-0",
+                            n.type === 'success' ? "bg-accent-1/10 text-accent-1" :
+                              n.type === 'warning' ? "bg-accent-3/10 text-accent-3" :
+                                "bg-accent-2/10 text-accent-2"
+                          )}>
+                            {n.type === 'success' ? <Sparkles className="h-5 w-5" /> :
+                              n.type === 'warning' ? <BellDot className="h-5 w-5" /> :
+                                <Megaphone className="h-5 w-5" />}
                           </div>
-                          <p className="text-[11px] leading-relaxed text-muted-foreground line-clamp-2">{n.desc}</p>
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-bold text-xs">{n.title}</span>
+                              <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                                {n.createdAt?.toDate ? n.createdAt.toDate().toLocaleDateString() : 'Just now'}
+                              </span>
+                            </div>
+                            <p className="text-[11px] leading-relaxed text-muted-foreground line-clamp-2">{n.message}</p>
+                          </div>
                         </div>
-                      </div>
-                    </DropdownMenuItem>
-                  ))}
+                      </DropdownMenuItem>
+                    ))
+                  ) : (
+                    <div className="p-8 text-center">
+                      <p className="text-xs text-muted-foreground italic">No new notifications</p>
+                    </div>
+                  )}
                 </div>
+
                 <div className="p-4 bg-muted/30 text-center border-t border-border/50">
                   <Link href="/notifications" className="text-[10px] font-black text-primary hover:tracking-widest transition-all uppercase">View Matrix Logs <ArrowRight className="h-2.5 w-2.5 inline-block ml-1" /></Link>
                 </div>

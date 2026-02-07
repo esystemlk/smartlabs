@@ -54,6 +54,15 @@ function RegistrationContent() {
     const handleRegister = async () => {
         if (!user || !eventDocRef) return;
 
+        if (event.registrationClosed) {
+            toast({
+                title: "Registration Closed",
+                description: "New registrations are no longer accepted for this event.",
+                variant: "destructive"
+            });
+            return;
+        }
+
         try {
             await updateDoc(eventDocRef, {
                 registrations: arrayUnion({
@@ -132,6 +141,11 @@ function RegistrationContent() {
                         <div className="flex items-center gap-2 px-8 py-4 bg-green-500/20 border-2 border-green-500 text-white rounded-3xl backdrop-blur-xl shrink-0">
                             <CheckCircle2 className="h-6 w-6 text-green-400" />
                             <span className="font-black uppercase tracking-widest text-base">Registered</span>
+                        </div>
+                    ) : event.registrationClosed ? (
+                        <div className="flex items-center gap-2 px-8 py-4 bg-red-500/20 border-2 border-red-500 text-white rounded-3xl backdrop-blur-xl shrink-0">
+                            <AlertCircle className="h-6 w-6 text-red-500" />
+                            <span className="font-black uppercase tracking-widest text-base text-red-500">Registration Closed</span>
                         </div>
                     ) : (
                         <Button
