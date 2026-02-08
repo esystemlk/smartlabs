@@ -17,7 +17,8 @@ import {
     Sparkles,
     Loader2,
     AlertCircle,
-    Link as LinkIcon
+    Link as LinkIcon,
+    BookOpen
 } from 'lucide-react';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
@@ -186,52 +187,98 @@ function RegistrationContent() {
 
                     {/* Access Section (Only if registered) */}
                     {isRegistered && (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="p-10 bg-gradient-to-br from-primary via-primary/80 to-accent-3 rounded-[40px] text-white shadow-2xl relative overflow-hidden"
-                        >
-                            <div className="absolute top-0 right-0 p-10 opacity-10">
-                                <Video className="h-40 w-40" />
-                            </div>
-                            <div className="relative z-10 space-y-6">
-                                <div className="space-y-1">
-                                    <h3 className="text-4xl font-black tracking-tight">Access Link</h3>
-                                    <p className="text-white/70 font-bold uppercase tracking-widest text-xs">Confidential Session Access</p>
+                        <div className="space-y-8">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="p-10 bg-gradient-to-br from-primary via-primary/80 to-accent-3 rounded-[40px] text-white shadow-2xl relative overflow-hidden"
+                            >
+                                <div className="absolute top-0 right-0 p-10 opacity-10">
+                                    <Video className="h-40 w-40" />
                                 </div>
-                                <div className="flex flex-col sm:flex-row gap-4">
-                                    <Button
-                                        size="xl"
-                                        asChild
-                                        className="bg-white text-primary hover:bg-white/90 font-black rounded-2xl h-16 px-8"
-                                    >
-                                        <a href={event.zoomLink || '#'} target="_blank" rel="noopener noreferrer">
-                                            <Video className="mr-2 h-6 w-6" />
-                                            Launch Session
-                                        </a>
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="xl"
-                                        className="border-white/30 bg-white/10 text-white hover:bg-white/20 font-black rounded-2xl h-16 px-8 backdrop-blur-sm"
-                                        onClick={() => {
-                                            if (event.zoomLink) {
-                                                navigator.clipboard.writeText(event.zoomLink);
-                                                toast({ title: "Copied!", description: "Link copied to clipboard." });
-                                            } else {
-                                                toast({ title: "No Link", description: "Zoom link not provided yet.", variant: "destructive" });
-                                            }
-                                        }}
-                                    >
-                                        <LinkIcon className="mr-2 h-5 w-5" />
-                                        Copy Link
-                                    </Button>
+                                <div className="relative z-10 space-y-6">
+                                    <div className="space-y-1">
+                                        <h3 className="text-4xl font-black tracking-tight">Access Link</h3>
+                                        <p className="text-white/70 font-bold uppercase tracking-widest text-xs">Confidential Session Access</p>
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row gap-4">
+                                        <Button
+                                            size="xl"
+                                            asChild
+                                            className="bg-white text-primary hover:bg-white/90 font-black rounded-2xl h-16 px-8"
+                                        >
+                                            <a href={event.zoomLink || '#'} target="_blank" rel="noopener noreferrer">
+                                                <Video className="mr-2 h-6 w-6" />
+                                                Launch Session
+                                            </a>
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="xl"
+                                            className="border-white/30 bg-white/10 text-white hover:bg-white/20 font-black rounded-2xl h-16 px-8 backdrop-blur-sm"
+                                            onClick={() => {
+                                                if (event.zoomLink) {
+                                                    navigator.clipboard.writeText(event.zoomLink);
+                                                    toast({ title: "Copied!", description: "Link copied to clipboard." });
+                                                } else {
+                                                    toast({ title: "No Link", description: "Zoom link not provided yet.", variant: "destructive" });
+                                                }
+                                            }}
+                                        >
+                                            <LinkIcon className="mr-2 h-5 w-5" />
+                                            Copy Link
+                                        </Button>
+                                    </div>
+                                    <p className="text-white/60 text-[10px] font-bold uppercase tracking-[0.2em]">
+                                        Please do not share this link with unregistered users.
+                                    </p>
                                 </div>
-                                <p className="text-white/60 text-[10px] font-bold uppercase tracking-[0.2em]">
-                                    Please do not share this link with unregistered users.
-                                </p>
-                            </div>
-                        </motion.div>
+                            </motion.div>
+
+                            {/* Exclusive Study Resources */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                                className="grid sm:grid-cols-2 gap-4"
+                            >
+                                <Link href="/resources/essay-topics-2026" className="group">
+                                    <div className="p-8 bg-white dark:bg-slate-900 border border-border/50 rounded-[32px] hover:border-primary/50 hover:shadow-xl transition-all h-full flex flex-col justify-between space-y-4">
+                                        <div className="space-y-4">
+                                            <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                                <BookOpen className="h-6 w-6" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <h4 className="text-xl font-black">Essay Topics 2026</h4>
+                                                <p className="text-sm text-muted-foreground font-medium">Predictions & structures for February 2026.</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center text-primary font-black text-sm uppercase tracking-widest">
+                                            Open Study Guide
+                                            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                        </div>
+                                    </div>
+                                </Link>
+
+                                <Link href="/resources/workshop-document" className="group">
+                                    <div className="p-8 bg-white dark:bg-slate-900 border border-border/50 rounded-[32px] hover:border-accent-3/50 hover:shadow-xl transition-all h-full flex flex-col justify-between space-y-4">
+                                        <div className="space-y-4">
+                                            <div className="h-12 w-12 rounded-2xl bg-accent-3/10 flex items-center justify-center text-accent-3 group-hover:scale-110 transition-transform">
+                                                <Sparkles className="h-6 w-6" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <h4 className="text-xl font-black">Workshop Document</h4>
+                                                <p className="text-sm text-muted-foreground font-medium">Core strategies and time management codes.</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center text-accent-3 font-black text-sm uppercase tracking-widest">
+                                            Open Secret Manual
+                                            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                        </div>
+                                    </div>
+                                </Link>
+                            </motion.div>
+                        </div>
                     )}
                 </div>
 
