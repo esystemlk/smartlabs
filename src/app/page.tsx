@@ -71,6 +71,7 @@ import { useSiteStats } from "@/hooks/use-site-stats";
 import { useTestimonials } from "@/hooks/use-testimonials";
 import { logTestCompletion } from "@/lib/services/activity.service";
 import { EventPopup } from "@/components/events/event-popup";
+import { useHomepageCourses, useLearningMethods, useFeatures, useFAQs, useComparisons } from "@/hooks/use-homepage-content";
 
 
 const sampleTopics = [
@@ -328,6 +329,11 @@ export default function Home() {
   // Fetch real data from Firebase
   const { stats: siteStats } = useSiteStats();
   const { testimonials: realTestimonials } = useTestimonials(3);
+  const { courses: realCourses, loading: coursesLoading } = useHomepageCourses();
+  const { methods: realMethods, loading: methodsLoading } = useLearningMethods();
+  const { features: realFeatures, loading: featuresLoading } = useFeatures();
+  const { faqs: realFAQs, loading: faqsLoading } = useFAQs();
+  const { comparisons: realComparisons, loading: comparisonsLoading } = useComparisons();
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
@@ -337,6 +343,30 @@ export default function Home() {
   const [topic, setTopic] = useState(sampleTopics[0]);
   const [topicId, setTopicId] = useState<number>(0);
   const [usageCount, setUsageCount] = useState<number | null>(null);
+
+  // Map icon strings to actual icon components
+  const iconMap: Record<string, any> = {
+    Target, Globe, Zap, Video, Users, Brain, BookOpen, Cpu, GraduationCap, Layout, Monitor
+  };
+
+  // Use real data from Firebase with fallback to static data
+  const displayCourses = realCourses.length > 0 ? realCourses.map(course => ({
+    ...course,
+    icon: iconMap[course.icon] || Target
+  })) : courses;
+
+  const displayMethods = realMethods.length > 0 ? realMethods.map(method => ({
+    ...method,
+    icon: iconMap[method.icon] || Video
+  })) : learningMethods;
+
+  const displayFeatures = realFeatures.length > 0 ? realFeatures.map(feature => ({
+    ...feature,
+    icon: iconMap[feature.icon] || Cpu
+  })) : features;
+
+  const displayFAQs = realFAQs.length > 0 ? realFAQs : faqs;
+  const displayComparisons = realComparisons.length > 0 ? realComparisons : comparisons;
 
   const { scrollYProgress } = useScroll();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -712,6 +742,113 @@ export default function Home() {
                   </div>
                 </div>
               </motion.div>
+
+              {/* PREMIUM COURSES HIGHLIGHT - Hero Section */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.4, duration: 0.8 }}
+                className="pt-8"
+              >
+                <div className="mb-6">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 via-accent-3/10 to-accent-1/10 border border-primary/20 backdrop-blur-sm">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-black text-foreground dark:text-white uppercase tracking-widest">Featured Courses</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {displayCourses.slice(0, 3).map((course, idx) => (
+                    <motion.div
+                      key={course.title}
+                      initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{ delay: 1.6 + idx * 0.1, duration: 0.5 }}
+                      whileHover={{ y: -8, scale: 1.02 }}
+                      className="group relative"
+                    >
+                      <Link href={course.href} className="block">
+                        {/* Glow Effect */}
+                        <div className={`absolute -inset-1 bg-gradient-to-r ${course.color.replace('/20', '/40').replace('/5', '/20')} rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500`} />
+
+                        {/* Card */}
+                        <div className="relative h-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-2 border-white/20 dark:border-slate-800/50 rounded-3xl p-6 overflow-hidden transition-all duration-500 group-hover:border-primary/50 group-hover:shadow-2xl">
+                          {/* Animated Background Gradient */}
+                          <div className={`absolute inset-0 bg-gradient-to-br ${course.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+
+                          {/* Shine Effect */}
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                            animate={{
+                              x: ['-100%', '200%'],
+                            }}
+                            transition={{
+                              duration: 3,
+                              repeat: Infinity,
+                              repeatDelay: 5,
+                              ease: "easeInOut"
+                            }}
+                          />
+
+                          {/* Content */}
+                          <div className="relative z-10 space-y-4">
+                            {/* Icon with Pulse Animation */}
+                            <motion.div
+                              className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${course.color} shadow-lg group-hover:shadow-xl transition-all`}
+                              whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.1 }}
+                              transition={{ duration: 0.5 }}
+                            >
+                              <course.icon className={`h-8 w-8 ${course.iconColor}`} />
+                            </motion.div>
+
+                            {/* Title */}
+                            <div>
+                              <h3 className="text-xl font-black text-foreground dark:text-white mb-2 group-hover:text-primary transition-colors">
+                                {course.title}
+                              </h3>
+                              <p className="text-sm text-muted-foreground dark:text-slate-400 line-clamp-2 leading-relaxed">
+                                {course.description}
+                              </p>
+                            </div>
+
+                            {/* Features Count Badge */}
+                            <div className="flex items-center gap-2">
+                              <div className={`px-3 py-1.5 rounded-full bg-gradient-to-r ${course.color} border border-white/20`}>
+                                <span className={`text-xs font-black ${course.iconColor}`}>
+                                  {course.features.length} Features
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1 text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span className="text-xs font-bold">Explore</span>
+                                <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                              </div>
+                            </div>
+
+                            {/* Decorative Corner Element */}
+                            <div className={`absolute -bottom-8 -right-8 w-32 h-32 bg-gradient-to-br ${course.color} rounded-full blur-3xl opacity-0 group-hover:opacity-30 transition-opacity duration-500`} />
+                          </div>
+                        </div>
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* View All Courses Link */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 2 }}
+                  className="mt-6 text-center"
+                >
+                  <Link
+                    href="#courses"
+                    className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors group"
+                  >
+                    <span>View All Courses</span>
+                    <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </motion.div>
+              </motion.div>
             </motion.div>
 
             {/* Right Visual Column - Ultra Advanced Dashboard */}
@@ -1026,7 +1163,7 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            {features.map((feature, i) => (
+            {displayFeatures.map((feature, i) => (
               <SpotlightCard key={i} className="p-6 sm:p-12 rounded-[40px] border border-border/50 bg-white/5 flex flex-col sm:flex-row gap-8 group">
                 <div className={cn("w-20 h-20 rounded-3xl shrink-0 flex items-center justify-center bg-gradient-to-br transition-all group-hover:scale-110 shadow-xl", feature.color)}>
                   <feature.icon className={cn("h-10 w-10", feature.iconColor)} />
@@ -1050,7 +1187,7 @@ export default function Home() {
               <p className="text-lg text-muted-foreground mb-10 leading-relaxed max-w-xl">Traditional coaching is often disconnected from the actual exam algorithms. Smart Labs bridges that gap with data-driven precision.</p>
 
               <div className="space-y-6">
-                {comparisons.slice(0, 3).map((item, i) => (
+                {displayComparisons.slice(0, 3).map((item, i) => (
                   <div key={i} className="flex items-center gap-4 p-5 rounded-3xl bg-white/50 border border-white/20 backdrop-blur-sm shadow-sm">
                     <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center text-green-600 shrink-0">
                       <Check className="h-6 w-6" />
@@ -1072,7 +1209,7 @@ export default function Home() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/20">
-                    {comparisons.map((row, i) => (
+                    {displayComparisons.map((row, i) => (
                       <tr key={i} className="group hover:bg-white/40 transition-colors">
                         <td className="py-6 font-bold text-sm">{row.item}</td>
                         <td className="py-6 text-sm text-muted-foreground">
@@ -1276,7 +1413,7 @@ export default function Home() {
       </section>
 
       {/* Courses Section - Premium Design */}
-      <section className="relative py-16 sm:py-20 lg:py-32 overflow-hidden">
+      <section id="courses" className="relative py-16 sm:py-20 lg:py-32 overflow-hidden">
         {/* Background Effects */}
         <div className="absolute inset-0 bg-gradient-to-b from-secondary/50 to-background" />
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
@@ -1309,7 +1446,7 @@ export default function Home() {
             viewport={{ once: true }}
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
           >
-            {courses.map((course, index) => (
+            {displayCourses.map((course, index) => (
               <motion.div
                 key={course.title}
                 variants={itemVariants}
@@ -1400,7 +1537,7 @@ export default function Home() {
             viewport={{ once: true }}
             className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6"
           >
-            {learningMethods.map((method, index) => (
+            {displayMethods.map((method, index) => (
               <motion.div
                 key={method.title}
                 variants={itemVariants}
@@ -1795,16 +1932,22 @@ export default function Home() {
           </div>
 
           <Accordion type="single" collapsible className="space-y-4">
-            {faqs.map((faq, i) => (
-              <AccordionItem key={i} value={`item-${i}`} className="border rounded-[24px] bg-white/40 px-6 sm:px-8 hover:border-primary/50 transition-all data-[state=open]:border-primary/50 data-[state=open]:bg-white overflow-hidden">
-                <AccordionTrigger className="text-left font-bold text-lg hover:no-underline py-6">
-                  {faq.q}
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground leading-relaxed pb-6 text-base">
-                  {faq.a}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
+            {displayFAQs.map((faq, i) => {
+              // Type-safe accessor for FAQ properties
+              const question = 'question' in faq ? faq.question : (faq as any).q;
+              const answer = 'answer' in faq ? faq.answer : (faq as any).a;
+
+              return (
+                <AccordionItem key={i} value={`item-${i}`} className="border rounded-[24px] bg-white/40 px-6 sm:px-8 hover:border-primary/50 transition-all data-[state=open]:border-primary/50 data-[state=open]:bg-white overflow-hidden">
+                  <AccordionTrigger className="text-left font-bold text-lg hover:no-underline py-6">
+                    {question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground leading-relaxed pb-6 text-base">
+                    {answer}
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
           </Accordion>
         </div>
       </section>
