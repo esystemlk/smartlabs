@@ -22,6 +22,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { motion } from 'framer-motion';
 import { PerformanceOverview } from '@/components/dashboard/PerformanceOverview';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
+import { QuickActions } from '@/components/dashboard/QuickActions';
 
 const lmsFeatures = [
     { title: 'Learn with AI Tutor', description: 'Personalized neural faculty for PTE, IELTS, and CELPIP.', href: '/dashboard/ai-tutor', icon: Bot, color: "text-accent-1", bg: "bg-accent-1/10", border: "hover:border-accent-1/50", gradient: "from-accent-1/20 to-transparent" },
@@ -144,6 +145,9 @@ export default function DashboardPage() {
 
                 {/* Recent Activity */}
                 <RecentActivity />
+
+                {/* Quick Actions */}
+                <QuickActions />
             </div>
 
             {isAdminOrDev && (

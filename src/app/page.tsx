@@ -367,6 +367,11 @@ export default function Home() {
 
   const displayFAQs = realFAQs.length > 0 ? realFAQs : faqs;
   const displayComparisons = realComparisons.length > 0 ? realComparisons : comparisons;
+  const featuredCourses = (() => {
+    const targets = ['/pte', '/ielts', '/celpip'];
+    const selected = displayCourses.filter((c: any) => targets.includes(c.href));
+    return selected.length > 0 ? selected : displayCourses.slice(0, 3);
+  })();
 
   const { scrollYProgress } = useScroll();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -758,7 +763,7 @@ export default function Home() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {displayCourses.slice(0, 3).map((course, idx) => (
+                  {featuredCourses.map((course, idx) => (
                     <motion.div
                       key={course.title}
                       initial={{ opacity: 0, scale: 0.9, y: 20 }}

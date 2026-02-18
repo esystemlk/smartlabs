@@ -227,6 +227,14 @@ export function AdvancedFloatingAI() {
         handleSend(action.prompt);
     };
 
+    const handleSuggestedAction = (action: { label: string; url?: string; intent?: string }) => {
+        if (action.url) {
+            window.location.href = action.url;
+            return;
+        }
+        handleSend(action.label);
+    };
+
     return (
         <div className="fixed top-24 left-4 lg:top-auto lg:bottom-8 lg:left-8 z-[100]">
             <AnimatePresence>
@@ -348,6 +356,20 @@ export function AdvancedFloatingAI() {
                                                     <div className="whitespace-pre-wrap">
                                                         {msg.content}
                                                     </div>
+
+                                                    {msg.role === 'assistant' && msg.metadata?.suggestedActions && msg.metadata.suggestedActions.length > 0 && (
+                                                        <div className="mt-3 flex flex-wrap gap-2">
+                                                            {msg.metadata.suggestedActions.map((act: any, idx: number) => (
+                                                                <button
+                                                                    key={idx}
+                                                                    onClick={() => handleSuggestedAction(act)}
+                                                                    className="text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition"
+                                                                >
+                                                                    {act.label || act}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
 
                                                     {/* Message Actions */}
                                                     <div className="absolute -bottom-8 right-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">

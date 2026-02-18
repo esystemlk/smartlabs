@@ -12,9 +12,15 @@ const SmartLabsChatInputSchema = z.object({
     })).optional(),
 });
 
+const SuggestedActionSchema = z.object({
+    label: z.string(),
+    url: z.string().optional(),
+    intent: z.string().optional(),
+});
+
 const SmartLabsChatOutputSchema = z.object({
     response: z.string(),
-    suggestedActions: z.array(z.string()).optional(),
+    suggestedActions: z.array(SuggestedActionSchema).optional(),
     context: z.string().optional(),
 });
 
@@ -37,7 +43,7 @@ const smartLabsChatPrompt = ai.definePrompt({
 
 ## YOUR ROLE
 - Answer questions about courses, pricing, and enrollment.
-- Be friendly, professional, and concise (max 2-3 paragraphs).
+- Be friendly, professional, and concise (max 2-3 paragraphs). Use markdown for clarity when useful.
 - Encourage users to take the free diagnostic test.
 - Use emojis occasionally 😊.
 
@@ -52,7 +58,7 @@ user: {{message}}
 ## RESPONSE FORMAT
 Return a JSON object with:
 - "response": Your helpful response to the user.
-- "suggestedActions": An array of 1-3 short follow-up questions or actions the user might want to take (e.g. "Tell me about PTE", "Pricing details", "Sign up").
+- "suggestedActions": An array of 1-3 objects: { "label": string, "url"?: string, "intent"?: string }. Prefer internal links for known pages: "/courses", "/resources", "/enroll", "/apps", "/videos", "/dashboard".
 - "context": A single word describing the conversation context (e.g., "courses", "pricing", "enrollment", "support", "general").`,
 });
 
@@ -68,23 +74,34 @@ export async function chatWithSmartLabs(input: SmartLabsChatInput): Promise<Smar
     } catch (error) {
         console.error('AI Service Error:', error);
 
-        // Robust Fallback Logic
         const lowerMessage = input.message.toLowerCase();
-        let fallbackResponse = "I'm currently experiencing high traffic, but I can still help you! Please visit our [Courses](/courses) page for detailed information or contact our support team directly.";
-        let actions = ['View Courses', 'Contact Support'];
+        let fallbackResponse = "I'm currently experiencing high traffic, but I can still help you! Please visit our Courses page for detailed information or use our enrollment portal.";
+        let actions = [
+            { label: 'View Courses', url: '/courses', intent: 'courses' },
+            { label: 'Enroll', url: '/enroll', intent: 'enrollment' }
+        ];
         let context = 'general';
 
         if (lowerMessage.includes('price') || lowerMessage.includes('cost') || lowerMessage.includes('fee')) {
-            fallbackResponse = "Our pricing plans are designed to be flexible and affordable. You can view our detailed pricing on the [Pricing](/pricing) page. We offer packages for PTE, IELTS, and CELPIP tailored to your needs.";
-            actions = ['View Pricing', 'Book Consultation'];
+            fallbackResponse = "Our pricing plans are flexible and affordable. We offer packages for PTE, IELTS, and CELPIP tailored to your needs. You can proceed to enrollment or browse courses.";
+            actions = [
+                { label: 'Browse Courses', url: '/courses', intent: 'courses' },
+                { label: 'Enroll Now', url: '/enroll', intent: 'enrollment' }
+            ];
             context = 'pricing';
         } else if (lowerMessage.includes('course') || lowerMessage.includes('pte') || lowerMessage.includes('ielts') || lowerMessage.includes('celpip')) {
             fallbackResponse = "We offer comprehensive courses for PTE, IELTS, and CELPIP. Each course includes AI-powered practice, live classes, and expert feedback. Which exam are you preparing for?";
-            actions = ['PTE Course', 'IELTS Course', 'CELPIP Course'];
+            actions = [
+                { label: 'View Courses', url: '/courses', intent: 'courses' },
+                { label: 'Resources', url: '/resources', intent: 'resources' }
+            ];
             context = 'courses';
         } else if (lowerMessage.includes('book') || lowerMessage.includes('schedule') || lowerMessage.includes('register')) {
-            fallbackResponse = "You can easily book a consultation or register for a course through our [Registration Portal](https://register.smartlabs.lk). Our team gets back to you within 24 hours!";
-            actions = ['Register Now', 'Book Consultation'];
+            fallbackResponse = "You can easily register for a course through our enrollment page. Our team gets back to you within 24 hours!";
+            actions = [
+                { label: 'Enroll', url: '/enroll', intent: 'enrollment' },
+                { label: 'Schedule', url: '/schedule', intent: 'schedule' }
+            ];
             context = 'enrollment';
         }
 
