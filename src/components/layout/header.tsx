@@ -38,6 +38,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useNotifications } from "@/hooks/use-notifications";
+import { LMS_URL } from "@/lib/constants";
 
 
 const courses = [
@@ -73,7 +74,7 @@ const courses = [
 const featured = [
   {
     name: "LMS Portal",
-    href: "https://lms.smartlabs.lk",
+    href: LMS_URL,
     icon: LayoutDashboard,
     description: "Access your coursework & grades.",
     external: true
@@ -88,7 +89,7 @@ const featured = [
 ];
 
 const navLinks = [
-  { name: "LMS Portal", href: "https://lms.smartlabs.lk", external: true },
+  { name: "LMS Portal", href: LMS_URL, external: true },
   { name: "Windows App", href: "/download/windows" },
   { name: "Events", href: "/events" },
   { name: "About", href: "/about" },
@@ -183,7 +184,14 @@ export default function Header() {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center group shrink-0">
-            <Image src="/logo.png" alt="Smart Labs Logo" width={140} height={50} className="relative z-10 transition-transform group-hover:scale-105 h-auto w-auto max-h-[48px]" priority />
+            <Image
+              src="/logo.png"
+              alt="Smart Labs Logo"
+              width={180}
+              height={64}
+              className="relative z-10 transition-transform group-hover:scale-105 h-auto w-auto max-h-[64px]"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -448,10 +456,10 @@ export default function Header() {
             ) : (
               <>
                 <Button variant="ghost" asChild>
-                  <Link href="/login">Log In</Link>
+                  <Link href={LMS_URL} target="_blank" rel="noopener noreferrer">Log In</Link>
                 </Button>
                 <Button variant="default" asChild>
-                  <Link href="/signup">Get Started</Link>
+                  <Link href={LMS_URL} target="_blank" rel="noopener noreferrer">Get Started</Link>
                 </Button>
               </>
             )}
@@ -519,10 +527,10 @@ export default function Header() {
                 ) : (
                   <>
                     <Button variant="outline" className="w-full" asChild>
-                      <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
+                      <Link href={LMS_URL} target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
                     </Button>
                     <Button variant="default" className="w-full" asChild>
-                      <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
+                      <Link href={LMS_URL} target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
                     </Button>
                   </>
                 )}

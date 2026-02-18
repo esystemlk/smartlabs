@@ -1,7 +1,8 @@
 'use server';
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
+import { z } from "zod";
+import { LMS_URL } from "@/lib/constants";
 
 // Define schemas
 const SmartLabsChatInputSchema = z.object({
@@ -99,7 +100,7 @@ export async function chatWithSmartLabs(input: SmartLabsChatInput): Promise<Smar
         } else if (lowerMessage.includes('book') || lowerMessage.includes('schedule') || lowerMessage.includes('register')) {
             fallbackResponse = "You can easily register for a course through our enrollment page. Our team gets back to you within 24 hours!";
             actions = [
-                { label: 'Enroll', url: '/enroll', intent: 'enrollment' },
+                { label: 'Enroll', url: LMS_URL, intent: 'enrollment' },
                 { label: 'Schedule', url: '/schedule', intent: 'schedule' }
             ];
             context = 'enrollment';

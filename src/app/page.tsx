@@ -72,6 +72,7 @@ import { useTestimonials } from "@/hooks/use-testimonials";
 import { logTestCompletion } from "@/lib/services/activity.service";
 import { EventPopup } from "@/components/events/event-popup";
 import { useHomepageCourses, useLearningMethods, useFeatures, useFAQs, useComparisons } from "@/hooks/use-homepage-content";
+import { LMS_URL } from "@/lib/constants";
 
 
 const sampleTopics = [
@@ -710,11 +711,11 @@ export default function Home() {
                     className="group relative h-16 px-10 rounded-2xl bg-gradient-to-r from-primary via-accent-3 to-primary bg-[length:200%_100%] hover:bg-[position:100%_0] text-white text-lg font-bold transition-all duration-500 hover:scale-105 active:scale-95 shadow-[0_20px_60px_rgba(79,70,229,0.4)]"
                     asChild
                   >
-                    <Link href="/signup">
+                    <a href={LMS_URL} target="_blank" rel="noopener noreferrer">
                       <span className="relative z-10">Start Free Trial</span>
                       <ArrowRight className="ml-2 h-6 w-6 group-hover:translate-x-2 transition-transform relative z-10" />
                       <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/50 to-accent-3/50 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </Link>
+                    </a>
                   </Button>
                   <Button
                     variant="outline"
@@ -722,7 +723,7 @@ export default function Home() {
                     className="group h-16 px-10 rounded-2xl border-2 border-primary/30 bg-background/80 hover:bg-primary/5 backdrop-blur-xl text-lg text-primary font-bold transition-all hover:scale-105 active:scale-95 hover:border-primary/60"
                     asChild
                   >
-                    <a href="https://register.smartlabs.lk" target="_blank" rel="noopener noreferrer">
+                    <a href={LMS_URL} target="_blank" rel="noopener noreferrer">
                       Book Consultation
                       <PlayCircle className="ml-2 h-5 w-5 group-hover:scale-110 transition-transform" />
                     </a>
@@ -864,118 +865,23 @@ export default function Home() {
               }}
               className="lg:col-span-5 relative hidden lg:block"
             >
-              {/* Main 3D Dashboard Card */}
-              <motion.div
-                animate={{
-                  rotateX: mousePosition.y * 0.3,
-                  rotateY: -mousePosition.x * 0.3,
-                }}
-                transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                className="relative z-10 perspective-1000"
-                style={{ transformStyle: "preserve-3d" }}
-              >
-                <div className="relative w-full aspect-square bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-[#0a0e27] dark:via-[#0f172a] dark:to-[#0a0e27] rounded-[48px] border border-white/10 shadow-[0_50px_100px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-xl">
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent-3/5" />
+          {/* Smart Labs Logo - Desktop Only */}
+          <div className="absolute right-0 -top-6 lg:-top-12 xl:-top-16 z-20 pr-6 lg:pr-8 xl:pr-10 pt-4">
+            <div className="bg-white/85 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-white/30 dark:border-slate-800/60 shadow-2xl">
+              <div className="px-8 py-6 lg:px-10 lg:py-8 xl:px-12 xl:py-10">
+                <Image
+                  src="/logo.png"
+                  alt="Smart Labs"
+                  width={600}
+                  height={180}
+                  className="h-auto w-[420px] lg:w-[520px] xl:w-[600px]"
+                  priority
+                />
+              </div>
+            </div>
+          </div>
 
-                  {/* Dashboard Content */}
-                  <div className="relative p-8 space-y-6 h-full">
-                    {/* Header */}
-                    <div className="flex justify-between items-center">
-                      <div className="space-y-1">
-                        <div className="h-3 w-24 bg-white/10 rounded-full animate-pulse" />
-                        <div className="text-xs font-bold text-white/50 uppercase tracking-widest">Performance Analytics</div>
-                      </div>
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                        className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/20 to-accent-3/20 border border-primary/30 flex items-center justify-center"
-                      >
-                        <Activity className="h-6 w-6 text-primary" />
-                      </motion.div>
-                    </div>
-
-                    {/* Live Metrics Grid */}
-                    <div className="grid grid-cols-2 gap-4">
-                      {[
-                        { label: "Avg Score", value: "85", color: "from-primary/30 to-primary/10", icon: Target },
-                        { label: "Response Time", value: "1.2s", color: "from-accent-3/30 to-accent-3/10", icon: Zap },
-                        { label: "Success Rate", value: "95%", color: "from-accent-1/30 to-accent-1/10", icon: TrendingUp },
-                        { label: "Students", value: "5K+", color: "from-accent-2/30 to-accent-2/10", icon: Users },
-                      ].map((metric, i) => (
-                        <motion.div
-                          key={i}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 1.5 + i * 0.1 }}
-                          className={`relative p-5 bg-gradient-to-br ${metric.color} rounded-3xl border border-white/10 backdrop-blur-sm group hover:scale-105 transition-transform`}
-                        >
-                          <metric.icon className="h-5 w-5 text-white/40 mb-2" />
-                          <div className="text-3xl font-black text-white mb-1">{metric.value}</div>
-                          <div className="text-[9px] font-bold tracking-widest text-white/40 uppercase">{metric.label}</div>
-                        </motion.div>
-                      ))}
-                    </div>
-
-                    {/* Animated Chart */}
-                    <div className="relative h-48 bg-white/5 rounded-3xl border border-white/10 p-6 backdrop-blur-sm overflow-hidden">
-                      <div className="absolute top-4 left-6 text-xs font-bold text-white/50 uppercase tracking-widest">Weekly Progress</div>
-                      <div className="h-full flex items-end justify-between gap-3 pt-8">
-                        {[65, 45, 85, 75, 55, 90, 80].map((h, i) => (
-                          <motion.div
-                            key={i}
-                            initial={{ height: 0 }}
-                            animate={{ height: `${h}%` }}
-                            transition={{ duration: 1, delay: 2 + i * 0.1, ease: "easeOut" }}
-                            className="relative flex-1 bg-gradient-to-t from-primary via-accent-3 to-accent-1 rounded-t-xl group"
-                          >
-                            <motion.div
-                              animate={{ opacity: [0, 1, 0] }}
-                              transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
-                              className="absolute inset-0 bg-white/20 rounded-t-xl"
-                            />
-                          </motion.div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Floating Achievement Badges */}
-              <motion.div
-                animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-8 -right-8 p-5 bg-gradient-to-br from-primary/90 to-accent-3/90 rounded-3xl border border-white/20 shadow-2xl backdrop-blur-xl z-20"
-              >
-                <Trophy className="h-10 w-10 text-white" />
-              </motion.div>
-
-              <motion.div
-                animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                className="absolute -bottom-6 -left-6 p-5 bg-gradient-to-br from-accent-1/90 to-accent-2/90 rounded-3xl border border-white/20 shadow-2xl backdrop-blur-xl z-20"
-              >
-                <Brain className="h-10 w-10 text-white" />
-              </motion.div>
-
-              <motion.div
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="absolute top-1/2 -left-12 px-4 py-3 bg-gradient-to-r from-green-500/90 to-emerald-500/90 rounded-2xl shadow-xl backdrop-blur-xl z-20"
-              >
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-white" />
-                  <span className="text-sm font-bold text-white whitespace-nowrap">AI-Powered</span>
-                </div>
-              </motion.div>
-              <motion.div
-                animate={{ y: [0, 20, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                className="absolute -bottom-10 -left-10 p-8 glass-card rounded-[40px] border-accent-3/30 z-20 shadow-2xl"
-              >
-                <Brain className="h-12 w-12 text-accent-3" />
-              </motion.div>
+              <div className="relative w-full aspect-square rounded-[48px]" />
             </motion.div>
 
           </div>
@@ -1997,10 +1903,10 @@ export default function Home() {
                     className="group bg-primary text-white hover:bg-primary/90 shadow-[0_20px_50px_rgba(79,70,229,0.4)] text-lg px-12 h-16 rounded-2xl w-full sm:w-auto font-bold"
                     asChild
                   >
-                    <Link href="/signup">
+                    <a href={LMS_URL} target="_blank" rel="noopener noreferrer">
                       Start Free Trial
                       <Rocket className="ml-2 h-5 w-5 group-hover:animate-bounce" />
-                    </Link>
+                    </a>
                   </Button>
                   <Button
                     variant="outline"
@@ -2008,7 +1914,7 @@ export default function Home() {
                     className="bg-white/5 text-white border-2 border-white/20 hover:bg-white/10 backdrop-blur-xl text-lg px-12 h-16 rounded-2xl w-full sm:w-auto font-bold"
                     asChild
                   >
-                    <a href="https://register.smartlabs.lk" target="_blank" rel="noopener noreferrer">
+                    <a href={LMS_URL} target="_blank" rel="noopener noreferrer">
                       Contact Sales
                     </a>
                   </Button>

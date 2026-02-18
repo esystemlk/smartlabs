@@ -4,6 +4,8 @@ type NavLink = {
   label: string;
 };
 
+export const LMS_URL = process.env.NEXT_PUBLIC_LMS_URL || 'https://lms.smartlabs.lk';
+
 export const NAV_LINKS: NavLink[] = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About Us' },

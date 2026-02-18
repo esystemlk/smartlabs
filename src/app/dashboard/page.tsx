@@ -23,13 +23,14 @@ import { motion } from 'framer-motion';
 import { PerformanceOverview } from '@/components/dashboard/PerformanceOverview';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { QuickActions } from '@/components/dashboard/QuickActions';
+import { LMS_URL } from '@/lib/constants';
 
 const lmsFeatures = [
     { title: 'Learn with AI Tutor', description: 'Personalized neural faculty for PTE, IELTS, and CELPIP.', href: '/dashboard/ai-tutor', icon: Bot, color: "text-accent-1", bg: "bg-accent-1/10", border: "hover:border-accent-1/50", gradient: "from-accent-1/20 to-transparent" },
     { title: 'AI Score Master', description: 'Precision PTE practice with the neural scoring matrix.', href: '/dashboard/ai-score-test', icon: Target, color: "text-indigo-500", bg: "bg-indigo-500/10", border: "hover:border-indigo-500/50", gradient: "from-indigo-500/20 to-transparent" },
     { title: 'Video Gallery', description: 'Watch our latest educational videos and updates.', href: '/videos', icon: ListVideo, color: "text-red-500", bg: "bg-red-500/10", border: "hover:border-red-500/50", gradient: "from-red-500/20 to-transparent" },
     { title: 'Practice Test Area', description: 'Access the AI Scoring Engine and practice materials.', href: '/dashboard/practice-tests', icon: BookOpen, color: "text-purple-500", bg: "bg-purple-500/10", border: "hover:border-purple-500/50", gradient: "from-purple-500/20 to-transparent" },
-    { title: 'Smart Connect Portal', description: 'Login to the main student management system.', href: 'https://portal.smartlabs.lk', icon: Globe, color: "text-blue-500", bg: "bg-blue-500/10", border: "hover:border-blue-500/50", gradient: "from-blue-500/20 to-transparent" },
+    { title: 'LMS Portal', description: 'Login to the student learning system.', href: LMS_URL, icon: Globe, color: "text-blue-500", bg: "bg-blue-500/10", border: "hover:border-blue-500/50", gradient: "from-blue-500/20 to-transparent" },
     { title: 'Support Chat', description: 'Get help from our support team.', href: '/dashboard/support', icon: MessageSquare, color: "text-cyan-500", bg: "bg-cyan-500/10", border: "hover:border-cyan-500/50", gradient: "from-cyan-500/20 to-transparent" },
     { title: 'Back to Homepage', description: 'Return to the main website.', href: '/', icon: Home, color: "text-gray-500", bg: "bg-gray-500/10", border: "hover:border-gray-500/50", gradient: "from-gray-500/20 to-transparent" },
 ];
