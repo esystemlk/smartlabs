@@ -145,15 +145,16 @@ export default function LevelTestPage() {
 
             const sentenceScore = aiResult.sentences.reduce((acc, curr) => acc + curr.score, 0);
             const speakingScore = (
-                aiResult.speaking.pronunciationScore +
-                aiResult.speaking.fluencyScore +
-                aiResult.speaking.grammarScore +
-                aiResult.speaking.vocabularyScore +
-                aiResult.speaking.sentenceStructureScore
+                aiResult.speaking.readAloudPronunciation +
+                aiResult.speaking.readAloudFluency +
+                aiResult.speaking.taskGrammar +
+                aiResult.speaking.taskVocabulary +
+                aiResult.speaking.taskSentenceStructure +
+                aiResult.speaking.taskPronunciationFluency
             );
 
             const totalScore = grammarScore + vocabularyScore + spellingScore + sentenceScore + readingScore + speakingScore;
-            const percentageScore = totalScore * 2;
+            const percentageScore = (totalScore / 50) * 100;
 
             // Level Classification
             let level = "";
@@ -167,7 +168,6 @@ export default function LevelTestPage() {
                 userId: user?.uid,
                 userName: user?.displayName || user?.email?.split('@')[0],
                 userEmail: user?.email,
-                timestamp: serverTimestamp(),
                 scores: {
                     grammar: grammarScore,
                     vocabulary: vocabularyScore,
@@ -191,7 +191,10 @@ export default function LevelTestPage() {
 
             // 3. Save to Firestore
             if (firestore) {
-                await addDoc(collection(firestore, 'levelTestResults'), resultData);
+                await addDoc(collection(firestore, 'levelTestResults'), {
+                    ...resultData,
+                    timestamp: serverTimestamp()
+                });
             }
 
             setTestResult(resultData);
@@ -844,7 +847,7 @@ function ResultStep({ result }: { result: any }) {
                             <ScoreStat label="Spelling" score={result.scores.spelling} total={5} />
                             <ScoreStat label="Reading" score={result.scores.reading} total={10} />
                             <ScoreStat label="Writing" score={result.scores.sentences} total={5} />
-                            <ScoreStat label="Speaking" score={result.scores.speaking} total={10} />
+                            <ScoreStat label="Speaking" score={result.scores.speaking} total={15} />
                         </div>
 
                         <Separator />

@@ -10,11 +10,12 @@ export const LevelTestScoringSchema = z.object({
         feedback: z.string()
     })),
     speaking: z.object({
-        pronunciationScore: z.number(), // 0 or 1
-        fluencyScore: z.number(), // 0 or 1 (no long pauses)
-        grammarScore: z.number(), // 0 or 1
-        vocabularyScore: z.number(), // 0 or 1
-        sentenceStructureScore: z.number(), // 0 or 1
+        readAloudPronunciation: z.number(), // 0 to 2.5
+        readAloudFluency: z.number(), // 0 to 2.5
+        taskGrammar: z.number(), // 0 to 2.5
+        taskVocabulary: z.number(), // 0 to 2.5
+        taskSentenceStructure: z.number(), // 0 to 2.5
+        taskPronunciationFluency: z.number(), // 0 to 2.5
         overallFeedback: z.string(),
         transcript: z.string().optional()
     }),
@@ -49,7 +50,7 @@ const levelTestScoringPrompt = ai.definePrompt({
     prompt: `
         You are an expert IELTS and PTE examiner. Your task is to score a student's level test.
         
-        Section 4: Sentence Construction (5 Marks)
+        ### Section 4: Sentence Construction (5 Marks Total)
         Scoring Criteria: 1 mark per sentence if it has correct grammar AND meets the requested structure.
         Tasks and Student Answers:
         {{#each sentences}}
@@ -57,25 +58,32 @@ const levelTestScoringPrompt = ai.definePrompt({
         Answer: {{answer}}
         {{/each}}
         
-        Section 6: Speaking (5 Marks Total)
-        The student performed two tasks:
-        1. Read Aloud: "{{speaking.readAloudText}}"
-        2. Speech Task: "{{speaking.speechTask}}"
+        ### Section 6: Speaking (15 Marks Total)
+        The student performed two tasks recorded in the provided audio:
+        1. Read Aloud Task: "{{speaking.readAloudText}}"
+        2. Topic Speech Task: "{{speaking.speechTask}}"
         
-        Analyze the provided audio for both tasks.
+        Analyze the provided audio for both tasks and score as follows:
         
-        Speaking Scoring Checklist (1 mark each):
-        - Pronunciation clear
-        - Speaks without long pauses (fluency)
-        - Uses correct grammar
-        - Uses topic vocabulary
-        - Speaks in full sentences
+        Task 1: Read Aloud (5 Marks)
+        - Pronunciation: (0 to 2.5 Marks)
+        - Fluency: (0 to 2.5 Marks)
+        
+        Task 2: Topic Speech (10 Marks)
+        - Grammar: (0 to 2.5 Marks)
+        - Vocabulary: (0 to 2.5 Marks)
+        - Sentence Structure: (0 to 2.5 Marks)
+        - Pronunciation & Fluency: (0 to 2.5 Marks)
+        
+        Total Speaking Marks: (15 Marks)
         
         Provide a diagnostic report:
         - Grammar Level: Weak / Basic / Good / Advanced
         - Sentence Complexity: Simple / Compound / Complex / Academic
         - Vocabulary Level: Limited / Functional / Academic
         - Pronunciation: Poor / Understandable / Clear / Fluent
+        
+        Return the transcript of what you heard as well.
         
         Here is the user's audio recording:
         {{media url=speaking.audioDataUri}}
@@ -100,11 +108,23 @@ const scoreLevelTestFlow = ai.defineFlow(
         outputSchema: LevelTestScoringSchema,
     },
     async (input) => {
-        const { output } = await levelTestScoringPrompt(input);
-        if (!output) {
-            throw new Error('AI failed to generate a score for the level test.');
+        try {
+            console.log('Starting Level Test Scoring Flow...');
+            console.log('Sentence count:', input.sentences.length);
+            console.log('Audio data available:', !!input.speaking.audioDataUri);
+
+            const { output } = await levelTestScoringPrompt(input);
+            if (!output) {
+                console.error('AI output was empty for level test scoring');
+                throw new Error('AI failed to generate a score for the level test.');
+            }
+
+            console.log('Scoring successful!');
+            return output;
+        } catch (error) {
+            console.error('Error in scoreLevelTestFlow:', error);
+            throw error;
         }
-        return output;
     }
 );
 

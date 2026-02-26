@@ -91,6 +91,7 @@ const featured = [
 const navLinks = [
   { name: "LMS Portal", href: LMS_URL, external: true },
   { name: "Windows App", href: "/download/windows" },
+  { name: "Level Test", href: "/level-test", highlight: true },
   { name: "Events", href: "/events" },
   { name: "About", href: "/about" },
   { name: "Help", href: "/support", icon: HelpCircle },
@@ -281,7 +282,7 @@ export default function Header() {
               </AnimatePresence>
             </div>
 
-            {mounted && navLinks.map((link) => (
+            {mounted && navLinks.map((link: any) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -289,10 +290,19 @@ export default function Header() {
                   "relative px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2",
                   pathname === link.href
                     ? "text-primary bg-primary/5"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    : link.highlight
+                      ? "text-primary hover:bg-primary/10 bg-primary/5 border border-primary/20 shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
+                {link.highlight && <Sparkles className="h-3.5 w-3.5 animate-pulse" />}
                 {link.name}
+                {link.highlight && (
+                  <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                  </span>
+                )}
               </Link>
             ))}
           </div>
@@ -499,13 +509,19 @@ export default function Header() {
                 ))}
               </div>
 
-              {navLinks.map((link) => (
+              {navLinks.map((link: any) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-2 rounded-lg text-foreground hover:bg-muted transition-colors"
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-3 rounded-xl transition-all",
+                    link.highlight
+                      ? "bg-primary/10 text-primary font-bold border border-primary/20"
+                      : "text-foreground hover:bg-muted"
+                  )}
                 >
+                  {link.highlight && <Sparkles className="h-4 w-4" />}
                   {link.name}
                 </Link>
               ))}

@@ -43,31 +43,6 @@ export default function CoursesPage() {
             </p>
           </div>
 
-          <div className="mb-12">
-            <div className="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-3xl p-8 md:p-12 text-white shadow-xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                <Trophy className="w-64 h-64 -mr-20 -mt-20" />
-              </div>
-              <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                <div className="space-y-4 text-center md:text-left">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold uppercase tracking-wider">
-                    <Sparkles className="w-3 h-3" />
-                    PTE–IELTS Smart Level Test
-                  </div>
-                  <h2 className="text-3xl md:text-4xl font-black font-headline">Not sure which course is right for you?</h2>
-                  <p className="text-indigo-100 text-lg max-w-xl">
-                    Take our advanced AI-powered level test to identify your current proficiency and get a personalized study recommendation in just 25 minutes.
-                  </p>
-                </div>
-                <Button asChild size="lg" className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold h-14 px-8 rounded-full shadow-lg shadow-black/10">
-                  <Link href="/level-test">
-                    Start Level Test Now
-                    <ArrowRight className="ml-2 w-5 h-5" />
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
 
           {isLoading ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
