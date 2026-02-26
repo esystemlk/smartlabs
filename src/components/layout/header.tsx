@@ -282,29 +282,49 @@ export default function Header() {
               </AnimatePresence>
             </div>
 
-            {mounted && navLinks.map((link: any) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "relative px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2",
-                  pathname === link.href
-                    ? "text-primary bg-primary/5"
-                    : link.highlight
-                      ? "text-primary hover:bg-primary/10 bg-primary/5 border border-primary/20 shadow-sm"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            {mounted && (
+              <>
+                {user && (
+                  <Link
+                    href="/dashboard"
+                    className={cn(
+                      "relative px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2",
+                      pathname === "/dashboard"
+                        ? "text-primary bg-primary/5"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    )}
+                  >
+                    <LayoutDashboard className="h-4 w-4" />
+                    Dashboard
+                  </Link>
                 )}
-              >
-                {link.highlight && <Sparkles className="h-3.5 w-3.5 animate-pulse" />}
-                {link.name}
-                {link.highlight && (
-                  <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                  </span>
-                )}
-              </Link>
-            ))}
+                {navLinks.map((link: any) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    target={link.external ? "_blank" : undefined}
+                    rel={link.external ? "noopener noreferrer" : undefined}
+                    className={cn(
+                      "relative px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2",
+                      pathname === link.href
+                        ? "text-primary bg-primary/5"
+                        : link.highlight
+                          ? "text-primary hover:bg-primary/10 bg-primary/5 border border-primary/20 shadow-sm"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    )}
+                  >
+                    {link.highlight && <Sparkles className="h-3.5 w-3.5 animate-pulse" />}
+                    {link.name}
+                    {link.highlight && (
+                      <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </>
+            )}
           </div>
 
           {/* CTA & Search */}
@@ -436,7 +456,7 @@ export default function Header() {
                         <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center group-focus:bg-white/20 transition-colors">
                           <LayoutDashboard className="h-4 w-4 text-primary group-focus:text-white" />
                         </div>
-                        <span className="text-sm font-bold tracking-tight">Access Lab Matrix</span>
+                        <span className="text-sm font-bold tracking-tight">Dashboard</span>
                         <ArrowRight className="h-3 w-3 ml-auto opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
                       </Link>
                     </DropdownMenuItem>
