@@ -6,7 +6,9 @@ const LMS_URL = process.env.NEXT_PUBLIC_LMS_URL || 'https://lms.smartlabs.lk';
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  if (pathname === '/enroll' || pathname.startsWith('/dashboard')) {
+  // We are now using the local /dashboard for AI scoring and student tools.
+  // The external LMS is linked explicitly where needed.
+  if (pathname === '/enroll') {
     return NextResponse.redirect(LMS_URL);
   }
 
@@ -14,5 +16,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/enroll', '/dashboard/:path*'],
+  matcher: ['/enroll'],
 };
