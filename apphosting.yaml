@@ -5,3 +5,11 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+
+env:
+  - variable: GOOGLE_GENAI_API_KEY
+    value: AIzaSyBEvnHe9qFYuJuyroTfQomAFVme3MUIgwY
+  - variable: YOUTUBE_API_KEY
+    value: AIzaSyBUeC5ng98Ef1_bOaDXsqjSgEpp1BtsFsc
+  - variable: NEXT_PUBLIC_YOUTUBE_CHANNEL_ID
+    value: UCeN-e4QcGjVaEwBuTLDR34w
