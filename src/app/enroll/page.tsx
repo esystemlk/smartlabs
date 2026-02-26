@@ -34,6 +34,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { CreditCard, UserPlus, Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { LMS_URL } from '@/lib/constants';
 import { useUser, useFirebase, useCollection, useMemoFirebase } from '@/firebase';
 import { payhereUrls } from '@/lib/payhere';
 import { enrollAction, type ServerActionState } from './actions';
@@ -56,6 +57,12 @@ type FormValues = z.infer<typeof formSchema>;
 
 
 export default function EnrollPage() {
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.location.href = LMS_URL;
+    }
+  }, []);
+
   const { toast } = useToast();
   const { user } = useUser();
   const { firestore } = useFirebase();
@@ -128,9 +135,12 @@ export default function EnrollPage() {
       <section className="py-12 md:py-20">
         <div className="container mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-3xl md:text-4xl font-headline font-bold">Enroll Now</h1>
+            <h1 className="text-3xl md:text-4xl font-headline font-bold">Redirecting to LMS…</h1>
             <p className="mt-4 text-base md:text-lg text-muted-foreground max-w-3xl mx-auto">
-              Begin your journey to success. Secure your spot in one of our expert-led courses.
+              Please wait while we take you to our LMS enrollment page.
+            </p>
+            <p className="mt-3">
+              If you are not redirected automatically, <a className="text-primary font-bold underline" href={LMS_URL}>click here</a>.
             </p>
           </div>
           <div className="grid lg:grid-cols-2 gap-8 md:gap-16 items-start">

@@ -30,10 +30,10 @@ export function FloatingAI() {
     ]);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
-    const [suggestedActions, setSuggestedActions] = useState<string[]>([
-        'What courses do you offer?',
-        'How does AI scoring work?',
-        'Tell me about pricing'
+    const [suggestedActions, setSuggestedActions] = useState<Array<{ label: string; url?: string; intent?: string }>>([
+        { label: 'What courses do you offer?', url: '/courses', intent: 'courses' },
+        { label: 'How does AI scoring work?' },
+        { label: 'Tell me about pricing' }
     ]);
     const { toast } = useToast();
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -69,7 +69,7 @@ export function FloatingAI() {
 
             // Update suggested actions
             if (response.suggestedActions && response.suggestedActions.length > 0) {
-                setSuggestedActions(response.suggestedActions);
+                setSuggestedActions(response.suggestedActions as any);
             }
         } catch (error) {
             toast({
@@ -164,10 +164,16 @@ export function FloatingAI() {
                                     {suggestedActions.map((action, idx) => (
                                         <button
                                             key={idx}
-                                            onClick={() => handleSend(action)}
+                                            onClick={() => {
+                                                if (action.url) {
+                                                    window.location.href = action.url;
+                                                } else {
+                                                    handleSend(action.label);
+                                                }
+                                            }}
                                             className="px-4 py-2 rounded-xl bg-background/50 border-2 border-border/50 text-[9px] font-black uppercase tracking-widest whitespace-nowrap hover:bg-primary/10 hover:border-primary/50 transition-all active:scale-95"
                                         >
-                                            {action}
+                                            {action.label}
                                         </button>
                                     ))}
                                 </div>

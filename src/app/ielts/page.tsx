@@ -17,6 +17,7 @@ import {
   Target
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LMS_URL } from "@/lib/constants";
 
 const ieltsSkills = [
   { icon: Headphones, title: "Listening", description: "Understand spoken English in various accents and contexts" },
@@ -66,7 +67,7 @@ export default function IELTS() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button variant="accent" size="xl" asChild>
-                <Link href="/enroll">
+                <Link href={LMS_URL} target="_blank" rel="noopener noreferrer">
                   Enroll Now
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>

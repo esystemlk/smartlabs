@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Check, View, Trophy, Sparkles, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LMS_URL } from '@/lib/constants';
 
 export default function CoursesPage() {
   const { firestore } = useFirebase();
@@ -120,7 +121,7 @@ export default function CoursesPage() {
                         </Button>
                       ) : (
                         <Button asChild className="w-full">
-                          <Link href="/enroll">Enroll Now</Link>
+                          <Link href={LMS_URL} target="_blank" rel="noopener noreferrer">Enroll Now</Link>
                         </Button>
                       )}
                     </CardFooter>

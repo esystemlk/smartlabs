@@ -1,7 +1,8 @@
 'use server';
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
+import { z } from "zod";
+import { LMS_URL } from "@/lib/constants";
 
 // Define schemas
 const SmartLabsChatInputSchema = z.object({
@@ -13,9 +14,15 @@ const SmartLabsChatInputSchema = z.object({
     })).optional(),
 });
 
+const SuggestedActionSchema = z.object({
+    label: z.string(),
+    url: z.string().optional(),
+    intent: z.string().optional(),
+});
+
 const SmartLabsChatOutputSchema = z.object({
     response: z.string(),
-    suggestedActions: z.array(z.string()).optional(),
+    suggestedActions: z.array(SuggestedActionSchema).optional(),
     context: z.string().optional(),
 });
 
@@ -85,9 +92,11 @@ ${EXAM_KNOWLEDGE}
 
 ## YOUR ROLE
 - **Expertise**: Act as a senior tutor for {{mode}}. If mode is 'general', be a helpful guide.
+- **Answer questions** about courses, pricing, and enrollment.
 - **Research Simulation**: Use the provided Knowledge Base to give detailed, specific answers about exam structures and question types. Don't be vague.
-- **Style**: Professional, encouraging, and authoritative yet friendly.
+- **Style**: Professional, encouraging, and friendly. Be concise (max 2-3 paragraphs). Use markdown for clarity.
 - **Constraint**: If asked for specific exam questions, provide *examples* similar to real ones (simulated), but clarify they are practice examples.
+- **Action**: Encourage users to take the free diagnostic test.
 - Use emojis occasionally 😊.
 
 ## CONVERSATION HISTORY
@@ -101,7 +110,7 @@ user: {{message}}
 ## RESPONSE FORMAT
 Return a JSON object with:
 - "response": Your helpful response. Use Markdown for formatting (bold, lists).
-- "suggestedActions": An array of 1-3 short follow-up questions or actions (e.g., "Give me a practice topic", "Explain scoring").
+- "suggestedActions": An array of 1-3 objects: { "label": string, "url"?: string, "intent"?: string }. Prefer internal links for known pages: "/courses", "/resources", "/enroll", "/apps", "/videos", "/dashboard".
 - "context": A single word describing the conversation context (e.g., "courses", "pricing", "enrollment", "support", "general", "pte", "ielts", "celpip").`,
 });
 
@@ -117,35 +126,58 @@ export async function chatWithSmartLabs(input: SmartLabsChatInput): Promise<Smar
     } catch (error) {
         console.error('AI Service Error:', error);
 
-        // Robust Fallback Logic
         const lowerMessage = input.message.toLowerCase();
-        let fallbackResponse = "I'm currently experiencing high traffic, but I can still help you! Please visit our [Courses](/courses) page for detailed information or contact our support team directly.";
-        let actions = ['View Courses', 'Contact Support'];
+        let fallbackResponse = "I'm currently experiencing high traffic, but I can still help you! Please visit our Courses page for detailed information or use our enrollment portal.";
+        let actions: any[] = [
+            { label: 'View Courses', url: '/courses', intent: 'courses' },
+            { label: 'Enroll', url: '/enroll', intent: 'enrollment' }
+        ];
         let context = 'general';
 
         if (lowerMessage.includes('price') || lowerMessage.includes('cost') || lowerMessage.includes('fee')) {
-            fallbackResponse = "Our pricing plans are designed to be flexible and affordable. You can view our detailed pricing on the [Pricing](/pricing) page. We offer packages for PTE, IELTS, and CELPIP tailored to your needs.";
-            actions = ['View Pricing', 'Book Consultation'];
+            fallbackResponse = "Our pricing plans are flexible and affordable. We offer packages for PTE, IELTS, and CELPIP tailored to your needs. You can proceed to enrollment or browse courses.";
+            actions = [
+                { label: 'Browse Courses', url: '/courses', intent: 'courses' },
+                { label: 'Enroll Now', url: '/enroll', intent: 'enrollment' }
+            ];
             context = 'pricing';
         } else if (lowerMessage.includes('course') || lowerMessage.includes('pte') || lowerMessage.includes('ielts') || lowerMessage.includes('celpip')) {
             fallbackResponse = "We offer comprehensive courses for PTE, IELTS, and CELPIP. Each course includes AI-powered practice, live classes, and expert feedback. Which exam are you preparing for?";
-            actions = ['PTE Course', 'IELTS Course', 'CELPIP Course'];
+            actions = [
+                { label: 'View Courses', url: '/courses', intent: 'courses' },
+                { label: 'Resources', url: '/resources', intent: 'resources' }
+            ];
             context = 'courses';
         } else if (lowerMessage.includes('book') || lowerMessage.includes('schedule') || lowerMessage.includes('register')) {
-            fallbackResponse = "You can easily book a consultation or register for a course through our [Registration Portal](https://register.smartlabs.lk). Our team gets back to you within 24 hours!";
-            actions = ['Register Now', 'Book Consultation'];
+            fallbackResponse = "You can easily register for a course through our enrollment page. Our team gets back to you within 24 hours!";
+            actions = [
+                { label: 'Enroll', url: LMS_URL, intent: 'enrollment' },
+                { label: 'Schedule', url: '/schedule', intent: 'schedule' }
+            ];
             context = 'enrollment';
         } else if (lowerMessage.includes('pte')) {
             fallbackResponse = "PTE Academic is a computer-based English test. It assesses Speaking, Writing, Reading, and Listening. We offer AI-scored mock tests and expert classes. Ask me specifically about 'PTE Speaking' or 'PTE Scoring'!";
-            actions = ['PTE Speaking Tips', 'PTE Essay Templates', 'Book PTE Class'];
+            actions = [
+                { label: 'PTE Speaking Tips', intent: 'pte' },
+                { label: 'PTE Essay Templates', intent: 'pte' },
+                { label: 'Book PTE Class', url: LMS_URL, intent: 'enrollment' }
+            ];
             context = 'pte';
         } else if (lowerMessage.includes('ielts')) {
             fallbackResponse = "IELTS comes in Academic (Study) and General (Migration) modules. Key to high bands is lexical resource and coherence. How can I help with your IELTS prep?";
-            actions = ['IELTS Writing Task 2', 'IELTS Speaking', 'Book IELTS Class'];
+            actions = [
+                { label: 'IELTS Writing Task 2', intent: 'ielts' },
+                { label: 'IELTS Speaking', intent: 'ielts' },
+                { label: 'Book IELTS Class', url: LMS_URL, intent: 'enrollment' }
+            ];
             context = 'ielts';
         } else if (lowerMessage.includes('celpip')) {
             fallbackResponse = "CELPIP is designed for Canadian immigration. It focuses on functional English. Our course covers all 8 speaking tasks and both writing tasks perfectly.";
-            actions = ['CELPIP Speaking Tasks', 'CELPIP Email Writing', 'Book CELPIP Class'];
+            actions = [
+                { label: 'CELPIP Speaking Tasks', intent: 'celpip' },
+                { label: 'CELPIP Email Writing', intent: 'celpip' },
+                { label: 'Book CELPIP Class', url: LMS_URL, intent: 'enrollment' }
+            ];
             context = 'celpip';
         }
 
