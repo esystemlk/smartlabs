@@ -38,31 +38,65 @@ export default function SpeakingTaskPage() {
 
     const section = 'speaking';
     const task = params.task as string;
-    const id = parseInt(params.id as string);
+    const paramId = params.id as string;
+    const isGenerated = paramId === 'generated-ai';
+    const id = isGenerated ? 0 : parseInt(paramId);
 
     const [recordingStatus, setRecordingStatus] = useState<'idle' | 'preparing' | 'recording' | 'stopped'>('idle');
     const [prepTime, setPrepTime] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(isGenerated);
     const [result, setResult] = useState<any>(null);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+    const [generatedData, setGeneratedData] = useState<any>(null);
 
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Get current question data
-    const questionData = (pteSpeakingData as any)[task]?.[id - 1];
-
+    // Load data (Static or AI Generated)
     useEffect(() => {
-        if (!questionData) {
-            router.push(`/dashboard/ai-score-test/${section}`);
-        }
-    }, [questionData, router, section]);
+        const loadQuestion = async () => {
+            if (isGenerated) {
+                try {
+                    setIsGenerating(true);
+                    const { generateExamQuestion } = await import('@/ai/flows/generate-question');
+                    const question = await generateExamQuestion({
+                        examType: 'PTE',
+                        taskType: task.replace(/-/g, ' ')
+                    });
+
+                    setGeneratedData({
+                        text: question.content,
+                        sentence: question.content,
+                        prompt: question.title,
+                        imageUrl: 'https://placehold.co/600x400/1e293b/FFF?text=Visual+Matrix',
+                        lectureTranscript: question.content,
+                        question: question.content,
+                        expectedAnswer: question.answer || question.content // Fallback to content if answer not provided (e.g. read aloud)
+                    });
+                    setIsGenerating(false);
+                } catch (error) {
+                    toast({ variant: 'destructive', title: 'Generation Failed', description: 'Could not generate question.' });
+                    router.push(`/dashboard/ai-score-test/${section}`);
+                }
+            } else {
+                const staticData = (pteSpeakingData as any)[task]?.[id - 1];
+                if (!staticData) {
+                    router.push(`/dashboard/ai-score-test/${section}`);
+                }
+            }
+        };
+
+        loadQuestion();
+    }, [isGenerated, task, id, router, section, toast]);
+
+    const questionData = isGenerated ? generatedData : (pteSpeakingData as any)[task]?.[id - 1];
 
     useEffect(() => {
         const getPermission = async () => {
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 try {
                     await navigator.mediaDevices.getUserMedia({ audio: true });
                     setHasPermission(true);
@@ -75,6 +109,16 @@ export default function SpeakingTaskPage() {
         };
         getPermission();
     }, []);
+
+    const speakText = (text: string) => {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1; // Normal speed
+            window.speechSynthesis.speak(utterance);
+        } else {
+            toast({ variant: 'destructive', title: 'TTS Error', description: 'Text-to-Speech not supported.' });
+        }
+    };
 
     const startRecording = async () => {
         if (!hasPermission) return;
@@ -122,7 +166,7 @@ export default function SpeakingTaskPage() {
                 } else if (task === 'retell-lecture') {
                     scoreResult = await scorePteRetellLecture({ lectureTranscript: questionData.lectureTranscript, audioDataUri: base64Audio });
                 } else if (task === 'answer-short-question') {
-                    scoreResult = await scorePteAnswerShortQuestion({ questionAudioTranscript: questionData.question, expectedAnswer: questionData.expectedAnswer, audioDataUri: base64Audio });
+                    scoreResult = await scorePteAnswerShortQuestion({ questionAudioTranscript: questionData.question, expectedAnswer: questionData.expectedAnswer || 'answer', audioDataUri: base64Audio });
                 }
 
                 setResult(scoreResult);
@@ -135,6 +179,21 @@ export default function SpeakingTaskPage() {
         }
     };
 
+    if (isGenerating) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center space-y-6 animate-in fade-in zoom-in duration-500">
+                <div className="relative">
+                    <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
+                    <Loader2 className="h-16 w-16 text-primary animate-spin relative z-10" />
+                </div>
+                <div>
+                    <h2 className="text-2xl font-black font-display tracking-tight mb-2">Generating Neural Speaking Task...</h2>
+                    <p className="text-muted-foreground font-medium animate-pulse">Synthesizing audio patterns from recent exams...</p>
+                </div>
+            </div>
+        );
+    }
+
     if (!questionData) return null;
 
     return (
@@ -144,6 +203,11 @@ export default function SpeakingTaskPage() {
                     <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" /> Back to List
                 </Button>
                 <div className="flex items-center gap-4">
+                    {isGenerated && (
+                        <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none font-black animate-pulse shadow-lg shadow-purple-500/20">
+                            <Sparkles className="h-3 w-3 mr-1" /> AI GENERATED
+                        </Badge>
+                    )}
                     <Badge variant="outline" className="rounded-full px-4 py-1.5 border-primary/20 bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest">
                         Task: {task.replace('-', ' ')}
                     </Badge>
@@ -179,7 +243,11 @@ export default function SpeakingTaskPage() {
                                         </div>
                                         <div className="text-center">
                                             <p className="text-lg font-black uppercase tracking-widest text-muted-foreground mb-4">Listening Mode Active</p>
-                                            <Button variant="outline" className="rounded-2xl h-14 px-10 font-black tracking-widest border-2 hover:bg-primary/10">
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => speakText(questionData.sentence)}
+                                                className="rounded-2xl h-14 px-10 font-black tracking-widest border-2 hover:bg-primary/10"
+                                            >
                                                 <Play className="mr-2 h-4 w-4 fill-primary text-primary" /> PLAY AUDIO
                                             </Button>
                                         </div>
@@ -187,13 +255,49 @@ export default function SpeakingTaskPage() {
                                 )}
                                 {task === 'describe-image' && (
                                     <div className="flex flex-col items-center gap-6">
-                                        <div className="relative w-full aspect-video rounded-[2rem] overflow-hidden border-4 border-white shadow-2xl">
-                                            <img src={questionData.imageUrl} alt="PTE Task" className="w-full h-full object-cover" />
+                                        <div className="relative w-full aspect-video rounded-[2rem] overflow-hidden border-4 border-white shadow-2xl bg-muted flex items-center justify-center">
+                                            <img src={questionData.imageUrl} alt="PTE Task" className="w-full h-full object-cover" onError={(e) => {
+                                                (e.target as HTMLImageElement).src = 'https://placehold.co/600x400/1e293b/FFF?text=Imagine+Chart';
+                                            }} />
                                             <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl text-white text-[10px] font-black uppercase tracking-widest">
-                                                Visual Matrix: {questionData.type}
+                                                Visual Matrix: Generated
                                             </div>
                                         </div>
                                         <p className="text-lg font-bold text-center text-muted-foreground">"{questionData.prompt}"</p>
+                                    </div>
+                                )}
+                                {task === 'retell-lecture' && (
+                                    <div className="flex flex-col items-center justify-center py-12 gap-8">
+                                        <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/20 animate-pulse">
+                                            <Volume2 className="h-10 w-10 text-primary" />
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-lg font-black uppercase tracking-widest text-muted-foreground mb-4">Lecture Audio</p>
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => speakText(questionData.lectureTranscript)}
+                                                className="rounded-2xl h-14 px-10 font-black tracking-widest border-2 hover:bg-primary/10"
+                                            >
+                                                <Play className="mr-2 h-4 w-4 fill-primary text-primary" /> PLAY LECTURE
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+                                {task === 'answer-short-question' && (
+                                    <div className="flex flex-col items-center justify-center py-12 gap-8">
+                                        <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/20 animate-pulse">
+                                            <Volume2 className="h-10 w-10 text-primary" />
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-lg font-black uppercase tracking-widest text-muted-foreground mb-4">Question Audio</p>
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => speakText(questionData.question)}
+                                                className="rounded-2xl h-14 px-10 font-black tracking-widest border-2 hover:bg-primary/10"
+                                            >
+                                                <Play className="mr-2 h-4 w-4 fill-primary text-primary" /> PLAY QUESTION
+                                            </Button>
+                                        </div>
                                     </div>
                                 )}
                             </div>

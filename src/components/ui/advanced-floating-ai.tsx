@@ -33,7 +33,8 @@ import {
     Clock,
     Star,
     Target,
-    Lightbulb
+    Lightbulb,
+    PenTool
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -43,6 +44,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Message {
     role: 'user' | 'assistant';
@@ -58,15 +60,27 @@ interface QuickAction {
     prompt: string;
     color: string;
     category: string;
+    mode?: string;
 }
 
 const quickActions: QuickAction[] = [
-    { icon: GraduationCap, label: 'Courses', prompt: 'What courses do you offer?', color: 'from-blue-500 to-cyan-500', category: 'info' },
-    { icon: DollarSign, label: 'Pricing', prompt: 'Tell me about pricing and payment plans', color: 'from-green-500 to-emerald-500', category: 'info' },
-    { icon: Calendar, label: 'Schedule', prompt: 'How can I schedule a class?', color: 'from-purple-500 to-pink-500', category: 'action' },
-    { icon: Brain, label: 'AI Scoring', prompt: 'How does AI scoring work?', color: 'from-orange-500 to-red-500', category: 'info' },
-    { icon: Video, label: 'Resources', prompt: 'Show me available learning resources', color: 'from-indigo-500 to-blue-500', category: 'resource' },
-    { icon: Target, label: 'Study Plan', prompt: 'Create a personalized study plan for me', color: 'from-teal-500 to-cyan-500', category: 'action' },
+    // General
+    { icon: GraduationCap, label: 'Courses', prompt: 'What courses do you offer?', color: 'from-blue-500 to-cyan-500', category: 'info', mode: 'general' },
+    { icon: DollarSign, label: 'Pricing', prompt: 'Tell me about pricing and payment plans', color: 'from-green-500 to-emerald-500', category: 'info', mode: 'general' },
+    { icon: Video, label: 'Resources', prompt: 'Show me available learning resources', color: 'from-indigo-500 to-blue-500', category: 'resource', mode: 'general' },
+
+    // PTE Addons
+    { icon: Brain, label: 'PTE Speaking', prompt: 'Give me tips for PTE Describe Image', color: 'from-orange-500 to-red-500', category: 'info', mode: 'pte' },
+    { icon: PenTool, label: 'PTE Essay', prompt: 'Give me a template for PTE Essay', color: 'from-pink-500 to-rose-500', category: 'action', mode: 'pte' },
+    { icon: Target, label: 'PTE Scoring', prompt: 'Explain PTE scoring criteria', color: 'from-amber-500 to-yellow-500', category: 'info', mode: 'pte' },
+
+    // IELTS Addons
+    { icon: FileText, label: 'Writing Task 2', prompt: 'Assess my IELTS Writing Task 2 structure', color: 'from-purple-500 to-violet-500', category: 'action', mode: 'ielts' },
+    { icon: MessageSquare, label: 'Cue Cards', prompt: 'Give me a practice Cue Card topic', color: 'from-indigo-500 to-blue-500', category: 'action', mode: 'ielts' },
+
+    // CELPIP Addons
+    { icon: Mic, label: 'Speaking', prompt: 'Tips for CELPIP Speaking Task 1', color: 'from-emerald-500 to-teal-500', category: 'info', mode: 'celpip' },
+    { icon: BookOpen, label: 'Reading', prompt: 'How to manage time in CELPIP Reading?', color: 'from-cyan-500 to-blue-500', category: 'info', mode: 'celpip' },
 ];
 
 export function AdvancedFloatingAI() {
@@ -74,7 +88,7 @@ export function AdvancedFloatingAI() {
     const [messages, setMessages] = useState<Message[]>([
         {
             role: 'assistant',
-            content: 'Hi! 👋 I\'m your **Smart Labs AI Assistant**. I\'m here to help you with:\n\n• Course information & enrollment\n• AI-powered scoring & feedback\n• Study plans & schedules\n• Resources & materials\n• Pricing & payment options\n\nWhat would you like to explore today?',
+            content: 'Hi! 👋 I\'m your **Smart Labs AI Assistant**. Select a mode above to get specialized help for PTE, IELTS, or CELPIP, or ask me anything!',
             timestamp: new Date(),
             type: 'text'
         },
@@ -84,7 +98,7 @@ export function AdvancedFloatingAI() {
     const [isListening, setIsListening] = useState(false);
     const [showQuickActions, setShowQuickActions] = useState(true);
     const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
-    const [conversationContext, setConversationContext] = useState<string>('general');
+    const [currentMode, setCurrentMode] = useState<string>('general');
     const { toast } = useToast();
     const scrollRef = useRef<HTMLDivElement>(null);
     const recognitionRef = useRef<any>(null);
@@ -169,6 +183,7 @@ export function AdvancedFloatingAI() {
 
             const response = await chatWithSmartLabs({
                 message: textToSubmit,
+                mode: currentMode as any,
                 conversationHistory,
             });
 
@@ -182,10 +197,6 @@ export function AdvancedFloatingAI() {
 
             setMessages([...newMessages, assistantMessage]);
 
-            // Update context based on response
-            if (response.suggestedActions && response.suggestedActions.length > 0) {
-                setConversationContext(response.context || 'general');
-            }
         } catch (error) {
             toast({
                 variant: 'destructive',
@@ -211,21 +222,32 @@ export function AdvancedFloatingAI() {
         setMessages([
             {
                 role: 'assistant',
-                content: 'Conversation cleared! How can I help you today?',
+                content: `Switched to **${currentMode.toUpperCase()}** mode! How can I help you regarding this exam?`,
                 timestamp: new Date(),
                 type: 'text'
             },
         ]);
         setShowQuickActions(true);
-        toast({
-            title: 'Conversation Cleared',
-            description: 'Starting fresh!'
-        });
     };
 
     const handleQuickAction = (action: QuickAction) => {
         handleSend(action.prompt);
     };
+
+    const handleModeChange = (value: string) => {
+        setCurrentMode(value);
+        setMessages([
+            {
+                role: 'assistant',
+                content: `I am now in **${value.toUpperCase()} Expert Mode**. I have access to detailed exam patterns, scoring criteria, and practice questions. Ask me anything!`,
+                timestamp: new Date(),
+                type: 'text'
+            },
+        ]);
+        setShowQuickActions(true);
+    };
+
+    const filteredActions = quickActions.filter(a => a.mode === currentMode || (currentMode === 'general' && a.mode === 'general'));
 
     return (
         <div className="fixed top-24 left-4 lg:top-auto lg:bottom-8 lg:left-8 z-[100]">
@@ -237,7 +259,7 @@ export function AdvancedFloatingAI() {
                         exit={{ opacity: 0, scale: 0.95, y: 30 }}
                         className="mb-4"
                     >
-                        <Card className="w-[calc(100vw-32px)] sm:w-[450px] h-[600px] lg:h-[700px] flex flex-col shadow-[0_50px_100px_rgba(0,0,0,0.5)] border-2 border-primary/20 bg-background/95 backdrop-blur-3xl overflow-hidden rounded-[2.5rem] lg:rounded-[3rem] transition-all duration-500">
+                        <Card className="w-[calc(100vw-32px)] sm:w-[500px] h-[650px] lg:h-[750px] flex flex-col shadow-[0_50px_100px_rgba(0,0,0,0.5)] border-2 border-primary/20 bg-background/95 backdrop-blur-3xl overflow-hidden rounded-[2.5rem] lg:rounded-[3rem] transition-all duration-500">
                             {/* Advanced Header */}
                             <CardHeader className="bg-gradient-to-r from-primary via-accent-3 to-primary bg-[length:200%_100%] p-6 lg:p-8 text-primary-foreground relative overflow-hidden group animate-gradient">
                                 <motion.div
@@ -265,7 +287,7 @@ export function AdvancedFloatingAI() {
                                             <CardTitle className="text-xl font-black tracking-tight flex items-center gap-2">
                                                 Smart Labs AI
                                                 <Badge className="bg-white/20 text-white border-white/30 text-[9px] font-black">
-                                                    ADVANCED
+                                                    v2.0
                                                 </Badge>
                                             </CardTitle>
                                             <div className="flex items-center gap-2 mt-1 opacity-90">
@@ -275,7 +297,7 @@ export function AdvancedFloatingAI() {
                                                     className="h-2 w-2 rounded-full bg-green-400 shadow-[0_0_10px_#4ade80]"
                                                 />
                                                 <span className="text-[10px] font-bold uppercase tracking-wider">
-                                                    AI-Powered • Real-time
+                                                    {currentMode === 'general' ? 'General Assistant' : `${currentMode.toUpperCase()} Expert`}
                                                 </span>
                                             </div>
                                         </div>
@@ -300,17 +322,22 @@ export function AdvancedFloatingAI() {
                                     </div>
                                 </div>
 
-                                {/* Context Indicator */}
-                                {conversationContext !== 'general' && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="mt-4 flex items-center gap-2 text-xs bg-white/10 px-3 py-2 rounded-xl border border-white/20"
-                                    >
-                                        <Lightbulb className="h-3 w-3" />
-                                        <span className="font-bold">Context: {conversationContext}</span>
-                                    </motion.div>
-                                )}
+                                {/* Mode Selector Tabs */}
+                                <div className="mt-6">
+                                    <Tabs defaultValue="general" value={currentMode} onValueChange={handleModeChange} className="w-full">
+                                        <TabsList className="bg-black/20 p-1 w-full justify-start overflow-x-auto no-scrollbar rounded-xl border border-white/10">
+                                            {['general', 'pte', 'ielts', 'celpip'].map((mode) => (
+                                                <TabsTrigger
+                                                    key={mode}
+                                                    value={mode}
+                                                    className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-primary text-[10px] font-black uppercase tracking-wider px-3 py-1.5 min-w-[70px]"
+                                                >
+                                                    {mode}
+                                                </TabsTrigger>
+                                            ))}
+                                        </TabsList>
+                                    </Tabs>
+                                </div>
                             </CardHeader>
 
                             {/* Conversation Stream */}
@@ -349,21 +376,23 @@ export function AdvancedFloatingAI() {
                                                         {msg.content}
                                                     </div>
 
-                                                    {/* Message Actions */}
-                                                    <div className="absolute -bottom-8 right-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-7 w-7 rounded-xl bg-background/80 backdrop-blur-sm hover:bg-background"
-                                                            onClick={() => copyMessage(msg.content, i)}
-                                                        >
-                                                            {copiedMessageIndex === i ? (
-                                                                <Check className="h-3 w-3 text-green-500" />
-                                                            ) : (
-                                                                <Copy className="h-3 w-3" />
-                                                            )}
-                                                        </Button>
-                                                    </div>
+                                                    {/* Markdown Style Action */}
+                                                    {msg.role === 'assistant' && (
+                                                        <div className="absolute -bottom-8 right-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-7 w-7 rounded-xl bg-background/80 backdrop-blur-sm hover:bg-background"
+                                                                onClick={() => copyMessage(msg.content, i)}
+                                                            >
+                                                                {copiedMessageIndex === i ? (
+                                                                    <Check className="h-3 w-3 text-green-500" />
+                                                                ) : (
+                                                                    <Copy className="h-3 w-3" />
+                                                                )}
+                                                            </Button>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </motion.div>
@@ -400,7 +429,7 @@ export function AdvancedFloatingAI() {
                                                         ))}
                                                     </div>
                                                     <span className="text-[11px] font-bold text-muted-foreground">
-                                                        AI is thinking...
+                                                        Thinking in {currentMode.toUpperCase()} mode...
                                                     </span>
                                                 </div>
                                             </div>
@@ -411,16 +440,16 @@ export function AdvancedFloatingAI() {
 
                             {/* Advanced Input Interface */}
                             <CardFooter className="p-6 bg-muted/20 border-t-2 border-border/50 flex flex-col gap-4">
-                                {/* Quick Actions Grid */}
+                                {/* Quick Actions / Addons Grid */}
                                 <AnimatePresence>
                                     {showQuickActions && (
                                         <motion.div
                                             initial={{ opacity: 0, height: 0 }}
                                             animate={{ opacity: 1, height: 'auto' }}
                                             exit={{ opacity: 0, height: 0 }}
-                                            className="grid grid-cols-3 gap-2"
+                                            className="grid grid-cols-3 gap-2 w-full"
                                         >
-                                            {quickActions.slice(0, 6).map((action, idx) => (
+                                            {filteredActions.slice(0, 6).map((action, idx) => (
                                                 <motion.button
                                                     key={idx}
                                                     initial={{ opacity: 0, scale: 0.9 }}
@@ -452,7 +481,7 @@ export function AdvancedFloatingAI() {
                                 >
                                     <div className="relative flex-grow group">
                                         <Input
-                                            placeholder={isListening ? "Listening..." : "Ask me anything..."}
+                                            placeholder={isListening ? "Listening..." : `Ask about ${currentMode.toUpperCase()}...`}
                                             value={input}
                                             onChange={(e) => setInput(e.target.value)}
                                             disabled={isTyping || isListening}
@@ -497,10 +526,10 @@ export function AdvancedFloatingAI() {
                                 <div className="flex items-center justify-between text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
                                     <div className="flex items-center gap-2">
                                         <Zap className="h-3 w-3 text-primary" />
-                                        <span>Powered by AI</span>
+                                        <span>AI Model: Gemini 2.0 Flash</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span>{messages.length} messages</span>
+                                        <span>Mode: {currentMode.toUpperCase()}</span>
                                     </div>
                                 </div>
                             </CardFooter>

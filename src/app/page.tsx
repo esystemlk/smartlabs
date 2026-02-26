@@ -1660,11 +1660,17 @@ export default function Home() {
                     </Link>
                   </Button>
                 </div>
-                <div className="relative h-64 sm:h-80 lg:h-96 rounded-2xl overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-accent-4/20 to-primary/20 flex items-center justify-center">
-                    <div className="text-center">
-                      <BookOpen className="h-20 w-20 sm:h-24 sm:w-24 text-accent-4 mx-auto mb-4 animate-float" />
-                      <p className="text-lg sm:text-xl font-semibold text-foreground">Perfect Your Grammar</p>
+                <div className="relative h-64 sm:h-80 lg:h-96 rounded-2xl overflow-hidden group shadow-2xl">
+                  <Image
+                    src="/images/gc.png"
+                    alt="Grammar Clinic"
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end justify-center pb-8 sm:pb-12">
+                    <div className="text-center px-4">
+                      <p className="text-xl sm:text-2xl font-bold text-white mb-2">Perfect Your Grammar</p>
+                      <p className="text-sm text-white/80 max-w-xs mx-auto">Master English mechanics with expert interaction.</p>
                     </div>
                   </div>
                 </div>

@@ -148,10 +148,42 @@ export default function SpeakingSectionPage() {
                                     <h2 className="text-xl font-black font-display tracking-tight flex items-center gap-2">
                                         <Zap className="h-5 w-5 text-primary" /> Questions for {speakingTasks.find(t => t.id === selectedTask)?.title}
                                     </h2>
-                                    <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase tracking-widest">Randomize</Button>
+                                    <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase tracking-widest" asChild>
+                                        <Link href={`/dashboard/ai-score-test/speaking/${selectedTask}/generated-ai`}>
+                                            <Sparkles className="h-3 w-3 mr-1" /> AI Generate
+                                        </Link>
+                                    </Button>
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-4">
+                                    {/* AI Generator Card */}
+                                    <Link href={`/dashboard/ai-score-test/speaking/${selectedTask}/generated-ai`}>
+                                        <SpotlightCard className="p-6 rounded-[2rem] border-2 border-primary/20 bg-primary/5 backdrop-blur-md hover:border-primary/50 transition-all group flex items-center justify-between relative overflow-hidden">
+                                            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <div className="flex items-center gap-6 relative z-10">
+                                                <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary to-accent-3 flex items-center justify-center font-black text-white text-xl shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
+                                                    <Mic className="h-6 w-6" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-black text-lg group-hover:text-primary transition-colors">Generate Neural Speaking Task</h4>
+                                                    <div className="flex items-center gap-4 mt-1">
+                                                        <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+                                                            <Zap className="h-3 w-3 text-yellow-500" /> AI-Audio Sync
+                                                        </span>
+                                                        <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1 text-accent-1">
+                                                            <History className="h-3 w-3" /> Based on 2024-2025 Trends
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-4 relative z-10">
+                                                <Badge className="bg-primary text-white hover:bg-primary/90">NEW</Badge>
+                                                <Button size="icon" variant="ghost" className="rounded-xl group-hover:bg-primary group-hover:text-white transition-all">
+                                                    <ChevronRight className="h-5 w-5" />
+                                                </Button>
+                                            </div>
+                                        </SpotlightCard>
+                                    </Link>
                                     {[1, 2, 3, 4, 5].map((qNum) => (
                                         <Link
                                             key={qNum}

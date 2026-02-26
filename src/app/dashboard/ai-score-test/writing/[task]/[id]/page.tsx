@@ -34,29 +34,64 @@ export default function WritingTaskPage() {
 
     const section = 'writing';
     const task = params.task as string;
-    const id = parseInt(params.id as string);
+    const paramId = params.id as string;
+    const isGenerated = paramId === 'generated-ai';
+    const id = isGenerated ? 0 : parseInt(paramId);
 
     const [textInput, setTextInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(isGenerated);
     const [result, setResult] = useState<any>(null);
     const [timeLeft, setTimeLeft] = useState(0);
+    const [generatedData, setGeneratedData] = useState<any>(null);
 
-    const questionData = (pteWritingData as any)[task]?.[id - 1];
+    // Load data (Static or AI Generated)
+    useEffect(() => {
+        const loadQuestion = async () => {
+            if (isGenerated) {
+                try {
+                    // Start generation
+                    setIsGenerating(true);
+                    const { generateExamQuestion } = await import('@/ai/flows/generate-question');
+                    const question = await generateExamQuestion({
+                        examType: 'PTE', // Default to PTE for now, could be dynamic
+                        taskType: task === 'write-essay' ? 'Write Essay' : 'Summarize Text'
+                    });
+
+                    setGeneratedData({
+                        prompt: question.content, // Map 'content' to 'prompt'/text
+                        text: question.content,
+                        title: question.title,
+                        time: question.timeLimit
+                    });
+                    setTimeLeft(question.timeLimit * 60);
+                    setIsGenerating(false);
+                } catch (error) {
+                    toast({ variant: 'destructive', title: 'Generation Failed', description: 'Could not generate question.' });
+                    router.push(`/dashboard/ai-score-test/${section}`);
+                }
+            } else {
+                const staticData = (pteWritingData as any)[task]?.[id - 1];
+                if (!staticData) {
+                    router.push(`/dashboard/ai-score-test/${section}`);
+                } else {
+                    setTimeLeft(task === 'write-essay' ? 20 * 60 : 10 * 60);
+                }
+            }
+        };
+
+        loadQuestion();
+    }, [isGenerated, task, id, router, section, toast]);
+
+    // Derived question data
+    const questionData = isGenerated ? generatedData : (pteWritingData as any)[task]?.[id - 1];
 
     useEffect(() => {
-        if (!questionData) {
-            router.push(`/dashboard/ai-score-test/${section}`);
-        } else {
-            setTimeLeft(task === 'write-essay' ? 20 * 60 : 10 * 60);
-        }
-    }, [questionData, router, section, task]);
-
-    useEffect(() => {
-        if (timeLeft > 0 && !result) {
+        if (timeLeft > 0 && !result && !isGenerating) {
             const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
             return () => clearInterval(timer);
         }
-    }, [timeLeft, result]);
+    }, [timeLeft, result, isGenerating]);
 
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
@@ -77,7 +112,7 @@ export default function WritingTaskPage() {
         try {
             let scoreResult;
             if (task === 'write-essay') {
-                scoreResult = await scorePteWriteEssay({ topic: questionData.prompt, essay: textInput });
+                scoreResult = await scorePteWriteEssay({ topic: questionData.prompt || questionData.title, essay: textInput });
             } else {
                 scoreResult = await scorePteSummarizeWrittenText({ passage: questionData.text, summary: textInput });
             }
@@ -90,6 +125,21 @@ export default function WritingTaskPage() {
         }
     };
 
+    if (isGenerating) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center space-y-6 animate-in fade-in zoom-in duration-500">
+                <div className="relative">
+                    <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
+                    <Loader2 className="h-16 w-16 text-primary animate-spin relative z-10" />
+                </div>
+                <div>
+                    <h2 className="text-2xl font-black font-display tracking-tight mb-2">Generating Neural Exam Question...</h2>
+                    <p className="text-muted-foreground font-medium animate-pulse">Analyzing 2,400+ recent exam topics from 2024-2025...</p>
+                </div>
+            </div>
+        );
+    }
+
     if (!questionData) return null;
 
     const wordCount = textInput.split(/\s+/).filter(Boolean).length;
@@ -101,6 +151,11 @@ export default function WritingTaskPage() {
                     <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" /> Back to Matrix
                 </Button>
                 <div className="flex items-center gap-4">
+                    {isGenerated && (
+                        <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none font-black animate-pulse shadow-lg shadow-purple-500/20">
+                            <Sparkles className="h-3 w-3 mr-1" /> AI GENERATED
+                        </Badge>
+                    )}
                     <div className={`px-4 py-1.5 rounded-full border border-border/50 bg-card flex items-center gap-2 font-black text-xs ${timeLeft < 60 ? 'text-red-500 animate-pulse' : 'text-primary'}`}>
                         <Clock className="h-4 w-4" /> {formatTime(timeLeft)}
                     </div>
@@ -123,8 +178,9 @@ export default function WritingTaskPage() {
                                     Words: <span className={wordCount > 300 ? 'text-red-500' : 'text-primary'}>{wordCount}</span> / {task === 'write-essay' ? '300' : '75'}
                                 </div>
                             </div>
-                            <div className="bg-white/50 dark:bg-black/20 p-6 rounded-2xl border border-border/50">
-                                <p className="text-sm font-bold text-foreground leading-relaxed italic">
+                            <div className="bg-white/50 dark:bg-black/20 p-6 rounded-2xl border border-border/50 relative overflow-hidden group">
+                                {isGenerated && <div className="absolute top-0 right-0 p-2 opacity-50"><Sparkles className="h-10 w-10 text-primary/10" /></div>}
+                                <p className="text-sm font-bold text-foreground leading-relaxed italic relative z-10">
                                     {task === 'write-essay' ? questionData.prompt : questionData.text}
                                 </p>
                             </div>

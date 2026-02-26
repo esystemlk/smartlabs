@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -8,10 +7,12 @@ import { doc, getDoc, collection } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { signOut } from 'firebase/auth';
-import { LogOut, Users, UserCog, MessageSquare, GraduationCap, FileText, Library, DollarSign, UserCheck, Home, LayoutDashboard, Sparkles, Video } from 'lucide-react';
+import { LogOut, Users, UserCog, MessageSquare, GraduationCap, FileText, Library, DollarSign, UserCheck, Home, LayoutDashboard, Sparkles, Video, Brain } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import Image from 'next/image';
+
+// ... (previous content was mostly correct, I just need to restore the card and correct icons)
 
 export default function AdminDashboardPage() {
     const { user: currentUser, isUserLoading } = useUser();
@@ -22,7 +23,6 @@ export default function AdminDashboardPage() {
     const [isAdmin, setIsAdmin] = useState(false);
     const [currentUserRole, setCurrentUserRole] = useState('');
 
-    // Fetch all users from the 'users' collection for the count
     const usersQuery = useMemoFirebase(() =>
         firestore ? collection(firestore, 'users') : null,
         [firestore]
@@ -40,10 +40,10 @@ export default function AdminDashboardPage() {
                     if (role === 'admin' || role === 'developer' || role === 'teacher') {
                         setIsAdmin(true);
                     } else {
-                        router.push('/dashboard'); // Redirect non-admins/teachers to student dashboard
+                        router.push('/dashboard');
                     }
                 } else {
-                    router.push('/login'); // If user doc doesn't exist, they shouldn't be here
+                    router.push('/login');
                 }
             });
         } else if (!isUserLoading && !currentUser) {
@@ -69,6 +69,22 @@ export default function AdminDashboardPage() {
         );
     }
 
+    const navItems = [
+        { title: "Total Users", value: users?.length ?? 0, desc: "Live count of registered users.", icon: Users, href: null },
+        { title: "User Management", value: "Manage", desc: "Manage roles and access.", icon: UserCog, href: "/admin/dashboard/users" },
+        { title: "Course Management", value: "Manage", desc: "Add, edit, or delete courses.", icon: GraduationCap, href: "/admin/dashboard/courses" },
+        { title: "Enrollments", value: "Verify", desc: "Approve new student enrollments.", icon: UserCheck, href: "/admin/dashboard/enrollments" },
+        { title: "Resource Library", value: "Manage", desc: "Add and organize materials.", icon: Library, href: "/admin/dashboard/resources" },
+        { title: "Blog Management", value: "Manage", desc: "Create and edit blog posts.", icon: FileText, href: "/admin/dashboard/blog" },
+        { title: "Support Center", value: "Open", desc: "Manage student queries.", icon: MessageSquare, href: "/admin/dashboard/support" },
+        { title: "Payment History", value: "View All", desc: "Browse successful transactions.", icon: DollarSign, href: "/admin/dashboard/payments" },
+        { title: "Event Management", value: "Manage", desc: "Manage popups & events.", icon: Sparkles, href: "/admin/dashboard/events", color: "text-primary", bg: "bg-primary/5", border: "border-primary/20" },
+        { title: "Session Manager", value: "Zoom Links", desc: "Manage active session links.", icon: Video, href: "/admin/dashboard/sessions", color: "text-accent-3", bg: "bg-accent-3/5", border: "border-accent-3/20" },
+        { title: "Level Test Results", value: "Reports", desc: "Review student diagnostics.", icon: Brain, href: "/admin/dashboard/level-tests", color: "text-primary", bg: "bg-primary/5", border: "border-primary/20" },
+        { title: "Student Dashboard", value: "Go To", desc: "Switch to student view.", icon: LayoutDashboard, href: "/dashboard" },
+        { title: "Main Website", value: "Go To", desc: "View the public homepage.", icon: Home, href: "/" },
+    ];
+
     return (
         <div className="w-full min-h-screen">
             <section className="py-8 md:py-12">
@@ -88,148 +104,33 @@ export default function AdminDashboardPage() {
                     </header>
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                                <Users className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{users?.length ?? 0}</div>
-                                <p className="text-xs text-muted-foreground">Live count of registered users.</p>
-                            </CardContent>
-                        </Card>
-                        <Card className="hover:bg-muted/50 transition-colors">
-                            <Link href="/admin/dashboard/users">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">User Management</CardTitle>
-                                    <UserCog className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">Manage</div>
-                                    <p className="text-xs text-muted-foreground">Manage roles and access.</p>
-                                </CardContent>
-                            </Link>
-                        </Card>
-                        <Card className="hover:bg-muted/50 transition-colors">
-                            <Link href="/admin/dashboard/courses">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Course Management</CardTitle>
-                                    <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">Manage</div>
-                                    <p className="text-xs text-muted-foreground">Add, edit, or delete courses.</p>
-                                </CardContent>
-                            </Link>
-                        </Card>
-                        <Card className="hover:bg-muted/50 transition-colors">
-                            <Link href="/admin/dashboard/enrollments">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Enrollments</CardTitle>
-                                    <UserCheck className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">Verify</div>
-                                    <p className="text-xs text-muted-foreground">Approve new student enrollments.</p>
-                                </CardContent>
-                            </Link>
-                        </Card>
-                        <Card className="hover:bg-muted/50 transition-colors">
-                            <Link href="/admin/dashboard/resources">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Resource Library</CardTitle>
-                                    <Library className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">Manage</div>
-                                    <p className="text-xs text-muted-foreground">Add and organize materials.</p>
-                                </CardContent>
-                            </Link>
-                        </Card>
-                        <Card className="hover:bg-muted/50 transition-colors">
-                            <Link href="/admin/dashboard/blog">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Blog Management</CardTitle>
-                                    <FileText className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">Manage</div>
-                                    <p className="text-xs text-muted-foreground">Create and edit blog posts.</p>
-                                </CardContent>
-                            </Link>
-                        </Card>
-                        <Card className="hover:bg-muted/50 transition-colors">
-                            <Link href="/admin/dashboard/support">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Support Center</CardTitle>
-                                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">Open</div>
-                                    <p className="text-xs text-muted-foreground">Manage student queries.</p>
-                                </CardContent>
-                            </Link>
-                        </Card>
-                        <Card className="hover:bg-muted/50 transition-colors">
-                            <Link href="/admin/dashboard/payments">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Payment History</CardTitle>
-                                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">View All</div>
-                                    <p className="text-xs text-muted-foreground">Browse successful transactions.</p>
-                                </CardContent>
-                            </Link>
-                        </Card>
-                        <Card className="hover:bg-muted/50 transition-colors border-primary/20 bg-primary/5">
-                            <Link href="/admin/dashboard/events">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Event Management</CardTitle>
-                                    <Sparkles className="h-4 w-4 text-primary" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">Manage</div>
-                                    <p className="text-xs text-muted-foreground">Manage popups & events.</p>
-                                </CardContent>
-                            </Link>
-                        </Card>
-                        <Card className="hover:bg-muted/50 transition-colors border-accent-3/20 bg-accent-3/5">
-                            <Link href="/admin/dashboard/sessions">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Session Manager</CardTitle>
-                                    <Video className="h-4 w-4 text-accent-3" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">Zoom Links</div>
-                                    <p className="text-xs text-muted-foreground">Manage active session links.</p>
-                                </CardContent>
-                            </Link>
-                        </Card>
-                        <Card className="hover:bg-muted/50 transition-colors">
-                            <Link href="/dashboard">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Student Dashboard</CardTitle>
-                                    <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">Go To</div>
-                                    <p className="text-xs text-muted-foreground">Switch to student view.</p>
-                                </CardContent>
-                            </Link>
-                        </Card>
-                        <Card className="hover:bg-muted/50 transition-colors">
-                            <Link href="/">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Main Website</CardTitle>
-                                    <Home className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">Go To</div>
-                                    <p className="text-xs text-muted-foreground">View the public homepage.</p>
-                                </CardContent>
-                            </Link>
-                        </Card>
+                        {navItems.map((item, idx) => (
+                            <Card key={idx} className={`transition-colors ${item.href ? 'hover:bg-muted/50 cursor-pointer' : ''} ${item.bg || ''} ${item.border || ''}`}>
+                                {item.href ? (
+                                    <Link href={item.href}>
+                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                            <CardTitle className="text-sm font-medium">{item.title}</CardTitle>
+                                            <item.icon className={`h-4 w-4 ${item.color || 'text-muted-foreground'}`} />
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-2xl font-bold">{item.value}</div>
+                                            <p className="text-xs text-muted-foreground">{item.desc}</p>
+                                        </CardContent>
+                                    </Link>
+                                ) : (
+                                    <>
+                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                            <CardTitle className="text-sm font-medium">{item.title}</CardTitle>
+                                            <item.icon className="h-4 w-4 text-muted-foreground" />
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-2xl font-bold">{item.value}</div>
+                                            <p className="text-xs text-muted-foreground">{item.desc}</p>
+                                        </CardContent>
+                                    </>
+                                )}
+                            </Card>
+                        ))}
                     </div>
                 </div>
             </section>

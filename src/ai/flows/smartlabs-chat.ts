@@ -6,6 +6,7 @@ import { z } from 'zod';
 // Define schemas
 const SmartLabsChatInputSchema = z.object({
     message: z.string(),
+    mode: z.enum(['general', 'pte', 'ielts', 'celpip']).optional().default('general'),
     conversationHistory: z.array(z.object({
         role: z.enum(['user', 'assistant']),
         content: z.string(),
@@ -21,12 +22,57 @@ const SmartLabsChatOutputSchema = z.object({
 export type SmartLabsChatInput = z.infer<typeof SmartLabsChatInputSchema>;
 export type SmartLabsChatOutput = z.infer<typeof SmartLabsChatOutputSchema>;
 
+// Detailed Exam Knowledge Base
+const EXAM_KNOWLEDGE = `
+## EXAM KNOWLEDGE BASE (USE THIS TO ANSWER EXPERT QUERIES)
+
+### 1. PTE ACADEMIC (Pearson Test of English)
+- **Scale**: 10-90 (Global Scale of English).
+- **Structure**:
+  - **Speaking & Writing** (54-67 min): Personal Intro, Read Aloud (RA), Repeat Sentence (RS), Describe Image (DI), Re-tell Lecture (RL), Answer Short Question (ASQ), Summarize Written Text (SWT), Essay.
+  - **Reading** (29-30 min): Fill in Blanks (R&W), Multiple Choice, Re-order Paragraphs, Fill in Blanks (R).
+  - **Listening** (30-43 min): Summarize Spoken Text (SST), Multiple Choice, Fill in Blanks, Highlight Correct Summary, Select Missing Word, Highlight Incorrect Words, Write from Dictation (WFD).
+- **Key Strategies**:
+  - **RA**: Fluency > Pronunciation. Don't correct yourself.
+  - **RS**: Mimic intonation. Capture 60-70% content.
+  - **WFD**: Golden question! Worth huge points. Memorize most repeated lists.
+
+### 2. IELTS (International English Language Testing System)
+- **Types**: Academic (Study) vs. General Training (Migration).
+- **Scale**: Band 0-9 (0.5 increments).
+- **Structure**:
+  - **Listening** (30 min): 4 Parts, 40 Questions. Same for both modules.
+  - **Reading** (60 min): 3 Sections, 40 Questions. Academic (Long texts) vs GT (Social/Work texts).
+  - **Writing** (60 min):
+    - Task 1: Academic (Graph/Chart) vs GT (Letter). 150 words.
+    - Task 2: Essay. 250 words.
+  - **Speaking** (11-14 min): Part 1 (Intro), Part 2 (Cue Card - 2 min), Part 3 (Discussion).
+- **Key Tips**:
+  - **Writing**: Use complex sentences and wide vocabulary (Lexical Resource). Paragraphing is crucial (Coherence).
+  - **Speaking**: Extend answers. don't say just "Yes".
+
+### 3. CELPIP (Canadian English Language Proficiency Index Program)
+- **Focus**: Canadian English for PR/Citizenship.
+- **Scale**: Levels M, 3-12 (Aligned with CLB).
+- **Structure**:
+  - **Listening** (47-55 min): 6 Parts + Practice Task.
+  - **Reading** (55-60 min): 4 Parts + Practice.
+  - **Writing** (53-60 min): Task 1 (Email - 150 words), Task 2 (Survey Response - 150 words).
+  - **Speaking** (15-20 min): 8 Tasks (Giving Advice, Talking about Personal Experience, Describing a Scene, Making Predictions, etc.).
+- **Key Tips**:
+  - **Speaking**: Strict timing. Use prep time wisely. Sound natural and conversational.
+  - **Writing**: Tone is key (Formal vs Informal email).
+`;
+
 // Define the prompt with structured output
 const smartLabsChatPrompt = ai.definePrompt({
     name: 'smartLabsChatPrompt',
     input: { schema: SmartLabsChatInputSchema },
     output: { schema: SmartLabsChatOutputSchema },
     prompt: `You are a helpful AI assistant for Smart Labs, an education institute specializing in English language test preparation.
+
+## CURRENT MODE: {{mode}}
+Current focus: {{mode}} exam preparation. Adjust your expertise accordingly.
 
 ## ABOUT SMART LABS
 - **Mission**: Transform exam preparation through AI-powered learning.
@@ -35,10 +81,13 @@ const smartLabsChatPrompt = ai.definePrompt({
 - **Website**: smartlabs.lk
 - **Founder**: Lahiruka Weeraratne (Pearson Trained)
 
+${EXAM_KNOWLEDGE}
+
 ## YOUR ROLE
-- Answer questions about courses, pricing, and enrollment.
-- Be friendly, professional, and concise (max 2-3 paragraphs).
-- Encourage users to take the free diagnostic test.
+- **Expertise**: Act as a senior tutor for {{mode}}. If mode is 'general', be a helpful guide.
+- **Research Simulation**: Use the provided Knowledge Base to give detailed, specific answers about exam structures and question types. Don't be vague.
+- **Style**: Professional, encouraging, and authoritative yet friendly.
+- **Constraint**: If asked for specific exam questions, provide *examples* similar to real ones (simulated), but clarify they are practice examples.
 - Use emojis occasionally 😊.
 
 ## CONVERSATION HISTORY
@@ -51,9 +100,9 @@ user: {{message}}
 
 ## RESPONSE FORMAT
 Return a JSON object with:
-- "response": Your helpful response to the user.
-- "suggestedActions": An array of 1-3 short follow-up questions or actions the user might want to take (e.g. "Tell me about PTE", "Pricing details", "Sign up").
-- "context": A single word describing the conversation context (e.g., "courses", "pricing", "enrollment", "support", "general").`,
+- "response": Your helpful response. Use Markdown for formatting (bold, lists).
+- "suggestedActions": An array of 1-3 short follow-up questions or actions (e.g., "Give me a practice topic", "Explain scoring").
+- "context": A single word describing the conversation context (e.g., "courses", "pricing", "enrollment", "support", "general", "pte", "ielts", "celpip").`,
 });
 
 // Export the chat function
@@ -86,6 +135,18 @@ export async function chatWithSmartLabs(input: SmartLabsChatInput): Promise<Smar
             fallbackResponse = "You can easily book a consultation or register for a course through our [Registration Portal](https://register.smartlabs.lk). Our team gets back to you within 24 hours!";
             actions = ['Register Now', 'Book Consultation'];
             context = 'enrollment';
+        } else if (lowerMessage.includes('pte')) {
+            fallbackResponse = "PTE Academic is a computer-based English test. It assesses Speaking, Writing, Reading, and Listening. We offer AI-scored mock tests and expert classes. Ask me specifically about 'PTE Speaking' or 'PTE Scoring'!";
+            actions = ['PTE Speaking Tips', 'PTE Essay Templates', 'Book PTE Class'];
+            context = 'pte';
+        } else if (lowerMessage.includes('ielts')) {
+            fallbackResponse = "IELTS comes in Academic (Study) and General (Migration) modules. Key to high bands is lexical resource and coherence. How can I help with your IELTS prep?";
+            actions = ['IELTS Writing Task 2', 'IELTS Speaking', 'Book IELTS Class'];
+            context = 'ielts';
+        } else if (lowerMessage.includes('celpip')) {
+            fallbackResponse = "CELPIP is designed for Canadian immigration. It focuses on functional English. Our course covers all 8 speaking tasks and both writing tasks perfectly.";
+            actions = ['CELPIP Speaking Tasks', 'CELPIP Email Writing', 'Book CELPIP Class'];
+            context = 'celpip';
         }
 
         return {
