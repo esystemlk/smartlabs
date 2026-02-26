@@ -466,10 +466,10 @@ export default function Header() {
             ) : (
               <>
                 <Button variant="ghost" asChild>
-                  <Link href={LMS_URL} target="_blank" rel="noopener noreferrer">Log In</Link>
+                  <Link href="/login">Log In</Link>
                 </Button>
                 <Button variant="default" asChild>
-                  <Link href={LMS_URL} target="_blank" rel="noopener noreferrer">Get Started</Link>
+                  <Link href="/signup">Get Started</Link>
                 </Button>
               </>
             )}
@@ -543,10 +543,10 @@ export default function Header() {
                 ) : (
                   <>
                     <Button variant="outline" className="w-full" asChild>
-                      <Link href={LMS_URL} target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
+                      <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
                     </Button>
                     <Button variant="default" className="w-full" asChild>
-                      <Link href={LMS_URL} target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
+                      <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
                     </Button>
                   </>
                 )}
