@@ -75,6 +75,8 @@ import { useHomepageCourses, useLearningMethods, useFeatures, useFAQs, useCompar
 import { LMS_URL } from "@/lib/constants";
 
 
+
+
 const sampleTopics = [
   "Some people think that technology has made communication easier, while others believe it has made us more isolated. Discuss both views.",
   "Education is the most powerful weapon which you can use to change the world. To what extent do you agree?",
@@ -168,6 +170,7 @@ const roadmapSteps = [
     id: "01",
     title: "Join & Diagnose",
     desc: "Take our free AI diagnostic test to identify your strengths and weaknesses.",
+    link: "/level-test",
     icon: Search,
     color: "text-accent-1",
     bg: "bg-accent-1/10"
@@ -175,7 +178,8 @@ const roadmapSteps = [
   {
     id: "02",
     title: "Personalized Plan",
-    desc: "Receive a custom study schedule tailored to your target score and timeline.",
+    desc: "Join our classes for customized study plans to keep you on track. Best for focused attention.",
+    link: "/courses",
     icon: Map,
     color: "text-accent-2",
     bg: "bg-accent-2/10"
@@ -183,7 +187,8 @@ const roadmapSteps = [
   {
     id: "03",
     title: "AI-Powered Practice",
-    desc: "Master every section with unlimited practice and instant AI feedback.",
+    desc: "Master every section with unlimited practice and instant AI feedback with our AI TRAINER.",
+    link: "/dashboard/ai-tutor",
     icon: Sparkles,
     color: "text-accent-3",
     bg: "bg-accent-3/10"
@@ -191,7 +196,8 @@ const roadmapSteps = [
   {
     id: "04",
     title: "Target Achieved",
-    desc: "Confidence to clear the exam and achieve your dream score!",
+    desc: "Clear the exam with confidence! Check our student feedbacks and success stories.",
+    link: "#testimonials",
     icon: Trophy,
     color: "text-accent-4",
     bg: "bg-accent-4/10"
@@ -534,7 +540,10 @@ export default function Home() {
   };
   return (
     <>
+
       <EventPopup />
+
+
       {/* Hero Section - Ultra Advanced */}
       <section className="relative overflow-hidden min-h-[100vh] flex items-center bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-[#020617] dark:via-[#0a0e27] dark:to-[#0f0a1e] py-20">
         {/* Animated Particle System */}
@@ -599,8 +608,10 @@ export default function Home() {
             {/* Left Content Column - Enhanced */}
             <motion.div
               style={{ opacity: heroOpacity }}
-              className="lg:col-span-7 text-left space-y-10"
+              className="lg:col-span-7 text-left space-y-10 relative"
             >
+
+
               {/* Premium Badge with Live Indicator */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -997,24 +1008,29 @@ export default function Home() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 relative items-stretch">
             {roadmapSteps.map((step, idx) => (
-              <motion.div
-                key={step.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1, duration: 0.5 }}
-                whileHover={{ y: -8 }}
-                className="relative group p-8 sm:p-10 rounded-[40px] bg-background border border-border/50 hover:border-primary/50 transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] flex flex-col"
-              >
-                <div className={cn("w-14 h-14 sm:w-16 sm:h-16 rounded-3xl flex items-center justify-center mb-8 transition-all group-hover:scale-110 shadow-lg group-hover:shadow-primary/20", step.bg, step.color)}>
-                  <step.icon className="h-7 w-7 sm:h-8 sm:w-8" />
-                </div>
-                <div className="text-[60px] font-black opacity-[0.03] absolute top-4 right-8 group-hover:opacity-[0.06] transition-opacity select-none italic">
-                  {step.id}
-                </div>
-                <h3 className="text-xl sm:text-2xl font-black mb-4 tracking-tighter">{step.title}</h3>
-                <p className="text-base text-muted-foreground leading-relaxed flex-grow">{step.desc}</p>
-              </motion.div>
+              <Link href={(step as any).link || "#"} key={step.id} className="h-full">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1, duration: 0.5 }}
+                  whileHover={{ y: -8 }}
+                  className="relative group p-8 sm:p-10 rounded-[40px] bg-background border border-border/50 hover:border-primary/50 transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] flex flex-col h-full cursor-pointer"
+                >
+                  <div className={cn("w-14 h-14 sm:w-16 sm:h-16 rounded-3xl flex items-center justify-center mb-8 transition-all group-hover:scale-110 shadow-lg group-hover:shadow-primary/20", step.bg, step.color)}>
+                    <step.icon className="h-7 w-7 sm:h-8 sm:w-8" />
+                  </div>
+                  <div className="text-[60px] font-black opacity-[0.03] absolute top-4 right-8 group-hover:opacity-[0.06] transition-opacity select-none italic">
+                    {step.id}
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black mb-4 tracking-tighter">{step.title}</h3>
+                  <p className="text-base text-muted-foreground leading-relaxed flex-grow">{step.desc}</p>
+                  <div className="mt-6 flex items-center gap-2 text-primary font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span>Explore Path</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </div>
+                </motion.div>
+              </Link>
             ))}
           </div>
         </div>
@@ -1067,8 +1083,9 @@ export default function Home() {
         <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-primary/5 blur-[120px] rounded-full" />
         <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-accent-3/5 blur-[120px] rounded-full" />
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center mb-16 sm:mb-24">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 relative">
+
+          <div className="text-center space-y-4 mb-16">
             <h2 className="text-4xl sm:text-6xl font-black mb-6 italic">Built for <span className="gradient-text not-italic">Results</span></h2>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">Discover the proprietary technology and expert-led methodologies that make Smart Labs the industry leader.</p>
           </div>
@@ -1151,6 +1168,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-grid-white/[0.02]" />
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
+
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
             {/* Left AI Lab Branding */}
             <motion.div
@@ -1202,123 +1220,129 @@ export default function Home() {
             >
               <div className="absolute -inset-4 bg-primary/20 blur-[100px] rounded-full animate-pulse opacity-50" />
 
-              <SpotlightCard className="glass-card rounded-[32px] sm:rounded-[40px] p-0.5 sm:p-2 border border-white/20 shadow-[0_0_50px_rgba(79,70,229,0.3)] bg-black/40 backdrop-blur-2xl">
-                <div className="p-4 sm:p-10 rounded-[30px] sm:rounded-[38px] bg-[#0f172a]/80 border border-white/10">
-                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 pb-4 border-b border-white/5">
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
-                      <Terminal className="h-4 w-4 text-primary shrink-0" />
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${user ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-red-500'} animate-pulse`} />
-                        <span className="font-black text-[10px] text-white uppercase tracking-widest whitespace-nowrap">{user ? 'Engine Ready' : 'Authentication Required'}</span>
+              <div className="relative">
+
+                <SpotlightCard className="glass-card rounded-[32px] sm:rounded-[40px] p-0.5 sm:p-2 border border-white/20 shadow-[0_0_50px_rgba(79,70,229,0.3)] bg-black/40 backdrop-blur-2xl">
+                  <div className="p-4 sm:p-10 rounded-[30px] sm:rounded-[38px] bg-[#0f172a]/80 border border-white/10">
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 pb-4 border-b border-white/5">
+                      <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <Terminal className="h-4 w-4 text-primary shrink-0" />
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${user ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-red-500'} animate-pulse`} />
+                          <span className="font-black text-[10px] text-white uppercase tracking-widest whitespace-nowrap">{user ? 'Engine Ready' : 'Authentication Required'}</span>
+                        </div>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full sm:w-auto text-white hover:bg-white/10 border border-white/5 text-[10px] h-10 px-4 font-black uppercase tracking-widest"
+                        onClick={() => {
+                          setAiText("");
+                          setAiResult(null);
+                          setAnalysisComplete(false);
+                          setIsAnalyzing(false);
+                          setProgress(0);
+                          setTopic(sampleTopics[Math.floor(Math.random() * sampleTopics.length)]);
+                          setTopicId(Math.floor(Math.random() * 9000) + 1000);
+                        }}
+                        disabled={isAnalyzing}
+                      >
+                        <RefreshCcw className="h-4 w-4 mr-2" /> REGEN TOPIC
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full sm:w-auto text-white hover:bg-white/10 border border-white/5 text-[10px] h-10 px-4 font-black uppercase tracking-widest"
-                      onClick={() => {
-                        setAiText("");
-                        setAiResult(null);
-                        setAnalysisComplete(false);
-                        setIsAnalyzing(false);
-                        setProgress(0);
-                        setTopic(sampleTopics[Math.floor(Math.random() * sampleTopics.length)]);
-                        setTopicId(Math.floor(Math.random() * 9000) + 1000);
-                      }}
-                      disabled={isAnalyzing}
-                    >
-                      <RefreshCcw className="h-4 w-4 mr-2" /> REGEN TOPIC
-                    </Button>
-                  </div>
 
-                  {/* Lab Topic Console */}
-                  <div className="mb-6 bg-black/40 p-5 rounded-2xl border border-primary/20 relative group">
-                    <div className="absolute top-2 right-4 flex gap-1 items-center opacity-30 group-hover:opacity-100 transition-opacity">
-                      <Code2 className="h-3 w-3 text-primary" />
-                      <span className="text-[8px] font-mono text-primary uppercase">Topic_ID: {topicId || "----"}</span>
+                    {/* Lab Topic Console */}
+                    <div className="mb-6 bg-black/40 p-5 rounded-2xl border border-primary/20 relative group">
+                      <div className="absolute top-2 right-4 flex gap-1 items-center opacity-30 group-hover:opacity-100 transition-opacity">
+                        <Code2 className="h-3 w-3 text-primary" />
+                        <span className="text-[8px] font-mono text-primary uppercase">Topic_ID: {topicId || "----"}</span>
+                      </div>
+                      <div className="text-[9px] font-black text-primary mb-2 uppercase tracking-[0.2em]">Sample Question</div>
+                      <p className="text-sm text-white/90 leading-relaxed font-medium italic">"{topic}"</p>
                     </div>
-                    <div className="text-[9px] font-black text-primary mb-2 uppercase tracking-[0.2em]">Sample Question</div>
-                    <p className="text-sm text-white/90 leading-relaxed font-medium italic">"{topic}"</p>
-                  </div>
 
-                  <div className="space-y-6">
-                    <div className="relative">
-                      <Textarea
-                        value={aiText}
-                        onChange={(e) => setAiText(e.target.value)}
-                        placeholder={user ? "Input your academic response for analysis..." : "Please authenticate to access the AI Lab"}
-                        className="min-h-[180px] bg-black/40 border-white/10 focus:border-primary/50 transition-all resize-none text-white/90 placeholder:text-white/20 rounded-2xl p-5 font-mono text-sm leading-relaxed no-scrollbar"
-                        disabled={isAnalyzing || !user}
-                      />
-                      {user && (
-                        <div className="absolute bottom-4 right-4 text-[10px] font-black text-white/30 uppercase">
-                          {aiText.length} Chars | {aiText.split(/\s+/).filter(Boolean).length} Words
+                    <div className="space-y-6">
+                      <div className="relative">
+                        <Textarea
+                          value={aiText}
+                          onChange={(e) => setAiText(e.target.value)}
+                          placeholder={user ? "Input your academic response for analysis..." : "Please authenticate to access the AI Lab"}
+                          className="min-h-[180px] bg-black/40 border-white/10 focus:border-primary/50 transition-all resize-none text-white/90 placeholder:text-white/20 rounded-2xl p-5 font-mono text-sm leading-relaxed no-scrollbar"
+                          disabled={isAnalyzing || !user}
+                        />
+                        {user && (
+                          <div className="absolute bottom-4 right-4 text-[10px] font-black text-white/30 uppercase">
+                            {aiText.length} Chars | {aiText.split(/\s+/).filter(Boolean).length} Words
+                          </div>
+                        )}
+                      </div>
+
+                      {isAnalyzing && (
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center px-1">
+                            <div className="flex gap-2 items-center">
+                              <Activity className="h-4 w-4 text-primary animate-pulse" />
+                              <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Neutralizing Errors...</span>
+                            </div>
+                            <span className="text-xs font-black text-white">{progress}%</span>
+                          </div>
+                          <Progress value={progress} className="h-1.5 bg-white/5" indicatorClassName="bg-gradient-to-r from-primary via-accent-3 to-accent-1 shadow-[0_0_10px_rgba(79,70,229,0.5)]" />
                         </div>
                       )}
+
+                      {!isAnalyzing && !analysisComplete && (
+                        <Button
+                          onClick={handleAnalyze}
+                          className="w-full h-14 bg-gradient-to-r from-primary to-accent-3 hover:scale-[1.02] active:scale-95 transition-all text-white font-black uppercase tracking-[0.2em] shadow-[0_10px_40px_rgba(79,70,229,0.4)] border-none rounded-2xl"
+                          size="lg"
+                          disabled={!user || aiText.length < 50}
+                        >
+                          <Zap className="h-4 w-4 mr-2 fill-white" />
+                          ANALYZE NOW
+                        </Button>
+                      )}
+
+                      {analysisComplete && aiResult && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.98 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="bg-primary/10 rounded-3xl p-6 border border-primary/20"
+                        >
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                            <div className="p-4 bg-black/40 rounded-2xl flex flex-col items-center justify-center border border-white/5">
+                              <div className="text-2xl font-black text-primary">{aiResult.overallScore}</div>
+                              <div className="text-[9px] font-bold text-white/50 uppercase tracking-tighter">Overall Score</div>
+                            </div>
+                            <div className="p-4 bg-black/40 rounded-2xl flex flex-col items-center justify-center border border-white/5">
+                              <div className="text-2xl font-black text-accent-1">{aiResult.grammarScore}</div>
+                              <div className="text-[9px] font-bold text-white/50 uppercase tracking-tighter">Grammar</div>
+                            </div>
+                            <div className="p-4 bg-black/40 rounded-2xl flex flex-col items-center justify-center border border-white/5">
+                              <div className="text-2xl font-black text-accent-3">{aiResult.vocabularyScore}</div>
+                              <div className="text-[9px] font-bold text-white/50 uppercase tracking-tighter">Vocabulary</div>
+                            </div>
+                          </div>
+                          <div className="relative bg-black/40 p-5 rounded-2xl border border-white/5 group">
+                            <div className="flex items-start gap-4 text-sm text-white/90">
+                              <div className="p-2 bg-primary/20 rounded-xl">
+                                <Lightbulb className="h-4 w-4 text-primary" />
+                              </div>
+                              <div className="flex flex-col gap-2">
+                                <span className="text-[10px] font-black text-primary uppercase tracking-widest">Tutor Recommendations</span>
+                                <p className="text-xs leading-relaxed opacity-80">{aiResult.feedback}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
                     </div>
-
-                    {isAnalyzing && (
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center px-1">
-                          <div className="flex gap-2 items-center">
-                            <Activity className="h-4 w-4 text-primary animate-pulse" />
-                            <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Neutralizing Errors...</span>
-                          </div>
-                          <span className="text-xs font-black text-white">{progress}%</span>
-                        </div>
-                        <Progress value={progress} className="h-1.5 bg-white/5" indicatorClassName="bg-gradient-to-r from-primary via-accent-3 to-accent-1 shadow-[0_0_10px_rgba(79,70,229,0.5)]" />
-                      </div>
-                    )}
-
-                    {!isAnalyzing && !analysisComplete && (
-                      <Button
-                        onClick={handleAnalyze}
-                        className="w-full h-14 bg-gradient-to-r from-primary to-accent-3 hover:scale-[1.02] active:scale-95 transition-all text-white font-black uppercase tracking-[0.2em] shadow-[0_10px_40px_rgba(79,70,229,0.4)] border-none rounded-2xl"
-                        size="lg"
-                        disabled={!user || aiText.length < 50}
-                      >
-                        <Zap className="h-4 w-4 mr-2 fill-white" />
-                        ANALYZE NOW
-                      </Button>
-                    )}
-
-                    {analysisComplete && aiResult && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="bg-primary/10 rounded-3xl p-6 border border-primary/20"
-                      >
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-                          <div className="p-4 bg-black/40 rounded-2xl flex flex-col items-center justify-center border border-white/5">
-                            <div className="text-2xl font-black text-primary">{aiResult.overallScore}</div>
-                            <div className="text-[9px] font-bold text-white/50 uppercase tracking-tighter">Overall Score</div>
-                          </div>
-                          <div className="p-4 bg-black/40 rounded-2xl flex flex-col items-center justify-center border border-white/5">
-                            <div className="text-2xl font-black text-accent-1">{aiResult.grammarScore}</div>
-                            <div className="text-[9px] font-bold text-white/50 uppercase tracking-tighter">Grammar</div>
-                          </div>
-                          <div className="p-4 bg-black/40 rounded-2xl flex flex-col items-center justify-center border border-white/5">
-                            <div className="text-2xl font-black text-accent-3">{aiResult.vocabularyScore}</div>
-                            <div className="text-[9px] font-bold text-white/50 uppercase tracking-tighter">Vocabulary</div>
-                          </div>
-                        </div>
-                        <div className="relative bg-black/40 p-5 rounded-2xl border border-white/5 group">
-                          <div className="flex items-start gap-4 text-sm text-white/90">
-                            <div className="p-2 bg-primary/20 rounded-xl">
-                              <Lightbulb className="h-4 w-4 text-primary" />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                              <span className="text-[10px] font-black text-primary uppercase tracking-widest">Tutor Recommendations</span>
-                              <p className="text-xs leading-relaxed opacity-80">{aiResult.feedback}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
                   </div>
-                </div>
-              </SpotlightCard>
+                </SpotlightCard>
+              </div>
             </motion.div>
+
+
+
           </div>
         </div>
       </section>
@@ -1727,7 +1751,6 @@ export default function Home() {
             {/* Ambient Background Glows */}
             <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/30 blur-[130px] rounded-full -translate-y-1/2 translate-x-1/4 animate-pulse opacity-40" />
             <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-accent-3/20 blur-[100px] rounded-full translate-y-1/2 -translate-x-1/4 opacity-30" />
-
             <div className="grid lg:grid-cols-2 gap-12 items-center relative z-10">
               <motion.div
                 initial={{ opacity: 0, x: -30 }}

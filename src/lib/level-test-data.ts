@@ -31,6 +31,12 @@ export const LEVEL_TEST_DATA = {
         { id: 23, task: "One complex sentence using because/although." },
         { id: 24, task: "One result sentence using therefore/as a result." },
         { id: 25, task: "One academic opinion about technology or education." },
+        {
+            id: 25.5,
+            task: "Long Sentence Construction: Write a 50-word paragraph on the topic: 'The use of technology in daily life.'",
+            topic: "The use of technology in daily life.",
+            isParagraph: true
+        },
     ],
     reading: {
         passage: `Online learning has become increasingly popular in recent years. Many universities and training institutions now provide digital courses that allow students to study from any location. This method of learning offers significant flexibility, especially for working adults who need to manage both employment and education.\n\nOne major advantage of online education is that learners can control their study schedule. They can review lessons multiple times and learn at their own pace. However, online learning also presents challenges. Some students find it difficult to stay motivated without direct classroom interaction. In addition, technical problems such as poor internet connections may interrupt learning.\n\nDespite these difficulties, research shows that well-designed online courses can be as effective as traditional classroom learning. Experts believe that online education will continue to expand as technology improves.`,

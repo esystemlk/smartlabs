@@ -166,8 +166,11 @@ export async function scoreLevelTest(input: {
 
         const promptText = `You are an expert IELTS and PTE examiner. Score a student's level test.
 
-### Section 4: Sentence Construction (5 Marks Total)
-Scoring: 1 mark per sentence if correct grammar AND meets the requested structure.
+### Section 4: Sentence Construction & Paragraph Writing (10 Marks Total)
+Scoring: 1 mark per sentence (5 marks) + 5 marks for the paragraph writing task.
+For Paragraph Writing (ID 25.5):
+- Evaluate coherence, sentence variety, and complex structures.
+- Topic: "The use of technology in daily life." (Target ~50 words).
 
 ${sentenceBlock}
 
@@ -176,16 +179,21 @@ ${hasAudio ? `The student's audio recording was provided. They performed two tas
 1. Read Aloud: "${input.speaking.readAloudText}"
 2. Topic Speech: "${input.speaking.speechTask}"
 
-Score the speaking:
+Evaluate and score the speaking meticulously based on:
+- Pronunciation and Fluency (Read Aloud)
+- Grammar Accuracy and Vocabulary Range (Topic Speech)
+
+Scores:
 - readAloudPronunciation: 0 to 2.5
 - readAloudFluency: 0 to 2.5
-- taskGrammar: 0 to 2.5
-- taskVocabulary: 0 to 2.5
-- taskSentenceStructure: 0 to 2.5
-- taskPronunciationFluency: 0 to 2.5` : `No audio was provided. Set ALL speaking scores to 0.`}
+- taskGrammar: 0 to 2.5 (Evaluate accuracy of tenses and complex structures)
+- taskVocabulary: 0 to 2.5 (Evaluate range and precision of vocabulary)
+- taskSentenceStructure: 0 to 2.5 (Evaluate variety and coherence)
+- taskPronunciationFluency: 0 to 2.5 (Overall speaking delivery)` : `No audio was provided. Set ALL speaking scores to 0.`}
 
-Provide diagnostic: grammarLevel (Weak/Basic/Good/Advanced), sentenceComplexity (Simple/Compound/Complex/Academic), vocabularyLevel (Limited/Functional/Academic), pronunciation (${hasAudio ? 'Poor/Understandable/Clear/Fluent' : 'Poor since no audio'}).
-Include a transcript of what you heard (if audio was provided) and an overall summary.`;
+Provide specific, level-appropriate feedback for each speaking criterion.
+Diagnostic: grammarLevel (Weak/Basic/Good/Advanced), sentenceComplexity (Simple/Compound/Complex/Academic), vocabularyLevel (Limited/Functional/Academic), pronunciation (${hasAudio ? 'Poor/Understandable/Clear/Fluent' : 'Poor since no audio'}).
+Include a transcript of what you heard (if audio was provided) and an overall summary. Incorporate specific feedback on the paragraph writing.`;
 
         let result;
 

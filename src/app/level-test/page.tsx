@@ -53,6 +53,7 @@ export default function LevelTestPage() {
         vocabulary: {},
         spelling: {},
         sentences: {},
+        paragraph: "",
         reading: {},
         speaking: { audioBlob: null, audioUrl: null, transcript: "" }
     });
@@ -132,7 +133,7 @@ export default function LevelTestPage() {
                 sentences: LEVEL_TEST_DATA.sentenceConstruction.map(s => ({
                     id: s.id,
                     task: s.task,
-                    answer: answers.sentences[s.id] || ""
+                    answer: (s as any).isParagraph ? answers.paragraph : (answers.sentences[s.id] || "")
                 })),
                 speaking: {
                     readAloudText: LEVEL_TEST_DATA.speaking[0].text!,
@@ -144,6 +145,10 @@ export default function LevelTestPage() {
             const aiResult = await scoreLevelTest(aiInput);
 
             const sentenceScore = aiResult.sentences.reduce((acc, curr) => acc + curr.score, 0);
+
+            // Note: sentenceScore now includes both sentences (5 marks) and paragraph (5 marks) in the AI prompt logic. 
+            // In the code, sentences array contains both.
+
             const speakingScore = (
                 aiResult.speaking.readAloudPronunciation +
                 aiResult.speaking.readAloudFluency +
@@ -154,7 +159,7 @@ export default function LevelTestPage() {
             );
 
             const totalScore = grammarScore + vocabularyScore + spellingScore + sentenceScore + readingScore + speakingScore;
-            const percentageScore = (totalScore / 50) * 100;
+            const percentageScore = (totalScore / 55) * 100;
 
             // Level Classification
             let level = "";
@@ -239,7 +244,7 @@ export default function LevelTestPage() {
                                 </div>
                                 <div>
                                     <h2 className="text-xl font-bold font-headline">Smart Level Test</h2>
-                                    <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">Section {step} of 6</p>
+                                    <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">Section {step} of 7</p>
                                 </div>
                             </div>
 
@@ -247,9 +252,9 @@ export default function LevelTestPage() {
                                 <div className="flex-1 md:flex-none">
                                     <div className="flex justify-between text-xs mb-1 font-medium">
                                         <span>Progress</span>
-                                        <span>{Math.round((step / 6) * 100)}%</span>
+                                        <span>{Math.round((step / 7) * 100)}%</span>
                                     </div>
-                                    <Progress value={(step / 6) * 100} className="h-2 w-full md:w-48" />
+                                    <Progress value={(step / 7) * 100} className="h-2 w-full md:w-48" />
                                 </div>
 
                                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full font-mono font-bold ${timeLeft < 300 ? 'bg-red-100 text-red-600 animate-pulse' : 'bg-secondary text-secondary-foreground'}`}>
@@ -265,9 +270,10 @@ export default function LevelTestPage() {
                             {step === 2 && <VocabularySection answers={answers} setAnswers={setAnswers} />}
                             {step === 3 && <SpellingSection answers={answers} setAnswers={setAnswers} />}
                             {step === 4 && <SentenceSection answers={answers} setAnswers={setAnswers} />}
-                            {step === 5 && <ReadingSection answers={answers} setAnswers={setAnswers} />}
-                            {step === 6 && <SpeakingSection answers={answers} setAnswers={setAnswers} />}
-                            {step === 7 && <ReviewStep answers={answers} onFinalSubmit={handleCompleteTest} isSubmitting={isSubmitting} />}
+                            {step === 5 && <ParagraphSection answers={answers} setAnswers={setAnswers} />}
+                            {step === 6 && <ReadingSection answers={answers} setAnswers={setAnswers} />}
+                            {step === 7 && <SpeakingSection answers={answers} setAnswers={setAnswers} />}
+                            {step === 8 && <ReviewStep answers={answers} onFinalSubmit={handleCompleteTest} isSubmitting={isSubmitting} />}
                         </div>
 
                         {/* Footer Navigation */}
@@ -282,7 +288,7 @@ export default function LevelTestPage() {
                                 Previous Section
                             </Button>
 
-                            {step < 7 ? (
+                            {step < 8 ? (
                                 <Button onClick={nextStep} className="group">
                                     Next Section
                                     <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -301,7 +307,7 @@ export default function LevelTestPage() {
                     </motion.div>
                 )}
 
-                {step === 8 && (
+                {step === 9 && (
                     <motion.div
                         key="finalizing"
                         initial={{ opacity: 0 }}
@@ -318,8 +324,7 @@ export default function LevelTestPage() {
                         </div>
                     </motion.div>
                 )}
-
-                {step === 9 && testResult && <ResultStep result={testResult} />}
+                {step === 10 && testResult && <ResultStep result={testResult} />}
             </AnimatePresence>
         </div>
     );
@@ -546,6 +551,48 @@ function SentenceSection({ answers, setAnswers }: any) {
                         </div>
                     </div>
                 ))}
+            </CardContent>
+        </Card>
+    );
+}
+
+function ParagraphSection({ answers, setAnswers }: any) {
+    const paragraphTask = LEVEL_TEST_DATA.sentenceConstruction.find(s => (s as any).isParagraph);
+    return (
+        <Card className="border-none shadow-none bg-transparent">
+            <CardHeader className="px-0">
+                <CardTitle className="text-2xl flex items-center gap-3">
+                    <PenTool className="h-6 w-6 text-primary" />
+                    Section 5: Long Sentence Construction
+                </CardTitle>
+                <CardDescription>Write a short paragraph according to the instructions. (5 Marks - AI Scored)</CardDescription>
+            </CardHeader>
+            <CardContent className="px-0 space-y-6">
+                <div className="p-8 bg-card border rounded-3xl space-y-4">
+                    <Label className="text-xl font-bold leading-relaxed block">
+                        Task: {paragraphTask?.task}
+                    </Label>
+                    <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 text-primary font-medium text-sm">
+                        Purpose: Evaluate coherence, sentence variety, and the ability to produce longer academic sentences.
+                    </div>
+                    <Textarea
+                        placeholder="Type your 50-word paragraph here..."
+                        className="min-h-[200px] text-lg leading-relaxed resize-none mt-4"
+                        value={answers.paragraph || ""}
+                        onChange={(e) => setAnswers({ ...answers, paragraph: e.target.value })}
+                    />
+                    <div className="flex justify-between items-center text-xs text-muted-foreground mt-4">
+                        <div className="flex gap-4">
+                            <span>Words: {answers.paragraph?.trim().split(/\s+/).filter(Boolean).length || 0} / 50</span>
+                            <span>Characters: {answers.paragraph?.length || 0}</span>
+                        </div>
+                        {answers.paragraph?.trim().split(/\s+/).filter(Boolean).length >= 45 && (
+                            <span className="text-green-600 font-bold flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3" /> Length requirement met
+                            </span>
+                        )}
+                    </div>
+                </div>
             </CardContent>
         </Card>
     );
@@ -885,17 +932,25 @@ function ResultStep({ result }: { result: any }) {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <p className="text-sm text-muted-foreground">Based on your score, we recommend the following class level:</p>
-                            <div className="p-4 bg-primary text-white rounded-xl text-center font-bold text-xl">
-                                {result.level.includes("Beginner") ? "Foundation Course" :
-                                    result.level.includes("Intermediate") ? "Intermediate Course" :
-                                        result.level.includes("Advanced") ? "Advanced Course" : "Intensive Training"}
+                            <div className="p-4 bg-primary text-white rounded-xl text-center font-bold text-xl mb-4">
+                                {result.level.includes("Beginner") ? "Grammar Clinic" :
+                                    result.level.includes("Intermediate") ? "PTE Boostify (Foundation)" :
+                                        result.level.includes("Advanced") ? "PTE Boostify (Standard)" : "PTE Boostify (Intensive)"}
                             </div>
-                            <Button asChild className="w-full h-12 rounded-xl group" variant="default">
-                                <a href="/courses">
-                                    Explore Recommended Courses
-                                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                                </a>
-                            </Button>
+                            <div className="space-y-3">
+                                <Button asChild className="w-full h-12 rounded-xl group" variant="default">
+                                    <Link href={result.level.includes("Beginner") ? "/courses/grammar-clinic" : "/courses/pte-boostify"}>
+                                        View Recommended Course
+                                        <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                    </Link>
+                                </Button>
+                                <Button asChild className="w-full h-12 rounded-xl group" variant="outline">
+                                    <Link href={result.level.includes("Beginner") ? "https://wa.me/yourwhatsappnumber?text=I'd like to enroll in Grammar Clinic after my level test" : "/courses"}>
+                                        Proceed to Payment
+                                        <CreditCard className="ml-2 h-4 w-4" />
+                                    </Link>
+                                </Button>
+                            </div>
                         </CardContent>
                     </Card>
 
