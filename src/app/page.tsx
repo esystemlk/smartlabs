@@ -74,6 +74,14 @@ import { logTestCompletion } from "@/lib/services/activity.service";
 import { EventPopup } from "@/components/events/event-popup";
 import { useHomepageCourses, useLearningMethods, useFeatures, useFAQs, useComparisons } from "@/hooks/use-homepage-content";
 import { LMS_URL } from "@/lib/constants";
+import { WebinarPoster } from "@/components/webinar/webinar-poster";
+import {
+  CalendarBlank as PhCalendar,
+  Clock as PhClock,
+  ArrowRight as PhArrowRight,
+  Sparkle as PhSparkle,
+  CaretRight as PhCaretRight
+} from "@phosphor-icons/react";
 
 
 
@@ -899,6 +907,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <WebinarPoster />
 
       {/* Meet Our Founder Section */}
       <section className="py-16 sm:py-24 lg:py-32 relative overflow-hidden bg-background">
@@ -1931,11 +1941,11 @@ export default function Home() {
                       </p>
                       <div className="flex flex-wrap gap-3">
                         <div className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 dark:bg-blue-900/15 rounded-2xl border border-blue-100 dark:border-blue-800/30">
-                          <Calendar className="h-4 w-4 text-blue-500" />
+                          <PhCalendar weight="bold" className="h-4 w-4 text-blue-500" />
                           <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Sunday 15th</span>
                         </div>
                         <div className="flex items-center gap-2 px-4 py-2.5 bg-yellow-50 dark:bg-yellow-900/15 rounded-2xl border border-yellow-200 dark:border-yellow-800/30">
-                          <Clock className="h-4 w-4 text-yellow-600" />
+                          <PhClock weight="bold" className="h-4 w-4 text-yellow-600" />
                           <span className="text-sm font-bold text-gray-700 dark:text-gray-300">9:00 AM</span>
                         </div>
                       </div>
@@ -1947,13 +1957,13 @@ export default function Home() {
                         <Link href="/webinar/register">
                           <Button className="w-full h-14 rounded-2xl bg-gradient-to-r from-blue-500 to-sky-400 hover:from-blue-600 hover:to-sky-500 text-white font-bold text-base shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all group">
                             Register Now — It's Free!
-                            <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                            <PhArrowRight weight="bold" className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                           </Button>
                         </Link>
                         <Link href="/webinar" className="block">
                           <Button variant="outline" className="w-full h-12 rounded-2xl border-2 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold">
                             Learn More
-                            <ChevronRight className="ml-1 h-4 w-4" />
+                            <PhCaretRight weight="bold" className="ml-1 h-4 w-4" />
                           </Button>
                         </Link>
                         <p className="text-center text-xs text-gray-400 dark:text-gray-500">

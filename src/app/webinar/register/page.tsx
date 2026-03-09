@@ -5,17 +5,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import {
     ArrowRight,
-    CheckCircle2,
-    AlertCircle,
+    CheckCircle,
+    WarningCircle,
     User,
-    Mail,
+    EnvelopeSimple,
     Phone,
     BookOpen,
-    BarChart3,
-    Sparkles,
+    ChartBar,
+    Sparkle,
     ArrowLeft,
-    Loader2,
-} from 'lucide-react';
+    CircleNotch,
+} from '@phosphor-icons/react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -137,7 +137,7 @@ export default function WebinarRegisterPage() {
         return (
             <div className="flex h-[70vh] items-center justify-center">
                 <div className="text-center space-y-4">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto" />
+                    <CircleNotch className="h-8 w-8 animate-spin text-blue-500 mx-auto" />
                     <p className="text-sm text-gray-500">Loading...</p>
                 </div>
             </div>
@@ -160,7 +160,7 @@ export default function WebinarRegisterPage() {
                                 <Card className="relative bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-emerald-100 dark:border-slate-800 rounded-[28px] shadow-xl">
                                     <CardContent className="p-10 space-y-6">
                                         <div className="w-20 h-20 rounded-3xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center mx-auto">
-                                            <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+                                            <CheckCircle weight="fill" className="h-10 w-10 text-emerald-500" />
                                         </div>
                                         <h2 className="text-2xl font-black text-gray-900 dark:text-white">Already Registered!</h2>
                                         <p className="text-gray-500 dark:text-gray-400 leading-relaxed">
@@ -169,7 +169,7 @@ export default function WebinarRegisterPage() {
                                         <div className="pt-4 flex flex-col gap-3">
                                             <Link href="/webinar">
                                                 <Button variant="outline" className="w-full h-12 rounded-2xl border-2 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold">
-                                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                                    <ArrowLeft weight="bold" className="mr-2 h-4 w-4" />
                                                     Back to Webinar Page
                                                 </Button>
                                             </Link>
@@ -263,7 +263,7 @@ export default function WebinarRegisterPage() {
                             className="mb-6"
                         >
                             <Link href="/webinar" className="inline-flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-blue-500 transition-colors">
-                                <ArrowLeft className="h-4 w-4" />
+                                <ArrowLeft weight="bold" className="h-4 w-4" />
                                 Back to Webinar
                             </Link>
                         </motion.div>
@@ -275,7 +275,7 @@ export default function WebinarRegisterPage() {
                             className="mb-8"
                         >
                             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 mb-4">
-                                <Sparkles className="h-3.5 w-3.5 text-blue-500" />
+                                <Sparkle weight="fill" className="h-3.5 w-3.5 text-blue-500" />
                                 <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Register Now</span>
                             </div>
                             <h1 className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-2">
@@ -301,7 +301,7 @@ export default function WebinarRegisterPage() {
                                             {/* Full Name */}
                                             <div className="space-y-2">
                                                 <Label htmlFor="fullName" className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                                    <User className="h-4 w-4 text-blue-500" />
+                                                    <User weight="bold" className="h-4 w-4 text-blue-500" />
                                                     Full Name
                                                 </Label>
                                                 <Input
@@ -318,7 +318,7 @@ export default function WebinarRegisterPage() {
                                             {/* Email */}
                                             <div className="space-y-2">
                                                 <Label htmlFor="email" className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                                    <Mail className="h-4 w-4 text-blue-500" />
+                                                    <EnvelopeSimple weight="bold" className="h-4 w-4 text-blue-500" />
                                                     Email
                                                 </Label>
                                                 <Input
@@ -335,7 +335,7 @@ export default function WebinarRegisterPage() {
                                             {/* Phone */}
                                             <div className="space-y-2">
                                                 <Label htmlFor="phone" className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                                    <Phone className="h-4 w-4 text-blue-500" />
+                                                    <Phone weight="bold" className="h-4 w-4 text-blue-500" />
                                                     Phone Number
                                                 </Label>
                                                 <Input
@@ -352,7 +352,7 @@ export default function WebinarRegisterPage() {
                                             {/* Exam Type */}
                                             <div className="space-y-2">
                                                 <Label className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                                    <BookOpen className="h-4 w-4 text-blue-500" />
+                                                    <BookOpen weight="bold" className="h-4 w-4 text-blue-500" />
                                                     Target Exam
                                                 </Label>
                                                 <Select value={examType} onValueChange={(value) => setExamType(value as 'PTE')}>
@@ -368,7 +368,7 @@ export default function WebinarRegisterPage() {
                                             {/* Level */}
                                             <div className="space-y-2">
                                                 <Label className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                                    <BarChart3 className="h-4 w-4 text-blue-500" />
+                                                    <ChartBar weight="bold" className="h-4 w-4 text-blue-500" />
                                                     Current English Level
                                                 </Label>
                                                 <Select value={level} onValueChange={(value) => setLevel(value as 'Beginner' | 'Intermediate' | 'Advanced')}>
@@ -398,7 +398,7 @@ export default function WebinarRegisterPage() {
                                                     ) : (
                                                         <>
                                                             Confirm Registration
-                                                            <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                                            <ArrowRight weight="bold" className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                                         </>
                                                     )}
                                                 </Button>

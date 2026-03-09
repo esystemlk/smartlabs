@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, Clock, Sparkles, ArrowRight, ChevronRight } from 'lucide-react';
+import { X, CalendarBlank, Clock, Sparkle, ArrowRight, CaretRight } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useFirebase } from '@/firebase';
@@ -33,7 +33,11 @@ export function WebinarBanner() {
 
             // Check if user dismissed the banner in this session
             const dismissed = sessionStorage.getItem('webinar-banner-dismissed');
-            if (!dismissed) {
+            const isHomePage = window.location.pathname === '/' || window.location.pathname === '';
+
+            // If on home page, show it regardless of dismissal in current session
+            // (Unless user just dismissed it in this specific view, but we want it to show on re-entry)
+            if (!dismissed || isHomePage) {
                 // Show banner after a short delay
                 const timer = setTimeout(() => setIsVisible(true), 1500);
                 return () => clearTimeout(timer);
@@ -97,7 +101,7 @@ export function WebinarBanner() {
                                     className="absolute top-5 right-5 z-10 p-2 rounded-full bg-gray-100/80 dark:bg-slate-800/80 hover:bg-gray-200 dark:hover:bg-slate-700 transition-all text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                                     aria-label="Close webinar notice"
                                 >
-                                    <X className="h-4 w-4" />
+                                    <X weight="bold" className="h-4 w-4" />
                                 </button>
 
                                 <div className="p-8 pt-7">
@@ -146,13 +150,13 @@ export function WebinarBanner() {
                                         className="flex flex-wrap gap-3 mb-7"
                                     >
                                         <div className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800/30">
-                                            <Calendar className="h-4 w-4 text-blue-500" />
+                                            <CalendarBlank weight="bold" className="h-4 w-4 text-blue-500" />
                                             <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
                                                 📅 {formatDate(settings.date)}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-2 px-4 py-2.5 bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl border border-yellow-200 dark:border-yellow-800/30">
-                                            <Clock className="h-4 w-4 text-yellow-600" />
+                                            <Clock weight="bold" className="h-4 w-4 text-yellow-600" />
                                             <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
                                                 ⏰ {settings.time} (Sri Lanka Time)
                                             </span>
@@ -171,7 +175,7 @@ export function WebinarBanner() {
                                                 className="w-full h-12 rounded-2xl bg-gradient-to-r from-blue-500 to-sky-400 hover:from-blue-600 hover:to-sky-500 text-white font-bold text-sm shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all group"
                                             >
                                                 Register Now
-                                                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                                <ArrowRight weight="bold" className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                             </Button>
                                         </Link>
                                         <Link href="/webinar" className="flex-1" onClick={handleDismiss}>
@@ -180,7 +184,7 @@ export function WebinarBanner() {
                                                 className="w-full h-12 rounded-2xl border-2 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold text-sm transition-all group"
                                             >
                                                 Learn More
-                                                <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                                <CaretRight weight="bold" className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                             </Button>
                                         </Link>
                                     </motion.div>
@@ -189,9 +193,9 @@ export function WebinarBanner() {
                                 {/* Bottom decorative element */}
                                 <div className="px-8 pb-6 pt-2">
                                     <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest">
-                                        <Sparkles className="h-3 w-3" />
+                                        <Sparkle weight="fill" className="h-3 w-3" />
                                         <span>Limited Spots Available</span>
-                                        <Sparkles className="h-3 w-3" />
+                                        <Sparkle weight="fill" className="h-3 w-3" />
                                     </div>
                                 </div>
                             </div>

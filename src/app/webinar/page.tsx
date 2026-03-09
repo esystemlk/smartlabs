@@ -4,23 +4,22 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
-    Calendar,
+    CalendarBlank,
     Clock,
-    Globe,
+    GlobeHemisphereWest,
     ArrowRight,
     Target,
     BookOpen,
-    AlertCircle,
-    MessageSquare,
-    PenTool,
-    TrendingUp,
-    Sparkles,
-    CheckCircle2,
-    Users,
-    Award,
-    Zap,
-    Monitor,
-} from 'lucide-react';
+    WarningCircle,
+    ChatCenteredText,
+    TrendUp,
+    Sparkle,
+    CheckCircle,
+    UsersThree,
+    Medal,
+    ProjectorScreen,
+    CaretRight,
+} from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useFirebase } from '@/firebase';
@@ -36,7 +35,7 @@ const learningPoints = [
         border: 'border-blue-100 dark:border-blue-800/30',
     },
     {
-        icon: Zap,
+        icon: Sparkle,
         title: 'PTE Exam Techniques',
         description: 'Master the AI-scored PTE format with smart answering strategies.',
         color: 'text-sky-500',
@@ -44,7 +43,7 @@ const learningPoints = [
         border: 'border-sky-100 dark:border-sky-800/30',
     },
     {
-        icon: AlertCircle,
+        icon: WarningCircle,
         title: 'Common Exam Mistakes',
         description: 'Identify and avoid the most frequent errors that cost students marks.',
         color: 'text-amber-500',
@@ -52,7 +51,7 @@ const learningPoints = [
         border: 'border-amber-100 dark:border-amber-800/30',
     },
     {
-        icon: MessageSquare,
+        icon: ChatCenteredText,
         title: 'Speaking & Writing Tips',
         description: 'Expert tips for fluency, pronunciation, coherence, and task response.',
         color: 'text-emerald-500',
@@ -60,7 +59,7 @@ const learningPoints = [
         border: 'border-emerald-100 dark:border-emerald-800/30',
     },
     {
-        icon: TrendingUp,
+        icon: TrendUp,
         title: 'Reach PTE 79+ Faster',
         description: 'Accelerated study plans designed to help you hit your target PTE score quickly.',
         color: 'text-purple-500',
@@ -165,7 +164,7 @@ export default function WebinarPage() {
                                         <div className="grid sm:grid-cols-3 gap-6 mb-8">
                                             <div className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-blue-50/80 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30">
                                                 <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                                                    <Calendar className="h-6 w-6 text-blue-500" />
+                                                    <CalendarBlank weight="bold" className="h-6 w-6 text-blue-500" />
                                                 </div>
                                                 <div className="text-center">
                                                     <p className="text-xs font-bold text-blue-500 uppercase tracking-wider mb-1">Date</p>
@@ -175,7 +174,7 @@ export default function WebinarPage() {
 
                                             <div className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-yellow-50/80 dark:bg-yellow-900/10 border border-yellow-100 dark:border-yellow-800/30">
                                                 <div className="w-12 h-12 rounded-2xl bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
-                                                    <Clock className="h-6 w-6 text-yellow-600" />
+                                                    <Clock weight="bold" className="h-6 w-6 text-yellow-600" />
                                                 </div>
                                                 <div className="text-center">
                                                     <p className="text-xs font-bold text-yellow-600 uppercase tracking-wider mb-1">Time</p>
@@ -185,7 +184,7 @@ export default function WebinarPage() {
 
                                             <div className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-sky-50/80 dark:bg-sky-900/10 border border-sky-100 dark:border-sky-800/30">
                                                 <div className="w-12 h-12 rounded-2xl bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
-                                                    <Monitor className="h-6 w-6 text-sky-500" />
+                                                    <ProjectorScreen weight="bold" className="h-6 w-6 text-sky-500" />
                                                 </div>
                                                 <div className="text-center">
                                                     <p className="text-xs font-bold text-sky-500 uppercase tracking-wider mb-1">Mode</p>
@@ -198,7 +197,7 @@ export default function WebinarPage() {
                                         <Link href="/webinar/register">
                                             <Button className="w-full h-14 rounded-2xl bg-gradient-to-r from-blue-500 to-sky-400 hover:from-blue-600 hover:to-sky-500 text-white font-bold text-base shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all group">
                                                 Register Now — It's Free!
-                                                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                                <ArrowRight weight="bold" className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                             </Button>
                                         </Link>
                                     </CardContent>
@@ -221,7 +220,7 @@ export default function WebinarPage() {
                             className="text-center mb-14"
                         >
                             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 mb-5">
-                                <BookOpen className="h-4 w-4 text-blue-500" />
+                                <BookOpen weight="bold" className="h-4 w-4 text-blue-500" />
                                 <span className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">What You'll Learn</span>
                             </div>
                             <h2 className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-4">
@@ -245,7 +244,7 @@ export default function WebinarPage() {
                                     <Card className={`h-full ${point.bg} ${point.border} border rounded-[20px] hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group`}>
                                         <CardContent className="p-6">
                                             <div className={`w-12 h-12 rounded-2xl ${point.bg} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                                                <point.icon className={`h-6 w-6 ${point.color}`} />
+                                                <point.icon weight="bold" className={`h-6 w-6 ${point.color}`} />
                                             </div>
                                             <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2">{point.title}</h3>
                                             <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{point.description}</p>
@@ -284,15 +283,15 @@ export default function WebinarPage() {
                             className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5"
                         >
                             {[
-                                { icon: Award, label: 'Expert Instructors', desc: 'Learn from PTE 90 scorers', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
-                                { icon: Users, label: 'Interactive Session', desc: 'Q&A and live discussion', color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
-                                { icon: Sparkles, label: '100% Free', desc: 'No hidden charges', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
-                                { icon: CheckCircle2, label: 'Actionable Tips', desc: 'Apply strategies immediately', color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20' },
+                                { icon: Medal, label: 'Expert Instructors', desc: 'Learn from PTE 90 scorers', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+                                { icon: UsersThree, label: 'Interactive Session', desc: 'Q&A and live discussion', color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
+                                { icon: Sparkle, label: '100% Free', desc: 'No hidden charges', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
+                                { icon: CheckCircle, label: 'Actionable Tips', desc: 'Apply strategies immediately', color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20' },
                             ].map((item, idx) => (
                                 <motion.div key={idx} variants={itemVariants}>
                                     <div className={`text-center p-6 rounded-[20px] ${item.bg} border border-transparent hover:border-blue-200/50 dark:hover:border-blue-700/30 transition-all hover:-translate-y-1`}>
                                         <div className={`w-14 h-14 rounded-2xl ${item.bg} flex items-center justify-center mx-auto mb-4`}>
-                                            <item.icon className={`h-7 w-7 ${item.color}`} />
+                                            <item.icon weight="bold" className={`h-7 w-7 ${item.color}`} />
                                         </div>
                                         <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">{item.label}</h3>
                                         <p className="text-xs text-gray-500 dark:text-gray-400">{item.desc}</p>
@@ -311,7 +310,7 @@ export default function WebinarPage() {
                             <Link href="/webinar/register">
                                 <Button className="h-14 px-10 rounded-2xl bg-gradient-to-r from-blue-500 to-sky-400 hover:from-blue-600 hover:to-sky-500 text-white font-bold text-base shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all group">
                                     Register Now — Secure Your Spot
-                                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                    <ArrowRight weight="bold" className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                 </Button>
                             </Link>
                             <p className="mt-4 text-sm text-gray-400 dark:text-gray-500">
