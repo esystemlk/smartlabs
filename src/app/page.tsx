@@ -121,16 +121,6 @@ const courses = [
     features: ["AI Scoring Practice", "Live Classes", "Full Materials Access", "Mock Tests"],
   },
   {
-    title: "IELTS Training",
-    description: "Achieve your target band score with comprehensive IELTS preparation.",
-    icon: Globe,
-    href: "/ielts",
-    color: "from-accent-2/20 to-accent-2/5",
-    iconColor: "text-accent-2",
-    bgGradient: "from-accent-2/10 via-accent-2/5 to-transparent",
-    features: ["Speaking Practice", "Writing Feedback", "Full Materials", "Band 8.5+ Strategies"],
-  },
-  {
     title: "CELPIP Prep",
     description: "Your pathway to Canadian immigration with focused CELPIP training.",
     icon: Zap,
@@ -956,7 +946,7 @@ export default function Home() {
                 </h2>
 
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  Our Founder and Director, Lahiruka Weeraratne, known in the industry as Laheer, is a distinguished expert trainer officially trained by Pearson UK. She specializes in PTE, IELTS, and CELPIP exams—the essential pathways for students and professionals seeking to study, migrate, or settle abroad. With over 6 years of professional experience, she has successfully trained more than 5,000 students, empowering them to achieve their global aspirations.
+                  Our Founder and Director, Lahiruka Weeraratne, known in the industry as Laheer, is a distinguished expert trainer officially trained by Pearson UK. She specializes in PTE and CELPIP exams—the essential pathways for students and professionals seeking to study, migrate, or settle abroad. With over 6 years of professional experience, she has successfully trained more than 5,000 students, empowering them to achieve their global aspirations.
                 </p>
               </div>
 
@@ -968,7 +958,7 @@ export default function Home() {
                     {
                       icon: GraduationCap,
                       title: "Competency Test Training",
-                      desc: "PTE, IELTS, CELPIP Mastery",
+                      desc: "PTE & CELPIP Mastery",
                       color: "bg-accent-1/10 text-accent-1"
                     },
                     {
@@ -1381,7 +1371,7 @@ export default function Home() {
               <span className="gradient-text">Success Path</span>
             </h2>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
-              World-class preparation for PTE, IELTS, and CELPIP with AI-powered practice and expert guidance from international trainers.
+              World-class preparation for PTE and CELPIP with AI-powered practice and expert guidance from international trainers.
             </p>
           </motion.div>
 

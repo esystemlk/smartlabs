@@ -392,7 +392,7 @@ export default function WebinarRegisterPage() {
                                                 >
                                                     {isSubmitting ? (
                                                         <>
-                                                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                                            <CircleNotch className="mr-2 h-5 w-5 animate-spin" />
                                                             Registering...
                                                         </>
                                                     ) : (

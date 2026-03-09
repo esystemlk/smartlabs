@@ -52,15 +52,6 @@ const courses = [
     hoverBorder: "hover:border-accent-1/50"
   },
   {
-    name: "IELTS Mastery",
-    href: "/ielts",
-    description: "Band 8.5+ strategies and mocks.",
-    icon: Globe,
-    color: "text-accent-2",
-    bgColor: "bg-accent-2/10",
-    hoverBorder: "hover:border-accent-2/50"
-  },
-  {
     name: "CELPIP Training",
     href: "/celpip",
     description: "Get CLB 9+ for Canadian PR.",

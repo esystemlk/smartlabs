@@ -92,7 +92,7 @@ export default function About() {
                 Smart Labs was founded with a simple belief: everyone deserves access to quality education that can transform their lives. What started as a small PTE preparation center has grown into a comprehensive learning platform serving thousands of students.
               </p>
               <p className="text-muted-foreground mb-6 leading-relaxed">
-                Today, we offer expert-led courses for PTE, IELTS, CELPIP, and corporate training, combining traditional teaching excellence with modern AI-powered learning tools.
+                Today, we offer expert-led courses for PTE, CELPIP, and corporate training, combining traditional teaching excellence with modern AI-powered learning tools.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">

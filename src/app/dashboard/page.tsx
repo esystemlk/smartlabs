@@ -15,7 +15,29 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SpotlightCard } from '@/components/ui/spotlight-card';
-import { ChevronRight, ListVideo, FileText, BookOpen, BarChart3, Calendar, MessageSquare, Briefcase, GraduationCap, Clock, Home, BookCheck, Check, Globe, Zap, Target, Bot, Sparkles, Play, Columns } from 'lucide-react';
+import {
+    CaretRight,
+    MonitorPlay,
+    FileText,
+    BookOpen,
+    ChartBar,
+    CalendarBlank,
+    ChatCircleDots,
+    Briefcase,
+    GraduationCap,
+    Clock,
+    House,
+    BookBookmark,
+    Check,
+    Globe,
+    Lightning,
+    Target,
+    Robot,
+    Sparkle,
+    Play,
+    Columns,
+    CircleNotch
+} from '@phosphor-icons/react';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -26,13 +48,13 @@ import { QuickActions } from '@/components/dashboard/QuickActions';
 import { LMS_URL } from '@/lib/constants';
 
 const lmsFeatures = [
-    { title: 'Learn with AI Tutor', description: 'Personalized neural faculty for PTE, IELTS, and CELPIP.', href: '/dashboard/ai-tutor', icon: Bot, color: "text-accent-1", bg: "bg-accent-1/10", border: "hover:border-accent-1/50", gradient: "from-accent-1/20 to-transparent" },
+    { title: 'Learn with AI Tutor', description: 'Personalized neural faculty for PTE and CELPIP.', href: '/dashboard/ai-tutor', icon: Robot, color: "text-accent-1", bg: "bg-accent-1/10", border: "hover:border-accent-1/50", gradient: "from-accent-1/20 to-transparent" },
     { title: 'AI Score Master', description: 'Precision PTE practice with the neural scoring matrix.', href: '/dashboard/ai-score-test', icon: Target, color: "text-indigo-500", bg: "bg-indigo-500/10", border: "hover:border-indigo-500/50", gradient: "from-indigo-500/20 to-transparent" },
-    { title: 'Video Gallery', description: 'Watch our latest educational videos and updates.', href: '/videos', icon: ListVideo, color: "text-red-500", bg: "bg-red-500/10", border: "hover:border-red-500/50", gradient: "from-red-500/20 to-transparent" },
+    { title: 'Video Gallery', description: 'Watch our latest educational videos and updates.', href: '/videos', icon: MonitorPlay, color: "text-red-500", bg: "bg-red-500/10", border: "hover:border-red-500/50", gradient: "from-red-500/20 to-transparent" },
     { title: 'Practice Test Area', description: 'Access the AI Scoring Engine and practice materials.', href: '/dashboard/practice-tests', icon: BookOpen, color: "text-purple-500", bg: "bg-purple-500/10", border: "hover:border-purple-500/50", gradient: "from-purple-500/20 to-transparent" },
     { title: 'LMS Portal', description: 'Login to the student learning system.', href: LMS_URL, icon: Globe, color: "text-blue-500", bg: "bg-blue-500/10", border: "hover:border-blue-500/50", gradient: "from-blue-500/20 to-transparent" },
-    { title: 'Support Chat', description: 'Get help from our support team.', href: '/dashboard/support', icon: MessageSquare, color: "text-cyan-500", bg: "bg-cyan-500/10", border: "hover:border-cyan-500/50", gradient: "from-cyan-500/20 to-transparent" },
-    { title: 'Back to Homepage', description: 'Return to the main website.', href: '/', icon: Home, color: "text-gray-500", bg: "bg-gray-500/10", border: "hover:border-gray-500/50", gradient: "from-gray-500/20 to-transparent" },
+    { title: 'Support Chat', description: 'Get help from our support team.', href: '/dashboard/support', icon: ChatCircleDots, color: "text-cyan-500", bg: "bg-cyan-500/10", border: "hover:border-cyan-500/50", gradient: "from-cyan-500/20 to-transparent" },
+    { title: 'Back to Homepage', description: 'Return to the main website.', href: '/', icon: House, color: "text-gray-500", bg: "bg-gray-500/10", border: "hover:border-gray-500/50", gradient: "from-gray-500/20 to-transparent" },
 ];
 
 
@@ -109,7 +131,7 @@ export default function DashboardPage() {
                             animate={{ opacity: 1, y: 0 }}
                             className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 border border-white/20 text-[10px] font-black uppercase tracking-widest mb-6"
                         >
-                            <Zap className="h-3 w-3 fill-white" /> AI Enhanced Platform
+                            <Lightning weight="bold" className="h-3 w-3 fill-white" /> AI Enhanced Platform
                         </motion.div>
                         <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 font-display tracking-tight leading-tight">
                             Welcome back, <br />
@@ -163,7 +185,7 @@ export default function DashboardPage() {
                         </div>
                         <Button asChild className="rounded-xl px-8 h-12 bg-primary group-hover:scale-105 transition-transform">
                             <Link href="/admin/dashboard" className="flex items-center gap-2">
-                                Launch Admin Panel <ChevronRight className="h-4 w-4" />
+                                Launch Admin Panel <CaretRight weight="bold" className="h-4 w-4" />
                             </Link>
                         </Button>
                     </CardHeader>
@@ -175,7 +197,7 @@ export default function DashboardPage() {
                 <div className="flex justify-between items-end mb-8">
                     <div>
                         <h2 className="text-2xl font-black font-display tracking-tight flex items-center gap-2">
-                            <Zap className="h-6 w-6 text-primary" /> Command Center
+                            <Lightning weight="bold" className="h-6 w-6 text-primary" /> Command Center
                         </h2>
                         <p className="text-sm text-muted-foreground mt-1 font-medium">Access your learning modules and portals</p>
                     </div>
@@ -198,7 +220,7 @@ export default function DashboardPage() {
                                     </div>
 
                                     <div className="relative z-10 mt-6 flex items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">
-                                        Initialize <ChevronRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-2" />
+                                        Initialize <CaretRight weight="bold" className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-2" />
                                     </div>
                                 </SpotlightCard>
                             </Link>
@@ -249,7 +271,7 @@ export default function DashboardPage() {
                         ) : (
                             <div className="text-center py-8">
                                 <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <BookCheck className="h-10 w-10 text-primary" />
+                                    <BookBookmark weight="bold" className="h-10 w-10 text-primary" />
                                 </div>
                                 <h3 className="text-2xl font-black mb-2">Initialize Your Journey</h3>
                                 <p className="text-muted-foreground font-medium mb-8 max-w-sm mx-auto">You haven't enrolled in any courses yet. Unlock your potential today.</p>

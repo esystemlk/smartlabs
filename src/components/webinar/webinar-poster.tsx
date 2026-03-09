@@ -178,8 +178,7 @@ export function WebinarPoster() {
                                         <UsersThree weight="bold" className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Expert Tutors</p>
-                                        <p className="text-xl font-black text-gray-900 dark:text-white">IELTS & PTE</p>
+                                        <p className="text-xl font-black text-gray-900 dark:text-white">PTE Expert</p>
                                     </div>
                                 </motion.div>
                             </motion.div>

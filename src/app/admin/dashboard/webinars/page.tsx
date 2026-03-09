@@ -4,24 +4,24 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Users,
-    Search,
-    Download,
-    Settings,
-    Save,
+    MagnifyingGlass,
+    DownloadSimple,
+    Gear,
+    FloppyDisk,
     ArrowLeft,
-    Loader2,
-    Calendar,
+    CircleNotch,
+    CalendarBlank,
     Clock,
-    Link2,
+    Link as LinkIcon,
     FileText,
     ToggleLeft,
     ToggleRight,
-    ChevronDown,
-    RefreshCw,
-    Mail,
-    Send,
+    CaretDown,
+    ArrowsClockwise,
+    Envelope,
+    PaperPlaneTilt,
     Plus,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -400,7 +400,7 @@ export default function AdminWebinarsPage() {
                         </div>
                         <div className="flex items-center gap-3">
                             <Button variant="outline" onClick={loadData} disabled={isLoadingData}>
-                                <RefreshCw className={`mr-2 h-4 w-4 ${isLoadingData ? 'animate-spin' : ''}`} />
+                                <ArrowsClockwise weight="bold" className={`mr-2 h-4 w-4 ${isLoadingData ? 'animate-spin' : ''}`} />
                                 Refresh
                             </Button>
                             <Badge variant="secondary" className="text-sm px-4 py-1.5">
@@ -417,11 +417,11 @@ export default function AdminWebinarsPage() {
                                 Registrations
                             </TabsTrigger>
                             <TabsTrigger value="settings" className="rounded-lg px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                                <Settings className="mr-2 h-4 w-4" />
+                                <Gear weight="bold" className="mr-2 h-4 w-4" />
                                 Settings
                             </TabsTrigger>
                             <TabsTrigger value="emails" className="rounded-lg px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                                <Mail className="mr-2 h-4 w-4" />
+                                <Envelope weight="bold" className="mr-2 h-4 w-4" />
                                 Send Emails
                             </TabsTrigger>
                         </TabsList>
@@ -431,7 +431,7 @@ export default function AdminWebinarsPage() {
                             {/* Search & Export Bar */}
                             <div className="flex flex-col sm:flex-row gap-4">
                                 <div className="relative flex-1">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         placeholder="Search by name, email, or phone..."
                                         value={searchQuery}
@@ -440,7 +440,7 @@ export default function AdminWebinarsPage() {
                                     />
                                 </div>
                                 <Button onClick={handleExport} variant="outline" className="h-11 rounded-xl">
-                                    <Download className="mr-2 h-4 w-4" />
+                                    <DownloadSimple weight="bold" className="mr-2 h-4 w-4" />
                                     Export to CSV
                                 </Button>
                             </div>
@@ -450,7 +450,7 @@ export default function AdminWebinarsPage() {
                                 <CardContent className="p-0">
                                     {isLoadingData ? (
                                         <div className="flex items-center justify-center py-20">
-                                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                                            <CircleNotch weight="bold" className="h-8 w-8 animate-spin text-primary" />
                                         </div>
                                     ) : filteredRegistrations.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -591,7 +591,7 @@ export default function AdminWebinarsPage() {
                                     <div className="grid sm:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="webinar-date" className="text-sm font-bold flex items-center gap-2">
-                                                <Calendar className="h-4 w-4 text-primary" />
+                                                <CalendarBlank weight="bold" className="h-4 w-4 text-primary" />
                                                 Date
                                             </Label>
                                             <Input
@@ -621,7 +621,7 @@ export default function AdminWebinarsPage() {
                                     {/* Meeting Link */}
                                     <div className="space-y-2">
                                         <Label htmlFor="webinar-link" className="text-sm font-bold flex items-center gap-2">
-                                            <Link2 className="h-4 w-4 text-primary" />
+                                            <LinkIcon weight="bold" className="h-4 w-4 text-primary" />
                                             Meeting Link
                                         </Label>
                                         <Input
@@ -643,12 +643,12 @@ export default function AdminWebinarsPage() {
                                         >
                                             {isSavingSettings ? (
                                                 <>
-                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                    <CircleNotch weight="bold" className="mr-2 h-4 w-4 animate-spin" />
                                                     Saving...
                                                 </>
                                             ) : (
                                                 <>
-                                                    <Save className="mr-2 h-4 w-4" />
+                                                    <FloppyDisk weight="bold" className="mr-2 h-4 w-4" />
                                                     Save Settings
                                                 </>
                                             )}
@@ -661,7 +661,7 @@ export default function AdminWebinarsPage() {
                             <Card className="rounded-2xl mt-8">
                                 <CardHeader>
                                     <CardTitle className="text-xl font-bold flex items-center gap-2">
-                                        <Mail className="h-5 w-5 text-primary" />
+                                        <Envelope weight="bold" className="h-5 w-5 text-primary" />
                                         Notification Email Recipients
                                     </CardTitle>
                                 </CardHeader>
@@ -683,7 +683,7 @@ export default function AdminWebinarsPage() {
                                             disabled={isAddingAdminEmail || !newAdminEmail}
                                             className="sm:mt-8 h-11 rounded-xl bg-primary hover:bg-primary/90"
                                         >
-                                            {isAddingAdminEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
+                                            {isAddingAdminEmail ? <CircleNotch weight="bold" className="h-4 w-4 animate-spin" /> : <Plus weight="bold" className="mr-2 h-4 w-4" />}
                                             Add Email
                                         </Button>
                                     </div>
@@ -701,7 +701,7 @@ export default function AdminWebinarsPage() {
                                                 {isLoadingAdminEmails ? (
                                                     <tr>
                                                         <td colSpan={3} className="py-10 text-center">
-                                                            <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
+                                                            <CircleNotch weight="bold" className="h-6 w-6 animate-spin mx-auto text-primary" />
                                                         </td>
                                                     </tr>
                                                 ) : adminEmails.length === 0 ? (
@@ -720,9 +720,9 @@ export default function AdminWebinarsPage() {
                                                                     className="flex items-center gap-2"
                                                                 >
                                                                     {admin.isActive ? (
-                                                                        <ToggleRight className="h-6 w-6 text-primary" />
+                                                                        <ToggleRight weight="fill" className="h-6 w-6 text-primary" />
                                                                     ) : (
-                                                                        <ToggleLeft className="h-6 w-6 text-muted-foreground" />
+                                                                        <ToggleLeft weight="bold" className="h-6 w-6 text-muted-foreground" />
                                                                     )}
                                                                     <span className={`text-xs font-bold ${admin.isActive ? 'text-primary' : 'text-muted-foreground'}`}>
                                                                         {admin.isActive ? 'Receiving' : 'Paused'}
@@ -753,7 +753,7 @@ export default function AdminWebinarsPage() {
                             <Card className="rounded-2xl">
                                 <CardHeader>
                                     <CardTitle className="text-xl font-bold flex items-center gap-2">
-                                        <Mail className="h-5 w-5 text-primary" />
+                                        <Envelope weight="bold" className="h-5 w-5 text-primary" />
                                         Send Webinar Link & Resources
                                     </CardTitle>
                                 </CardHeader>
@@ -804,12 +804,12 @@ export default function AdminWebinarsPage() {
                                         >
                                             {isSendingEmails ? (
                                                 <>
-                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                    <CircleNotch weight="bold" className="mr-2 h-4 w-4 animate-spin" />
                                                     Sending to {registrations.length} students...
                                                 </>
                                             ) : (
                                                 <>
-                                                    <Send className="mr-2 h-4 w-4" />
+                                                    <PaperPlaneTilt weight="bold" className="mr-2 h-4 w-4" />
                                                     Send Email to All Registered Students
                                                 </>
                                             )}

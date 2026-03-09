@@ -6,24 +6,24 @@ import { motion } from 'framer-motion';
 import { useUser } from '@/firebase';
 import { useUserActivity } from '@/hooks/use-user-activity';
 import {
-    Activity,
-    CheckCircle2,
-    Video,
+    Pulse,
+    CheckCircle,
+    VideoCamera,
     FileText,
-    Award,
+    Trophy,
     UserPlus,
-    LogIn,
+    SignIn,
     BookOpen,
-    Loader2
-} from 'lucide-react';
+    CircleNotch
+} from '@phosphor-icons/react';
 
 const iconMap: Record<string, any> = {
-    test: CheckCircle2,
+    test: CheckCircle,
     lesson: BookOpen,
-    achievement: Award,
+    achievement: Trophy,
     enrollment: UserPlus,
-    login: LogIn,
-    video: Video,
+    login: SignIn,
+    video: VideoCamera,
 };
 
 const colorMap: Record<string, string> = {
@@ -65,7 +65,7 @@ export function RecentActivity() {
         <Card className="col-span-1 border-none shadow-xl bg-card/30 backdrop-blur-md">
             <CardHeader>
                 <CardTitle className="text-xl font-bold flex items-center gap-2">
-                    <Activity className="h-5 w-5 text-primary" />
+                    <Pulse weight="bold" className="h-5 w-5 text-primary" />
                     Recent Activity
                 </CardTitle>
                 <CardDescription>Your latest learning achievements</CardDescription>
@@ -73,12 +73,12 @@ export function RecentActivity() {
             <CardContent className="px-2">
                 {loading ? (
                     <div className="flex justify-center py-12">
-                        <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                        <CircleNotch weight="bold" className="h-8 w-8 text-primary animate-spin" />
                     </div>
                 ) : activities.length > 0 ? (
                     <div className="space-y-4">
                         {activities.map((item: any, idx) => {
-                            const Icon = iconMap[item.activityType] || Activity;
+                            const Icon = iconMap[item.activityType] || Pulse;
                             return (
                                 <motion.div
                                     key={item.id}
