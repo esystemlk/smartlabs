@@ -90,7 +90,6 @@ export function CommandPalette() {
                                 <Command.Group heading="Core Training" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/50 px-3 mb-2">
                                     <div className="space-y-1 mt-2">
                                         <SearchItem icon={Target} color="text-accent-1" label="PTE Academic AI Suite" desc="Master the Pearson Test" onSelect={() => runCommand(() => router.push("/pte"))} />
-                                        <SearchItem icon={Globe} color="text-accent-2" label="IELTS Mastery Program" desc="International testing excellence" onSelect={() => runCommand(() => router.push("/ielts"))} />
                                         <SearchItem icon={Zap} color="text-accent-4" label="CELPIP Training Hub" desc="Canadian PR path" onSelect={() => runCommand(() => router.push("/celpip"))} />
                                     </div>
                                 </Command.Group>

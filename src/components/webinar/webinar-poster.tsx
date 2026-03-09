@@ -78,7 +78,7 @@ export function WebinarPoster() {
                                 </h2>
 
                                 <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed max-w-xl">
-                                    {settings.description || "Join our expert-led session to master the latest PTE strategies and techniques. Get the score you need for your visa or university application."}
+                                    {(settings.description || "Join our expert-led session to master the latest PTE strategies and techniques. Get the score you need for your visa or university application.").replace(/IELTS\s*&\s*/gi, '').replace(/&\s*IELTS/gi, '').replace(/IELTS/gi, 'PTE')}
                                 </p>
                             </div>
 
@@ -185,7 +185,7 @@ export function WebinarPoster() {
                         </div>
                     </div>
                 </motion.div>
-            </div>
-        </section>
+            </div >
+        </section >
     );
 }

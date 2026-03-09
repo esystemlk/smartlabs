@@ -142,7 +142,6 @@ export default function WelcomePage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="PTE">PTE (Pearson Test of English)</SelectItem>
-                      <SelectItem value="IELTS">IELTS (International English Language Testing System)</SelectItem>
                       <SelectItem value="CELPIP">CELPIP (Canadian English Language Proficiency Index Program)</SelectItem>
                       <SelectItem value="Other">Other / Not decided yet</SelectItem>
                     </SelectContent>
@@ -150,7 +149,7 @@ export default function WelcomePage() {
                 </div>
                 <div>
                   <Label htmlFor="target-score" className="text-lg font-semibold">What's your target score?</Label>
-                  <p className="text-sm text-muted-foreground">e.g., "79+" for PTE, "Band 8.0" for IELTS.</p>
+                  <p className="text-sm text-muted-foreground">e.g., "79+" for PTE, "Level 9" for CELPIP.</p>
                   <Input id="target-score" value={targetScore} onChange={(e) => setTargetScore(e.target.value)} placeholder="Enter target score" className="h-12 text-lg mt-2" />
                 </div>
                 <div>

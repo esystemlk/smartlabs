@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, MapPin, ArrowRight, Sparkles, Target, Globe, Zap, Award, Loader2 } from 'lucide-react';
+import { Calendar, Clock, MapPin, ArrowRight, Sparkles, Target, Globe, Zap, Award } from 'lucide-react';
+import { CircleNotch } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -81,7 +82,7 @@ export default function EventsPage() {
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
                     {isLoading ? (
                         <div className="flex justify-center py-20">
-                            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                            <CircleNotch className="h-10 w-10 animate-spin text-primary" />
                         </div>
                     ) : (
                         <motion.div
@@ -124,10 +125,10 @@ export default function EventsPage() {
                                                 {event.date}
                                             </div>
                                             <h3 className="text-2xl font-black tracking-tight text-white group-hover:text-primary transition-colors line-clamp-2">
-                                                {event.title}
+                                                {event.title.replace(/IELTS\s*&\s*/gi, '').replace(/&\s*IELTS/gi, '').replace(/IELTS/gi, 'PTE')}
                                             </h3>
                                             <p className="text-sm text-white/70 font-medium leading-relaxed line-clamp-3">
-                                                {event.description}
+                                                {event.description.replace(/IELTS\s*&\s*/gi, '').replace(/&\s*IELTS/gi, '').replace(/IELTS/gi, 'PTE')}
                                             </p>
 
                                             <div className="pt-4 flex items-center justify-between">

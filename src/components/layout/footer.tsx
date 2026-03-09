@@ -9,7 +9,6 @@ import { usePathname } from "next/navigation";
 const footerLinks = {
   courses: [
     { name: "PTE Preparation", href: "/pte" },
-    { name: "IELTS Training", href: "/ielts" },
     { name: "CELPIP Course", href: "/celpip" },
     { name: "Corporate Training", href: "/corporate-training" },
   ],

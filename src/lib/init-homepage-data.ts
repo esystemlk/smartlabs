@@ -18,18 +18,7 @@ export async function initializeHomepageData() {
                 isActive: true,
                 order: 1
             },
-            {
-                title: "IELTS Training",
-                description: "Achieve your target band score with comprehensive IELTS preparation.",
-                icon: "Globe",
-                href: "/ielts",
-                color: "from-accent-2/20 to-accent-2/5",
-                iconColor: "text-accent-2",
-                bgGradient: "from-accent-2/10 via-accent-2/5 to-transparent",
-                features: ["Speaking Practice", "Writing Feedback", "Full Materials", "Band 8.5+ Strategies"],
-                isActive: true,
-                order: 2
-            },
+
             {
                 title: "CELPIP Prep",
                 description: "Your pathway to Canadian immigration with focused CELPIP training.",
@@ -108,7 +97,7 @@ export async function initializeHomepageData() {
             },
             {
                 title: "Expert Mentors",
-                description: "Learn from trainers who have consistently achieved Band 9 and PTE 90 scores.",
+                description: "Learn from trainers who have consistently achieved PTE 90 scores.",
                 icon: "GraduationCap",
                 color: "from-purple-500/20 to-pink-500/20",
                 iconColor: "text-purple-500",
@@ -144,7 +133,7 @@ export async function initializeHomepageData() {
         const faqs = [
             {
                 question: "How accurate is the AI scoring engine?",
-                answer: "Our AI scoring engine is built using advanced natural language processing and is continuously refined based on official PTE, IELTS, and CELPIP scoring rubrics. It provides detailed feedback on grammar, vocabulary, coherence, and task achievement to help you improve effectively.",
+                answer: "Our AI scoring engine is built using advanced natural language processing and is continuously refined based on official PTE and CELPIP scoring rubrics. It provides detailed feedback on grammar, vocabulary, coherence, and task achievement to help you improve effectively.",
                 isActive: true,
                 order: 1
             },
@@ -162,7 +151,7 @@ export async function initializeHomepageData() {
             },
             {
                 question: "Do you provide assistance with exam booking?",
-                answer: "Yes, our support team guides you through the official registration process for PTE, IELTS, and CELPIP to ensure all your details are correct for the test day.",
+                answer: "Yes, our support team guides you through the official registration process for PTE and CELPIP to ensure all your details are correct for the test day.",
                 isActive: true,
                 order: 4
             }

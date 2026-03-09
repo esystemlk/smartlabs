@@ -36,18 +36,7 @@ export async function initializeDatabase() {
                 order: 1,
                 createdAt: new Date(),
             },
-            {
-                name: 'Liam Smith',
-                role: 'IELTS Band: 8.5 | Australia',
-                content: 'The instructors are incredibly knowledgeable. Their strategies for the speaking section were game-changers. Highly recommended!',
-                avatar: 'LS',
-                color: 'from-accent-2/80 to-accent-4/80',
-                course: 'IELTS',
-                achievement: 'Band 8.5',
-                isActive: true,
-                order: 2,
-                createdAt: new Date(),
-            },
+
             {
                 name: 'Nimali Perera',
                 role: 'CELPIP Score: 12 | Sri Lanka',
@@ -72,18 +61,7 @@ export async function initializeDatabase() {
                 order: 4,
                 createdAt: new Date(),
             },
-            {
-                name: 'Sarah Johnson',
-                role: 'IELTS Band: 9.0 | UK',
-                content: 'Outstanding preparation materials and expert guidance. The mock tests were exactly like the real exam. Couldn\'t have done it without Smart Labs!',
-                avatar: 'SJ',
-                color: 'from-accent-4/80 to-primary/80',
-                course: 'IELTS',
-                achievement: 'Band 9.0',
-                isActive: true,
-                order: 5,
-                createdAt: new Date(),
-            },
+
         ];
 
         const testimonialsRef = collection(db, 'testimonials');
@@ -126,15 +104,7 @@ export async function initializeDatabase() {
 
         // 4. Initialize Resources
         const resources = [
-            {
-                type: 'test',
-                title: 'IELTS Academic - Sample Test',
-                format: 'PDF',
-                url: 'https://example.com/ielts-test.pdf',
-                category: 'IELTS',
-                isActive: true,
-                createdAt: new Date(),
-            },
+
             {
                 type: 'test',
                 title: 'PTE Academic - Full Mock Test',

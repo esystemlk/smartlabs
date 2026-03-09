@@ -11,7 +11,7 @@ export function QuickActions() {
   const actions = [
     {
       title: 'Start AI Tutor',
-      description: 'Personalized guidance for PTE, IELTS, CELPIP',
+      description: 'Personalized guidance for PTE and CELPIP',
       href: '/dashboard/ai-tutor',
       icon: Bot,
       color: 'from-accent-1/30 to-accent-1/10',
