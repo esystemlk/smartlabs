@@ -54,7 +54,7 @@ export default function WebinarRegisterPage() {
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
-    const [examType, setExamType] = useState<'IELTS' | 'PTE' | ''>('');
+    const [examType, setExamType] = useState<'PTE' | ''>('');;
     const [level, setLevel] = useState<'Beginner' | 'Intermediate' | 'Advanced' | ''>('');
 
     // Load settings
@@ -108,7 +108,7 @@ export default function WebinarRegisterPage() {
             fullName,
             email,
             phone,
-            examType: examType as 'IELTS' | 'PTE',
+            examType: examType as 'PTE',
             level: level as 'Beginner' | 'Intermediate' | 'Advanced',
         });
 
@@ -355,13 +355,12 @@ export default function WebinarRegisterPage() {
                                                     <BookOpen className="h-4 w-4 text-blue-500" />
                                                     Target Exam
                                                 </Label>
-                                                <Select value={examType} onValueChange={(value) => setExamType(value as 'IELTS' | 'PTE')}>
+                                                <Select value={examType} onValueChange={(value) => setExamType(value as 'PTE')}>
                                                     <SelectTrigger className="h-12 rounded-xl border-gray-200 dark:border-slate-700 focus:border-blue-400 bg-gray-50/50 dark:bg-slate-800/50">
                                                         <SelectValue placeholder="Select your target exam" />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="IELTS">IELTS</SelectItem>
-                                                        <SelectItem value="PTE">PTE</SelectItem>
+                                                        <SelectItem value="PTE">PTE Academic</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>

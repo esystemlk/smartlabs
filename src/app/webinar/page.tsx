@@ -29,8 +29,8 @@ import { getWebinarSettings, type WebinarSettings, DEFAULT_WEBINAR_SETTINGS } fr
 const learningPoints = [
     {
         icon: Target,
-        title: 'IELTS High-Score Strategies',
-        description: 'Proven techniques to maximize your band score across all four modules.',
+        title: 'PTE AI-Scored Practice',
+        description: 'Master the computer-based PTE format with targeted AI practice sessions.',
         color: 'text-blue-500',
         bg: 'bg-blue-50 dark:bg-blue-900/20',
         border: 'border-blue-100 dark:border-blue-800/30',
@@ -61,8 +61,8 @@ const learningPoints = [
     },
     {
         icon: TrendingUp,
-        title: 'Reach Band 7+ Faster',
-        description: 'Accelerated study plans designed to help you hit your target score quickly.',
+        title: 'Reach PTE 79+ Faster',
+        description: 'Accelerated study plans designed to help you hit your target PTE score quickly.',
         color: 'text-purple-500',
         bg: 'bg-purple-50 dark:bg-purple-900/20',
         border: 'border-purple-100 dark:border-purple-800/30',
@@ -146,7 +146,7 @@ export default function WebinarPage() {
                             transition={{ delay: 0.2, duration: 0.6 }}
                             className="text-lg sm:text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed mb-10"
                         >
-                            Learn proven strategies to improve your exam scores from expert instructors who have helped thousands of students achieve their target bands.
+                            Learn proven strategies to improve your PTE scores from expert instructors who have helped thousands of students achieve their target scores.
                         </motion.p>
 
                         {/* Event Details Card */}
@@ -284,7 +284,7 @@ export default function WebinarPage() {
                             className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5"
                         >
                             {[
-                                { icon: Award, label: 'Expert Instructors', desc: 'Learn from Band 9 achievers', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+                                { icon: Award, label: 'Expert Instructors', desc: 'Learn from PTE 90 scorers', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
                                 { icon: Users, label: 'Interactive Session', desc: 'Q&A and live discussion', color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
                                 { icon: Sparkles, label: '100% Free', desc: 'No hidden charges', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
                                 { icon: CheckCircle2, label: 'Actionable Tips', desc: 'Apply strategies immediately', color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20' },

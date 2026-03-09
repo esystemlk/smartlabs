@@ -1924,10 +1924,10 @@ export default function Home() {
                         <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Upcoming Event</span>
                       </div>
                       <h2 className="font-display text-3xl sm:text-4xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
-                        Free IELTS & PTE Strategy <span className="text-blue-500">Webinar</span>
+                        Free PTE Strategy <span className="text-blue-500">Webinar</span>
                       </h2>
                       <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-base">
-                        Join our expert instructors and discover powerful exam strategies that have helped thousands of students achieve Band 7+ and PTE 79+.
+                        Join our expert instructors and discover powerful exam strategies that have helped thousands of students achieve PTE 79+.
                       </p>
                       <div className="flex flex-wrap gap-3">
                         <div className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 dark:bg-blue-900/15 rounded-2xl border border-blue-100 dark:border-blue-800/30">
