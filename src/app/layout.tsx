@@ -11,6 +11,7 @@ import { WindowControls } from '@/components/layout/window-controls';
 import { AccessibilityWidget } from '@/components/accessibility/accessibility-widget';
 import { CommandPalette } from '@/components/layout/command-palette';
 import { MouseSpotlight } from '@/components/ui/mouse-spotlight';
+import { WebinarBanner } from '@/components/webinar/webinar-banner';
 import { AdvancedFloatingAI } from '@/components/ui/advanced-floating-ai';
 
 // ... (Metadata code remains the same)
@@ -37,6 +38,7 @@ export default function RootLayout({
           <AccessibilityWidget />
           <CommandPalette />
           <LayoutManager />
+          <WebinarBanner />
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />

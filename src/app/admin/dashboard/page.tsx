@@ -7,7 +7,7 @@ import { doc, getDoc, collection } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { signOut } from 'firebase/auth';
-import { LogOut, Users, UserCog, MessageSquare, GraduationCap, FileText, Library, DollarSign, UserCheck, Home, LayoutDashboard, Sparkles, Video, Brain } from 'lucide-react';
+import { LogOut, Users, UserCog, MessageSquare, GraduationCap, FileText, Library, DollarSign, UserCheck, Home, LayoutDashboard, Sparkles, Video, Brain, Presentation } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -81,6 +81,7 @@ export default function AdminDashboardPage() {
         { title: "Event Management", value: "Manage", desc: "Manage popups & events.", icon: Sparkles, href: "/admin/dashboard/events", color: "text-primary", bg: "bg-primary/5", border: "border-primary/20" },
         { title: "Session Manager", value: "Zoom Links", desc: "Manage active session links.", icon: Video, href: "/admin/dashboard/sessions", color: "text-accent-3", bg: "bg-accent-3/5", border: "border-accent-3/20" },
         { title: "Level Test Results", value: "Reports", desc: "Review student diagnostics.", icon: Brain, href: "/admin/dashboard/level-tests", color: "text-primary", bg: "bg-primary/5", border: "border-primary/20" },
+        { title: "Webinar Management", value: "Manage", desc: "Manage webinar registrations.", icon: Presentation, href: "/admin/dashboard/webinars", color: "text-blue-500", bg: "bg-blue-500/5", border: "border-blue-500/20" },
         { title: "Student Dashboard", value: "Go To", desc: "Switch to student view.", icon: LayoutDashboard, href: "/dashboard" },
         { title: "Main Website", value: "Go To", desc: "View the public homepage.", icon: Home, href: "/" },
     ];

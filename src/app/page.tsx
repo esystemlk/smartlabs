@@ -51,7 +51,8 @@ import {
   Monitor,
   Download,
   Laptop,
-  Bell
+  Bell,
+  Calendar
 } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { AnimatedNumber } from "@/components/ui/animated-number";
@@ -1890,6 +1891,81 @@ export default function Home() {
               );
             })}
           </Accordion>
+        </div>
+      </section>
+
+      {/* ─── Webinar Promotion Section ─── */}
+      <section className="relative py-16 sm:py-24 overflow-hidden bg-gradient-to-br from-blue-50/80 via-white to-sky-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-blue-400/10 rounded-full blur-[120px]" />
+          <div className="absolute bottom-1/3 left-1/4 w-[300px] h-[300px] bg-yellow-300/10 rounded-full blur-[80px]" />
+        </div>
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="relative">
+              <div className="absolute -inset-2 bg-gradient-to-r from-blue-400/15 via-sky-300/15 to-yellow-200/20 rounded-[40px] blur-2xl" />
+              <div className="relative bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-blue-100/60 dark:border-slate-800 rounded-[32px] overflow-hidden shadow-xl">
+                <div className="h-1.5 bg-gradient-to-r from-blue-400 via-sky-400 to-yellow-300" />
+                <div className="p-10 sm:p-14 lg:p-16">
+                  <div className="grid lg:grid-cols-2 gap-10 items-center">
+                    {/* Left content */}
+                    <div className="space-y-6">
+                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30">
+                        <motion.div
+                          animate={{ scale: [1, 1.3, 1] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="w-2 h-2 rounded-full bg-green-500"
+                        />
+                        <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Upcoming Event</span>
+                      </div>
+                      <h2 className="font-display text-3xl sm:text-4xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
+                        Free IELTS & PTE Strategy <span className="text-blue-500">Webinar</span>
+                      </h2>
+                      <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-base">
+                        Join our expert instructors and discover powerful exam strategies that have helped thousands of students achieve Band 7+ and PTE 79+.
+                      </p>
+                      <div className="flex flex-wrap gap-3">
+                        <div className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 dark:bg-blue-900/15 rounded-2xl border border-blue-100 dark:border-blue-800/30">
+                          <Calendar className="h-4 w-4 text-blue-500" />
+                          <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Sunday 15th</span>
+                        </div>
+                        <div className="flex items-center gap-2 px-4 py-2.5 bg-yellow-50 dark:bg-yellow-900/15 rounded-2xl border border-yellow-200 dark:border-yellow-800/30">
+                          <Clock className="h-4 w-4 text-yellow-600" />
+                          <span className="text-sm font-bold text-gray-700 dark:text-gray-300">9:00 AM</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right CTA */}
+                    <div className="flex flex-col items-center lg:items-end gap-5">
+                      <div className="w-full max-w-sm space-y-4">
+                        <Link href="/webinar/register">
+                          <Button className="w-full h-14 rounded-2xl bg-gradient-to-r from-blue-500 to-sky-400 hover:from-blue-600 hover:to-sky-500 text-white font-bold text-base shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all group">
+                            Register Now — It's Free!
+                            <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                          </Button>
+                        </Link>
+                        <Link href="/webinar" className="block">
+                          <Button variant="outline" className="w-full h-12 rounded-2xl border-2 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold">
+                            Learn More
+                            <ChevronRight className="ml-1 h-4 w-4" />
+                          </Button>
+                        </Link>
+                        <p className="text-center text-xs text-gray-400 dark:text-gray-500">
+                          No credit card required. 100% free.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
