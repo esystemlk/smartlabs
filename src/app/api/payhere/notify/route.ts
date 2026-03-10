@@ -42,65 +42,78 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
         }
 
-        if (status_code === '2') { // Payment success
-            try {
-                const [userId, courseId, batchId] = (order_id as string).split('__');
-
-                if (!userId || !courseId || !batchId) {
-                    throw new Error(`Invalid order_id format: ${order_id}`);
-                }
-
-                if (!adminDb) {
-                    throw new Error("Firebase Admin DB is not initialized.");
-                }
-
-                // Use the unique payment_id from Payhere as the enrollment document ID
-                const enrollmentRef = adminDb.collection('users').doc(userId).collection('enrollments').doc(payment_id as string);
-                const paymentRef = adminDb.collection('payments').doc(payment_id as string);
-
-                await adminDb.runTransaction(async (transaction) => {
-                    const batchRef = adminDb!.collection('courses').doc(courseId).collection('batches').doc(batchId);
-                    const batchDoc = await transaction.get(batchRef);
-                    const batchName = batchDoc.exists ? batchDoc.data()?.name : 'Default Batch';
-
-                    // Create enrollment record with 'pending' status
-                    transaction.set(enrollmentRef, {
-                        userId: userId,
-                        courseId: courseId,
-                        batchId: batchId,
-                        batchName: batchName,
-                        enrollmentDate: FieldValue.serverTimestamp(),
-                        paymentStatus: 'paid',
-                        enrollmentStatus: 'pending', // Set status to pending for admin verification
-                        orderId: order_id,
-                        paymentId: payment_id,
-                    });
-
-                    // Create payment log record
-                    transaction.set(paymentRef, {
-                        id: payment_id,
-                        userId: userId,
-                        courseId: courseId,
-                        orderId: order_id,
-                        amount: payhere_amount,
-                        currency: payhere_currency,
-                        statusCode: status_code,
-                        paymentTimestamp: FieldValue.serverTimestamp(),
-                    });
-
-                });
-
-                console.log(`Successfully created pending enrollment for user ${userId} in course ${courseId}`);
-
-            } catch (error) {
-                console.error('Error processing successful payment in DB:', error);
-                // Still return 200 to PayHere to acknowledge receipt, but log the error
-            }
-        } else {
-            console.log(`Payment status not successful for order ${order_id}. Status: ${status_code}`);
+        if (!adminDb) {
+            throw new Error("Firebase Admin DB is not initialized.");
         }
 
-        return NextResponse.json({ status: 'ok' }, { status: 200 });
+        // Find the order in payment_orders
+        const ordersRef = adminDb.collection('payment_orders');
+        const orderSnapshot = await ordersRef.where('orderId', '==', order_id).limit(1).get();
+
+        if (orderSnapshot.empty) {
+            console.warn(`Order ${order_id} not found in database.`);
+            return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+        }
+
+        const orderDoc = orderSnapshot.docs[0];
+        const orderData = orderDoc.data();
+        const { userId, courseId } = orderData;
+
+        if (status_code === '2') {
+            const batch = adminDb.batch();
+
+            // 1. Update order status to success
+            batch.update(orderDoc.ref, {
+                paymentStatus: 'success',
+                payherePaymentId: payment_id,
+                updatedAt: FieldValue.serverTimestamp()
+            });
+
+            // 2. Activate course access in user_course_access (standalone collection)
+            const accessRef = adminDb.collection('user_course_access').doc(`${userId}_${courseId}`);
+            batch.set(accessRef, {
+                userId,
+                courseId,
+                paymentOrderId: order_id,
+                accessStatus: 'active',
+                activatedAt: FieldValue.serverTimestamp()
+            });
+
+            // 3. Compatibility: Add to users/{uid}/enrollments
+            const enrollmentId = `pay_${order_id}`;
+            const enrollmentRef = adminDb.collection('users').doc(userId).collection('enrollments').doc(enrollmentId);
+            batch.set(enrollmentRef, {
+                id: enrollmentId,
+                userId: userId,
+                courseId: courseId,
+                enrollmentStatus: 'active',
+                enrollmentDate: FieldValue.serverTimestamp(),
+                paymentOrderId: order_id
+            });
+
+            // 4. Compatibility: Add to users/{uid}/active_courses
+            const activeCourseRef = adminDb.collection('users').doc(userId).collection('active_courses').doc(courseId);
+            batch.set(activeCourseRef, {
+                enrolledAt: FieldValue.serverTimestamp(),
+                courseId: courseId
+            });
+
+            // 5. Update user role
+            const userRef = adminDb.collection('users').doc(userId);
+            batch.update(userRef, { role: 'student' });
+
+            await batch.commit();
+            console.log(`Successfully activated course access and enrollment for User: ${userId}, Course: ${courseId}`);
+        } else if (status_code === '-1' || status_code === '-2') {
+            // Update order status to failed or cancelled
+            await orderDoc.ref.update({
+                paymentStatus: status_code === '-1' ? 'cancelled' : 'failed',
+                updatedAt: FieldValue.serverTimestamp()
+            });
+            console.log(`Payment failed or cancelled for Order ID: ${order_id}`);
+        }
+
+        return new Response('OK', { status: 200 });
 
     } catch (error) {
         console.error('Error in Payhere notify route:', error);

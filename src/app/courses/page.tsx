@@ -11,7 +11,7 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { LMS_URL } from '@/lib/constants';
+import { RegisterButton } from '@/components/courses/register-button';
 
 export default function CoursesPage() {
   const { firestore } = useFirebase();
@@ -132,9 +132,14 @@ export default function CoursesPage() {
                     <Button asChild variant="outline" className="flex-1 h-12 rounded-xl border-blue-600/30 hover:bg-blue-600/5">
                       <Link href="/courses/grammar-clinic">Details</Link>
                     </Button>
-                    <Button asChild className="flex-1 h-12 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-black text-xs uppercase shadow-xl shadow-orange-600/20">
-                      <Link href={LMS_URL}>Register</Link>
-                    </Button>
+                    <RegisterButton
+                      courseId="grammar-clinic"
+                      courseName="Grammar Clinic"
+                      price={5000}
+                      className="flex-1 h-12 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-black text-xs uppercase shadow-xl shadow-orange-600/20"
+                    >
+                      Register
+                    </RegisterButton>
                   </CardFooter>
                 </Card>
               </motion.div>
@@ -201,12 +206,15 @@ export default function CoursesPage() {
                     </div>
                   </CardContent>
                   <CardFooter className="p-8 pt-0">
-                    <Button asChild className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black text-lg shadow-xl shadow-primary/20 group">
-                      <Link href={LMS_URL}>
-                        Register Now
-                        <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                      </Link>
-                    </Button>
+                    <RegisterButton
+                      courseId="boostify-foundation"
+                      courseName="Boostify + Foundation Package"
+                      price={35000}
+                      className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black text-lg shadow-xl shadow-primary/20 group"
+                    >
+                      Register Now
+                      <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                    </RegisterButton>
                   </CardFooter>
                 </Card>
               </motion.div>
@@ -264,12 +272,15 @@ export default function CoursesPage() {
                     </div>
                   </CardContent>
                   <CardFooter className="p-8 pt-0">
-                    <Button asChild className="w-full h-14 rounded-2xl bg-accent-3 hover:bg-accent-3/90 text-white font-black text-lg shadow-xl shadow-accent-3/20 group">
-                      <Link href={LMS_URL}>
-                        Enroll Now
-                        <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                      </Link>
-                    </Button>
+                    <RegisterButton
+                      courseId="pte-boostify"
+                      courseName="PTE Boostify Package"
+                      price={30000}
+                      className="w-full h-14 rounded-2xl bg-accent-3 hover:bg-accent-3/90 text-white font-black text-lg shadow-xl shadow-accent-3/20 group"
+                    >
+                      Enroll Now
+                      <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                    </RegisterButton>
                   </CardFooter>
                 </Card>
               </motion.div>
@@ -333,12 +344,15 @@ export default function CoursesPage() {
                     </div>
                   </CardContent>
                   <CardFooter className="p-8 pt-0">
-                    <Button asChild className="w-full h-14 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black text-lg shadow-xl shadow-orange-500/20 group">
-                      <Link href={LMS_URL}>
-                        Reserve Spot
-                        <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                      </Link>
-                    </Button>
+                    <RegisterButton
+                      courseId="pte-physical-online"
+                      courseName="Classic PTE Physical + Online"
+                      price={50000}
+                      className="w-full h-14 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black text-lg shadow-xl shadow-orange-500/20 group"
+                    >
+                      Reserve Spot
+                      <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                    </RegisterButton>
                   </CardFooter>
                 </Card>
               </motion.div>
@@ -403,12 +417,15 @@ export default function CoursesPage() {
                     </div>
                   </CardContent>
                   <CardFooter className="p-8 pt-0">
-                    <Button asChild className="w-full h-14 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-lg shadow-xl shadow-blue-600/20 group">
-                      <Link href={LMS_URL}>
-                        Enroll Physically
-                        <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                      </Link>
-                    </Button>
+                    <RegisterButton
+                      courseId="pte-physical-only"
+                      courseName="Classic PTE Physical Class"
+                      price={40000}
+                      className="w-full h-14 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-lg shadow-xl shadow-blue-600/20 group"
+                    >
+                      Enroll Physically
+                      <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                    </RegisterButton>
                   </CardFooter>
                 </Card>
               </motion.div>
@@ -469,9 +486,14 @@ export default function CoursesPage() {
                     </div>
                   </CardContent>
                   <CardFooter className="p-8 pt-0">
-                    <Button asChild className="w-full h-12 rounded-xl bg-accent hover:bg-accent/90 text-white font-black">
-                      <Link href={LMS_URL}>Register Now</Link>
-                    </Button>
+                    <RegisterButton
+                      courseId="ielts-mastery-online"
+                      courseName="IELTS Mastery (Online)"
+                      price={40000}
+                      className="w-full h-12 rounded-xl bg-accent hover:bg-accent/90 text-white font-black"
+                    >
+                      Register Now
+                    </RegisterButton>
                   </CardFooter>
                 </Card>
 
@@ -511,13 +533,18 @@ export default function CoursesPage() {
                     </div>
                   </CardContent>
                   <CardFooter className="p-8 pt-0">
-                    <Button asChild className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black">
-                      <Link href={LMS_URL}>Reserve Spot</Link>
-                    </Button>
+                    <RegisterButton
+                      courseId="ielts-physical-only"
+                      courseName="IELTS Physical Only"
+                      price={40000}
+                      className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black"
+                    >
+                      Reserve Spot
+                    </RegisterButton>
                   </CardFooter>
                 </Card>
 
-                {/* Refund Policy Card moved into grid or kept below */}
+                {/* Refund Policy Card */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
