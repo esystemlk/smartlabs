@@ -292,9 +292,11 @@ export default function CourseManagementPage() {
                               <p className="text-xs font-bold text-muted-foreground uppercase">Days</p>
                               <p className="font-semibold">{course.days || 'N/A'}</p>
                             </div>
-                            <div className="col-span-2 space-y-1">
-                              <p className="text-xs font-bold text-muted-foreground uppercase">PayHere ID</p>
-                              <p className="font-mono text-xs bg-muted p-1 rounded inline-block">{course.payhereButtonId || 'Not Configured'}</p>
+                            <div className="flex-1 min-w-[120px]">
+                              <p className="text-xs font-bold text-muted-foreground uppercase">Payment Link</p>
+                              <p className="font-mono text-xs bg-muted p-1 rounded inline-block truncate max-w-[150px]" title={course.payhereButtonId || 'Not Configured'}>
+                                {course.payhereButtonId ? 'Configured' : 'Not Configured'}
+                              </p>
                             </div>
                           </div>
 
@@ -378,7 +380,7 @@ export default function CourseManagementPage() {
                       <FormItem><FormLabel>Price (LKR)</FormLabel><FormControl><Input type="number" placeholder="e.g., 35000" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={courseForm.control} name="payhereButtonId" render={({ field }) => (
-                      <FormItem><FormLabel>PayHere Item Pay ID</FormLabel><FormControl><Input placeholder="e.g., o88dfe6fd" {...field} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Full PayHere Payment Link</FormLabel><FormControl><Input placeholder="e.g., https://www.payhere.lk/pay/o12bac2e6" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
 
                     <FormField control={courseForm.control} name="duration" render={({ field }) => (

@@ -31,9 +31,7 @@ export function RegisterButton({
     const { user } = useUser();
     const router = useRouter();
     const { toast } = useToast();
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [payId, setPayId] = useState<string | null>(null);
 
     const handleRegisterClick = async () => {
         if (!user) {
@@ -48,44 +46,41 @@ export function RegisterButton({
 
         setIsLoading(true);
         try {
-            // Check if admin provided a payhere setup directly on the course
-            let extractedPayId = null;
-            if (payhereButtonId) {
-                if (payhereButtonId.includes('data-pay-id=')) {
-                    const match = payhereButtonId.match(/data-pay-id=["']([^"']+)["']/);
-                    if (match) {
-                        extractedPayId = match[1];
-                    }
+            // Admin provided a payhere link directly on the course
+            let finalLink = payhereButtonId;
+
+            // Fallback for older database configurations
+            if (!finalLink) {
+                const settings = await paymentService.getCoursePaymentSetting(courseId);
+
+                if (!settings || settings.status !== 'active' || !settings.payherePaymentLink) {
+                    toast({
+                        title: 'Registration Unavailable',
+                        description: 'Online registration for this course is currently disabled. Please contact support.',
+                        variant: 'destructive',
+                    });
+                    return;
+                }
+                finalLink = settings.payherePaymentLink;
+            }
+
+            if (finalLink) {
+                // If it's a URL, open it
+                if (finalLink.startsWith('http://') || finalLink.startsWith('https://')) {
+                    window.open(finalLink, '_blank');
                 } else {
-                    extractedPayId = payhereButtonId; // Assume they just pasted the ID
+                    toast({
+                        title: 'Invalid configuration',
+                        description: 'The payment link for this course is not a valid URL. Please contact support.',
+                        variant: 'destructive',
+                    });
                 }
             }
-
-            if (extractedPayId) {
-                setPayId(extractedPayId);
-                setIsModalOpen(true);
-                return;
-            }
-
-            // Fallback for older configurations using courses_payment_settings
-            const settings = await paymentService.getCoursePaymentSetting(courseId);
-
-            if (!settings || settings.status !== 'active' || !settings.payherePaymentLink) {
-                toast({
-                    title: 'Registration Unavailable',
-                    description: 'Online registration for this course is currently disabled. Please contact support.',
-                    variant: 'destructive',
-                });
-                return;
-            }
-
-            setPayId(settings.payherePaymentLink);
-            setIsModalOpen(true);
         } catch (error) {
             console.error('Error opening payment:', error);
             toast({
                 title: 'Error',
-                description: 'Could not load payment form. Please try again.',
+                description: 'Could not load payment link. Please try again.',
                 variant: 'destructive',
             });
         } finally {
@@ -93,76 +88,22 @@ export function RegisterButton({
         }
     };
 
-    // Inject PayHere script when modal opens
-    useEffect(() => {
-        if (isModalOpen) {
-            // Small delay to ensure the div is rendered inside the dialog
-            const timer = setTimeout(() => {
-                // Remove existing script if any
-                const existingScript = document.getElementById('payhere-button');
-                if (existingScript) {
-                    existingScript.remove();
-                }
-
-                const script = document.createElement('script');
-                script.src = "https://www.payhere.lk/payhere.pay.button.js";
-                script.id = "payhere-button";
-                script.async = true;
-
-                // Append to body to ensure it runs properly
-                document.body.appendChild(script);
-            }, 100);
-
-            return () => {
-                clearTimeout(timer);
-                const existingScript = document.getElementById('payhere-button');
-                if (existingScript) {
-                    existingScript.remove();
-                }
-            };
-        }
-    }, [isModalOpen]);
-
     return (
-        <>
-            <Button
-                onClick={handleRegisterClick}
-                disabled={isLoading}
-                className={className}
-                variant={variant}
-            >
-                {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : null}
-                {children || (
-                    <>
-                        Register Now
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                    </>
-                )}
-            </Button>
-
-            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogContent className="sm:max-w-md text-center">
-                    <DialogHeader>
-                        <DialogTitle className="text-2xl font-black font-headline tracking-tight">Complete Registration</DialogTitle>
-                        <DialogDescription className="text-base text-muted-foreground font-medium pt-2">
-                            Please complete your secure payment for <strong className="text-foreground">{courseName}</strong> below.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="flex flex-col items-center justify-center py-10 min-h-[200px] w-full bg-muted/30 rounded-2xl mt-4 border border-border relative">
-                        {payId ? (
-                            <div id="payhere-form" data-pay-id={payId}></div>
-                        ) : (
-                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                        )}
-                        <p className="text-xs text-muted-foreground mt-6 font-bold flex items-center gap-1 opacity-70">
-                            Secured by PayHere
-                        </p>
-                    </div>
-                </DialogContent>
-            </Dialog>
-        </>
+        <Button
+            onClick={handleRegisterClick}
+            disabled={isLoading}
+            className={className}
+            variant={variant}
+        >
+            {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : null}
+            {children || (
+                <>
+                    Register Now
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+            )}
+        </Button>
     );
 }
