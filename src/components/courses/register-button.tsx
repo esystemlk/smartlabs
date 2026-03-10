@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser, useFirebase } from '@/firebase';
+import { useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { paymentService } from '@/lib/services/payment.service';
 
 interface RegisterButtonProps {
@@ -28,9 +29,11 @@ export function RegisterButton({
     const { user } = useUser();
     const router = useRouter();
     const { toast } = useToast();
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [payId, setPayId] = useState<string | null>(null);
 
-    const handleRegister = async () => {
+    const handleRegisterClick = async () => {
         if (!user) {
             toast({
                 title: 'Login Required',
@@ -42,9 +45,7 @@ export function RegisterButton({
         }
 
         setIsLoading(true);
-
         try {
-            // 1. Fetch PayHere settings for this course
             const settings = await paymentService.getCoursePaymentSetting(courseId);
 
             if (!settings || settings.status !== 'active' || !settings.payherePaymentLink) {
@@ -56,44 +57,13 @@ export function RegisterButton({
                 return;
             }
 
-            // 2. Create Payment Order
-            const orderId = `ORDER_${Date.now()}_${user.uid.slice(0, 5)}`;
-            const orderCreated = await paymentService.createPaymentOrder({
-                userId: user.uid,
-                courseId: courseId,
-                orderId: orderId,
-                paymentStatus: 'pending',
-                paymentAmount: settings.price || price,
-            });
-
-            if (!orderCreated) {
-                throw new Error('Failed to create payment order');
-            }
-
-            // 3. Redirect to PayHere
-            const priceVal = settings.price || price;
-            const payUrl = new URL(settings.payherePaymentLink);
-
-            // Append parameters to help PayHere identify our order in the notify callback
-            payUrl.searchParams.set('order_id', orderId);
-            payUrl.searchParams.set('amount', priceVal.toFixed(2));
-            payUrl.searchParams.set('currency', 'LKR');
-            payUrl.searchParams.set('custom_1', user.uid);
-            payUrl.searchParams.set('custom_2', courseId);
-
-            // Helpful for programmatic return/cancel tracking
-            const baseUrl = window.location.origin;
-            payUrl.searchParams.set('return_url', `${baseUrl}/payment-success?order_id=${orderId}`);
-            payUrl.searchParams.set('cancel_url', `${baseUrl}/payment-cancel?order_id=${orderId}`);
-            payUrl.searchParams.set('notify_url', `${baseUrl}/api/payhere/notify`);
-
-            window.location.href = payUrl.toString();
-
-        } catch (error: any) {
-            console.error('Registration error:', error);
+            setPayId(settings.payherePaymentLink);
+            setIsModalOpen(true);
+        } catch (error) {
+            console.error('Error opening payment:', error);
             toast({
                 title: 'Error',
-                description: 'Something went wrong. Please try again later.',
+                description: 'Could not load payment form. Please try again.',
                 variant: 'destructive',
             });
         } finally {
@@ -101,22 +71,76 @@ export function RegisterButton({
         }
     };
 
+    // Inject PayHere script when modal opens
+    useEffect(() => {
+        if (isModalOpen) {
+            // Small delay to ensure the div is rendered inside the dialog
+            const timer = setTimeout(() => {
+                // Remove existing script if any
+                const existingScript = document.getElementById('payhere-button');
+                if (existingScript) {
+                    existingScript.remove();
+                }
+
+                const script = document.createElement('script');
+                script.src = "https://www.payhere.lk/payhere.pay.button.js";
+                script.id = "payhere-button";
+                script.async = true;
+
+                // Append to body to ensure it runs properly
+                document.body.appendChild(script);
+            }, 100);
+
+            return () => {
+                clearTimeout(timer);
+                const existingScript = document.getElementById('payhere-button');
+                if (existingScript) {
+                    existingScript.remove();
+                }
+            };
+        }
+    }, [isModalOpen]);
+
     return (
-        <Button
-            onClick={handleRegister}
-            disabled={isLoading}
-            className={className}
-            variant={variant}
-        >
-            {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : null}
-            {children || (
-                <>
-                    Register Now
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                </>
-            )}
-        </Button>
+        <>
+            <Button
+                onClick={handleRegisterClick}
+                disabled={isLoading}
+                className={className}
+                variant={variant}
+            >
+                {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : null}
+                {children || (
+                    <>
+                        Register Now
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                )}
+            </Button>
+
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <DialogContent className="sm:max-w-md text-center">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl font-black font-headline tracking-tight">Complete Registration</DialogTitle>
+                        <DialogDescription className="text-base text-muted-foreground font-medium pt-2">
+                            Please complete your secure payment for <strong className="text-foreground">{courseName}</strong> below.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="flex flex-col items-center justify-center py-10 min-h-[200px] w-full bg-muted/30 rounded-2xl mt-4 border border-border relative">
+                        {payId ? (
+                            <div id="payhere-form" data-pay-id={payId}></div>
+                        ) : (
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                        )}
+                        <p className="text-xs text-muted-foreground mt-6 font-bold flex items-center gap-1 opacity-70">
+                            Secured by PayHere
+                        </p>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }

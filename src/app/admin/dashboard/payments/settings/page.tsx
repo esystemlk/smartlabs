@@ -206,12 +206,7 @@ export default function CoursePaymentSettingsPage() {
                                     <div className="grid md:grid-cols-12 gap-6 items-end">
                                         <div className="md:col-span-12 lg:col-span-6 space-y-2">
                                             <Label htmlFor={`link-${course.id}`} className="font-bold flex items-center justify-between">
-                                                PayHere Payment Link
-                                                {settings.payherePaymentLink && (
-                                                    <a href={settings.payherePaymentLink} target="_blank" rel="noopener noreferrer" className="text-xs text-primary flex items-center gap-1 font-normal hover:underline">
-                                                        Test Link <ExternalLink className="h-3 w-3" />
-                                                    </a>
-                                                )}
+                                                PayHere Item Pay ID (Button Code)
                                             </Label>
                                             <div className="relative group">
                                                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
@@ -221,7 +216,7 @@ export default function CoursePaymentSettingsPage() {
                                                     id={`link-${course.id}`}
                                                     value={settings.payherePaymentLink}
                                                     onChange={(e) => handleUpdateSetting(course.id, 'payherePaymentLink', e.target.value)}
-                                                    placeholder="https://payhere.lk/pay/..."
+                                                    placeholder="e.g., o88dfe6fd"
                                                     className="pl-10 h-11 rounded-xl"
                                                 />
                                             </div>

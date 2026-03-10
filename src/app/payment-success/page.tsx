@@ -33,7 +33,7 @@ function SuccessContent() {
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-10">
                     <Button asChild size="lg" className="h-14 px-8 rounded-2xl text-lg font-bold shadow-2xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 active:scale-95 transition-all">
-                        <Link href="/dashboard">
+                        <Link href="/my-purchases">
                             <LayoutDashboard className="h-5 w-5 mr-2" />
                             Go to My Courses
                         </Link>

@@ -11,7 +11,8 @@ import {
     orderBy,
     serverTimestamp,
     addDoc,
-    Timestamp
+    Timestamp,
+    deleteDoc
 } from 'firebase/firestore';
 
 export interface CoursePaymentSettings {
@@ -38,7 +39,7 @@ export interface UserCourseAccess {
     userId: string;
     courseId: string;
     paymentOrderId: string;
-    accessStatus: 'active';
+    accessStatus: 'active' | 'suspended';
     activatedAt: any;
 }
 
@@ -181,6 +182,34 @@ export const paymentService = {
             return true;
         } catch (error) {
             console.error('Error granting course access:', error);
+            return false;
+        }
+    },
+
+    async updateCourseAccessStatus(accessId: string, status: 'active' | 'suspended') {
+        try {
+            const docRef = doc(db, COLLECTIONS.COURSE_ACCESS, accessId);
+            await updateDoc(docRef, { accessStatus: status });
+            return true;
+        } catch (error) {
+            console.error('Error updating access status:', error);
+            return false;
+        }
+    },
+
+    async removeCourseAccess(accessId: string, userId: string, courseId: string) {
+        try {
+            // 1. Remove from user_course_access
+            await deleteDoc(doc(db, COLLECTIONS.COURSE_ACCESS, accessId));
+
+            // 2. Remove from active_courses (compatibility)
+            await deleteDoc(doc(db, 'users', userId, 'active_courses', courseId));
+
+            // 3. Optional: We might want to keep the enrollment record but mark it as 'removed' or delete it.
+            // For now, let's just delete the access points.
+            return true;
+        } catch (error) {
+            console.error('Error removing course access:', error);
             return false;
         }
     }
