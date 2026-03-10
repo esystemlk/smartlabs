@@ -36,7 +36,18 @@ export async function initializeDatabase() {
                 order: 1,
                 createdAt: new Date(),
             },
-
+            {
+                name: 'Liam Smith',
+                role: 'IELTS Band: 8.5 | Australia',
+                content: 'The instructors are incredibly knowledgeable. Their strategies for the speaking section were game-changers. Highly recommended!',
+                avatar: 'LS',
+                color: 'from-accent-2/80 to-accent-4/80',
+                course: 'IELTS Mastery',
+                achievement: 'Band 8.5',
+                isActive: true,
+                order: 2,
+                createdAt: new Date(),
+            },
             {
                 name: 'Nimali Perera',
                 role: 'CELPIP Score: 12 | Sri Lanka',

@@ -121,6 +121,16 @@ const courses = [
     features: ["AI Scoring Practice", "Live Classes", "Full Materials Access", "Mock Tests"],
   },
   {
+    title: "IELTS Mastery",
+    description: "Achieve Band 7.5+ with our comprehensive IELTS training program.",
+    icon: Globe,
+    href: "/ielts",
+    color: "from-accent-3/20 to-accent-3/5",
+    iconColor: "text-accent-3",
+    bgGradient: "from-accent-3/10 via-accent-3/5 to-transparent",
+    features: ["Expert Evaluation", "Speaking Practice", "Writing Intensive", "Free Resources"],
+  },
+  {
     title: "CELPIP Prep",
     description: "Your pathway to Canadian immigration with focused CELPIP training.",
     icon: Zap,

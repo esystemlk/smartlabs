@@ -125,10 +125,10 @@ export default function EventsPage() {
                                                 {event.date}
                                             </div>
                                             <h3 className="text-2xl font-black tracking-tight text-white group-hover:text-primary transition-colors line-clamp-2">
-                                                {event.title.replace(/IELTS\s*&\s*/gi, '').replace(/&\s*IELTS/gi, '').replace(/IELTS/gi, 'PTE')}
+                                                {event.title}
                                             </h3>
                                             <p className="text-sm text-white/70 font-medium leading-relaxed line-clamp-3">
-                                                {event.description.replace(/IELTS\s*&\s*/gi, '').replace(/&\s*IELTS/gi, '').replace(/IELTS/gi, 'PTE')}
+                                                {event.description}
                                             </p>
 
                                             <div className="pt-4 flex items-center justify-between">

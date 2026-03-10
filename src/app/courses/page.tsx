@@ -5,7 +5,7 @@ import { useFirebase, useCollection, useMemoFirebase, useUser } from '@/firebase
 import { collection, query, where } from 'firebase/firestore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Check, View, Trophy, Sparkles, ArrowRight, Zap, Clock, Calendar, ShieldCheck, Monitor, MapPin, Users, BookOpen } from 'lucide-react';
+import { Check, View, Trophy, Sparkles, ArrowRight, Zap, Clock, Calendar, ShieldCheck, Monitor, MapPin, Users, BookOpen, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -59,7 +59,7 @@ export default function CoursesPage() {
                 <span className="gradient-text italic">Success Path</span>
               </h1>
               <p className="text-lg md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium">
-                Elite preparation programs for PTE. <br className="hidden md:block" />
+                Elite preparation programs for PTE & IELTS. <br className="hidden md:block" />
                 Engineered for results, delivered with excellence.
               </p>
             </motion.div>
@@ -413,24 +413,128 @@ export default function CoursesPage() {
                 </Card>
               </motion.div>
 
-              {/* Refund Policy Card */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                className="lg:col-span-1"
-              >
-                <Card className="h-full flex flex-col justify-center p-8 border-dashed border-2 border-red-500/30 bg-red-500/5 rounded-[40px] text-center space-y-4">
-                  <ShieldCheck className="h-12 w-12 text-red-500 mx-auto" />
-                  <h3 className="text-xl font-black font-headline uppercase text-red-500">Strict Policy Notice</h3>
-                  <p className="text-sm text-muted-foreground font-medium leading-relaxed">
-                    Smart Labs follows a <span className="text-red-600 font-bold">strict no-refund policy</span> for all courses and payments.
-                  </p>
-                  <p className="text-xs text-muted-foreground italic">
-                    Once payment is made, it is considered final and cannot be refunded under any circumstances.
-                  </p>
+            </div>
+
+            {/* IELTS Success Packages Section */}
+            <div className="space-y-16 pt-20 border-t border-white/10">
+              <div className="text-center space-y-4">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-accent text-sm font-black uppercase tracking-widest"
+                >
+                  <Globe className="h-4 w-4" />
+                  Target Band 7+
+                </motion.div>
+                <h2 className="text-4xl md:text-6xl font-black font-headline tracking-tight">IELTS Success <span className="text-accent italic">Packages</span></h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto text-lg leading-relaxed">
+                  Achieve your target band score with our comprehensive IELTS training. All programs include full month access to the Grammar Clinic.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {/* IELTS Online Mastery */}
+                <Card className="relative h-full flex flex-col glass-card border-none bg-white/5 backdrop-blur-xl shadow-2xl overflow-hidden hover:translate-y-[-10px] transition-all duration-500 border border-white/10">
+                  <div className="bg-accent p-8 text-white relative">
+                    <Badge className="bg-white/20 hover:bg-white/30 text-white border-none mb-4 uppercase font-black tracking-widest text-[10px]">Step 2: Core Prep</Badge>
+                    <h3 className="text-2xl font-black font-headline">IELTS Mastery (Online)</h3>
+                    <p className="text-white/80 text-sm mt-2 font-medium italic">Online Only Sessions</p>
+                  </div>
+                  <CardContent className="flex-grow p-8 space-y-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between text-xs py-2 border-b border-white/10">
+                        <span className="font-black uppercase text-muted-foreground flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-accent" /> Days
+                        </span>
+                        <span className="font-black font-headline">Thu & Fri</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs py-2">
+                        <span className="font-black uppercase text-muted-foreground flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-accent" /> Time
+                        </span>
+                        <span className="font-black font-headline">8:00 PM - 10:00 PM</span>
+                      </div>
+                    </div>
+                    <ul className="space-y-2">
+                      {["Full class recordings", "Writing templates", "Speaking feedback", "Grammar Clinic included"].map((item, i) => (
+                        <li key={i} className="flex items-center gap-2 text-sm">
+                          <Check className="h-4 w-4 text-accent" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="pt-4 text-center">
+                      <p className="text-xs text-muted-foreground font-black uppercase">Investment</p>
+                      <div className="text-3xl font-black font-headline">LKR 40,000</div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="p-8 pt-0">
+                    <Button asChild className="w-full h-12 rounded-xl bg-accent hover:bg-accent/90 text-white font-black">
+                      <Link href={LMS_URL}>Register Now</Link>
+                    </Button>
+                  </CardFooter>
                 </Card>
-              </motion.div>
+
+                {/* IELTS Physical Class */}
+                <Card className="relative h-full flex flex-col glass-card border-none bg-white/5 backdrop-blur-xl shadow-2xl overflow-hidden hover:translate-y-[-10px] transition-all duration-500 border border-white/10">
+                  <div className="bg-blue-600 p-8 text-white relative">
+                    <Badge className="bg-white/20 hover:bg-white/30 text-white border-none mb-4 uppercase font-black tracking-widest text-[10px]">In-Person</Badge>
+                    <h3 className="text-2xl font-black font-headline">IELTS Physical Only</h3>
+                    <p className="text-white/80 text-sm mt-2 font-medium italic">Janajaya Building Center</p>
+                  </div>
+                  <CardContent className="flex-grow p-8 space-y-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between text-xs py-2 border-b border-white/10">
+                        <span className="font-black uppercase text-muted-foreground flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-blue-400" /> Days
+                        </span>
+                        <span className="font-black font-headline">Sat & Sun</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs py-2">
+                        <span className="font-black uppercase text-muted-foreground flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-blue-400" /> Time
+                        </span>
+                        <span className="font-black font-headline">11:30 AM - 1:30 PM</span>
+                      </div>
+                    </div>
+                    <ul className="space-y-2">
+                      {["Small group sessions", "Face-to-face feedback", "Center resource access", "Grammar Clinic included"].map((item, i) => (
+                        <li key={i} className="flex items-center gap-2 text-sm">
+                          <Check className="h-4 w-4 text-blue-500" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="pt-4 text-center">
+                      <p className="text-xs text-muted-foreground font-black uppercase">Investment</p>
+                      <div className="text-3xl font-black font-headline">LKR 40,000</div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="p-8 pt-0">
+                    <Button asChild className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black">
+                      <Link href={LMS_URL}>Reserve Spot</Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+
+                {/* Refund Policy Card moved into grid or kept below */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                >
+                  <Card className="h-full flex flex-col justify-center p-8 border-dashed border-2 border-red-500/30 bg-red-500/5 rounded-[40px] text-center space-y-4">
+                    <ShieldCheck className="h-12 w-12 text-red-500 mx-auto" />
+                    <h3 className="text-xl font-black font-headline uppercase text-red-500">Strict Policy Notice</h3>
+                    <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                      Smart Labs follows a <span className="text-red-600 font-bold">strict no-refund policy</span> for all courses and payments.
+                    </p>
+                    <p className="text-xs text-muted-foreground italic">
+                      Once payment is made, it is considered final and cannot be refunded under any circumstances.
+                    </p>
+                  </Card>
+                </motion.div>
+              </div>
             </div>
             {/* Success Bundle Section */}
             <motion.div

@@ -52,6 +52,15 @@ const courses = [
     hoverBorder: "hover:border-accent-1/50"
   },
   {
+    name: "IELTS Mastery",
+    href: "/ielts",
+    description: "Achieve Band 7.5+ with expert training.",
+    icon: Globe,
+    color: "text-accent-3",
+    bgColor: "bg-accent-3/10",
+    hoverBorder: "hover:border-accent-3/50"
+  },
+  {
     name: "CELPIP Training",
     href: "/celpip",
     description: "Get CLB 9+ for Canadian PR.",
@@ -453,7 +462,7 @@ export default function Header() {
                     </DropdownMenuItem>
 
                     <DropdownMenuItem asChild className="p-3 rounded-2xl cursor-pointer group focus:bg-muted mb-1 transition-all">
-                      <Link href="/settings" className="flex items-center gap-3 w-full">
+                      <Link href="/dashboard/settings" className="flex items-center gap-3 w-full">
                         <div className="h-8 w-8 rounded-xl bg-muted flex items-center justify-center transition-colors">
                           <Settings className="h-4 w-4 text-muted-foreground" />
                         </div>

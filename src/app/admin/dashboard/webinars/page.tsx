@@ -531,7 +531,7 @@ export default function AdminWebinarsPage() {
                             <Card className="rounded-2xl">
                                 <CardHeader>
                                     <CardTitle className="text-xl font-bold flex items-center gap-2">
-                                        <Settings className="h-5 w-5 text-primary" />
+                                        <Gear weight="bold" className="h-5 w-5 text-primary" />
                                         Webinar Settings
                                     </CardTitle>
                                 </CardHeader>

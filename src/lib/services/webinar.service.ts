@@ -22,7 +22,7 @@ export interface WebinarRegistration {
     fullName: string;
     email: string;
     phone: string;
-    examType: 'PTE';
+    examType: 'PTE' | 'IELTS';
     level: 'Beginner' | 'Intermediate' | 'Advanced';
     registrationDate: any;
     emailSent?: boolean;

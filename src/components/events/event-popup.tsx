@@ -131,11 +131,11 @@ export function EventPopup() {
                                         </div>
 
                                         <h2 className="text-3xl font-black tracking-tight leading-tight">
-                                            {currentEvent.title.replace(/IELTS\s*&\s*/gi, '').replace(/&\s*IELTS/gi, '').replace(/IELTS/gi, 'PTE')}
+                                            {currentEvent.title}
                                         </h2>
 
                                         <p className="text-muted-foreground text-sm font-medium leading-relaxed line-clamp-4">
-                                            {currentEvent.description.replace(/IELTS\s*&\s*/gi, '').replace(/&\s*IELTS/gi, '').replace(/IELTS/gi, 'PTE')}
+                                            {currentEvent.description}
                                         </p>
 
                                         <div className="pt-4 flex flex-col gap-3">
