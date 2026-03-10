@@ -32,26 +32,37 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { GraduationCap, MoreHorizontal, PlusCircle, Trash, Edit, ArrowLeft, Users } from 'lucide-react';
+import { GraduationCap, MoreHorizontal, PlusCircle, Trash, Edit, ArrowLeft, Users, CheckCircle2, XCircle } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 
 const courseSchema = z.object({
   name: z.string().min(3, 'Course name is required'),
-  description: z.string().min(10, 'Description is required'),
-  duration: z.string().min(1, 'Duration is required'),
+  subtitle: z.string().optional(),
+  badgeText: z.string().optional(),
+  themeColor: z.string().optional().default('blue'),
   price: z.coerce.number().min(0, 'Price must be a positive number'),
-  syllabus: z.string().optional(),
-  targetAudience: z.string().optional(),
+  duration: z.string().optional(),
+  days: z.string().optional(),
+  startTime: z.string().optional(),
+  bonusTitle: z.string().optional(),
+  bonusSubtitle: z.string().optional(),
+  features: z.string().optional(),
+  payhereButtonId: z.string().optional(),
+  status: z.enum(['active', 'disabled']).optional().default('active'),
+  courseType: z.enum(['pte', 'ielts', 'other']).optional().default('pte'),
+  description: z.string().optional(), // kept for legacy
 });
 
 type CourseFormValues = z.infer<typeof courseSchema>;
 
 const batchSchema = z.object({
-    name: z.string().min(3, 'Batch name is required'),
-    schedule: z.string().optional(),
-    teacherId: z.string().optional(),
+  name: z.string().min(3, 'Batch name is required'),
+  schedule: z.string().optional(),
+  teacherId: z.string().optional(),
 });
 
 type BatchFormValues = z.infer<typeof batchSchema>;
@@ -59,7 +70,7 @@ type BatchFormValues = z.infer<typeof batchSchema>;
 export default function CourseManagementPage() {
   const { firestore } = useFirebase();
   const { toast } = useToast();
-  
+
   // State for Course Dialog
   const [isCourseDialogOpen, setIsCourseDialogOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<any>(null);
@@ -79,7 +90,7 @@ export default function CourseManagementPage() {
     [firestore]
   );
   const { data: courses, isLoading: coursesLoading } = useCollection(coursesQuery);
-  
+
   const batchesQuery = useMemoFirebase(
     () => (firestore && courseForBatches ? collection(firestore, `courses/${courseForBatches.id}/batches`) : null),
     [firestore, courseForBatches]
@@ -100,7 +111,23 @@ export default function CourseManagementPage() {
     if (course) {
       courseForm.reset(course);
     } else {
-      courseForm.reset({ name: '', description: '', duration: '', price: 0, syllabus: '', targetAudience: '' });
+      courseForm.reset({
+        name: '',
+        subtitle: '',
+        badgeText: '',
+        themeColor: 'blue',
+        price: 0,
+        duration: '',
+        days: '',
+        startTime: '',
+        bonusTitle: '',
+        bonusSubtitle: '',
+        features: '',
+        payhereButtonId: '',
+        status: 'active',
+        courseType: 'pte',
+        description: ''
+      });
     }
     setIsCourseDialogOpen(true);
   };
@@ -124,34 +151,34 @@ export default function CourseManagementPage() {
 
   // Batch Dialog Handlers
   const handleBatchDialogOpen = (course: any) => {
-      setCourseForBatches(course);
-      setSelectedBatch(null);
-      batchForm.reset({ name: '', schedule: '', teacherId: '' });
-      setIsBatchDialogOpen(true);
+    setCourseForBatches(course);
+    setSelectedBatch(null);
+    batchForm.reset({ name: '', schedule: '', teacherId: '' });
+    setIsBatchDialogOpen(true);
   }
 
   const handleEditBatch = (batch: any) => {
-      setSelectedBatch(batch);
-      batchForm.reset(batch);
+    setSelectedBatch(batch);
+    batchForm.reset(batch);
   }
 
   const onBatchSubmit = async (data: BatchFormValues) => {
-      if (!firestore || !courseForBatches) return;
-      const batchData = { ...data, courseId: courseForBatches.id };
-      try {
-          if (selectedBatch) {
-              await updateDoc(doc(firestore, `courses/${courseForBatches.id}/batches`, selectedBatch.id), batchData);
-              toast({ title: 'Success', description: 'Batch updated.' });
-          } else {
-              await addDoc(collection(firestore, `courses/${courseForBatches.id}/batches`), batchData);
-              toast({ title: 'Success', description: 'Batch added.' });
-          }
-          setSelectedBatch(null);
-          batchForm.reset({ name: '', schedule: '', teacherId: '' });
-      } catch (error) {
-          console.error('Error saving batch:', error);
-          toast({ variant: 'destructive', title: 'Error', description: 'Could not save batch.' });
+    if (!firestore || !courseForBatches) return;
+    const batchData = { ...data, courseId: courseForBatches.id };
+    try {
+      if (selectedBatch) {
+        await updateDoc(doc(firestore, `courses/${courseForBatches.id}/batches`, selectedBatch.id), batchData);
+        toast({ title: 'Success', description: 'Batch updated.' });
+      } else {
+        await addDoc(collection(firestore, `courses/${courseForBatches.id}/batches`), batchData);
+        toast({ title: 'Success', description: 'Batch added.' });
       }
+      setSelectedBatch(null);
+      batchForm.reset({ name: '', schedule: '', teacherId: '' });
+    } catch (error) {
+      console.error('Error saving batch:', error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not save batch.' });
+    }
   }
 
   // Delete Handler
@@ -165,9 +192,9 @@ export default function CourseManagementPage() {
     if (!firestore || !itemToDelete || !deleteType) return;
     let itemRef;
     if (deleteType === 'course') {
-        itemRef = doc(firestore, 'courses', itemToDelete.id);
+      itemRef = doc(firestore, 'courses', itemToDelete.id);
     } else { // batch
-        itemRef = doc(firestore, `courses/${courseForBatches.id}/batches`, itemToDelete.id);
+      itemRef = doc(firestore, `courses/${courseForBatches.id}/batches`, itemToDelete.id);
     }
 
     try {
@@ -188,7 +215,7 @@ export default function CourseManagementPage() {
       <section className="py-8 md:py-12">
         <div className="container mx-auto">
           <Button asChild variant="ghost" className="mb-4">
-             <Link href="/admin/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
+            <Link href="/admin/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
           </Button>
 
           <Card>
@@ -205,33 +232,31 @@ export default function CourseManagementPage() {
               {coursesLoading ? (
                 <p>Loading courses...</p>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Course Name</TableHead>
-                      <TableHead>Price (LKR)</TableHead>
-                      <TableHead>Duration</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {courses?.map((course) => (
-                      <TableRow key={course.id}>
-                        <TableCell className="font-medium max-w-sm truncate">{course.name}</TableCell>
-                        <TableCell> {course.price?.toLocaleString()}</TableCell>
-                        <TableCell>{course.duration}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex gap-2 justify-end">
-                            <Button variant="outline" size="sm" onClick={() => handleBatchDialogOpen(course)}>
-                                <Users className="mr-2 h-4 w-4" /> Manage Batches
-                            </Button>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {courses?.map((course) => {
+                    let themeBg = "bg-primary text-white";
+                    if (course.themeColor === "blue") themeBg = "bg-blue-600 text-white";
+                    if (course.themeColor === "orange") themeBg = "bg-orange-500 text-white";
+                    if (course.themeColor === "accent") themeBg = "bg-accent text-white";
+                    if (course.themeColor === "accent-2") themeBg = "bg-accent-2 text-primary-foreground";
+                    if (course.themeColor === "accent-3") themeBg = "bg-accent-3 text-white";
+
+                    return (
+                      <Card key={course.id} className="relative flex flex-col overflow-hidden shadow-lg border-none hover:shadow-xl transition-all">
+                        <div className={`p-6 ${themeBg} flex flex-col`}>
+                          <div className="flex justify-between items-start mb-4">
+                            {course.badgeText ? (
+                              <Badge className="bg-white/20 text-white hover:bg-white/30 border-none uppercase text-[10px] tracking-widest">{course.badgeText}</Badge>
+                            ) : (
+                              <Badge className="bg-white/20 text-white hover:bg-white/30 border-none uppercase text-[10px] tracking-widest invisible">BADGE</Badge>
+                            )}
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20 rounded-full">
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent>
+                              <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => handleCourseDialogOpen(course)}>
                                   <Edit className="mr-2 h-4 w-4" /> Edit Course
                                 </DropdownMenuItem>
@@ -244,15 +269,47 @@ export default function CourseManagementPage() {
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                          <h3 className="text-2xl font-black font-headline tracking-tight">{course.name}</h3>
+                          {course.subtitle && <p className="text-white/80 text-sm mt-1 italic font-medium">{course.subtitle}</p>}
+
+                          <div className="mt-4 pt-4 border-t border-white/20 flex justify-between items-center">
+                            <span className="text-xl font-black">LKR {course.price?.toLocaleString()}</span>
+                            {course.status === 'active' ? (
+                              <Badge variant="secondary" className="bg-green-500/20 text-white border-none text-[10px] uppercase"><CheckCircle2 className="w-3 h-3 mr-1" /> Active</Badge>
+                            ) : (
+                              <Badge variant="secondary" className="bg-red-500/20 text-white border-none text-[10px] uppercase"><XCircle className="w-3 h-3 mr-1" /> Hidden</Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <CardContent className="flex-grow p-6 bg-card space-y-4">
+                          <div className="grid grid-cols-2 gap-y-4 text-sm">
+                            <div className="space-y-1">
+                              <p className="text-xs font-bold text-muted-foreground uppercase">Duration</p>
+                              <p className="font-semibold">{course.duration || 'N/A'}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-xs font-bold text-muted-foreground uppercase">Days</p>
+                              <p className="font-semibold">{course.days || 'N/A'}</p>
+                            </div>
+                            <div className="col-span-2 space-y-1">
+                              <p className="text-xs font-bold text-muted-foreground uppercase">PayHere ID</p>
+                              <p className="font-mono text-xs bg-muted p-1 rounded inline-block">{course.payhereButtonId || 'Not Configured'}</p>
+                            </div>
+                          </div>
+
+                          <Button variant="outline" className="w-full mt-4" onClick={() => handleBatchDialogOpen(course)}>
+                            <Users className="mr-2 h-4 w-4" /> Manage Intakes / Batches
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
               )}
             </CardContent>
           </Card>
-          
+
           <Dialog open={isCourseDialogOpen} onOpenChange={setIsCourseDialogOpen}>
             <DialogContent className="sm:max-w-2xl">
               <DialogHeader>
@@ -260,27 +317,92 @@ export default function CourseManagementPage() {
               </DialogHeader>
               <Form {...courseForm}>
                 <form onSubmit={courseForm.handleSubmit(onCourseSubmit)} className="space-y-4 py-4 max-h-[80vh] overflow-y-auto pr-4">
-                  <FormField control={courseForm.control} name="name" render={({ field }) => (
-                      <FormItem><FormLabel>Course Name</FormLabel><FormControl><Input placeholder="e.g., IELTS Academic" {...field} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                   <FormField control={courseForm.control} name="price" render={({ field }) => (
-                      <FormItem><FormLabel>Price (LKR)</FormLabel><FormControl><Input type="number" placeholder="e.g., 25000" {...field} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={courseForm.control} name="duration" render={({ field }) => (
-                      <FormItem><FormLabel>Duration</FormLabel><FormControl><Input placeholder="e.g., 6 Weeks" {...field} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={courseForm.control} name="description" render={({ field }) => (
-                      <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="A brief summary of the course." {...field} /></FormControl><FormMessage /></FormItem>
-                    )}
-                  />
-                  <FormField control={courseForm.control} name="syllabus" render={({ field }) => (
-                      <FormItem><FormLabel>Syllabus</FormLabel><FormControl><Textarea placeholder="List syllabus topics, separated by commas." {...field} /></FormControl><FormMessage /></FormItem>
-                    )}
-                  />
-                   <FormField control={courseForm.control} name="targetAudience" render={({ field }) => (
-                      <FormItem><FormLabel>Target Audience</FormLabel><FormControl><Input placeholder="e.g., Students and professionals" {...field} /></FormControl><FormMessage /></FormItem>
-                    )}
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField control={courseForm.control} name="name" render={({ field }) => (
+                      <FormItem><FormLabel>Course Name</FormLabel><FormControl><Input placeholder="e.g., PTE Boostify" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={courseForm.control} name="subtitle" render={({ field }) => (
+                      <FormItem><FormLabel>Subtitle (Italic)</FormLabel><FormControl><Input placeholder="e.g., Essential for high scores" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+
+                    <FormField control={courseForm.control} name="badgeText" render={({ field }) => (
+                      <FormItem><FormLabel>Badge Text</FormLabel><FormControl><Input placeholder="e.g., Most Recommended" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={courseForm.control} name="themeColor" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Theme Color</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl><SelectTrigger><SelectValue placeholder="Select a theme" /></SelectTrigger></FormControl>
+                          <SelectContent>
+                            <SelectItem value="blue">Blue (Primary default)</SelectItem>
+                            <SelectItem value="orange">Orange (Secondary)</SelectItem>
+                            <SelectItem value="primary">Dark Blue (Logo Primary)</SelectItem>
+                            <SelectItem value="accent">Purple (Accent 1)</SelectItem>
+                            <SelectItem value="accent-2">Light Purple (Accent 2)</SelectItem>
+                            <SelectItem value="accent-3">Pink/Magenta (Accent 3)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={courseForm.control} name="courseType" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Course Type</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger></FormControl>
+                          <SelectContent>
+                            <SelectItem value="pte">PTE Course</SelectItem>
+                            <SelectItem value="ielts">IELTS Course</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={courseForm.control} name="status" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl><SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger></FormControl>
+                          <SelectContent>
+                            <SelectItem value="active">Active (Visible)</SelectItem>
+                            <SelectItem value="disabled">Disabled (Hidden)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={courseForm.control} name="price" render={({ field }) => (
+                      <FormItem><FormLabel>Price (LKR)</FormLabel><FormControl><Input type="number" placeholder="e.g., 35000" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={courseForm.control} name="payhereButtonId" render={({ field }) => (
+                      <FormItem><FormLabel>PayHere Item Pay ID</FormLabel><FormControl><Input placeholder="e.g., o88dfe6fd" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+
+                    <FormField control={courseForm.control} name="duration" render={({ field }) => (
+                      <FormItem><FormLabel>Duration</FormLabel><FormControl><Input placeholder="e.g., 21 Days | 42 Hours" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={courseForm.control} name="days" render={({ field }) => (
+                      <FormItem><FormLabel>Days</FormLabel><FormControl><Input placeholder="e.g., Monday - Friday" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+
+                    <FormField control={courseForm.control} name="startTime" render={({ field }) => (
+                      <FormItem><FormLabel>Start Time</FormLabel><FormControl><Input placeholder="e.g., 2:30 PM - 4:30 PM SLT" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+
+                    <FormField control={courseForm.control} name="features" render={({ field }) => (
+                      <FormItem className="md:col-span-2"><FormLabel>Features (Comma separated list)</FormLabel><FormControl><Textarea placeholder="Full live recordings, Writing templates, Speaking feedback..." {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+
+                    <FormField control={courseForm.control} name="bonusTitle" render={({ field }) => (
+                      <FormItem><FormLabel>Bonus Feature Title</FormLabel><FormControl><Input placeholder="e.g., Grammar Clinic Included" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={courseForm.control} name="bonusSubtitle" render={({ field }) => (
+                      <FormItem><FormLabel>Bonus Feature Subtitle</FormLabel><FormControl><Input placeholder="e.g., Sat & Sun for one full month" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                  </div>
                   <DialogFooter className="mt-4">
                     <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
                     <Button type="submit" disabled={courseForm.formState.isSubmitting}>
@@ -295,44 +417,44 @@ export default function CourseManagementPage() {
           <Dialog open={isBatchDialogOpen} onOpenChange={setIsBatchDialogOpen}>
             <DialogContent className="sm:max-w-4xl">
               <DialogHeader>
-                  <DialogTitle>Manage Batches for: {courseForBatches?.name}</DialogTitle>
-                  <DialogDescription>Add, edit, or remove batches for this course.</DialogDescription>
+                <DialogTitle>Manage Batches for: {courseForBatches?.name}</DialogTitle>
+                <DialogDescription>Add, edit, or remove batches for this course.</DialogDescription>
               </DialogHeader>
               <div className="grid md:grid-cols-2 gap-8 max-h-[70vh] overflow-y-auto p-1">
                 <div>
                   <h3 className="font-semibold mb-4">Existing Batches</h3>
                   {batchesLoading ? <p>Loading...</p> : (
                     <div className="space-y-2">
-                        {batches?.map(batch => (
-                            <div key={batch.id} className="flex items-center justify-between p-2 rounded-lg bg-muted">
-                                <div>
-                                    <p className="font-medium">{batch.name}</p>
-                                    <p className="text-xs text-muted-foreground">{batch.schedule}</p>
-                                </div>
-                                <div className="flex gap-2">
-                                    <Button size="sm" variant="outline" onClick={() => handleEditBatch(batch)}>Edit</Button>
-                                    <Button size="sm" variant="destructive" onClick={() => handleDeleteRequest(batch, 'batch')}>Delete</Button>
-                                </div>
-                            </div>
-                        ))}
-                         {batches?.length === 0 && <p className="text-sm text-muted-foreground">No batches found.</p>}
+                      {batches?.map(batch => (
+                        <div key={batch.id} className="flex items-center justify-between p-2 rounded-lg bg-muted">
+                          <div>
+                            <p className="font-medium">{batch.name}</p>
+                            <p className="text-xs text-muted-foreground">{batch.schedule}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => handleEditBatch(batch)}>Edit</Button>
+                            <Button size="sm" variant="destructive" onClick={() => handleDeleteRequest(batch, 'batch')}>Delete</Button>
+                          </div>
+                        </div>
+                      ))}
+                      {batches?.length === 0 && <p className="text-sm text-muted-foreground">No batches found.</p>}
                     </div>
                   )}
                 </div>
                 <div>
                   <h3 className="font-semibold mb-4">{selectedBatch ? 'Edit Batch' : 'Add New Batch'}</h3>
-                   <Form {...batchForm}>
+                  <Form {...batchForm}>
                     <form onSubmit={batchForm.handleSubmit(onBatchSubmit)} className="space-y-4">
-                        <FormField control={batchForm.control} name="name" render={({ field }) => (
-                            <FormItem><FormLabel>Batch Name</FormLabel><FormControl><Input placeholder="e.g., Weekend Batch" {...field} /></FormControl><FormMessage /></FormItem>
-                        )} />
-                        <FormField control={batchForm.control} name="schedule" render={({ field }) => (
-                            <FormItem><FormLabel>Schedule</FormLabel><FormControl><Input placeholder="e.g., Sat & Sun, 10am - 12pm" {...field} /></FormControl><FormMessage /></FormItem>
-                        )} />
-                        <div className="flex justify-end gap-2 mt-4">
-                            {selectedBatch && <Button type="button" variant="ghost" onClick={() => { setSelectedBatch(null); batchForm.reset(); }}>Cancel Edit</Button>}
-                            <Button type="submit">{selectedBatch ? 'Update Batch' : 'Add Batch'}</Button>
-                        </div>
+                      <FormField control={batchForm.control} name="name" render={({ field }) => (
+                        <FormItem><FormLabel>Batch Name</FormLabel><FormControl><Input placeholder="e.g., Weekend Batch" {...field} /></FormControl><FormMessage /></FormItem>
+                      )} />
+                      <FormField control={batchForm.control} name="schedule" render={({ field }) => (
+                        <FormItem><FormLabel>Schedule</FormLabel><FormControl><Input placeholder="e.g., Sat & Sun, 10am - 12pm" {...field} /></FormControl><FormMessage /></FormItem>
+                      )} />
+                      <div className="flex justify-end gap-2 mt-4">
+                        {selectedBatch && <Button type="button" variant="ghost" onClick={() => { setSelectedBatch(null); batchForm.reset(); }}>Cancel Edit</Button>}
+                        <Button type="submit">{selectedBatch ? 'Update Batch' : 'Add Batch'}</Button>
+                      </div>
                     </form>
                   </Form>
                 </div>
@@ -361,4 +483,3 @@ export default function CourseManagementPage() {
   );
 }
 
-    
