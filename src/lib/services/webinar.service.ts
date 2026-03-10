@@ -26,21 +26,23 @@ export interface WebinarRegistration {
     examType: 'PTE' | 'IELTS';
     level: 'Beginner' | 'Intermediate' | 'Advanced';
     registrationDate: any;
+    confirmationSent?: boolean;
+    confirmationError?: string;
     emailSent?: boolean;
     emailError?: string;
 }
 
-export async function updateEmailStatus(
+export async function updateWebinarRegistrationStatus(
     firestore: Firestore,
     id: string,
-    status: { emailSent: boolean; emailError?: string }
+    status: Partial<WebinarRegistration>
 ): Promise<boolean> {
     try {
         const docRef = doc(firestore, WEBINAR_REGISTRATIONS_COLLECTION, id);
         await updateDoc(docRef, status);
         return true;
     } catch (error) {
-        console.error('Error updating email status:', error);
+        console.error('Error updating status:', error);
         return false;
     }
 }
@@ -83,14 +85,18 @@ export async function registerForWebinar(
             return { success: false, message: 'You are already registered for this webinar.' };
         }
 
+        // Get current webinar settings for the email
+        const settings = await getWebinarSettings(firestore);
+
         const docRef = doc(collection(firestore, WEBINAR_REGISTRATIONS_COLLECTION));
         await setDoc(docRef, {
             ...data,
             registrationDate: serverTimestamp(),
+            confirmationSent: false,
             emailSent: false,
         });
 
-        // Trigger email notification (don't await to avoid delaying the UI)
+        // Trigger email notification
         fetch('/api/webinar/notification', {
             method: 'POST',
             body: JSON.stringify({
@@ -99,8 +105,17 @@ export async function registerForWebinar(
                 studentPhone: data.phone,
                 level: data.level,
                 registrationTime: new Date().toLocaleString(),
-                adminEmails: (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'admin_email_1@gmail.com,admin_email_2@gmail.com').split(','),
+                webinarTitle: settings.title,
+                webinarDate: settings.date,
+                webinarTime: settings.time,
             }),
+        }).then(async (res) => {
+            if (res.ok) {
+                await updateWebinarRegistrationStatus(firestore, docRef.id, { confirmationSent: true });
+            } else {
+                const err = await res.json();
+                await updateWebinarRegistrationStatus(firestore, docRef.id, { confirmationError: err.error });
+            }
         }).catch(err => console.error('Failed to trigger notification:', err));
 
         return { success: true, message: '🎉 You are successfully registered for the webinar. A confirmation email has been sent to you.' };

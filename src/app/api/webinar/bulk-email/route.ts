@@ -2,29 +2,33 @@ import { NextResponse } from 'next/server';
 import { sendMail } from '@/lib/mail';
 
 export async function POST(req: Request) {
-    try {
-        const { students, lecturerName, zoomLink, resourcesLink, additionalMessage } = await req.json();
+  try {
+    const { students, lecturerName, zoomLink, resourcesLink, additionalMessage, webinarTitle, webinarDate, webinarTime } = await req.json();
 
-        if (!students || !Array.isArray(students)) {
-            return NextResponse.json({ success: false, error: 'Invalid students list' }, { status: 400 });
-        }
+    if (!students || !Array.isArray(students)) {
+      return NextResponse.json({ success: false, error: 'Invalid students list' }, { status: 400 });
+    }
 
-        const results = [];
+    const title = webinarTitle || 'Free PTE Strategy Webinar';
+    const dateStr = webinarDate || 'Sunday 15th';
+    const timeStr = webinarTime || '9:00 AM';
 
-        for (const student of students) {
-            const html = `
+    const results = [];
+
+    for (const student of students) {
+      const html = `
         <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
           <div style="background-color: #3b82f6; padding: 20px; text-align: center;">
             <h1 style="color: white; margin: 0;">SMARTLABS</h1>
           </div>
           <div style="padding: 30px;">
             <h2 style="color: #111827;">Hello ${student.fullName},</h2>
-            <p>This is a reminder for the <strong>Free PTE Strategy Webinar</strong> you registered for.</p>
+            <p>This is a reminder for the <strong>${title}</strong> you registered for.</p>
             
             <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 24px 0;">
               <p style="margin: 0; font-size: 16px;">
-                📅 <strong>Date:</strong> Sunday 15th<br>
-                ⏰ <strong>Time:</strong> 9:00 AM (Sri Lanka Time)<br>
+                📅 <strong>Date:</strong> ${dateStr}<br>
+                ⏰ <strong>Time:</strong> ${timeStr} (Sri Lanka Time)<br>
                 👨‍🏫 <strong>Lecturer:</strong> ${lecturerName}
               </p>
             </div>
@@ -59,22 +63,22 @@ export async function POST(req: Request) {
         </div>
       `;
 
-            try {
-                await sendMail({
-                    to: student.email,
-                    subject: 'Your Webinar Link – Free PTE Strategy Webinar',
-                    html,
-                });
-                results.push({ id: student.id, success: true });
-            } catch (error: any) {
-                console.error(`Error sending bulk email to ${student.email}:`, error);
-                results.push({ id: student.id, success: false, error: error.message });
-            }
-        }
-
-        return NextResponse.json({ success: true, results });
-    } catch (error: any) {
-        console.error('Bulk email error:', error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      try {
+        await sendMail({
+          to: student.email,
+          subject: `Your Webinar Link – ${title}`,
+          html,
+        });
+        results.push({ id: student.id, success: true });
+      } catch (error: any) {
+        console.error(`Error sending bulk email to ${student.email}:`, error);
+        results.push({ id: student.id, success: false, error: error.message });
+      }
     }
+
+    return NextResponse.json({ success: true, results });
+  } catch (error: any) {
+    console.error('Bulk email error:', error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
 }

@@ -39,7 +39,7 @@ import {
     getWebinarRegistrations,
     getWebinarSettings,
     updateWebinarSettings,
-    updateEmailStatus,
+    updateWebinarRegistrationStatus,
     deleteWebinarRegistration,
     getAdminEmails,
     addAdminEmail,
@@ -80,6 +80,7 @@ export default function AdminWebinarsPage() {
     const [resourcesLink, setResourcesLink] = useState('');
     const [additionalMessage, setAdditionalMessage] = useState('');
     const [isSendingEmails, setIsSendingEmails] = useState(false);
+    const [isSendingConfirmations, setIsSendingConfirmations] = useState(false);
 
     // Admin Notification Emails state
     const [adminEmails, setAdminEmails] = useState<AdminEmail[]>([]);
@@ -210,7 +211,7 @@ export default function AdminWebinarsPage() {
         });
     };
 
-    const handleSendBulkEmail = async () => {
+    const handleSendBulkEmail = async (mode: 'pending' | 'all' = 'pending', singleId?: string) => {
         if (!lecturerName || !zoomLink || !resourcesLink) {
             toast({
                 variant: 'destructive',
@@ -220,17 +221,21 @@ export default function AdminWebinarsPage() {
             return;
         }
 
-        const recipients = registrations.filter(r => !r.emailSent);
+        const recipients = singleId
+            ? registrations.filter(r => r.id === singleId)
+            : mode === 'all'
+                ? registrations
+                : registrations.filter(r => !r.emailSent);
 
         if (recipients.length === 0) {
             toast({
-                title: 'All Sent',
-                description: 'All registered students have already received the webinar link.',
+                title: 'No Recipients',
+                description: `No students found for the "${mode}" filter.`,
             });
             return;
         }
 
-        if (!confirm(`Send webinar links to ${recipients.length} students who haven't received it yet?`)) {
+        if (!singleId && !confirm(`Send webinar links to ${recipients.length} students (${mode})?`)) {
             return;
         }
 
@@ -246,6 +251,9 @@ export default function AdminWebinarsPage() {
                     zoomLink,
                     resourcesLink,
                     additionalMessage,
+                    webinarTitle: settings.title,
+                    webinarDate: settings.date,
+                    webinarTime: settings.time
                 }),
             });
 
@@ -254,7 +262,7 @@ export default function AdminWebinarsPage() {
             if (result.success) {
                 // Update status in Firestore
                 const updates = result.results.map((res: any) =>
-                    updateEmailStatus(firestore!, res.id, {
+                    updateWebinarRegistrationStatus(firestore!, res.id, {
                         emailSent: res.success,
                         emailError: res.error || null
                     })
@@ -262,8 +270,8 @@ export default function AdminWebinarsPage() {
                 await Promise.all(updates);
 
                 toast({
-                    title: 'Emails Sent',
-                    description: `Successfully sent webinar links to students.`,
+                    title: 'Emails Processed',
+                    description: `Successfully processed emails for ${recipients.length} students.`,
                 });
 
                 // Reload data to show updated status
@@ -279,6 +287,69 @@ export default function AdminWebinarsPage() {
             });
         } finally {
             setIsSendingEmails(false);
+        }
+    };
+
+    const handleSendBulkConfirmation = async (mode: 'pending' | 'all' = 'pending', singleId?: string) => {
+        const recipients = singleId
+            ? registrations.filter(r => r.id === singleId)
+            : mode === 'all'
+                ? registrations
+                : registrations.filter(r => !r.confirmationSent);
+
+        if (recipients.length === 0) {
+            toast({
+                title: 'No Recipients',
+                description: `No students found for the "${mode}" filter.`,
+            });
+            return;
+        }
+
+        if (!singleId && !confirm(`Send registration confirmation to ${recipients.length} students (${mode})?`)) {
+            return;
+        }
+
+        setIsSendingConfirmations(true);
+
+        try {
+            const response = await fetch('/api/webinar/resend-confirmation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    students: recipients,
+                    webinarTitle: settings.title,
+                    webinarDate: settings.date,
+                    webinarTime: settings.time
+                }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                const updates = result.results.map((res: any) =>
+                    updateWebinarRegistrationStatus(firestore!, res.id, {
+                        confirmationSent: res.success,
+                        confirmationError: res.error || null
+                    })
+                );
+                await Promise.all(updates);
+
+                toast({
+                    title: 'Confirmations Sent',
+                    description: `Successfully sent confirmations for ${recipients.length} students.`,
+                });
+                loadData();
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error: any) {
+            toast({
+                variant: 'destructive',
+                title: 'Sending Failed',
+                description: `Error: ${error.message}`,
+            });
+        } finally {
+            setIsSendingConfirmations(false);
         }
     };
 
@@ -492,8 +563,8 @@ export default function AdminWebinarsPage() {
                                                         <th className="text-left px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Email</th>
                                                         <th className="text-left px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Phone</th>
                                                         <th className="text-left px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Exam</th>
-                                                        <th className="text-left px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Level</th>
-                                                        <th className="text-left px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Email Status</th>
+                                                        <th className="text-left px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Confirm Email</th>
+                                                        <th className="text-left px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Webinar Link</th>
                                                         <th className="text-left px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Date</th>
                                                         <th className="text-right px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Actions</th>
                                                     </tr>
@@ -517,29 +588,69 @@ export default function AdminWebinarsPage() {
                                                                 </Badge>
                                                             </td>
                                                             <td className="px-6 py-4">
-                                                                <Badge variant="outline" className="text-xs capitalize">
-                                                                    {reg.level}
-                                                                </Badge>
-                                                            </td>
-                                                            <td className="px-6 py-4">
-                                                                {reg.emailSent ? (
-                                                                    <Badge className="text-xs bg-green-500/10 text-green-600 border-green-500/20">
-                                                                        Sent
+                                                                {reg.confirmationSent ? (
+                                                                    <Badge className="text-[10px] bg-green-500/10 text-green-600 border-green-500/20">
+                                                                        Confirmed
                                                                     </Badge>
-                                                                ) : reg.emailError ? (
-                                                                    <Badge className="text-xs bg-red-500/10 text-red-600 border-red-500/20" title={reg.emailError}>
+                                                                ) : reg.confirmationError ? (
+                                                                    <Badge className="text-[10px] bg-red-500/10 text-red-600 border-red-500/20" title={reg.confirmationError}>
                                                                         Error
                                                                     </Badge>
                                                                 ) : (
-                                                                    <Badge className="text-xs bg-gray-500/10 text-gray-400 border-gray-500/20">
+                                                                    <Badge className="text-[10px] bg-amber-500/10 text-amber-600 border-amber-500/20">
                                                                         Pending
+                                                                    </Badge>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-6 py-4">
+                                                                {reg.emailSent ? (
+                                                                    <Badge className="text-[10px] bg-blue-500/10 text-blue-600 border-blue-500/20">
+                                                                        Sent
+                                                                    </Badge>
+                                                                ) : reg.emailError ? (
+                                                                    <Badge className="text-[10px] bg-red-500/10 text-red-600 border-red-500/20" title={reg.emailError}>
+                                                                        Error
+                                                                    </Badge>
+                                                                ) : (
+                                                                    <Badge className="text-[10px] bg-slate-500/10 text-slate-400 border-slate-500/20">
+                                                                        Not Sent
                                                                     </Badge>
                                                                 )}
                                                             </td>
                                                             <td className="px-6 py-4">
                                                                 <span className="text-sm text-muted-foreground">{formatDate(reg.registrationDate)}</span>
                                                             </td>
-                                                            <td className="px-6 py-4 text-right">
+                                                            <td className="px-6 py-4 text-right flex items-center justify-end gap-1">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    onClick={() => {
+                                                                        if (reg.id) {
+                                                                            if (confirm(`Send webinar links and resources to ${reg.fullName}?`)) {
+                                                                                handleSendBulkEmail('all', reg.id);
+                                                                            }
+                                                                        }
+                                                                    }}
+                                                                    className="h-8 w-8 text-blue-600 hover:bg-blue-100/10 rounded-lg"
+                                                                    title="Send Webinar Link"
+                                                                >
+                                                                    <PaperPlaneTilt className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    onClick={() => {
+                                                                        if (reg.id) {
+                                                                            if (confirm(`Resend confirmation email to ${reg.fullName}?`)) {
+                                                                                handleSendBulkConfirmation('all', reg.id);
+                                                                            }
+                                                                        }
+                                                                    }}
+                                                                    className="h-8 w-8 text-amber-600 hover:bg-amber-100/10 rounded-lg"
+                                                                    title="Resend Confirmation"
+                                                                >
+                                                                    <ArrowsClockwise className="h-4 w-4" />
+                                                                </Button>
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
@@ -829,23 +940,58 @@ export default function AdminWebinarsPage() {
                                             className="rounded-xl min-h-[100px]"
                                         />
                                     </div>
-                                    <div className="pt-4">
+                                    <div className="flex flex-wrap gap-4 pt-4 border-t border-border/20">
+                                        <div className="w-full mb-2">
+                                            <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Primary Link and Resources (Send Manual)</h4>
+                                        </div>
                                         <Button
-                                            onClick={handleSendBulkEmail}
+                                            onClick={() => handleSendBulkEmail('pending')}
                                             disabled={isSendingEmails || registrations.length === 0}
-                                            className="h-12 px-8 rounded-xl bg-primary hover:bg-primary/90"
+                                            className="h-11 px-6 rounded-xl bg-primary hover:bg-primary/90"
                                         >
                                             {isSendingEmails ? (
-                                                <>
-                                                    <CircleNotch weight="bold" className="mr-2 h-4 w-4 animate-spin" />
-                                                    Sending to {registrations.length} students...
-                                                </>
+                                                <CircleNotch weight="bold" className="mr-2 h-4 w-4 animate-spin" />
                                             ) : (
-                                                <>
-                                                    <PaperPlaneTilt weight="bold" className="mr-2 h-4 w-4" />
-                                                    Send Email to All Registered Students
-                                                </>
+                                                <PaperPlaneTilt weight="bold" className="mr-2 h-4 w-4" />
                                             )}
+                                            Send Link to Pending ({registrations.filter(r => !r.emailSent).length})
+                                        </Button>
+                                        <Button
+                                            onClick={() => handleSendBulkEmail('all')}
+                                            disabled={isSendingEmails || registrations.length === 0}
+                                            variant="outline"
+                                            className="h-11 px-6 rounded-xl"
+                                        >
+                                            <ArrowsClockwise weight="bold" className="mr-2 h-4 w-4" />
+                                            Resend Link to All ({registrations.length})
+                                        </Button>
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-4 pt-4 border-t border-border/20">
+                                        <div className="w-full mb-2">
+                                            <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Confirmation Reminder (Registration Alert)</h4>
+                                        </div>
+                                        <Button
+                                            onClick={() => handleSendBulkConfirmation('pending')}
+                                            disabled={isSendingConfirmations || registrations.length === 0}
+                                            variant="secondary"
+                                            className="h-11 px-6 rounded-xl"
+                                        >
+                                            {isSendingConfirmations ? (
+                                                <CircleNotch weight="bold" className="mr-2 h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <Envelope weight="bold" className="mr-2 h-4 w-4" />
+                                            )}
+                                            Send Confirmation to Pending ({registrations.filter(r => !r.confirmationSent).length})
+                                        </Button>
+                                        <Button
+                                            onClick={() => handleSendBulkConfirmation('all')}
+                                            disabled={isSendingConfirmations || registrations.length === 0}
+                                            variant="ghost"
+                                            className="h-11 px-6 rounded-xl border border-dashed hover:border-solid hover:bg-muted"
+                                        >
+                                            <ArrowsClockwise weight="bold" className="mr-2 h-4 w-4" />
+                                            Force Send Confirmation to All
                                         </Button>
                                     </div>
                                 </CardContent>

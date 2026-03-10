@@ -3,7 +3,11 @@ import { sendMail } from '@/lib/mail';
 
 export async function POST(req: Request) {
   try {
-    const { studentName, studentEmail, studentPhone, level, registrationTime, adminEmails } = await req.json();
+    const { studentName, studentEmail, studentPhone, level, registrationTime, webinarTitle, webinarDate, webinarTime } = await req.json();
+
+    const title = webinarTitle || 'Free PTE Strategy Webinar';
+    const dateStr = webinarDate || 'Sunday 15th';
+    const timeStr = webinarTime || '9:00 AM';
 
     // 1. Send confirmation to student
     const studentHtml = `
@@ -13,12 +17,12 @@ export async function POST(req: Request) {
         </div>
         <div style="padding: 30px;">
           <h2 style="color: #111827;">Hello ${studentName},</h2>
-          <p>Thank you for registering for our <strong>Free PTE Strategy Webinar</strong>.</p>
+          <p>Thank you for registering for our <strong>${title}</strong>.</p>
           
           <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 24px 0;">
             <p style="margin: 0; font-size: 16px;">
-              📅 <strong>Date:</strong> Sunday 15th<br>
-              ⏰ <strong>Time:</strong> 9:00 AM (Sri Lanka Time)
+              📅 <strong>Date:</strong> ${dateStr}<br>
+              ⏰ <strong>Time:</strong> ${timeStr} (Sri Lanka Time)
             </p>
           </div>
 
@@ -43,12 +47,11 @@ export async function POST(req: Request) {
 
     await sendMail({
       to: studentEmail,
-      subject: 'Webinar Registration Confirmed – Free PTE Strategy Webinar',
+      subject: `Webinar Registration Confirmed – ${title}`,
       html: studentHtml,
     });
 
     // 2. Send notification to admins
-    // Fetch active admin emails from Firestore
     let adminRecipients: string[] = [];
     try {
       const { adminDb } = await import('@/lib/firebase-admin');
@@ -62,9 +65,8 @@ export async function POST(req: Request) {
       console.error('Error fetching admin emails from DB:', dbError);
     }
 
-    // Fallback if no admins found in DB
     if (adminRecipients.length === 0) {
-      adminRecipients = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'admin_email_1@gmail.com,admin_email_2@gmail.com').split(',');
+      adminRecipients = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'admin_email_1@gmail.com').split(',').map(e => e.trim());
     }
 
     const adminHtml = `
@@ -73,7 +75,7 @@ export async function POST(req: Request) {
           <h1 style="color: white; margin: 0;">Admin Alert</h1>
         </div>
         <div style="padding: 30px;">
-          <h2 style="color: #111827;">New PTE Webinar Registration</h2>
+          <h2 style="color: #111827;">New Registration: ${title}</h2>
           <p>A new student has registered for the webinar.</p>
           
           <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;">
@@ -92,12 +94,17 @@ export async function POST(req: Request) {
       </div>
     `;
 
+    // To prevent multi-recipient issues, send individual emails or ensure proper formatting
+    // For now, let's send them individually to ensure deliverability
     if (adminRecipients.length > 0) {
-      await sendMail({
-        to: adminRecipients.join(','),
-        subject: 'New PTE Webinar Registration',
-        html: adminHtml,
-      });
+      const adminPromises = adminRecipients.map(email =>
+        sendMail({
+          to: email,
+          subject: `Admin Alert: New Registration for ${title}`,
+          html: adminHtml,
+        }).catch(err => console.error(`Error notifying admin ${email}:`, err))
+      );
+      await Promise.all(adminPromises);
     }
 
     return NextResponse.json({ success: true });
