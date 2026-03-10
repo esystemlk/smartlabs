@@ -62,7 +62,16 @@ export default function CoursePaymentSettingsPage() {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            const fetchedCourses = await homepageContentService.getCourses();
+            const hardcodedCourses = [
+                { id: 'grammar-clinic', title: 'Grammar Clinic', bgGradient: 'bg-gradient-to-br from-blue-600 to-indigo-600' },
+                { id: 'boostify-foundation', title: 'Boostify + Foundation Package', bgGradient: 'bg-gradient-to-br from-primary to-accent-1' },
+                { id: 'pte-boostify', title: 'PTE Boostify Package', bgGradient: 'bg-gradient-to-br from-accent-3 to-accent-2' },
+                { id: 'pte-physical-online', title: 'Classic PTE Physical + Online', bgGradient: 'bg-gradient-to-br from-orange-500 to-red-500' },
+                { id: 'pte-physical-only', title: 'Classic PTE Physical Class', bgGradient: 'bg-gradient-to-br from-blue-500 to-indigo-500' },
+                { id: 'ielts-mastery-online', title: 'IELTS Mastery (Online)', bgGradient: 'bg-gradient-to-br from-indigo-500 to-purple-600' },
+                { id: 'ielts-physical-only', title: 'IELTS Physical Only', bgGradient: 'bg-gradient-to-br from-blue-600 to-indigo-700' }
+            ] as Course[];
+
             const fetchedSettings = await paymentService.getPaymentSettings();
 
             const settingsMap: Record<string, CoursePaymentSettings> = {};
@@ -70,7 +79,7 @@ export default function CoursePaymentSettingsPage() {
                 settingsMap[s.courseId] = s;
             });
 
-            setCourses(fetchedCourses);
+            setCourses(hardcodedCourses);
             setPaymentSettings(settingsMap);
         } catch (error) {
             console.error('Error loading data:', error);

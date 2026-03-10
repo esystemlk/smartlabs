@@ -127,6 +127,20 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* PayHere Banner */}
+        <div className="mt-12 flex justify-center w-full">
+          <a href="https://www.payhere.lk" target="_blank" rel="noopener noreferrer" className="hover:opacity-90 transition-opacity">
+            <Image
+              src="https://www.payhere.lk/downloads/images/payhere_long_banner.png"
+              alt="PayHere Secured"
+              width={400}
+              height={50}
+              className="object-contain"
+              unoptimized
+            />
+          </a>
+        </div>
+
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-sm text-muted-foreground text-center sm:text-left">
