@@ -195,9 +195,10 @@ export default function CoursesPage() {
                         </CardContent>
                         <CardFooter className="p-8 pt-0 gap-3">
                           <RegisterButton
-                            courseId={course.payhereButtonId || course.id}
+                            courseId={course.id}
                             courseName={course.name}
                             price={course.price || 0}
+                            payhereButtonId={course.payhereButtonId}
                             className={`w-full h-14 rounded-2xl ${themeConfig.bg} hover:opacity-90 text-white font-black text-lg shadow-xl group`}
                           >
                             Register Now

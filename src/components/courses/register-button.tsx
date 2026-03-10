@@ -16,6 +16,7 @@ interface RegisterButtonProps {
     className?: string;
     variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
     children?: React.ReactNode;
+    payhereButtonId?: string;
 }
 
 export function RegisterButton({
@@ -24,7 +25,8 @@ export function RegisterButton({
     price,
     className,
     variant = "default",
-    children
+    children,
+    payhereButtonId
 }: RegisterButtonProps) {
     const { user } = useUser();
     const router = useRouter();
@@ -46,6 +48,26 @@ export function RegisterButton({
 
         setIsLoading(true);
         try {
+            // Check if admin provided a payhere setup directly on the course
+            let extractedPayId = null;
+            if (payhereButtonId) {
+                if (payhereButtonId.includes('data-pay-id=')) {
+                    const match = payhereButtonId.match(/data-pay-id=["']([^"']+)["']/);
+                    if (match) {
+                        extractedPayId = match[1];
+                    }
+                } else {
+                    extractedPayId = payhereButtonId; // Assume they just pasted the ID
+                }
+            }
+
+            if (extractedPayId) {
+                setPayId(extractedPayId);
+                setIsModalOpen(true);
+                return;
+            }
+
+            // Fallback for older configurations using courses_payment_settings
             const settings = await paymentService.getCoursePaymentSetting(courseId);
 
             if (!settings || settings.status !== 'active' || !settings.payherePaymentLink) {
