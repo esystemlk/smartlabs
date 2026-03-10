@@ -133,8 +133,8 @@ export default function Footer() {
             <Image
               src="https://www.payhere.lk/downloads/images/payhere_long_banner.png"
               alt="PayHere Secured"
-              width={400}
-              height={50}
+              width={800}
+              height={100}
               className="object-contain"
               unoptimized
             />
