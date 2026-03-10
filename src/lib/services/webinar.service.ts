@@ -7,6 +7,7 @@ import {
     getDocs,
     setDoc,
     updateDoc,
+    deleteDoc,
     query,
     where,
     orderBy,
@@ -142,6 +143,19 @@ export async function getWebinarRegistrations(
     }
 }
 
+export async function deleteWebinarRegistration(
+    firestore: Firestore,
+    id: string
+): Promise<boolean> {
+    try {
+        await deleteDoc(doc(firestore, WEBINAR_REGISTRATIONS_COLLECTION, id));
+        return true;
+    } catch (error) {
+        console.error('Error deleting webinar registration:', error);
+        return false;
+    }
+}
+
 // ─── Admin Notification Emails ───────────────────────────────────────
 
 export interface AdminEmail {
@@ -201,7 +215,6 @@ export async function addAdminEmail(
 
 export async function removeAdminEmail(firestore: Firestore, id: string): Promise<boolean> {
     try {
-        const { deleteDoc } = await import('firebase/firestore');
         await deleteDoc(doc(firestore, WEBINAR_ADMIN_EMAILS_COLLECTION, id));
         return true;
     } catch (error) {

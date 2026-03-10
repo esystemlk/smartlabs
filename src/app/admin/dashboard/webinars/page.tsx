@@ -21,6 +21,7 @@ import {
     Envelope,
     PaperPlaneTilt,
     Plus,
+    Trash,
 } from '@phosphor-icons/react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -39,6 +40,7 @@ import {
     getWebinarSettings,
     updateWebinarSettings,
     updateEmailStatus,
+    deleteWebinarRegistration,
     getAdminEmails,
     addAdminEmail,
     removeAdminEmail,
@@ -348,6 +350,26 @@ export default function AdminWebinarsPage() {
         }
     };
 
+    const handleDeleteRegistration = async (id: string) => {
+        if (!firestore) return;
+        if (!confirm('Are you sure you want to delete this registration? This action cannot be undone.')) return;
+
+        const success = await deleteWebinarRegistration(firestore, id);
+        if (success) {
+            toast({
+                title: 'Registration Deleted',
+                description: 'The webinar registration has been removed.',
+            });
+            loadData();
+        } else {
+            toast({
+                variant: 'destructive',
+                title: 'Delete Failed',
+                description: 'Failed to delete registration. Please try again.',
+            });
+        }
+    };
+
     const formatDate = (timestamp: any) => {
         try {
             if (timestamp?.toDate) {
@@ -473,6 +495,7 @@ export default function AdminWebinarsPage() {
                                                         <th className="text-left px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Level</th>
                                                         <th className="text-left px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Email Status</th>
                                                         <th className="text-left px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Date</th>
+                                                        <th className="text-right px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -515,6 +538,16 @@ export default function AdminWebinarsPage() {
                                                             </td>
                                                             <td className="px-6 py-4">
                                                                 <span className="text-sm text-muted-foreground">{formatDate(reg.registrationDate)}</span>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-right">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    onClick={() => reg.id && handleDeleteRegistration(reg.id)}
+                                                                    className="h-8 w-8 text-destructive hover:bg-destructive/10 rounded-lg"
+                                                                >
+                                                                    <Trash className="h-4 w-4" />
+                                                                </Button>
                                                             </td>
                                                         </tr>
                                                     ))}
