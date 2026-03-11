@@ -2,6 +2,7 @@
 'use client';
 
 import { Suspense } from 'react';
+import { useRouter } from 'next/navigation';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,13 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 function SuccessContent() {
     const searchParams = useSearchParams();
     const orderId = searchParams.get('order_id');
+    const router = useRouter();
+    if (orderId) {
+        // Auto-redirect to dashboard to show purchased course details
+        setTimeout(() => {
+            router.replace(`/dashboard?order_id=${orderId}`);
+        }, 1500);
+    }
 
     return (
         <Card className="w-full max-w-lg text-center shadow-lg">

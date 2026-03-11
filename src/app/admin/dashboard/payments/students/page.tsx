@@ -23,6 +23,11 @@ interface StudentAccess {
     accessStatus: string;
     activatedAt: any;
     userData?: any;
+    batchId?: string;
+    batchName?: string;
+    schedule?: string;
+    contactEmail?: string;
+    contactPhone?: string;
 }
 
 export default function StudentManagementPage() {
@@ -152,6 +157,9 @@ export default function StudentManagementPage() {
                                     <TableRow>
                                         <TableHead className="font-bold py-5 pl-8 text-foreground uppercase tracking-wider text-xs">Student details</TableHead>
                                         <TableHead className="font-bold py-5 text-foreground uppercase tracking-wider text-xs">Course Name</TableHead>
+                                        <TableHead className="font-bold py-5 text-foreground uppercase tracking-wider text-xs">Batch</TableHead>
+                                        <TableHead className="font-bold py-5 text-foreground uppercase tracking-wider text-xs">Schedule</TableHead>
+                                        <TableHead className="font-bold py-5 text-foreground uppercase tracking-wider text-xs">Contact</TableHead>
                                         <TableHead className="font-bold py-5 text-foreground uppercase tracking-wider text-xs">Activation Date</TableHead>
                                         <TableHead className="font-bold py-5 text-foreground uppercase tracking-wider text-xs">Payment Order</TableHead>
                                         <TableHead className="font-bold py-5 text-foreground uppercase tracking-wider text-xs text-right pr-8">Actions</TableHead>
@@ -188,6 +196,18 @@ export default function StudentManagementPage() {
                                                     <Badge variant="outline" className="rounded-lg border-primary/30 text-primary bg-primary/5 font-bold py-1 px-3">
                                                         {student.courseId}
                                                     </Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="text-sm font-bold">{student.batchName || student.batchId || '—'}</div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="text-xs text-muted-foreground font-medium">{student.schedule || '—'}</div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="text-xs text-muted-foreground font-medium space-y-1">
+                                                        <div className="flex items-center gap-1"><Mail className="h-3 w-3" /> {student.contactEmail || student.userData?.email || '—'}</div>
+                                                        <div className="flex items-center gap-1"><User className="h-3 w-3" /> {student.contactPhone || '—'}</div>
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-2 text-sm text-foreground/80 font-medium opacity-80">

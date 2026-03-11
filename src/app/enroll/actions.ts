@@ -97,5 +97,24 @@ export async function enrollAction(prevState: ServerActionState, formData: FormD
     hash: hash,
   };
 
+  try {
+    const orderDoc = {
+      userId: formValues.userId,
+      courseId: formValues.courseId,
+      batchId: formValues.batchId,
+      orderId: order_id,
+      paymentStatus: 'pending',
+      paymentAmount: amount,
+      createdAt: new Date(),
+      userEmail,
+      userPhone: formValues.phone,
+      courseName
+    };
+    const { addDoc, collection: coll } = await import('firebase/firestore');
+    await addDoc(coll(db, 'payment_orders'), orderDoc);
+  } catch (e) {
+    console.error('Failed to create payment order record:', e);
+  }
+
   return { success: true, message: 'Redirecting to payment...', payload };
 }
