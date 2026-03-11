@@ -40,6 +40,7 @@ import { payhereUrls } from '@/lib/payhere';
 import { enrollAction, type ServerActionState } from './actions';
 import { collection } from 'firebase/firestore';
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
 const formSchema = z.object({
   fullName: z.string().min(2, { message: 'Full name must be at least 2 characters.' }),
@@ -57,8 +58,18 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 
+function CoursePrefill({ form }: { form: any }) {
+  const sp = useSearchParams();
+  useEffect(() => {
+    const cid = sp.get('course');
+    if (cid) {
+      form.setValue('course', cid);
+    }
+  }, [sp, form]);
+  return null;
+}
+
 export default function EnrollPage() {
-  const searchParams = useSearchParams();
 
   const { toast } = useToast();
   const { user } = useUser();
@@ -80,13 +91,6 @@ export default function EnrollPage() {
       freeDemo: false,
     },
   });
-
-  useEffect(() => {
-    const cid = searchParams.get('course');
-    if (cid) {
-      form.setValue('course', cid);
-    }
-  }, [searchParams, form]);
 
   const selectedCourseId = form.watch("course");
   const isFreeDemo = form.watch("freeDemo");
@@ -148,6 +152,9 @@ export default function EnrollPage() {
             </p>
           </div>
           <div className="grid lg:grid-cols-2 gap-8 md:gap-16 items-start">
+            <Suspense fallback={null}>
+              <CoursePrefill form={form} />
+            </Suspense>
             <div className="relative aspect-[4/3] lg:aspect-auto h-64 lg:h-full w-full max-w-lg mx-auto lg:max-w-none">
                 <Image 
                     src="/enr.png"
