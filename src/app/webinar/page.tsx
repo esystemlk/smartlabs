@@ -27,44 +27,44 @@ import { getWebinarSettings, type WebinarSettings, DEFAULT_WEBINAR_SETTINGS } fr
 
 const learningPoints = [
     {
-        icon: Target,
-        title: 'PTE AI-Scored Practice',
-        description: 'Master the computer-based PTE format with targeted AI practice sessions.',
+        icon: BookOpen,
+        title: 'Reading: Fill in the Blanks',
+        description: 'Master drag-and-drop and dropdown strategies for accurate word selection.',
         color: 'text-blue-500',
         bg: 'bg-blue-50 dark:bg-blue-900/20',
         border: 'border-blue-100 dark:border-blue-800/30',
     },
     {
         icon: Sparkle,
-        title: 'PTE Exam Techniques',
-        description: 'Master the AI-scored PTE format with smart answering strategies.',
+        title: 'Reading: Re-order Paragraphs',
+        description: 'Use logical connectors and topic flow to rebuild the correct sequence.',
         color: 'text-sky-500',
         bg: 'bg-sky-50 dark:bg-sky-900/20',
         border: 'border-sky-100 dark:border-sky-800/30',
     },
     {
-        icon: WarningCircle,
-        title: 'Common Exam Mistakes',
-        description: 'Identify and avoid the most frequent errors that cost students marks.',
-        color: 'text-amber-500',
-        bg: 'bg-amber-50 dark:bg-amber-900/20',
-        border: 'border-amber-100 dark:border-amber-800/30',
+        icon: Target,
+        title: 'Reading: Multiple Choice',
+        description: 'Evidence-based selection for single/multiple answers without second-guessing.',
+        color: 'text-purple-500',
+        bg: 'bg-purple-50 dark:bg-purple-900/20',
+        border: 'border-purple-100 dark:border-purple-800/30',
     },
     {
-        icon: ChatCenteredText,
-        title: 'Speaking & Writing Tips',
-        description: 'Expert tips for fluency, pronunciation, coherence, and task response.',
+        icon: TrendUp,
+        title: 'Time Management & Scanning',
+        description: 'Skim/scan techniques to speed up while protecting accuracy.',
         color: 'text-emerald-500',
         bg: 'bg-emerald-50 dark:bg-emerald-900/20',
         border: 'border-emerald-100 dark:border-emerald-800/30',
     },
     {
-        icon: TrendUp,
-        title: 'Reach PTE 79+ Faster',
-        description: 'Accelerated study plans designed to help you hit your target PTE score quickly.',
-        color: 'text-purple-500',
-        bg: 'bg-purple-50 dark:bg-purple-900/20',
-        border: 'border-purple-100 dark:border-purple-800/30',
+        icon: WarningCircle,
+        title: 'Avoid Common Reading Traps',
+        description: 'Spot distractors, synonym traps, and polarity flips in questions and options.',
+        color: 'text-amber-500',
+        bg: 'bg-amber-50 dark:bg-amber-900/20',
+        border: 'border-amber-100 dark:border-amber-800/30',
     },
 ];
 
@@ -135,17 +135,17 @@ export default function WebinarPage() {
                             transition={{ delay: 0.1, duration: 0.6 }}
                             className="text-4xl sm:text-5xl md:text-6xl font-black text-gray-900 dark:text-white tracking-tight leading-[1.1] mb-6"
                         >
-                            {settings.title}
+                            PTE Reading Strategy Webinar
                         </motion.h1>
 
                         {/* Subtitle */}
-                        <motion.p
+                            <motion.p
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2, duration: 0.6 }}
                             className="text-lg sm:text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed mb-10"
                         >
-                            Learn proven strategies to improve your PTE scores from expert instructors who have helped thousands of students achieve their target scores.
+                            Learn proven strategies to improve your PTE Reading scores with expert techniques for all task types.
                         </motion.p>
 
                         {/* Event Details Card */}

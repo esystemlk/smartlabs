@@ -62,6 +62,7 @@ export function FloatingAI() {
 
             const response = await chatWithSmartLabs({
                 message: textToSubmit,
+                mode: 'general',
                 conversationHistory,
             });
 

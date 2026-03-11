@@ -43,31 +43,13 @@ import { LMS_URL } from "@/lib/constants";
 
 const courses = [
   {
-    name: "PTE Academic",
-    href: "/pte",
-    description: "AI-powered scoring & expert strategies.",
-    icon: Target,
-    color: "text-accent-1",
-    bgColor: "bg-accent-1/10",
-    hoverBorder: "hover:border-accent-1/50"
-  },
-  {
-    name: "IELTS Mastery",
-    href: "/ielts",
-    description: "Achieve Band 7.5+ with expert training.",
-    icon: Globe,
-    color: "text-accent-3",
-    bgColor: "bg-accent-3/10",
-    hoverBorder: "hover:border-accent-3/50"
-  },
-  {
-    name: "CELPIP Training",
-    href: "/celpip",
-    description: "Get CLB 9+ for Canadian PR.",
-    icon: Zap,
-    color: "text-accent-4",
-    bgColor: "bg-accent-4/10",
-    hoverBorder: "hover:border-accent-4/50"
+    name: "Courses",
+    href: "/courses",
+    description: "Browse all PTE & IELTS programs.",
+    icon: Book,
+    color: "text-primary",
+    bgColor: "bg-primary/10",
+    hoverBorder: "hover:border-primary/50"
   },
 ];
 

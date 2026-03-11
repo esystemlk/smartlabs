@@ -262,9 +262,14 @@ export default function DashboardPage() {
                                         <p className="text-sm text-muted-foreground font-medium mb-6">
                                             {e.enrollmentStatus === 'pending' ? "Security verification in progress. Access will be granted shortly." : "Full academic access granted. All modules are unlocked."}
                                         </p>
-                                        <Button className="w-full rounded-2xl font-bold h-12" variant={e.enrollmentStatus === 'pending' ? 'outline' : 'default'}>
-                                            {e.enrollmentStatus === 'pending' ? "Check Status" : "Enter Classroom"}
-                                        </Button>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <Button className="w-full rounded-2xl font-bold h-12" variant={e.enrollmentStatus === 'pending' ? 'outline' : 'default'}>
+                                                {e.enrollmentStatus === 'pending' ? "Check Status" : "Enter Classroom"}
+                                            </Button>
+                                            <Button asChild className="w-full rounded-2xl font-bold h-12" variant="outline">
+                                                <Link href={LMS_URL}>Go to LMS</Link>
+                                            </Button>
+                                        </div>
                                     </motion.div>
                                 ))}
                             </div>

@@ -39,6 +39,7 @@ import { useUser, useFirebase, useCollection, useMemoFirebase } from '@/firebase
 import { payhereUrls } from '@/lib/payhere';
 import { enrollAction, type ServerActionState } from './actions';
 import { collection } from 'firebase/firestore';
+import { useSearchParams } from 'next/navigation';
 
 const formSchema = z.object({
   fullName: z.string().min(2, { message: 'Full name must be at least 2 characters.' }),
@@ -57,11 +58,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 
 export default function EnrollPage() {
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.location.href = LMS_URL;
-    }
-  }, []);
+  const searchParams = useSearchParams();
 
   const { toast } = useToast();
   const { user } = useUser();
@@ -83,6 +80,13 @@ export default function EnrollPage() {
       freeDemo: false,
     },
   });
+
+  useEffect(() => {
+    const cid = searchParams.get('course');
+    if (cid) {
+      form.setValue('course', cid);
+    }
+  }, [searchParams, form]);
 
   const selectedCourseId = form.watch("course");
   const isFreeDemo = form.watch("freeDemo");
@@ -135,12 +139,12 @@ export default function EnrollPage() {
       <section className="py-12 md:py-20">
         <div className="container mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-3xl md:text-4xl font-headline font-bold">Redirecting to LMS…</h1>
+            <h1 className="text-3xl md:text-4xl font-headline font-bold">Course Enrollment</h1>
             <p className="mt-4 text-base md:text-lg text-muted-foreground max-w-3xl mx-auto">
-              Please wait while we take you to our LMS enrollment page.
+              Select your course and preferred batch. Secure checkout is powered by PayHere.
             </p>
             <p className="mt-3">
-              If you are not redirected automatically, <a className="text-primary font-bold underline" href={LMS_URL}>click here</a>.
+              Need help? <a className="text-primary font-bold underline" href={LMS_URL}>Go to LMS</a>.
             </p>
           </div>
           <div className="grid lg:grid-cols-2 gap-8 md:gap-16 items-start">

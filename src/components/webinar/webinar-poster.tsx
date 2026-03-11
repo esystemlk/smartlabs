@@ -148,7 +148,7 @@ export function WebinarPoster() {
                                                 </div>
                                             </div>
                                             <p className="text-sm font-bold opacity-90 leading-tight">
-                                                Join 2,000+ students who have already registered for this life-changing session!
+                                                Join students who have already registered for this life-changing session!
                                             </p>
                                         </div>
                                     </div>

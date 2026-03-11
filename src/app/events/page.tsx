@@ -12,6 +12,7 @@ import { useFirebase, useCollection, useMemoFirebase, useUser } from '@/firebase
 import { collection, query, orderBy } from 'firebase/firestore';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
+import { getWebinarSettings, DEFAULT_WEBINAR_SETTINGS, type WebinarSettings } from '@/lib/services/webinar.service';
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -39,12 +40,18 @@ export default function EventsPage() {
     const { firestore } = useFirebase();
     const { user } = useUser();
     const router = useRouter();
+    const [webinar, setWebinar] = React.useState<WebinarSettings>(DEFAULT_WEBINAR_SETTINGS);
 
     const eventsQuery = useMemoFirebase(() =>
         firestore ? query(collection(firestore, 'events'), orderBy('createdAt', 'desc')) : null,
         [firestore]
     );
     const { data: events, isLoading } = useCollection(eventsQuery);
+
+    React.useEffect(() => {
+        if (!firestore) return;
+        getWebinarSettings(firestore).then(setWebinar);
+    }, [firestore]);
 
     return (
         <div className="min-h-screen bg-background">
@@ -80,6 +87,23 @@ export default function EventsPage() {
 
                 {/* Events Grid */}
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                    {/* Featured: PTE Webinar */}
+                    <div className="mb-10">
+                        <div className="group relative bg-card/50 backdrop-blur-xl border border-primary/40 rounded-[32px] overflow-hidden hover:border-primary/60 transition-all duration-500 shadow-xl">
+                            <div className="p-8 flex flex-col md:flex-row items-center gap-6">
+                                <div className="flex-1">
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest mb-3">
+                                        Featured
+                                    </div>
+                                    <h2 className="text-2xl md:text-3xl font-black tracking-tight">PTE Reading Strategy Webinar</h2>
+                                    <p className="text-muted-foreground mt-2 font-medium">Join our free online session focused on PTE Reading.</p>
+                                </div>
+                                <Button asChild className="rounded-2xl px-6 h-12">
+                                    <Link href="/webinar">View Webinar</Link>
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
                     {isLoading ? (
                         <div className="flex justify-center py-20">
                             <CircleNotch className="h-10 w-10 animate-spin text-primary" />

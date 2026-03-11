@@ -129,7 +129,7 @@ export default function GrammarClinicPage() {
                                 </Button>
                                 <div className="flex flex-col justify-center">
                                     <Button variant="ghost" asChild className="h-12 text-sm font-black uppercase text-orange-500 hover:text-orange-600 hover:bg-orange-500/5 group">
-                                        <Link href="/pte">
+                                        <Link href="/courses">
                                             Click here for PTE Boostify
                                             <Zap className="ml-2 h-4 w-4 fill-orange-500 transition-transform group-hover:scale-110" />
                                         </Link>
@@ -356,7 +356,7 @@ export default function GrammarClinicPage() {
                                 <div className="space-y-4 pt-8 border-t border-muted">
                                     <p className="text-sm font-black text-muted-foreground uppercase opacity-60">Ready for elite prep?</p>
                                     <Button asChild variant="hero" size="xl" className="w-full rounded-2xl bg-[#1E40AF] group">
-                                        <Link href="/pte">
+                                        <Link href="/courses">
                                             Join PTE Boostify Program  →
                                         </Link>
                                     </Button>

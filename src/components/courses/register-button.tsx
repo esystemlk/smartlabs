@@ -44,48 +44,8 @@ export function RegisterButton({
             return;
         }
 
-        setIsLoading(true);
-        try {
-            // Admin provided a payhere link directly on the course
-            let finalLink = payhereButtonId;
-
-            // Fallback for older database configurations
-            if (!finalLink) {
-                const settings = await paymentService.getCoursePaymentSetting(courseId);
-
-                if (!settings || settings.status !== 'active' || !settings.payherePaymentLink) {
-                    toast({
-                        title: 'Registration Unavailable',
-                        description: 'Online registration for this course is currently disabled. Please contact support.',
-                        variant: 'destructive',
-                    });
-                    return;
-                }
-                finalLink = settings.payherePaymentLink;
-            }
-
-            if (finalLink) {
-                // If it's a URL, open it
-                if (finalLink.startsWith('http://') || finalLink.startsWith('https://')) {
-                    window.open(finalLink, '_blank');
-                } else {
-                    toast({
-                        title: 'Invalid configuration',
-                        description: 'The payment link for this course is not a valid URL. Please contact support.',
-                        variant: 'destructive',
-                    });
-                }
-            }
-        } catch (error) {
-            console.error('Error opening payment:', error);
-            toast({
-                title: 'Error',
-                description: 'Could not load payment link. Please try again.',
-                variant: 'destructive',
-            });
-        } finally {
-            setIsLoading(false);
-        }
+        // Route to the secure enrollment flow with batch selection
+        router.push(`/enroll?course=${courseId}`);
     };
 
     return (

@@ -129,7 +129,7 @@ export function WebinarBanner() {
                                         transition={{ delay: 0.25 }}
                                         className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight mb-3"
                                     >
-                                        {settings.title}
+                                        PTE Reading Strategy Webinar
                                     </motion.h2>
 
                                     {/* Description */}
@@ -139,7 +139,7 @@ export function WebinarBanner() {
                                         transition={{ delay: 0.3 }}
                                         className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-6"
                                     >
-                                        {settings.description}
+                                        Join our free webinar and learn powerful strategies to improve your PTE Reading scores.
                                     </motion.p>
 
                                     {/* Event details */}

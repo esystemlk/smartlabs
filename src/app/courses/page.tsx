@@ -17,6 +17,158 @@ export default function CoursesPage() {
   const { firestore } = useFirebase();
   const { user } = useUser();
 
+  const catalog = [
+    {
+      id: 'pte-boostify',
+      name: 'PTE Boostify Package',
+      subtitle: 'Exam-focused strategies with AI practice',
+      themeColor: 'accent-3',
+      duration: '13 Days | 20 Hours',
+      days: 'Monday – Friday',
+      startTime: '2.30 PM – 4.30 PM',
+      features: [
+        'All live class recordings',
+        'Exam focused strategies',
+        'Smart practice methods',
+        'Individual feedback for difficult questions',
+        '8.00 PM batch available',
+        'Next Intake: 16 March (8.00 PM), 23 March (2.30 PM)'
+      ].join(', '),
+      price: 30000
+    },
+    {
+      id: 'pte-boostify-grammar',
+      name: 'PTE Boostify + Grammar Clinic Program',
+      subtitle: 'Full strategy + grammar foundation',
+      themeColor: 'primary',
+      duration: '21 Days | 42 Hours',
+      days: 'Monday – Friday',
+      startTime: '2.30 PM – 4.30 PM',
+      features: [
+        'All live class recordings available',
+        'Grammar Clinic: Saturday & Sunday',
+        'Grammar Clinic Time: 4.00 PM – 6.00 PM',
+        'Grammar Clinic Duration: 1 Month'
+      ].join(', '),
+      price: 35000
+    },
+    {
+      id: 'pte-hybrid',
+      name: 'PTE Hybrid (Online + Physical)',
+      subtitle: 'Zoom + Rajagiriya campus weekend',
+      themeColor: 'accent-2',
+      duration: 'Online 20 Hours + Physical 16 Hours/month',
+      days: 'Online: Mon–Fri | Physical: Sat & Sun',
+      startTime: 'Online: 8.00–10.00 PM or 2.30–4.30 PM',
+      features: [
+        'Online via Zoom',
+        'Grammar Clinic: Sat & Sun 4.00 – 6.00 PM (1 Month)',
+        'Physical: Sat & Sun 8.30 – 10.30 AM',
+        'Starting Date: 14th March',
+        'Location: Rajagiriya – Janajaya Building'
+      ].join(', '),
+      price: 50000
+    },
+    {
+      id: 'pte-physical',
+      name: 'PTE Physical Classes',
+      subtitle: 'Face-to-face coaching at Rajagiriya',
+      themeColor: 'accent',
+      duration: '16 Hours per month',
+      days: 'Saturday & Sunday',
+      startTime: '8.30 AM – 10.30 AM',
+      features: [
+        'Location: Rajagiriya – Janajaya Building',
+        'Bonus: Complimentary Grammar Online Sessions'
+      ].join(', '),
+      price: 40000
+    },
+    {
+      id: 'pte-recorded',
+      name: 'PTE Recorded Sessions Program',
+      subtitle: 'Self-Paced Learning Program',
+      themeColor: 'orange',
+      duration: 'Flexible',
+      days: 'Self-paced',
+      features: [
+        'Access to latest live class recordings',
+        'Class materials',
+        'Extra practice materials',
+        'Flexible learning schedule',
+        'Note: Live classes provide direct lecturer feedback',
+        'Note: Recorded program is fully self-study based'
+      ].join(', '),
+      price: 0
+    },
+    {
+      id: 'ielts-boostify',
+      name: 'IELTS Boostify Package',
+      subtitle: 'Online via Zoom',
+      themeColor: 'accent-3',
+      duration: '1 Month | 16 Hours',
+      days: 'Tuesday & Saturday',
+      startTime: '8.00 PM – 10.00 PM',
+      features: [
+        'Complete IELTS exam strategies',
+        'Speaking mock exams',
+        'Real exam style practice platform',
+        '2 months class recordings',
+        'Structured lessons for all modules'
+      ].join(', '),
+      price: 25000
+    },
+    {
+      id: 'ielts-mastery',
+      name: 'IELTS Mastery Package',
+      subtitle: 'Advanced training and difficult questions focus',
+      themeColor: 'primary',
+      duration: '1 Month | 24 Hours',
+      days: 'Tuesday, Wednesday, Saturday',
+      startTime: '8.00 PM – 10.00 PM',
+      features: [
+        'Everything in Boostify package',
+        'Extra 8 hours advanced training',
+        'Special focus on difficult questions',
+        'Speaking mock tests',
+        '2 months recordings access'
+      ].join(', '),
+      price: 35000
+    },
+    {
+      id: 'ielts-hybrid',
+      name: 'IELTS Hybrid (Online + Physical)',
+      subtitle: 'Online + weekend campus sessions',
+      themeColor: 'accent-2',
+      duration: '32 Hours (Online 16 + Physical 16)',
+      days: 'Online: Tue & Sat | Physical: Sat & Sun',
+      startTime: 'Online: 8.00 PM – 10.00 PM | Physical: 11.30 AM – 1.30 PM',
+      features: [
+        'Full IELTS strategies',
+        'Speaking mock exams',
+        'Practice platforms with scoring',
+        '2 months recordings',
+        'Extra physical practice sessions'
+      ].join(', '),
+      price: 50000
+    },
+    {
+      id: 'ielts-physical',
+      name: 'IELTS Physical Class Package',
+      subtitle: 'On-site learning with feedback',
+      themeColor: 'accent',
+      duration: '1 Month | 16 Hours',
+      days: 'Saturday & Sunday',
+      startTime: '11.30 AM – 1.30 PM',
+      features: [
+        'Face-to-face IELTS training',
+        'Strategies for high band score',
+        'Speaking practice with feedback',
+        'Structured lessons for all modules',
+        'Seats: Only 12 students per batch'
+      ].join(', '),
+      price: 40000
+    }
+  ];
   const coursesQuery = useMemoFirebase(
     () => (firestore ? collection(firestore, 'courses') : null),
     [firestore]
@@ -87,7 +239,7 @@ export default function CoursesPage() {
               <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {courses?.filter(c => c.status !== 'disabled').map((course, idx) => {
+                {catalog.map((course, idx) => {
                   let themeConfig = {
                     gradient: "from-blue-600/20 to-indigo-600/20",
                     bg: "bg-[#1E40AF]",
@@ -126,9 +278,6 @@ export default function CoursesPage() {
                           <div className="absolute top-0 right-0 p-4 opacity-10">
                             <Icon className="h-20 w-20 rotate-12" />
                           </div>
-                          {course.badgeText && (
-                            <Badge className="bg-white/20 hover:bg-white/30 text-white border-none mb-4 uppercase font-black tracking-widest text-[10px]">{course.badgeText}</Badge>
-                          )}
                           <CardTitle className="text-2xl font-black font-headline leading-tight">{course.name}</CardTitle>
                           {course.subtitle && <p className="text-white/80 text-sm mt-2 font-medium italic">{course.subtitle}</p>}
                         </div>
@@ -160,12 +309,11 @@ export default function CoursesPage() {
                             )}
                           </div>
 
-                          {course.bonusTitle && (
+                          {false && (
                             <div className={`p-4 rounded-2xl bg-muted/50 border ${themeConfig.border} space-y-2`}>
                               <div className={`flex items-center gap-2 ${themeConfig.text} font-black text-sm uppercase`}>
-                                <Check className="h-4 w-4" /> {course.bonusTitle}
+                                <Check className="h-4 w-4" /> 
                               </div>
-                              {course.bonusSubtitle && <p className="text-xs text-muted-foreground italic">{course.bonusSubtitle}</p>}
                             </div>
                           )}
 
@@ -180,11 +328,7 @@ export default function CoursesPage() {
                             </ul>
                           )}
 
-                          {course.description && !course.features && (
-                            <p className="text-sm text-muted-foreground leading-relaxed italic">
-                              "{course.description}"
-                            </p>
-                          )}
+                          
 
                           <div className="pt-6">
                             <div className="text-center space-y-1">
@@ -198,7 +342,7 @@ export default function CoursesPage() {
                             courseId={course.id}
                             courseName={course.name}
                             price={course.price || 0}
-                            payhereButtonId={course.payhereButtonId}
+                            payhereButtonId={undefined}
                             className={`w-full h-14 rounded-2xl ${themeConfig.bg} hover:opacity-90 text-white font-black text-lg shadow-xl group`}
                           >
                             Register Now
