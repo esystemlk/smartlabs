@@ -74,6 +74,7 @@ export default function AdminDashboardPage() {
         { title: "User Management", value: "Manage", desc: "Manage roles and access.", icon: UserCog, href: "/admin/dashboard/users" },
         { title: "Course Management", value: "Manage", desc: "Add, edit, or delete courses.", icon: GraduationCap, href: "/admin/dashboard/courses" },
         { title: "Enrollments", value: "Verify", desc: "Approve new student enrollments.", icon: UserCheck, href: "/admin/dashboard/enrollments" },
+        { title: "Payment Settings", value: "Configure", desc: "Set PayHere links and prices.", icon: DollarSign, href: "/admin/dashboard/payments/settings" },
         { title: "Resource Library", value: "Manage", desc: "Add and organize materials.", icon: Library, href: "/admin/dashboard/resources" },
         { title: "Blog Management", value: "Manage", desc: "Create and edit blog posts.", icon: FileText, href: "/admin/dashboard/blog" },
         { title: "Support Center", value: "Open", desc: "Manage student queries.", icon: MessageSquare, href: "/admin/dashboard/support" },

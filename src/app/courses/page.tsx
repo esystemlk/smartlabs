@@ -239,7 +239,7 @@ export default function CoursesPage() {
               <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {catalog.map((course, idx) => {
+                {((courses && courses.length > 0) ? courses.filter((c: any) => c.status !== 'disabled') : catalog).map((course: any, idx: number) => {
                   let themeConfig = {
                     gradient: "from-blue-600/20 to-indigo-600/20",
                     bg: "bg-[#1E40AF]",
@@ -265,7 +265,7 @@ export default function CoursesPage() {
 
                   return (
                     <motion.div
-                      key={course.id}
+                      key={course.id || course.name}
                       initial={{ opacity: 0, y: 30 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
@@ -278,7 +278,7 @@ export default function CoursesPage() {
                           <div className="absolute top-0 right-0 p-4 opacity-10">
                             <Icon className="h-20 w-20 rotate-12" />
                           </div>
-                          <CardTitle className="text-2xl font-black font-headline leading-tight">{course.name}</CardTitle>
+                          <CardTitle className="text-2xl font-black font-headline leading-tight">{course.name || course.title}</CardTitle>
                           {course.subtitle && <p className="text-white/80 text-sm mt-2 font-medium italic">{course.subtitle}</p>}
                         </div>
                         <CardContent className="flex-grow p-8 space-y-6">
@@ -333,15 +333,15 @@ export default function CoursesPage() {
                           <div className="pt-6">
                             <div className="text-center space-y-1">
                               <p className="text-xs text-muted-foreground font-black uppercase tracking-widest">Investment</p>
-                              <div className="text-4xl font-black text-foreground font-headline tracking-tighter">LKR {course.price?.toLocaleString() || 0}</div>
+                                <div className="text-4xl font-black text-foreground font-headline tracking-tighter">LKR {(course.price && Number(course.price).toLocaleString()) || 0}</div>
                             </div>
                           </div>
                         </CardContent>
                         <CardFooter className="p-8 pt-0 gap-3">
                           <RegisterButton
-                            courseId={course.id}
-                            courseName={course.name}
-                            price={course.price || 0}
+                            courseId={course.id || course.name}
+                            courseName={course.name || course.title}
+                            price={Number(course.price) || 0}
                             payhereButtonId={undefined}
                             className={`w-full h-14 rounded-2xl ${themeConfig.bg} hover:opacity-90 text-white font-black text-lg shadow-xl group`}
                           >

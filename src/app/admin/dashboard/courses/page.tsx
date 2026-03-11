@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, setDoc } from 'firebase/firestore';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -99,6 +99,23 @@ export default function CourseManagementPage() {
 
   const courseForm = useForm<CourseFormValues>({
     resolver: zodResolver(courseSchema),
+    defaultValues: {
+      name: '',
+      subtitle: '',
+      badgeText: '',
+      themeColor: 'blue',
+      price: 0,
+      duration: '',
+      days: '',
+      startTime: '',
+      bonusTitle: '',
+      bonusSubtitle: '',
+      features: '',
+      payhereButtonId: '',
+      status: 'active',
+      courseType: 'pte',
+      description: ''
+    }
   });
 
   const batchForm = useForm<BatchFormValues>({
@@ -135,11 +152,14 @@ export default function CourseManagementPage() {
   const onCourseSubmit = async (data: CourseFormValues) => {
     if (!firestore) return;
     try {
+      const sanitize = (obj: any) =>
+        Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, v === undefined ? '' : v]));
+      const payload = sanitize(data);
       if (selectedCourse) {
-        await updateDoc(doc(firestore, 'courses', selectedCourse.id), data);
+        await updateDoc(doc(firestore, 'courses', selectedCourse.id), payload);
         toast({ title: 'Success', description: 'Course updated successfully.' });
       } else {
-        await addDoc(collection(firestore, 'courses'), data);
+        await addDoc(collection(firestore, 'courses'), payload);
         toast({ title: 'Success', description: 'Course added successfully.' });
       }
       setIsCourseDialogOpen(false);
@@ -224,9 +244,36 @@ export default function CourseManagementPage() {
                 <CardTitle>Course Management</CardTitle>
                 <CardDescription>Add, edit, or remove courses and their batches from the platform.</CardDescription>
               </div>
-              <Button onClick={() => handleCourseDialogOpen()}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Course
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={async () => {
+                  if (!firestore) return;
+                  const seed = [
+                    { id: 'pte-boostify', name: 'PTE Boostify Package', subtitle: 'Exam-focused strategies with AI practice', themeColor: 'accent-3', price: 30000, duration: '13 Days | 20 Hours', days: 'Monday – Friday', startTime: '2.30 PM – 4.30 PM', features: 'All live class recordings, Exam focused strategies, Smart practice methods, Individual feedback for difficult questions, 8.00 PM batch available, Next Intake: 16 March (8.00 PM), 23 March (2.30 PM)', status: 'active', courseType: 'pte' },
+                    { id: 'pte-boostify-grammar', name: 'PTE Boostify + Grammar Clinic Program', subtitle: 'Full strategy + grammar foundation', themeColor: 'primary', price: 35000, duration: '21 Days | 42 Hours', days: 'Monday – Friday', startTime: '2.30 PM – 4.30 PM', features: 'All live class recordings available, Grammar Clinic: Saturday & Sunday, Grammar Clinic Time: 4.00 PM – 6.00 PM, Grammar Clinic Duration: 1 Month', status: 'active', courseType: 'pte' },
+                    { id: 'pte-hybrid', name: 'PTE Hybrid (Online + Physical)', subtitle: 'Zoom + Rajagiriya campus weekend', themeColor: 'accent-2', price: 50000, duration: 'Online 20 Hours + Physical 16 Hours/month', days: 'Online: Mon–Fri | Physical: Sat & Sun', startTime: 'Online: 8.00–10.00 PM or 2.30–4.30 PM', features: 'Online via Zoom, Grammar Clinic: Sat & Sun 4.00 – 6.00 PM (1 Month), Physical: Sat & Sun 8.30 – 10.30 AM, Starting Date: 14th March, Location: Rajagiriya – Janajaya Building', status: 'active', courseType: 'pte' },
+                    { id: 'pte-physical', name: 'PTE Physical Classes', subtitle: 'Face-to-face coaching at Rajagiriya', themeColor: 'accent', price: 40000, duration: '16 Hours per month', days: 'Saturday & Sunday', startTime: '8.30 AM – 10.30 AM', features: 'Location: Rajagiriya – Janajaya Building, Bonus: Complimentary Grammar Online Sessions', status: 'active', courseType: 'pte' },
+                    { id: 'pte-recorded', name: 'PTE Recorded Sessions Program', subtitle: 'Self-Paced Learning Program', themeColor: 'orange', price: 0, duration: 'Flexible', days: 'Self-paced', startTime: '', features: 'Access to latest live class recordings, Class materials, Extra practice materials, Flexible learning schedule, Note: Live classes provide direct lecturer feedback, Note: Recorded program is fully self-study based', status: 'active', courseType: 'pte' },
+                    { id: 'ielts-boostify', name: 'IELTS Boostify Package', subtitle: 'Online via Zoom', themeColor: 'accent-3', price: 25000, duration: '1 Month | 16 Hours', days: 'Tuesday & Saturday', startTime: '8.00 PM – 10.00 PM', features: 'Complete IELTS exam strategies, Speaking mock exams, Real exam style practice platform, 2 months class recordings, Structured lessons for all modules', status: 'active', courseType: 'ielts' },
+                    { id: 'ielts-mastery', name: 'IELTS Mastery Package', subtitle: 'Advanced training and difficult questions focus', themeColor: 'primary', price: 35000, duration: '1 Month | 24 Hours', days: 'Tuesday, Wednesday, Saturday', startTime: '8.00 PM – 10.00 PM', features: 'Everything in Boostify package, Extra 8 hours advanced training, Special focus on difficult questions, Speaking mock tests, 2 months recordings access', status: 'active', courseType: 'ielts' },
+                    { id: 'ielts-hybrid', name: 'IELTS Hybrid (Online + Physical)', subtitle: 'Online + weekend campus sessions', themeColor: 'accent-2', price: 50000, duration: '32 Hours (Online 16 + Physical 16)', days: 'Online: Tue & Sat | Physical: Sat & Sun', startTime: 'Online: 8.00 PM – 10.00 PM | Physical: 11.30 AM – 1.30 PM', features: 'Full IELTS strategies, Speaking mock exams, Practice platforms with scoring, 2 months recordings, Extra physical practice sessions', status: 'active', courseType: 'ielts' },
+                    { id: 'ielts-physical', name: 'IELTS Physical Class Package', subtitle: 'On-site learning with feedback', themeColor: 'accent', price: 40000, duration: '1 Month | 16 Hours', days: 'Saturday & Sunday', startTime: '11.30 AM – 1.30 PM', features: 'Face-to-face IELTS training, Strategies for high band score, Speaking practice with feedback, Structured lessons for all modules, Seats: Only 12 students per batch', status: 'active', courseType: 'ielts' },
+                  ];
+                  try {
+                    for (const pkg of seed) {
+                      await setDoc(doc(firestore, 'courses', pkg.id), pkg);
+                    }
+                    toast({ title: 'Seed Complete', description: 'Default packages have been added to Firestore.' });
+                  } catch (e) {
+                    console.error('Seeding error', e);
+                    toast({ variant: 'destructive', title: 'Seed Failed', description: 'Could not seed default packages.' });
+                  }
+                }}>
+                  <CheckCircle2 className="mr-2 h-4 w-4" /> Seed Packages
+                </Button>
+                <Button onClick={() => handleCourseDialogOpen()}>
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add Course
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               {coursesLoading ? (

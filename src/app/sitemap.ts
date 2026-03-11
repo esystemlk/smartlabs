@@ -15,7 +15,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/policies',
     '/login',
     '/signup',
-    '/enroll',
+    '/enroll/pte-boostify',
+    '/enroll/pte-boostify-grammar',
+    '/enroll/pte-hybrid',
+    '/enroll/pte-physical',
+    '/enroll/pte-recorded',
+    '/enroll/ielts-boostify',
+    '/enroll/ielts-mastery',
+    '/enroll/ielts-hybrid',
+    '/enroll/ielts-physical',
   ];
 
   const sitemapEntries: MetadataRoute.Sitemap = staticPages.map((page) => ({

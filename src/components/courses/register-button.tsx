@@ -44,8 +44,8 @@ export function RegisterButton({
             return;
         }
 
-        // Route to the secure enrollment flow with batch selection
-        router.push(`/enroll?course=${courseId}`);
+        // Route to the per-course enrollment page
+        router.push(`/enroll/${courseId}`);
     };
 
     return (
