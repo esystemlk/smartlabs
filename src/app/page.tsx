@@ -1,5 +1,6 @@
 'use client';
 import Link from "next/link";
+import Script from "next/script";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import React, { useState, useEffect } from "react";
 import Image from 'next/image';
@@ -69,7 +70,6 @@ import { scorePteWriteEssay } from '@/ai/flows/score-pte-writing-write-essay';
 import type { PteWriteEssayOutput } from '@/ai/flows/pte-writing.types';
 import { useToast } from "@/hooks/use-toast";
 import { useSiteStats } from "@/hooks/use-site-stats";
-import { useTestimonials } from "@/hooks/use-testimonials";
 import { logTestCompletion } from "@/lib/services/activity.service";
 import { EventPopup } from "@/components/events/event-popup";
 import { useHomepageCourses, useLearningMethods, useFeatures, useFAQs, useComparisons } from "@/hooks/use-homepage-content";
@@ -298,30 +298,6 @@ const features = [
   }
 ];
 
-const testimonials = [
-  {
-    name: 'Priya Sharma',
-    role: 'PTE Score: 85 | Sri Lanka',
-    content: 'Smart Labs transformed my preparation journey. The AI feedback and personalized study plan helped me achieve my target score in just 3 weeks!',
-    avatar: 'PS',
-    color: 'from-accent-1/80 to-accent-3/80',
-  },
-  {
-    name: 'Liam Smith',
-    role: 'IELTS Band: 8.5 | Australia',
-    content: 'The instructors are incredibly knowledgeable. Their strategies for the speaking section were game-changers. Highly recommended!',
-    avatar: 'LS',
-    color: 'from-accent-2/80 to-accent-4/80',
-  },
-  {
-    name: 'Nimali Perera',
-    role: 'CELPIP Score: 12 | Sri Lanka',
-    content: 'The self-paced CELPIP course was perfect for my schedule. The materials are comprehensive and the practice tests are very close to the real exam.',
-    avatar: 'NP',
-    color: 'from-primary/80 to-accent-2/80',
-  },
-];
-
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -344,7 +320,6 @@ export default function Home() {
 
   // Fetch real data from Firebase
   const { stats: siteStats } = useSiteStats();
-  const { testimonials: realTestimonials } = useTestimonials(3);
   const { courses: realCourses, loading: coursesLoading } = useHomepageCourses();
   const { methods: realMethods, loading: methodsLoading } = useLearningMethods();
   const { features: realFeatures, loading: featuresLoading } = useFeatures();
@@ -1706,48 +1681,13 @@ export default function Home() {
           </motion.div>
 
           <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
+            className="w-full"
           >
-            {(realTestimonials.length > 0 ? realTestimonials : testimonials).map((testimonial, index) => (
-              <motion.div
-                key={testimonial.name}
-                variants={itemVariants}
-                className="group"
-              >
-                <div className="glass-card rounded-2xl sm:rounded-3xl p-6 sm:p-8 h-full flex flex-col hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border border-border/50 hover:border-primary/30">
-                  {/* Stars */}
-                  <div className="flex items-center gap-1 text-accent-4 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
-                    ))}
-                  </div>
-
-                  {/* Content */}
-                  <p className="text-sm sm:text-base text-foreground mb-6 leading-relaxed flex-grow italic">
-                    "{testimonial.content}"
-                  </p>
-
-                  {/* Author */}
-                  <div className="flex items-center gap-3 sm:gap-4 mt-auto">
-                    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br ${testimonial.color} flex items-center justify-center text-white font-bold text-sm sm:text-base flex-shrink-0 shadow-lg`}>
-                      {testimonial.avatar}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="font-semibold text-sm sm:text-base text-foreground leading-tight">
-                        {testimonial.name}
-                      </div>
-                      <div className="text-xs sm:text-sm text-primary font-medium leading-tight">
-                        {testimonial.role}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+            <Script src="https://elfsightcdn.com/platform.js" strategy="lazyOnload" />
+            <div className="elfsight-app-ed94a5c0-fc6e-4053-b156-5d243e3c3aca" data-elfsight-app-lazy></div>
           </motion.div>
         </div>
       </section>
