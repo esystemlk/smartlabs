@@ -1,6 +1,6 @@
 'use server';
 
-import { ai } from '@/ai/genkit';
+import { getAi } from '@/ai/genkit';
 import {
     PteWriteEssayInputSchema,
     PteWriteEssayOutputSchema,
@@ -8,11 +8,13 @@ import {
     type PteWriteEssayOutput,
 } from './pte-writing.types';
 
-const pteWriteEssayScoringPrompt = ai.definePrompt({
-  name: 'pteWriteEssayScoringPrompt',
-  input: { schema: PteWriteEssayInputSchema },
-  output: { schema: PteWriteEssayOutputSchema },
-  prompt: (input) => `You are an expert PTE examiner AI. Your task is to score a "Write Essay" task.
+export const scorePteWriteEssayFlow = async (input: PteWriteEssayInput) => {
+  const ai = getAi();
+  const pteWriteEssayScoringPrompt = ai.definePrompt({
+    name: 'pteWriteEssayScoringPrompt',
+    input: { schema: PteWriteEssayInputSchema },
+    output: { schema: PteWriteEssayOutputSchema },
+    prompt: (input: any) => `You are an expert PTE examiner AI. Your task is to score a "Write Essay" task.
 
 The user was given the following topic:
 ---
@@ -33,22 +35,14 @@ Please evaluate the essay based on the following criteria:
 6.  **Spelling (0-2 points)**: Is the spelling correct?
 
 Calculate the scores for each criterion and sum them for the 'overallScore'. Provide specific, constructive 'feedback' explaining the scores for each category and giving overall suggestions for improvement.`,
-});
+  });
 
-const scorePteWriteEssayFlow = ai.defineFlow(
-  {
-    name: 'scorePteWriteEssayFlow',
-    inputSchema: PteWriteEssayInputSchema,
-    outputSchema: PteWriteEssayOutputSchema,
-  },
-  async (input) => {
-    const { output } = await pteWriteEssayScoringPrompt(input);
-    if (!output) {
-      throw new Error('AI failed to generate a score for the essay.');
-    }
-    return output;
+  const { output } = await pteWriteEssayScoringPrompt(input);
+  if (!output) {
+    throw new Error('AI failed to generate a score for the essay.');
   }
-);
+  return output;
+};
 
 export async function scorePteWriteEssay(
   input: PteWriteEssayInput
@@ -56,7 +50,7 @@ export async function scorePteWriteEssay(
   console.log('--- PTE WRITE ESSAY AI ACTION STARTED ---');
   try {
     const result = await scorePteWriteEssayFlow(input);
-    console.log('AI Scoring Result:', JSON.stringify(result, null, 2));
+    console.log('AI Scoring Result Success');
     return result;
   } catch (error: any) {
     console.error('PTE Write Essay AI Error:', error);

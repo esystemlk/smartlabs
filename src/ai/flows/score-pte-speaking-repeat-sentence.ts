@@ -1,6 +1,6 @@
 'use server';
 
-import { ai } from '@/ai/genkit';
+import { getAi } from '@/ai/genkit';
 import {
     PteRepeatSentenceInputSchema,
     PteRepeatSentenceOutputSchema,
@@ -8,16 +8,18 @@ import {
     type PteRepeatSentenceOutput,
 } from './pte-speaking.types';
 
-const pteRepeatSentenceScoringPrompt = ai.definePrompt({
-  name: 'pteRepeatSentenceScoringPrompt',
-  input: { schema: PteRepeatSentenceInputSchema },
-  output: { schema: PteRepeatSentenceOutputSchema },
-  prompt: (input) => [
-    {
-      role: 'user',
-      content: [
-        {
-          text: `You are an expert PTE examiner AI. Your task is to score a "Repeat Sentence" speaking task.
+export const scorePteRepeatSentenceFlow = async (input: PteRepeatSentenceInput) => {
+  const ai = getAi();
+  const pteRepeatSentenceScoringPrompt = ai.definePrompt({
+    name: 'pteRepeatSentenceScoringPrompt',
+    input: { schema: PteRepeatSentenceInputSchema },
+    output: { schema: PteRepeatSentenceOutputSchema },
+    prompt: (input: any) => [
+      {
+        role: 'user',
+        content: [
+          {
+            text: `You are an expert PTE examiner AI. Your task is to score a "Repeat Sentence" speaking task.
 
 The user was asked to repeat the following sentence:
 ---
@@ -32,31 +34,24 @@ You have been provided with an audio recording of the user repeating this senten
 5.  Calculate an 'overallScore' which is the average of the content, pronunciation, and fluency scores.
 6.  Provide specific, constructive 'feedback' explaining the scores. Pinpoint specific words that were mispronounced or where fluency was lost.
 `
-        },
-        {
-          media: {
-            url: input.audioDataUri
+          },
+          {
+            media: {
+              url: input.audioDataUri,
+              contentType: 'audio/webm'
+            }
           }
-        }
-      ]
-    }
-  ],
-});
+        ]
+      }
+    ],
+  });
 
-const scorePteRepeatSentenceFlow = ai.defineFlow(
-  {
-    name: 'scorePteRepeatSentenceFlow',
-    inputSchema: PteRepeatSentenceInputSchema,
-    outputSchema: PteRepeatSentenceOutputSchema,
-  },
-  async (input) => {
-    const { output } = await pteRepeatSentenceScoringPrompt(input);
-    if (!output) {
-      throw new Error('AI failed to generate a score for the speaking task.');
-    }
-    return output;
+  const { output } = await pteRepeatSentenceScoringPrompt(input);
+  if (!output) {
+    throw new Error('AI failed to generate a score for the speaking task.');
   }
-);
+  return output;
+};
 
 export async function scorePteRepeatSentence(
   input: PteRepeatSentenceInput
@@ -64,7 +59,7 @@ export async function scorePteRepeatSentence(
   console.log('--- PTE REPEAT SENTENCE AI ACTION STARTED ---');
   try {
     const result = await scorePteRepeatSentenceFlow(input);
-    console.log('AI Scoring Result:', JSON.stringify(result, null, 2));
+    console.log('AI Scoring Result Success');
     return result;
   } catch (error: any) {
     console.error('PTE Repeat Sentence AI Error:', error);

@@ -1,6 +1,6 @@
 'use server';
 
-import { ai } from '@/ai/genkit';
+import { getAi } from '@/ai/genkit';
 import { z } from "zod";
 import { LMS_URL } from "@/lib/constants";
 
@@ -71,12 +71,16 @@ const EXAM_KNOWLEDGE = `
   - **Writing**: Tone is key (Formal vs Informal email).
 `;
 
-// Define the prompt with structured output
-const smartLabsChatPrompt = ai.definePrompt({
-    name: 'smartLabsChatPrompt',
-    input: { schema: SmartLabsChatInputSchema },
-    output: { schema: SmartLabsChatOutputSchema },
-    prompt: `You are a helpful AI assistant for Smart Labs, an education institute specializing in English language test preparation.
+// Export the chat function
+// Export the chat function with robust fallback
+export async function chatWithSmartLabs(input: SmartLabsChatInput): Promise<SmartLabsChatOutput> {
+    const ai = getAi();
+
+    const smartLabsChatPrompt = ai.definePrompt({
+        name: 'smartLabsChatPrompt',
+        input: { schema: SmartLabsChatInputSchema },
+        output: { schema: SmartLabsChatOutputSchema },
+        prompt: `You are a helpful AI assistant for Smart Labs, an education institute specializing in English language test preparation.
 
 ## CURRENT MODE: {{mode}}
 Current focus: {{mode}} exam preparation. Adjust your expertise accordingly.
@@ -112,11 +116,8 @@ Return a JSON object with:
 - "response": Your helpful response. Use Markdown for formatting (bold, lists).
 - "suggestedActions": An array of 1-3 objects: { "label": string, "url"?: string, "intent"?: string }. Prefer internal links for known pages: "/courses", "/resources", "/enroll", "/apps", "/videos", "/dashboard".
 - "context": A single word describing the conversation context (e.g., "courses", "pricing", "enrollment", "support", "general", "pte", "ielts", "celpip").`,
-});
+    });
 
-// Export the chat function
-// Export the chat function with robust fallback
-export async function chatWithSmartLabs(input: SmartLabsChatInput): Promise<SmartLabsChatOutput> {
     try {
         const { output } = await smartLabsChatPrompt(input);
         if (!output) {

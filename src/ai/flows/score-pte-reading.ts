@@ -1,15 +1,15 @@
 'use server';
 
-import { ai } from '@/ai/genkit';
+import { getAi } from '@/ai/genkit';
 import { PteReadingTestInputSchema, PteReadingTestOutputSchema, type PteReadingTestInput, type PteReadingTestOutput } from './pte-reading.types';
 
-
-// Define the AI prompt for scoring
-const pteReadingScoringPrompt = ai.definePrompt({
-  name: 'pteReadingScoringPrompt',
-  input: { schema: PteReadingTestInputSchema },
-  output: { schema: PteReadingTestOutputSchema },
-  prompt: (input) => `You are an expert PTE (Pearson Test of English) examiner. Your task is to score a multiple-choice reading test.
+export const scorePteReadingFlow = async (testData: PteReadingTestInput) => {
+  const ai = getAi();
+  const pteReadingScoringPrompt = ai.definePrompt({
+    name: 'pteReadingScoringPrompt',
+    input: { schema: PteReadingTestInputSchema },
+    output: { schema: PteReadingTestOutputSchema },
+    prompt: (input: any) => `You are an expert PTE (Pearson Test of English) examiner. Your task is to score a multiple-choice reading test.
 
 For each question provided in the input, you must:
 1.  Compare the 'userAnswer' to the 'correctAnswer'.
@@ -21,23 +21,14 @@ For each question provided in the input, you must:
 Here is the test data:
 ${JSON.stringify(input.questions, null, 2)}
 `,
-});
+  });
 
-// Define the Genkit flow for scoring
-const scorePteReadingFlow = ai.defineFlow(
-  {
-    name: 'scorePteReadingFlow',
-    inputSchema: PteReadingTestInputSchema,
-    outputSchema: PteReadingTestOutputSchema,
-  },
-  async (testData) => {
-    const { output } = await pteReadingScoringPrompt(testData);
-    if (!output) {
-        throw new Error('AI failed to generate a score.');
-    }
-    return output;
+  const { output } = await pteReadingScoringPrompt(testData);
+  if (!output) {
+      throw new Error('AI failed to generate a score.');
   }
-);
+  return output;
+};
 
 // Export a wrapper function to be used as a server action
 export async function scorePteReadingTest(
@@ -46,7 +37,7 @@ export async function scorePteReadingTest(
   console.log('--- PTE READING AI ACTION STARTED ---');
   try {
     const result = await scorePteReadingFlow(input);
-    console.log('AI Scoring Result:', JSON.stringify(result, null, 2));
+    console.log('AI Scoring Result Success');
     return result;
   } catch (error: any) {
     console.error('PTE Reading AI Error:', error);

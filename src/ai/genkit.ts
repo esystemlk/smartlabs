@@ -1,21 +1,41 @@
 import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
 
-// Safely get API key, avoiding crashes if it's missing during SSR
+// Safely get API key
 const getApiKey = () => {
   const key = process.env.GOOGLE_GENAI_API_KEY;
   if (!key && typeof window === 'undefined') {
-    console.warn("WARNING: GOOGLE_GENAI_API_KEY is not defined in environment variables. AI features will fail.");
+    console.warn("WARNING: GOOGLE_GENAI_API_KEY is not defined. AI features will fail.");
   }
-  return key;
+  return key || "missing-api-key";
 };
 
-export const ai = genkit({
-  plugins: [
-    googleAI({
-      apiKey: getApiKey(),
-    }),
-  ],
-  // Use string identifier for the model for maximum compatibility
-  model: 'googleai/gemini-1.5-flash',
+// Singleton to prevent module-level crashes
+let aiInstance: any = null;
+
+export const getAi = () => {
+  if (!aiInstance) {
+    try {
+      aiInstance = genkit({
+        plugins: [
+          googleAI({
+            apiKey: getApiKey(),
+          }),
+        ],
+        // Updated to Gemini 2.0 Flash for superior performance
+        model: 'googleai/gemini-2.0-flash',
+      });
+    } catch (error) {
+      console.error('Failed to initialize Genkit:', error);
+      throw new Error('AI Engine initialization failed. Please check your GOOGLE_GENAI_API_KEY.');
+    }
+  }
+  return aiInstance;
+};
+
+// For backward compatibility while refactoring
+export const ai = new Proxy({} as any, {
+  get: (target, prop) => {
+    return (getAi() as any)[prop];
+  }
 });

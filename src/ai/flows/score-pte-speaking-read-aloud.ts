@@ -1,6 +1,6 @@
 'use server';
 
-import { ai } from '@/ai/genkit';
+import { getAi } from '@/ai/genkit';
 import {
     PteReadAloudInputSchema,
     PteReadAloudOutputSchema,
@@ -8,16 +8,18 @@ import {
     type PteReadAloudOutput,
 } from './pte-speaking.types';
 
-const pteReadAloudScoringPrompt = ai.definePrompt({
-  name: 'pteReadAloudScoringPrompt',
-  input: { schema: PteReadAloudInputSchema },
-  output: { schema: PteReadAloudOutputSchema },
-  prompt: (input) => [
-    {
-      role: 'user',
-      content: [
-        {
-          text: `You are an expert PTE examiner AI. Your task is to score a "Read Aloud" speaking task.
+export const scorePteReadAloudFlow = async (input: PteReadAloudInput) => {
+  const ai = getAi();
+  const pteReadAloudScoringPrompt = ai.definePrompt({
+    name: 'pteReadAloudScoringPrompt',
+    input: { schema: PteReadAloudInputSchema },
+    output: { schema: PteReadAloudOutputSchema },
+    prompt: (input: any) => [
+      {
+        role: 'user',
+        content: [
+          {
+            text: `You are an expert PTE examiner AI. Your task is to score a "Read Aloud" speaking task.
 
 The user was given the following text to read:
 ---
@@ -32,32 +34,24 @@ You have been provided with an audio recording of the user reading this text. Yo
 5.  Calculate an 'overallScore' which is the average of the content, pronunciation, and fluency scores.
 6.  Provide specific, constructive 'feedback' explaining the scores. Pinpoint specific words that were mispronounced or where fluency was lost.
 `
-        },
-        {
-           media: {
-             url: input.audioDataUri,
-             contentType: 'audio/webm'
-           }
-         }
-      ]
-    }
-  ],
-});
+          },
+          {
+            media: {
+              url: input.audioDataUri,
+              contentType: 'audio/webm'
+            }
+          }
+        ]
+      }
+    ],
+  });
 
-const scorePteReadAloudFlow = ai.defineFlow(
-  {
-    name: 'scorePteReadAloudFlow',
-    inputSchema: PteReadAloudInputSchema,
-    outputSchema: PteReadAloudOutputSchema,
-  },
-  async (input) => {
-    const { output } = await pteReadAloudScoringPrompt(input);
-    if (!output) {
-      throw new Error('AI failed to generate a score for the speaking task.');
-    }
-    return output;
+  const { output } = await pteReadAloudScoringPrompt(input);
+  if (!output) {
+    throw new Error('AI failed to generate a score for the speaking task.');
   }
-);
+  return output;
+};
 
 export async function scorePteReadAloud(
   input: PteReadAloudInput
@@ -65,14 +59,10 @@ export async function scorePteReadAloud(
   console.log('--- PTE READ ALOUD AI ACTION STARTED ---');
   try {
     const result = await scorePteReadAloudFlow(input);
-    console.log('AI Scoring Result:', JSON.stringify(result, null, 2));
+    console.log('AI Scoring Result Success');
     return result;
   } catch (error: any) {
     console.error('PTE Read Aloud AI Error:', error);
-    // Log detailed error information for Genkit/Gemini
-    if (error.response) {
-      console.error('Genkit Response Error:', JSON.stringify(error.response, null, 2));
-    }
     throw new Error(`AI Scoring Matrix Synchronisation Failed: ${error.message || 'Unknown error'}`);
   }
 }
