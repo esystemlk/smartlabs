@@ -73,5 +73,15 @@ export function usePerformanceData(userId: string | undefined) {
         });
     }
 
-    return { results, radarData, trendData, loading, error };
+    // Calculate overall progress
+    const overallProgress = useMemo(() => {
+        if (results.length === 0) {
+            return 0;
+        }
+        const totalScore = results.reduce((sum, r) => sum + r.score, 0);
+        const totalMaxScore = results.reduce((sum, r) => sum + r.maxScore, 0);
+        return totalMaxScore > 0 ? Math.round((totalScore / totalMaxScore) * 100) : 0;
+    }, [results]);
+
+    return { results, radarData, trendData, loading, error, overallProgress };
 }

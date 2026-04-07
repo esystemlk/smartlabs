@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, LayoutDashboard, LogOut, Target, Globe, Zap, Sparkles, Book, Video, Phone, ArrowRight, Search } from "lucide-react";
+import { Menu, X, ChevronDown, LayoutDashboard, LogOut, Target, Globe, Zap, Sparkles, Book, Video, Phone, ArrowRight, Search, Robot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth } from "@/firebase";
@@ -71,6 +71,8 @@ const featured = [
 ];
 
 const navLinks = [
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "AI Tutor", href: "/dashboard/ai-tutor", icon: Robot },
   { name: "LMS Portal", href: LMS_URL, external: true },
   { name: "Windows App", href: "/download/windows" },
   { name: "Level Test", href: "/level-test", highlight: true },
@@ -88,7 +90,6 @@ export default function Header() {
   const [notifsOpen, setNotifsOpen] = useState(false);
   const { notifications, loading: notifsLoading } = useNotifications();
 
-  const [announcementDismissed, setAnnouncementDismissed] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   const pathname = usePathname();
@@ -139,30 +140,6 @@ export default function Header() {
         isDesktopClient ? "top-8" : "top-0"
       )}
     >
-      {/* Announcement Bar */}
-      <AnimatePresence>
-        {!announcementDismissed && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="hidden sm:block relative bg-gradient-to-r from-primary to-accent-3 py-2 overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-grid-white/[0.1] -z-10" />
-            <div className="mx-auto max-w-7xl px-4 flex items-center justify-center gap-4 text-[10px] sm:text-xs">
-              <Badge variant="outline" className="bg-white/10 border-white/20 text-white font-black uppercase py-0 px-2 h-5 rounded-md animate-pulse">Flash Deal</Badge>
-              <p className="font-bold text-white tracking-wide">Get <span className="underline decoration-white/50 underline-offset-4 decoration-2">20% OFF</span> all PTE Mock Test bundles this weekend. Use code: <span className="font-black text-white/90">LUCKY2026</span></p>
-              <button
-                onClick={() => setAnnouncementDismissed(true)}
-                className="absolute right-4 p-1 rounded-md hover:bg-white/20 transition-colors"
-              >
-                <X className="h-3 w-3 text-white" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}

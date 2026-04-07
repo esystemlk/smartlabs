@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirebase, useCollection, useMemoFirebase } from '@/firebase';
+import { useUserActivity } from '@/hooks/use-user-activity';
 import { doc, getDoc, collection } from 'firebase/firestore';
 import {
     Card,
@@ -69,6 +70,7 @@ export default function DashboardPage() {
         [firestore, user]
     );
     const { data: enrollments, isLoading: enrollmentsLoading } = useCollection(enrollmentsQuery);
+    const { activities: userActivities, loading: userActivitiesLoading } = useUserActivity(user?.uid);
 
     const activeEnrollments = useMemo(() => {
         return enrollments?.filter(e => e.enrollmentStatus === 'active') || [];
@@ -77,6 +79,46 @@ export default function DashboardPage() {
     const pendingEnrollments = useMemo(() => {
         return enrollments?.filter(e => e.enrollmentStatus === 'pending') || [];
     }, [enrollments]);
+
+    const calculateStudyStreak = (activities: any[]) => {
+        if (!activities || activities.length === 0) {
+            return 0;
+        }
+
+        // Sort activities by timestamp in descending order
+        const sortedActivities = [...activities].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+        let streak = 0;
+        let lastActivityDate: Date | null = null;
+
+        for (const activity of sortedActivities) {
+            const currentActivityDate = new Date(activity.timestamp);
+            currentActivityDate.setHours(0, 0, 0, 0); // Normalize to start of day
+
+            if (!lastActivityDate) {
+                // First activity, start streak
+                streak = 1;
+            } else {
+                const diffTime = Math.abs(currentActivityDate.getTime() - lastActivityDate.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 1) {
+                    // Consecutive day
+                    streak++;
+                } else if (diffDays > 1) {
+                    // Gap in activity, streak broken
+                    break;
+                }
+                // If diffDays is 0, it's multiple activities on the same day, continue current streak
+            }
+            lastActivityDate = currentActivityDate;
+        }
+        return streak;
+    };
+
+    const studyStreak = useMemo(() => {
+        return calculateStudyStreak(userActivities);
+    }, [userActivities]);
 
     useEffect(() => {
         if (!isUserLoading && !user) {
@@ -97,7 +139,7 @@ export default function DashboardPage() {
         }
     }, [user, isUserLoading, router, firestore]);
 
-    const isLoading = isUserLoading || enrollmentsLoading || !userRole;
+    const isLoading = isUserLoading || enrollmentsLoading || !userRole || userActivitiesLoading;
 
     if (isLoading) {
         return (
@@ -148,10 +190,10 @@ export default function DashboardPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="glass-card bg-white/10 border-white/20 p-4 rounded-3xl min-w-[140px] text-center">
                                 <div className="text-2xl font-black">740</div>
-                                <div className="text-[10px] font-bold uppercase opacity-60">Mock Credits</div>
+                                <div className="text-[10px] font-bold uppercase opacity-60">Real Credits</div>
                             </div>
                             <div className="glass-card bg-white/10 border-white/20 p-4 rounded-3xl min-w-[140px] text-center">
-                                <div className="text-2xl font-black">Day 12</div>
+                                <div className="text-2xl font-black">{studyStreak}</div>
                                 <div className="text-[10px] font-bold uppercase opacity-60">Study Streak</div>
                             </div>
                         </div>
@@ -164,7 +206,7 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
                 {/* Advanced Analytics */}
-                <PerformanceOverview />
+                <PerformanceOverview overallProgress={overallProgress} />
 
                 {/* Recent Activity */}
                 <RecentActivity />

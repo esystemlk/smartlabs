@@ -22,50 +22,26 @@ import { motion } from 'framer-motion';
 import { SpotlightCard } from '@/components/ui/spotlight-card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-
-const tutorCourses = [
-    {
-        id: 'pte',
-        name: 'PTE Academic',
-        tutor: 'AI Alpha',
-        specialization: 'Advanced Speaking & Exam Strategy',
-        students: '12.4k',
-        rating: '4.9/5',
-        color: 'text-accent-1',
-        bg: 'bg-accent-1/10',
-        border: 'border-accent-1/20',
-        description: 'Expert AI coaching focused on mastering the PTE scoring patterns for a perfect 90/90.',
-        stats: { pass: '98%', speed: '24ms' }
-    },
-    {
-        id: 'ielts',
-        name: 'IELTS Mastery',
-        tutor: 'IELTS Sage',
-        specialization: 'Band 9 Writing & Structural Flow',
-        students: '8.2k',
-        rating: '4.8/5',
-        color: 'text-accent-2',
-        bg: 'bg-accent-2/10',
-        border: 'border-accent-2/20',
-        description: 'Strategic Band 9.0 coaching for Academic and General Training with advanced language structures.',
-        stats: { pass: '96%', speed: '30ms' }
-    },
-    {
-        id: 'celpip',
-        name: 'CELPIP Elite',
-        tutor: 'CELPIP Pro',
-        specialization: 'Functional Language Practice',
-        students: '5.1k',
-        rating: '4.9/5',
-        color: 'text-accent-3',
-        bg: 'bg-accent-3/10',
-        border: 'border-accent-3/20',
-        description: 'Practical English mastery for Canadian immigration using real-life situational training.',
-        stats: { pass: '99%', speed: '18ms' }
-    }
-];
+import { useAiTutorCourses } from '@/hooks/use-ai-tutor-courses';
 
 export default function AITutorLanding() {
+    const { courses: tutorCourses, loading, error } = useAiTutorCourses();
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <p className="text-lg text-muted-foreground">Loading AI Tutor courses...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <p className="text-lg text-red-500">Error: {error}</p>
+            </div>
+        );
+    }
     return (
         <div className="min-h-screen bg-background relative overflow-hidden">
             {/* Animated Background Orbs */}
@@ -175,7 +151,7 @@ export default function AITutorLanding() {
                             <Users className="h-8 w-8 text-primary" /> Global <span className="text-primary underline">Faculty Matrix</span>
                         </h2>
                         <Badge variant="outline" className="rounded-full px-4 py-1.5 border-primary/20 font-black text-[10px] tracking-widest uppercase">
-                            3 Active Neural Nodes
+                            {tutorCourses.length} Active Neural Nodes
                         </Badge>
                     </div>
 

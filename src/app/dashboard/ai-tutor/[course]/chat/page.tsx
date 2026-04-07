@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
     Bot,
     Send,
@@ -44,24 +44,9 @@ import { Progress } from '@/components/ui/progress';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { Markdown } from '@/components/ui/markdown';
+import { useAiTutorGuides } from '@/hooks/use-ai-tutor-guides';
+import { useAiTutorPerformance } from '@/hooks/use-ai-tutor-performance';
 
-const guides = {
-    pte: [
-        { step: 1, title: 'Fluency Over Content', content: 'In PTE Speaking, the algorithm prioritizes steady oral fluency. Avoid hesitations, even if you mispronounce a word.' },
-        { step: 2, title: 'Master the Templates', content: 'Use proven templates for Describe Image and Retell Lecture to ensure you hit all keyword markers for a 90 score.' },
-        { step: 3, title: 'Keyword Mapping', content: 'In SST and Written Text, the AI looks for specific word chains. We will practice identifying these in the lecture audio.' }
-    ],
-    ielts: [
-        { step: 1, title: 'Complexity is Key', content: 'For Band 7+, you MUST use complex sentence structures (subordinate clauses) and high-level cohesive devices.' },
-        { step: 2, title: 'Task Response', content: 'Always address all parts of the prompt in Task 2. Missing even one minor point drops you to Band 5 for Task Response.' },
-        { step: 3, title: 'Paraphrasing', content: 'Never copy words from the prompt. Paraphrase everything using academic synonyms.' }
-    ],
-    celpip: [
-        { step: 1, title: 'Practical English', content: 'CELPIP tests everyday life in Canada. Use natural, conversational tones in the speaking section.' },
-        { step: 2, title: 'Visual Accuracy', content: 'In Part 3 of Speaking, describe the location, relative positions, and actions of everyone in the picture.' },
-        { step: 3, title: 'Mail Protocol', content: 'For Task 1 Writing, ensure you follow formal or semi-formal opening and closing protocols based on the recipient.' }
-    ]
-};
 
 const tutorPersona = {
     pte: { name: 'AI Alpha', color: 'text-accent-1', bg: 'bg-accent-1/10', border: 'border-accent-1/20', accent: 'accent-1' },
@@ -75,18 +60,13 @@ export default function AITutorClassroom() {
     const { toast } = useToast();
     const courseId = params.course as string;
     const persona = (tutorPersona as any)[courseId] || tutorPersona.pte;
-    const guideSteps = (guides as any)[courseId] || guides.pte;
+
+    const { guides: guideSteps, loading: guidesLoading, error: guidesError } = useAiTutorGuides(courseId);
+    const { performanceData, setPerformanceData, loading: performanceLoading, error: performanceError, savePerformance } = useAiTutorPerformance(courseId);
 
     const [messages, setMessages] = useState<any[]>([
         { role: 'assistant', content: `Hello! I am ${persona.name}, your expert ${courseId.toUpperCase()} examiner. I'm here to help you achieve a perfect score (Band 9 / PTE 90). How shall we begin your practice session?` }
     ]);
-    const [performanceData, setPerformanceData] = useState({
-        speaking: 85,
-        writing: 78,
-        vocabulary: 82,
-        grammar: 75,
-        volatility: [45, 67, 43, 89, 56, 78, 92, 45, 66, 88]
-    });
     const [savedInsights, setSavedInsights] = useState<any[]>([]);
 
     const [input, setInput] = useState('');
@@ -127,21 +107,15 @@ export default function AITutorClassroom() {
 
     useEffect(() => {
         const savedMessages = localStorage.getItem(`chat_messages_${courseId}`);
-        const savedPerf = localStorage.getItem(`perf_data_${courseId}`);
         const savedVault = localStorage.getItem(`vault_${courseId}`);
 
         if (savedMessages) setMessages(JSON.parse(savedMessages));
-        if (savedPerf) setPerformanceData(JSON.parse(savedPerf));
         if (savedVault) setSavedInsights(JSON.parse(savedVault));
     }, [courseId]);
 
     useEffect(() => {
         localStorage.setItem(`chat_messages_${courseId}`, JSON.stringify(messages));
     }, [messages, courseId]);
-
-    useEffect(() => {
-        localStorage.setItem(`perf_data_${courseId}`, JSON.stringify(performanceData));
-    }, [performanceData, courseId]);
 
     useEffect(() => {
         localStorage.setItem(`vault_${courseId}`, JSON.stringify(savedInsights));
@@ -153,21 +127,23 @@ export default function AITutorClassroom() {
         }
     }, [messages, isTyping, activeTab]);
 
-    const updatePerformanceFromResponse = (response: string) => {
+    const updatePerformanceFromResponse = useCallback((response: string) => {
         const scoreMatch = response.match(/\[!SCORE_RESULT\][\s\S]*?\*\*Total Score\*\*:\s*(\d+)/i);
         if (scoreMatch) {
             const total = parseInt(scoreMatch[1]);
-            setPerformanceData(prev => ({
-                ...prev,
-                speaking: Math.min(prev.speaking + 2, 98),
-                volatility: [...prev.volatility.slice(1), total]
-            }));
+            const updatedPerformance = {
+                ...performanceData,
+                speaking: Math.min(performanceData.speaking + 2, 98),
+                volatility: [...performanceData.volatility.slice(1), total]
+            };
+            setPerformanceData(updatedPerformance);
+            savePerformance(updatedPerformance);
             toast({
                 title: "Progress Updated",
                 description: `New score recorded: ${total}%`,
             });
         }
-    };
+    }, [performanceData, setPerformanceData, savePerformance, toast]);
 
     const handleSend = async (customText?: string) => {
         const text = customText || input;
@@ -238,52 +214,77 @@ export default function AITutorClassroom() {
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
-    const LearningGuideContent = () => (
-        <div className="flex flex-col h-full bg-background mt-4">
-            <div className="flex-grow overflow-y-auto space-y-4 pr-2 custom-scrollbar">
-                {guideSteps.map((step: any, i: number) => (
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                        key={i}
-                        className="p-5 rounded-[1.5rem] bg-card border-2 border-border/50 hover:border-primary/50 transition-all group cursor-default"
-                    >
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center font-black text-[10px] text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                                {i + 1}
+    const LearningGuideContent = () => {
+        if (guidesLoading) {
+            return <div className="text-center text-muted-foreground">Loading study guide...</div>;
+        }
+        if (guidesError) {
+            return <div className="text-center text-red-500">Error loading guide.</div>;
+        }
+        return (
+            <div className="flex flex-col h-full bg-background mt-4">
+                <div className="flex-grow overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+                    {guideSteps.map((step: any, i: number) => (
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.1 }}
+                            key={i}
+                            className="p-5 rounded-[1.5rem] bg-card border-2 border-border/50 hover:border-primary/50 transition-all group cursor-default"
+                        >
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center font-black text-[10px] text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                                    {i + 1}
+                                </div>
+                                <h4 className="font-black text-xs uppercase tracking-widest">{step.title}</h4>
                             </div>
-                            <h4 className="font-black text-xs uppercase tracking-widest">{step.title}</h4>
-                        </div>
-                        <p className="text-[11px] leading-relaxed font-medium text-muted-foreground italic">
-                            "{step.content}"
-                        </p>
-                    </motion.div>
-                ))}
+                            <p className="text-[11px] leading-relaxed font-medium text-muted-foreground italic">
+                                "{step.content}"
+                            </p>
+                        </motion.div>
+                    ))}
 
-                <div className="mt-8 p-6 rounded-[2rem] bg-primary text-white space-y-4 shadow-xl shadow-primary/20 overflow-hidden relative group">
-                    <div className="absolute -right-4 -top-4 opacity-10 group-hover:scale-110 transition-transform duration-700">
-                        <Zap className="h-24 w-24 fill-white" />
-                    </div>
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Target className="h-4 w-4" />
-                            <h4 className="font-black italic text-sm">Exam Focus</h4>
+                    <div className="mt-8 p-6 rounded-[2rem] bg-primary text-white space-y-4 shadow-xl shadow-primary/20 overflow-hidden relative group">
+                        <div className="absolute -right-4 -top-4 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                            <Zap className="h-24 w-24 fill-white" />
                         </div>
-                        <p className="text-[10px] font-bold opacity-80 leading-relaxed uppercase tracking-widest mb-4">
-                            Smart analysis suggests a potential 12% score increase by improving your pronunciation today.
-                        </p>
-                        <Button variant="secondary" size="sm" className="w-full rounded-xl font-black text-[10px] h-10 tracking-widest hover:scale-105 active:scale-95 transition-all mb-3 bg-white text-primary" onClick={() => handleSend("START MOCK TEST")}>
-                            START FULL MOCK TEST
-                        </Button>
-                        <Button variant="outline" size="sm" className="w-full rounded-xl font-black text-[10px] h-10 tracking-widest hover:scale-105 active:scale-95 transition-all bg-transparent text-white border-white/20 hover:bg-white/10" onClick={() => handleSend("Give me a quick practice question")}>
-                            QUICK PRACTICE
-                        </Button>
+                        <div className="relative z-10">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Target className="h-4 w-4" />
+                                <h4 className="font-black italic text-sm">Exam Focus</h4>
+                            </div>
+                            <p className="text-[10px] font-bold opacity-80 leading-relaxed uppercase tracking-widest mb-4">
+                                Smart analysis suggests a potential 12% score increase by improving your pronunciation today.
+                            </p>
+                            <Button variant="secondary" size="sm" className="w-full rounded-xl font-black text-[10px] h-10 tracking-widest hover:scale-105 active:scale-95 transition-all mb-3 bg-white text-primary" onClick={() => handleSend("START MOCK TEST")}>
+                                START FULL MOCK TEST
+                            </Button>
+                            <Button variant="outline" size="sm" className="w-full rounded-xl font-black text-[10px] h-10 tracking-widest hover:scale-105 active:scale-95 transition-all bg-transparent text-white border-white/20 hover:bg-white/10" onClick={() => handleSend("Give me a quick practice question")}>
+                                QUICK PRACTICE
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    );
+        );
+    };
+
+    if (guidesLoading || performanceLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="ml-3 text-lg text-muted-foreground">Loading AI Tutor session...</p>
+            </div>
+        );
+    }
+
+    if (guidesError || performanceError) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <p className="text-lg text-red-500">Error: {guidesError || performanceError}</p>
+            </div>
+        );
+    }
 
     return (
         <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-background">

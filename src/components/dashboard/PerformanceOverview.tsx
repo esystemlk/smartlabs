@@ -22,7 +22,7 @@ import { motion } from 'framer-motion';
 import { useUser } from '@/firebase';
 import { usePerformanceData } from '@/hooks/use-performance-data';
 
-export function PerformanceOverview() {
+export function PerformanceOverview({ overallProgress }: { overallProgress: number }) {
     const { user } = useUser();
     const { radarData, trendData, loading } = usePerformanceData(user?.uid);
 
@@ -88,8 +88,17 @@ export function PerformanceOverview() {
                                             Key Strengths
                                         </h4>
                                         <div className="flex flex-wrap gap-2">
-                                            <span className="px-3 py-1 bg-accent-2/10 text-accent-2 rounded-full text-xs font-bold border border-accent-2/20">Active Listening</span>
-                                            <span className="px-3 py-1 bg-accent-1/10 text-accent-1 rounded-full text-xs font-bold border border-accent-1/20">Vocabulary Range</span>
+                                            {radarData
+                                                .filter(item => item.A >= 70) // Example: consider scores 70+ as strengths
+                                                .sort((a, b) => b.A - a.A)
+                                                .map((item, index) => (
+                                                    <span key={index} className="px-3 py-1 bg-accent-2/10 text-accent-2 rounded-full text-xs font-bold border border-accent-2/20">
+                                                        {item.subject} ({item.A})
+                                                    </span>
+                                                ))}
+                                            {radarData.filter(item => item.A >= 70).length === 0 && (
+                                                <span className="text-sm text-muted-foreground italic">No clear strengths identified yet.</span>
+                                            )}
                                         </div>
                                     </div>
 
@@ -98,21 +107,30 @@ export function PerformanceOverview() {
                                             <Zap className="h-4 w-4 text-accent-4" />
                                             Growth areas
                                         </h4>
-                                        <p className="text-sm text-muted-foreground">
-                                            Focus on <span className="text-foreground font-bold italic">Complex Sentence Structures</span> and
-                                            <span className="text-foreground font-bold italic"> Phonetic Fluency</span> to reach your target score of 79+.
-                                        </p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {radarData
+                                                .filter(item => item.A < 60) // Example: consider scores < 60 as growth areas
+                                                .sort((a, b) => a.A - b.A)
+                                                .map((item, index) => (
+                                                    <span key={index} className="px-3 py-1 bg-red-500/10 text-red-500 rounded-full text-xs font-bold border border-red-500/20">
+                                                        {item.subject} ({item.A})
+                                                    </span>
+                                                ))}
+                                            {radarData.filter(item => item.A < 60).length === 0 && (
+                                                <span className="text-sm text-muted-foreground italic">No specific growth areas identified. Keep practicing!</span>
+                                            )}
+                                        </div>
                                     </div>
 
                                     <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
                                         <div className="flex justify-between items-center mb-1">
                                             <span className="text-xs font-bold uppercase text-primary/70">Overall Progress</span>
-                                            <span className="text-sm font-black">76%</span>
+                                            <span className="text-sm font-black">{overallProgress}%</span>
                                         </div>
                                         <div className="h-2 w-full bg-primary/10 rounded-full overflow-hidden">
                                             <motion.div
                                                 initial={{ width: 0 }}
-                                                animate={{ width: '76%' }}
+                                                animate={{ width: `${overallProgress}%` }}
                                                 transition={{ duration: 1.5, ease: "easeOut" }}
                                                 className="h-full bg-primary"
                                             />
