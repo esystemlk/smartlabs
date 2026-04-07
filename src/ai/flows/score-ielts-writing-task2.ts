@@ -1,6 +1,6 @@
 'use server';
 
-import { ai } from '@/ai/genkit';
+import { getAi } from '@/ai/genkit';
 import {
   IeltsWritingTask2InputSchema,
   IeltsWritingTask2OutputSchema,
@@ -8,18 +8,20 @@ import {
   type IeltsWritingTask2Output,
 } from './ielts-writing.types';
 
-const ieltsScoringPrompt = ai.definePrompt({
-  name: 'ieltsWritingTask2ScoringPrompt',
-  input: { schema: IeltsWritingTask2InputSchema },
-  output: { schema: IeltsWritingTask2OutputSchema },
-  prompt: `You are an expert IELTS examiner. Your task is to score a Writing Task 2 essay based on the official IELTS band descriptors.
+export const scoreIeltsWritingTask2Flow = async (input: IeltsWritingTask2Input) => {
+  const ai = getAi();
+  const ieltsScoringPrompt = ai.definePrompt({
+    name: 'ieltsWritingTask2ScoringPrompt',
+    input: { schema: IeltsWritingTask2InputSchema },
+    output: { schema: IeltsWritingTask2OutputSchema },
+    prompt: (input: any) => `You are an expert IELTS examiner. Your task is to score a Writing Task 2 essay based on the official IELTS band descriptors.
 
 The user has submitted an essay on the following topic:
-TOPIC: {{{topic}}}
+TOPIC: ${input.topic}
 
 Here is the user's essay:
 ---
-{{{essay}}}
+${input.essay}
 ---
 
 Please evaluate the essay based on the four IELTS assessment criteria:
@@ -34,25 +36,25 @@ After evaluating each criterion, calculate the 'overallBandScore'. This should b
 
 Finally, provide a 'generalFeedback' paragraph summarizing the essay's main strengths and the most important areas for improvement.
 `,
-});
+  });
 
-const scoreIeltsWritingTask2Flow = ai.defineFlow(
-  {
-    name: 'scoreIeltsWritingTask2Flow',
-    inputSchema: IeltsWritingTask2InputSchema,
-    outputSchema: IeltsWritingTask2OutputSchema,
-  },
-  async (input) => {
-    const { output } = await ieltsScoringPrompt(input);
-    if (!output) {
-      throw new Error('AI failed to generate a score for the essay.');
-    }
-    return output;
+  const { output } = await ieltsScoringPrompt(input);
+  if (!output) {
+    throw new Error('AI failed to generate a score for the essay.');
   }
-);
+  return output;
+};
 
 export async function scoreIeltsWritingTask2(
   input: IeltsWritingTask2Input
 ): Promise<IeltsWritingTask2Output> {
-  return await scoreIeltsWritingTask2Flow(input);
+  console.log('--- IELTS WRITING TASK 2 AI ACTION STARTED ---');
+  try {
+    const result = await scoreIeltsWritingTask2Flow(input);
+    console.log('AI Scoring Result Success');
+    return result;
+  } catch (error: any) {
+    console.error('IELTS Writing Task 2 AI Error:', error);
+    throw new Error(`AI Scoring Matrix Synchronisation Failed: ${error.message || 'Unknown error'}`);
+  }
 }

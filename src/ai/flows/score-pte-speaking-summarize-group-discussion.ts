@@ -1,6 +1,6 @@
 'use server';
 
-import { ai } from '@/ai/genkit';
+import { getAi } from '@/ai/genkit';
 import {
     PteSummarizeGroupDiscussionInputSchema,
     PteSummarizeGroupDiscussionOutputSchema,
@@ -8,15 +8,22 @@ import {
     type PteSummarizeGroupDiscussionOutput,
 } from './pte-speaking.types';
 
-const pteSummarizeGroupDiscussionScoringPrompt = ai.definePrompt({
-  name: 'pteSummarizeGroupDiscussionScoringPrompt',
-  input: { schema: PteSummarizeGroupDiscussionInputSchema },
-  output: { schema: PteSummarizeGroupDiscussionOutputSchema },
-  prompt: `You are an expert PTE examiner AI. Your task is to score a "Summarize Group Discussion" speaking task.
+export const scorePteSummarizeGroupDiscussionFlow = async (input: PteSummarizeGroupDiscussionInput) => {
+  const ai = getAi();
+  const pteSummarizeGroupDiscussionScoringPrompt = ai.definePrompt({
+    name: 'pteSummarizeGroupDiscussionScoringPrompt',
+    input: { schema: PteSummarizeGroupDiscussionInputSchema },
+    output: { schema: PteSummarizeGroupDiscussionOutputSchema },
+    prompt: (input: any) => [
+      {
+        role: 'user',
+        content: [
+          {
+            text: `You are an expert PTE examiner AI. Your task is to score a "Summarize Group Discussion" speaking task.
 
 The user listened to a group discussion with the following content:
 ---
-DISCUSSION TRANSCRIPT: {{{discussionTranscript}}}
+DISCUSSION TRANSCRIPT: ${input.discussionTranscript}
 ---
 
 You have been provided with an audio recording of the user summarizing the discussion. Your task is to:
@@ -26,29 +33,36 @@ You have been provided with an audio recording of the user summarizing the discu
 4.  Evaluate the user's fluency, rhythm, and pace. Provide a 'fluencyScore' out of 90.
 5.  Calculate an 'overallScore' which is the average of the content, pronunciation, and fluency scores.
 6.  Provide specific, constructive 'feedback' on how well they covered the discussion content, and on their pronunciation and fluency.
+`
+          },
+          {
+            media: {
+              url: input.audioDataUri,
+              contentType: 'audio/webm'
+            }
+          }
+        ]
+      }
+    ],
+  });
 
-Here is the user's audio recording:
-{{media url=audioDataUri}}
-`,
-});
-
-const scorePteSummarizeGroupDiscussionFlow = ai.defineFlow(
-  {
-    name: 'scorePteSummarizeGroupDiscussionFlow',
-    inputSchema: PteSummarizeGroupDiscussionInputSchema,
-    outputSchema: PteSummarizeGroupDiscussionOutputSchema,
-  },
-  async (input) => {
-    const { output } = await pteSummarizeGroupDiscussionScoringPrompt(input);
-    if (!output) {
-      throw new Error('AI failed to generate a score for the speaking task.');
-    }
-    return output;
+  const { output } = await pteSummarizeGroupDiscussionScoringPrompt(input);
+  if (!output) {
+    throw new Error('AI failed to generate a score for the speaking task.');
   }
-);
+  return output;
+};
 
 export async function scorePteSummarizeGroupDiscussion(
   input: PteSummarizeGroupDiscussionInput
 ): Promise<PteSummarizeGroupDiscussionOutput> {
-  return await scorePteSummarizeGroupDiscussionFlow(input);
+  console.log('--- PTE SUMMARIZE GROUP DISCUSSION AI ACTION STARTED ---');
+  try {
+    const result = await scorePteSummarizeGroupDiscussionFlow(input);
+    console.log('AI Scoring Result Success');
+    return result;
+  } catch (error: any) {
+    console.error('PTE Summarize Group Discussion AI Error:', error);
+    throw new Error(`AI Scoring Matrix Synchronisation Failed: ${error.message || 'Unknown error'}`);
+  }
 }

@@ -1,14 +1,17 @@
 'use server';
 
-import { ai } from '@/ai/genkit';
+import { getAi } from '@/ai/genkit';
 import { z } from 'zod';
 
 import { AiTutorChatSchema, type AiTutorChatInput } from './ai-tutor-chat.types';
 
-const aiTutorChatPrompt = ai.definePrompt({
-    name: 'aiTutorChatPrompt',
-    input: { schema: AiTutorChatSchema },
-    prompt: `You are the world's most advanced AI English Language Tutor, specifically optimized for the {{courseId}} examination. Your primary directive is to ensure the student achieves a perfect score (PTE 90/90, IELTS Band 9.0, CELPIP 12/12) by treating the exam as a test of **Logical Strategy and Advanced Grammar**.
+export async function chatWithAiTutor(input: AiTutorChatInput) {
+    const ai = getAi();
+    
+    const aiTutorChatPrompt = ai.definePrompt({
+        name: 'aiTutorChatPrompt',
+        input: { schema: AiTutorChatSchema },
+        prompt: `You are the world's most advanced AI English Language Tutor, specifically optimized for the {{courseId}} examination. Your primary directive is to ensure the student achieves a perfect score (PTE 90/90, IELTS Band 9.0, CELPIP 12/12) by treating the exam as a test of **Logical Strategy and Advanced Grammar**.
 
 ### PERSONA CALIBRATION:
 - **PTE Academic (AI Alpha)**: You are a **"Master Examiner"**. Focus on: Oral Fluency (Read Aloud, Repeat Sentence), Writing (Summarize Written Text, Essay), Reading (FIB, MCQ), and Listening (SST, WFD). Use strict 0-90 scoring.
@@ -79,9 +82,13 @@ Conversation History:
 {{/each}}
 
 Next response as the 100% Success {{courseId}} Tutor:`,
-});
+    });
 
-export async function chatWithAiTutor(input: AiTutorChatInput) {
-    const { text } = await aiTutorChatPrompt(input);
-    return text;
+    try {
+        const { text } = await aiTutorChatPrompt(input);
+        return text;
+    } catch (error: any) {
+        console.error('AI Tutor Chat Error:', error);
+        return "I'm sorry, I'm having trouble connecting to my neural matrix. Please check your internet connection or try again in a moment. 😊";
+    }
 }

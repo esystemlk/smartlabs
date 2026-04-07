@@ -1,6 +1,6 @@
 'use server';
 
-import { ai } from '@/ai/genkit';
+import { getAi } from '@/ai/genkit';
 import {
     PteRespondToSituationInputSchema,
     PteRespondToSituationOutputSchema,
@@ -8,15 +8,22 @@ import {
     type PteRespondToSituationOutput,
 } from './pte-speaking.types';
 
-const pteRespondToSituationScoringPrompt = ai.definePrompt({
-  name: 'pteRespondToSituationScoringPrompt',
-  input: { schema: PteRespondToSituationInputSchema },
-  output: { schema: PteRespondToSituationOutputSchema },
-  prompt: `You are an expert PTE examiner AI. Your task is to score a "Respond to a Situation" speaking task.
+export const scorePteRespondToSituationFlow = async (input: PteRespondToSituationInput) => {
+  const ai = getAi();
+  const pteRespondToSituationScoringPrompt = ai.definePrompt({
+    name: 'pteRespondToSituationScoringPrompt',
+    input: { schema: PteRespondToSituationInputSchema },
+    output: { schema: PteRespondToSituationOutputSchema },
+    prompt: (input: any) => [
+      {
+        role: 'user',
+        content: [
+          {
+            text: `You are an expert PTE examiner AI. Your task is to score a "Respond to a Situation" speaking task.
 
 The user was presented with the following situation:
 ---
-SITUATION: {{{situationTranscript}}}
+SITUATION: ${input.situationTranscript}
 ---
 
 You have been provided with an audio recording of the user's response. Your task is to:
@@ -26,29 +33,36 @@ You have been provided with an audio recording of the user's response. Your task
 4.  Evaluate the user's fluency, rhythm, and pace. Speech should be smooth with minimal hesitation. Provide a 'fluencyScore' out of 90.
 5.  Calculate an 'overallScore' which is the average of the content, pronunciation, and fluency scores.
 6.  Provide specific, constructive 'feedback' on the content of the response, as well as on pronunciation and fluency.
+`
+          },
+          {
+            media: {
+              url: input.audioDataUri,
+              contentType: 'audio/webm'
+            }
+          }
+        ]
+      }
+    ],
+  });
 
-Here is the user's audio recording:
-{{media url=audioDataUri}}
-`,
-});
-
-const scorePteRespondToSituationFlow = ai.defineFlow(
-  {
-    name: 'scorePteRespondToSituationFlow',
-    inputSchema: PteRespondToSituationInputSchema,
-    outputSchema: PteRespondToSituationOutputSchema,
-  },
-  async (input) => {
-    const { output } = await pteRespondToSituationScoringPrompt(input);
-    if (!output) {
-      throw new Error('AI failed to generate a score for the speaking task.');
-    }
-    return output;
+  const { output } = await pteRespondToSituationScoringPrompt(input);
+  if (!output) {
+    throw new Error('AI failed to generate a score for the speaking task.');
   }
-);
+  return output;
+};
 
 export async function scorePteRespondToSituation(
   input: PteRespondToSituationInput
 ): Promise<PteRespondToSituationOutput> {
-  return await scorePteRespondToSituationFlow(input);
+  console.log('--- PTE RESPOND TO SITUATION AI ACTION STARTED ---');
+  try {
+    const result = await scorePteRespondToSituationFlow(input);
+    console.log('AI Scoring Result Success');
+    return result;
+  } catch (error: any) {
+    console.error('PTE Respond To Situation AI Error:', error);
+    throw new Error(`AI Scoring Matrix Synchronisation Failed: ${error.message || 'Unknown error'}`);
+  }
 }

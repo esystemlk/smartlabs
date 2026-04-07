@@ -1,6 +1,6 @@
 'use server';
 
-import { ai } from '@/ai/genkit';
+import { getAi } from '@/ai/genkit';
 import {
     PteWriteFromDictationInputSchema,
     PteWriteFromDictationOutputSchema,
@@ -8,20 +8,22 @@ import {
     type PteWriteFromDictationOutput,
 } from './pte-listening.types';
 
-const pteWriteFromDictationScoringPrompt = ai.definePrompt({
-  name: 'pteWriteFromDictationScoringPrompt',
-  input: { schema: PteWriteFromDictationInputSchema },
-  output: { schema: PteWriteFromDictationOutputSchema },
-  prompt: `You are an expert PTE examiner AI. Your task is to score a "Write from Dictation" task.
+export const scorePteWriteFromDictationFlow = async (input: PteWriteFromDictationInput) => {
+  const ai = getAi();
+  const pteWriteFromDictationScoringPrompt = ai.definePrompt({
+    name: 'pteWriteFromDictationScoringPrompt',
+    input: { schema: PteWriteFromDictationInputSchema },
+    output: { schema: PteWriteFromDictationOutputSchema },
+    prompt: (input: any) => `You are an expert PTE examiner AI. Your task is to score a "Write from Dictation" task.
 
 The user heard the following sentence:
 ---
-ORIGINAL: {{{originalSentence}}}
+ORIGINAL: ${input.originalSentence}
 ---
 
 The user wrote:
 ---
-WRITTEN: {{{writtenSentence}}}
+WRITTEN: ${input.writtenSentence}
 ---
 
 Please evaluate the user's written sentence.
@@ -30,25 +32,25 @@ Please evaluate the user's written sentence.
 3.  Set 'correctWords' and 'totalWords'.
 4.  Provide 'feedback' that clearly points out any spelling mistakes, extra words, or missed words.
 `,
-});
+  });
 
-const scorePteWriteFromDictationFlow = ai.defineFlow(
-  {
-    name: 'scorePteWriteFromDictationFlow',
-    inputSchema: PteWriteFromDictationInputSchema,
-    outputSchema: PteWriteFromDictationOutputSchema,
-  },
-  async (input) => {
-    const { output } = await pteWriteFromDictationScoringPrompt(input);
-    if (!output) {
-      throw new Error('AI failed to generate a score.');
-    }
-    return output;
+  const { output } = await pteWriteFromDictationScoringPrompt(input);
+  if (!output) {
+    throw new Error('AI failed to generate a score.');
   }
-);
+  return output;
+};
 
 export async function scorePteWriteFromDictation(
   input: PteWriteFromDictationInput
 ): Promise<PteWriteFromDictationOutput> {
-  return await scorePteWriteFromDictationFlow(input);
+  console.log('--- PTE WRITE FROM DICTATION AI ACTION STARTED ---');
+  try {
+    const result = await scorePteWriteFromDictationFlow(input);
+    console.log('AI Scoring Result Success');
+    return result;
+  } catch (error: any) {
+    console.error('PTE Write From Dictation AI Error:', error);
+    throw new Error(`AI Scoring Matrix Synchronisation Failed: ${error.message || 'Unknown error'}`);
+  }
 }

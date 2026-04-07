@@ -131,8 +131,9 @@ export async function scoreLevelTest(input: {
     console.log('[LevelTest] Has audio:', hasAudio);
 
     try {
-        // Dynamically import AI to prevent module-level crash
-        const { ai } = await import('@/ai/genkit');
+        // Dynamically import getAi to prevent module-level crash
+        const { getAi } = await import('@/ai/genkit');
+        const ai = getAi();
         const { z } = await import('zod');
 
         const ScoringSchema = z.object({

@@ -1,6 +1,6 @@
 'use server';
 
-import { ai } from '@/ai/genkit';
+import { getAi } from '@/ai/genkit';
 import {
     PteSummarizeSpokenTextInputSchema,
     PteSummarizeSpokenTextOutputSchema,
@@ -8,20 +8,22 @@ import {
     type PteSummarizeSpokenTextOutput,
 } from './pte-listening.types';
 
-const pteSummarizeSpokenTextScoringPrompt = ai.definePrompt({
-  name: 'pteSummarizeSpokenTextScoringPrompt',
-  input: { schema: PteSummarizeSpokenTextInputSchema },
-  output: { schema: PteSummarizeSpokenTextOutputSchema },
-  prompt: `You are an expert PTE examiner AI. Your task is to score a "Summarize Spoken Text" task.
+export const scorePteSummarizeSpokenTextFlow = async (input: PteSummarizeSpokenTextInput) => {
+  const ai = getAi();
+  const pteSummarizeSpokenTextScoringPrompt = ai.definePrompt({
+    name: 'pteSummarizeSpokenTextScoringPrompt',
+    input: { schema: PteSummarizeSpokenTextInputSchema },
+    output: { schema: PteSummarizeSpokenTextOutputSchema },
+    prompt: (input: any) => `You are an expert PTE examiner AI. Your task is to score a "Summarize Spoken Text" task.
 
 The user listened to an audio with the following transcript:
 ---
-TRANSCRIPT: {{{lectureTranscript}}}
+TRANSCRIPT: ${input.lectureTranscript}
 ---
 
 The user wrote the following summary (50-70 words):
 ---
-SUMMARY: {{{summary}}}
+SUMMARY: ${input.summary}
 ---
 
 Please evaluate the summary based on the following criteria, each out of 2 points:
@@ -33,25 +35,25 @@ Please evaluate the summary based on the following criteria, each out of 2 point
 
 Calculate the scores for each criterion and sum them for the 'overallScore' (out of 10). Provide specific, constructive 'feedback' explaining the scores for each category.
 `,
-});
+  });
 
-const scorePteSummarizeSpokenTextFlow = ai.defineFlow(
-  {
-    name: 'scorePteSummarizeSpokenTextFlow',
-    inputSchema: PteSummarizeSpokenTextInputSchema,
-    outputSchema: PteSummarizeSpokenTextOutputSchema,
-  },
-  async (input) => {
-    const { output } = await pteSummarizeSpokenTextScoringPrompt(input);
-    if (!output) {
-      throw new Error('AI failed to generate a score for the summary.');
-    }
-    return output;
+  const { output } = await pteSummarizeSpokenTextScoringPrompt(input);
+  if (!output) {
+    throw new Error('AI failed to generate a score for the summary.');
   }
-);
+  return output;
+};
 
 export async function scorePteSummarizeSpokenText(
   input: PteSummarizeSpokenTextInput
 ): Promise<PteSummarizeSpokenTextOutput> {
-  return await scorePteSummarizeSpokenTextFlow(input);
+  console.log('--- PTE SUMMARIZE SPOKEN TEXT AI ACTION STARTED ---');
+  try {
+    const result = await scorePteSummarizeSpokenTextFlow(input);
+    console.log('AI Scoring Result Success');
+    return result;
+  } catch (error: any) {
+    console.error('PTE Summarize Spoken Text AI Error:', error);
+    throw new Error(`AI Scoring Matrix Synchronisation Failed: ${error.message || 'Unknown error'}`);
+  }
 }
