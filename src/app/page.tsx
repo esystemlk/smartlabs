@@ -1680,15 +1680,10 @@ export default function Home() {
             </p>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="w-full"
-          >
+          <div className="w-full">
             <Script src="https://elfsightcdn.com/platform.js" strategy="lazyOnload" />
             <div className="elfsight-app-ed94a5c0-fc6e-4053-b156-5d243e3c3aca" data-elfsight-app-lazy></div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
