@@ -22,8 +22,8 @@ export const getAi = () => {
             apiKey: getApiKey(),
           }),
         ],
-        // Updated to Gemini 2.0 Flash for superior performance
-        model: 'googleai/gemini-2.0-flash',
+        // Updated to Gemini 2.5 Flash for superior performance (Stable 2026)
+        model: 'googleai/gemini-2.5-flash',
       });
     } catch (error) {
       console.error('Failed to initialize Genkit:', error);
