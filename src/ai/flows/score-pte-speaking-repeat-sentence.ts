@@ -61,5 +61,13 @@ const scorePteRepeatSentenceFlow = ai.defineFlow(
 export async function scorePteRepeatSentence(
   input: PteRepeatSentenceInput
 ): Promise<PteRepeatSentenceOutput> {
-  return await scorePteRepeatSentenceFlow(input);
+  console.log('--- PTE REPEAT SENTENCE AI ACTION STARTED ---');
+  try {
+    const result = await scorePteRepeatSentenceFlow(input);
+    console.log('AI Scoring Result:', JSON.stringify(result, null, 2));
+    return result;
+  } catch (error: any) {
+    console.error('PTE Repeat Sentence AI Error:', error);
+    throw new Error(`AI Scoring Matrix Synchronisation Failed: ${error.message || 'Unknown error'}`);
+  }
 }

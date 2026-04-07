@@ -62,5 +62,13 @@ const scorePteRetellLectureFlow = ai.defineFlow(
 export async function scorePteRetellLecture(
   input: PteRetellLectureInput
 ): Promise<PteRetellLectureOutput> {
-  return await scorePteRetellLectureFlow(input);
+  console.log('--- PTE RETELL LECTURE AI ACTION STARTED ---');
+  try {
+    const result = await scorePteRetellLectureFlow(input);
+    console.log('AI Scoring Result:', JSON.stringify(result, null, 2));
+    return result;
+  } catch (error: any) {
+    console.error('PTE Retell Lecture AI Error:', error);
+    throw new Error(`AI Scoring Matrix Synchronisation Failed: ${error.message || 'Unknown error'}`);
+  }
 }

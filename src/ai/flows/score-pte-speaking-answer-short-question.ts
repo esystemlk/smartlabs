@@ -62,5 +62,13 @@ const scorePteAnswerShortQuestionFlow = ai.defineFlow(
 export async function scorePteAnswerShortQuestion(
   input: PteAnswerShortQuestionInput
 ): Promise<PteAnswerShortQuestionOutput> {
-  return await scorePteAnswerShortQuestionFlow(input);
+  console.log('--- PTE ANSWER SHORT QUESTION AI ACTION STARTED ---');
+  try {
+    const result = await scorePteAnswerShortQuestionFlow(input);
+    console.log('AI Scoring Result:', JSON.stringify(result, null, 2));
+    return result;
+  } catch (error: any) {
+    console.error('PTE Answer Short Question AI Error:', error);
+    throw new Error(`AI Scoring Matrix Synchronisation Failed: ${error.message || 'Unknown error'}`);
+  }
 }

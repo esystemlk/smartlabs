@@ -173,9 +173,14 @@ export default function SpeakingTaskPage() {
                 setIsLoading(false);
                 toast({ title: "Analysis Complete", description: "AI Matrix has processed your speech profile." });
             };
-        } catch (error) {
+        } catch (error: any) {
+            console.error('Speaking AI Submit Error:', error);
             setIsLoading(false);
-            toast({ variant: 'destructive', title: 'Analysis Failed', description: 'Matrix synchronization error.' });
+            toast({ 
+                variant: 'destructive', 
+                title: 'Analysis Failed', 
+                description: error.message || 'Matrix synchronization error.' 
+            });
         }
     };
 

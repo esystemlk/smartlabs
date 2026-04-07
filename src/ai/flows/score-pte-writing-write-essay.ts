@@ -12,16 +12,16 @@ const pteWriteEssayScoringPrompt = ai.definePrompt({
   name: 'pteWriteEssayScoringPrompt',
   input: { schema: PteWriteEssayInputSchema },
   output: { schema: PteWriteEssayOutputSchema },
-  prompt: `You are an expert PTE examiner AI. Your task is to score a "Write Essay" task.
+  prompt: (input) => `You are an expert PTE examiner AI. Your task is to score a "Write Essay" task.
 
 The user was given the following topic:
 ---
-TOPIC: {{{topic}}}
+TOPIC: ${input.topic}
 ---
 
 The user wrote the following essay (200-300 words):
 ---
-ESSAY: {{{essay}}}
+ESSAY: ${input.essay}
 ---
 
 Please evaluate the essay based on the following criteria:
@@ -53,5 +53,13 @@ const scorePteWriteEssayFlow = ai.defineFlow(
 export async function scorePteWriteEssay(
   input: PteWriteEssayInput
 ): Promise<PteWriteEssayOutput> {
-  return await scorePteWriteEssayFlow(input);
+  console.log('--- PTE WRITE ESSAY AI ACTION STARTED ---');
+  try {
+    const result = await scorePteWriteEssayFlow(input);
+    console.log('AI Scoring Result:', JSON.stringify(result, null, 2));
+    return result;
+  } catch (error: any) {
+    console.error('PTE Write Essay AI Error:', error);
+    throw new Error(`AI Scoring Matrix Synchronisation Failed: ${error.message || 'Unknown error'}`);
+  }
 }

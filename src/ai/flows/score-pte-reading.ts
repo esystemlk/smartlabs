@@ -9,7 +9,7 @@ const pteReadingScoringPrompt = ai.definePrompt({
   name: 'pteReadingScoringPrompt',
   input: { schema: PteReadingTestInputSchema },
   output: { schema: PteReadingTestOutputSchema },
-  prompt: `You are an expert PTE (Pearson Test of English) examiner. Your task is to score a multiple-choice reading test.
+  prompt: (input) => `You are an expert PTE (Pearson Test of English) examiner. Your task is to score a multiple-choice reading test.
 
 For each question provided in the input, you must:
 1.  Compare the 'userAnswer' to the 'correctAnswer'.
@@ -19,7 +19,7 @@ For each question provided in the input, you must:
 5.  Provide some 'generalFeedback' in one or two sentences, encouraging the user and suggesting what to focus on next.
 
 Here is the test data:
-{{json questions}}
+${JSON.stringify(input.questions, null, 2)}
 `,
 });
 
@@ -43,5 +43,13 @@ const scorePteReadingFlow = ai.defineFlow(
 export async function scorePteReadingTest(
   input: PteReadingTestInput
 ): Promise<PteReadingTestOutput> {
-  return await scorePteReadingFlow(input);
+  console.log('--- PTE READING AI ACTION STARTED ---');
+  try {
+    const result = await scorePteReadingFlow(input);
+    console.log('AI Scoring Result:', JSON.stringify(result, null, 2));
+    return result;
+  } catch (error: any) {
+    console.error('PTE Reading AI Error:', error);
+    throw new Error(`AI Scoring Matrix Synchronisation Failed: ${error.message || 'Unknown error'}`);
+  }
 }

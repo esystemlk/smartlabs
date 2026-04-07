@@ -59,5 +59,13 @@ const scorePteDescribeImageFlow = ai.defineFlow(
 export async function scorePteDescribeImage(
   input: PteDescribeImageInput
 ): Promise<PteDescribeImageOutput> {
-  return await scorePteDescribeImageFlow(input);
+  console.log('--- PTE DESCRIBE IMAGE AI ACTION STARTED ---');
+  try {
+    const result = await scorePteDescribeImageFlow(input);
+    console.log('AI Scoring Result:', JSON.stringify(result, null, 2));
+    return result;
+  } catch (error: any) {
+    console.error('PTE Describe Image AI Error:', error);
+    throw new Error(`AI Scoring Matrix Synchronisation Failed: ${error.message || 'Unknown error'}`);
+  }
 }

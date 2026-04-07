@@ -53,9 +53,16 @@ const generateQuestionPrompt = ai.definePrompt({
 
 // Export the function
 export async function generateExamQuestion(input: GenerateQuestionInput): Promise<GenerateQuestionOutput> {
-    const { output } = await generateQuestionPrompt(input);
-    if (!output) {
-        throw new Error('Failed to generate question');
+    console.log('--- GENERATING AI QUESTION ---', input);
+    try {
+        const { output } = await generateQuestionPrompt(input);
+        if (!output) {
+            throw new Error('AI failed to generate a valid question object.');
+        }
+        console.log('AI Question Generated Successfully:', output.title);
+        return output;
+    } catch (error: any) {
+        console.error('AI Question Generation Error:', error);
+        throw new Error(`AI Neural Question Matrix Generation Failed: ${error.message || 'Unknown error'}`);
     }
-    return output;
 }
