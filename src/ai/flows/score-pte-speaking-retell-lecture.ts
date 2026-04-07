@@ -12,11 +12,16 @@ const pteRetellLectureScoringPrompt = ai.definePrompt({
   name: 'pteRetellLectureScoringPrompt',
   input: { schema: PteRetellLectureInputSchema },
   output: { schema: PteRetellLectureOutputSchema },
-  prompt: `You are an expert PTE examiner AI. Your task is to score a "Retell Lecture" speaking task.
+  prompt: (input) => [
+    {
+      role: 'user',
+      content: [
+        {
+          text: `You are an expert PTE examiner AI. Your task is to score a "Retell Lecture" speaking task.
 
 The user listened to a lecture with the following content:
 ---
-LECTURE TRANSCRIPT: {{{lectureTranscript}}}
+LECTURE TRANSCRIPT: ${input.lectureTranscript}
 ---
 
 You have been provided with an audio recording of the user retelling the main points of the lecture. Your task is to:
@@ -26,10 +31,17 @@ You have been provided with an audio recording of the user retelling the main po
 4.  Evaluate the user's fluency, rhythm, and pace. Provide a 'fluencyScore' out of 90.
 5.  Calculate an 'overallScore' which is the average of the content, pronunciation, and fluency scores.
 6.  Provide specific, constructive 'feedback' on how well they covered the lecture content, and on their pronunciation and fluency.
-
-Here is the user's audio recording:
-{{media url=audioDataUri}}
-`,
+`
+        },
+        {
+          media: {
+            url: input.audioDataUri,
+            contentType: 'audio/webm'
+          }
+        }
+      ]
+    }
+  ],
 });
 
 const scorePteRetellLectureFlow = ai.defineFlow(

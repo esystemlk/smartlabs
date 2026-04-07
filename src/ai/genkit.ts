@@ -16,6 +16,6 @@ export const ai = genkit({
       apiKey: getApiKey(),
     }),
   ],
-  // Use string identifier for the new 2.0 Flash model
-  model: 'googleai/gemini-2.0-flash',
+  // Use string identifier for the model
+  model: 'googleai/gemini-1.5-flash',
 });

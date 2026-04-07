@@ -12,11 +12,16 @@ const pteRepeatSentenceScoringPrompt = ai.definePrompt({
   name: 'pteRepeatSentenceScoringPrompt',
   input: { schema: PteRepeatSentenceInputSchema },
   output: { schema: PteRepeatSentenceOutputSchema },
-  prompt: `You are an expert PTE examiner AI. Your task is to score a "Repeat Sentence" speaking task.
+  prompt: (input) => [
+    {
+      role: 'user',
+      content: [
+        {
+          text: `You are an expert PTE examiner AI. Your task is to score a "Repeat Sentence" speaking task.
 
 The user was asked to repeat the following sentence:
 ---
-ORIGINAL SENTENCE: {{{originalSentence}}}
+ORIGINAL SENTENCE: ${input.originalSentence}
 ---
 
 You have been provided with an audio recording of the user repeating this sentence. Your task is to:
@@ -26,10 +31,16 @@ You have been provided with an audio recording of the user repeating this senten
 4.  Evaluate the user's rhythm and pace. There should be no unnatural hesitations. Provide a 'fluencyScore' out of 90.
 5.  Calculate an 'overallScore' which is the average of the content, pronunciation, and fluency scores.
 6.  Provide specific, constructive 'feedback' explaining the scores. Pinpoint specific words that were mispronounced or where fluency was lost.
-
-Here is the user's audio recording:
-{{media url=audioDataUri}}
-`,
+`
+        },
+        {
+          media: {
+            url: input.audioDataUri
+          }
+        }
+      ]
+    }
+  ],
 });
 
 const scorePteRepeatSentenceFlow = ai.defineFlow(

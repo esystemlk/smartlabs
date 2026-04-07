@@ -12,11 +12,16 @@ const pteReadAloudScoringPrompt = ai.definePrompt({
   name: 'pteReadAloudScoringPrompt',
   input: { schema: PteReadAloudInputSchema },
   output: { schema: PteReadAloudOutputSchema },
-  prompt: `You are an expert PTE examiner AI. Your task is to score a "Read Aloud" speaking task.
+  prompt: (input) => [
+    {
+      role: 'user',
+      content: [
+        {
+          text: `You are an expert PTE examiner AI. Your task is to score a "Read Aloud" speaking task.
 
 The user was given the following text to read:
 ---
-ORIGINAL TEXT: {{{text}}}
+ORIGINAL TEXT: ${input.text}
 ---
 
 You have been provided with an audio recording of the user reading this text. Your task is to:
@@ -26,10 +31,17 @@ You have been provided with an audio recording of the user reading this text. Yo
 4.  Evaluate the user's rhythm, pace, and phrasing. There should be no unnatural hesitations. Provide a 'fluencyScore' out of 90, where 90 is native-like.
 5.  Calculate an 'overallScore' which is the average of the content, pronunciation, and fluency scores.
 6.  Provide specific, constructive 'feedback' explaining the scores. Pinpoint specific words that were mispronounced or where fluency was lost.
-
-Here is the user's audio recording:
-{{media url=audioDataUri}}
-`,
+`
+        },
+        {
+           media: {
+             url: input.audioDataUri,
+             contentType: 'audio/webm'
+           }
+         }
+      ]
+    }
+  ],
 });
 
 const scorePteReadAloudFlow = ai.defineFlow(

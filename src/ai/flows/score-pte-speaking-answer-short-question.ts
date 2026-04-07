@@ -12,24 +12,36 @@ const pteAnswerShortQuestionScoringPrompt = ai.definePrompt({
   name: 'pteAnswerShortQuestionScoringPrompt',
   input: { schema: PteAnswerShortQuestionInputSchema },
   output: { schema: PteAnswerShortQuestionOutputSchema },
-  prompt: `You are an expert PTE examiner AI. Your task is to score an "Answer Short Question" speaking task.
+  prompt: (input) => [
+    {
+      role: 'user',
+      content: [
+        {
+          text: `You are an expert PTE examiner AI. Your task is to score an "Answer Short Question" speaking task.
 
 The user was asked the following question:
-QUESTION: {{{questionAudioTranscript}}}
+---
+QUESTION TRANSCRIPT: ${input.questionAudioTranscript}
+---
+The expected answer is: ${input.expectedAnswer}
 
-The expected simple answer is:
-EXPECTED ANSWER: {{{expectedAnswer}}}
-
-You have been provided with an audio recording of the user's answer. Your task is to:
+You have been provided with an audio recording of the user's response. Your task is to:
 1.  Transcribe the user's speech accurately into the 'transcript' field.
-2.  Evaluate if the user's answer is correct based on the 'EXPECTED ANSWER'. The user's answer might be a single word or a short phrase. Set 'isCorrect' to true or false.
-3.  Provide 'feedback' explaining why the answer is correct or incorrect, and add brief notes on pronunciation or fluency if needed.
-4.  Evaluate the user's 'pronunciationScore' and 'fluencyScore' out of 90.
+2.  Check if the 'transcript' contains the 'expectedAnswer'. Set 'isCorrect' to true if it does, false otherwise.
+3.  Evaluate the user's pronunciation and fluency. Provide a 'pronunciationScore' and a 'fluencyScore' out of 90.
+4.  Provide brief 'feedback' on the correctness of the answer and on the user's speech quality.
 5.  Calculate an 'overallScore'. For this task, the content score is 90 if the answer is correct, and 10 if it's incorrect. The overall score is the average of this content score, the pronunciation score, and the fluency score.
-
-Here is the user's audio recording:
-{{media url=audioDataUri}}
-`,
+`
+        },
+        {
+          media: {
+            url: input.audioDataUri,
+            contentType: 'audio/webm'
+          }
+        }
+      ]
+    }
+  ],
 });
 
 const scorePteAnswerShortQuestionFlow = ai.defineFlow(
