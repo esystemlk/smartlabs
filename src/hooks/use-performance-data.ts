@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { testResultService, TestResult } from '@/lib/services/test-results.service';
 
 export function usePerformanceData(userId: string | undefined) {

@@ -206,7 +206,7 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
                 {/* Advanced Analytics */}
-                <PerformanceOverview overallProgress={overallProgress} />
+                <PerformanceOverview />
 
                 {/* Recent Activity */}
                 <RecentActivity />

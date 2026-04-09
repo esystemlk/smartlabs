@@ -22,9 +22,9 @@ import { motion } from 'framer-motion';
 import { useUser } from '@/firebase';
 import { usePerformanceData } from '@/hooks/use-performance-data';
 
-export function PerformanceOverview({ overallProgress }: { overallProgress: number }) {
+export function PerformanceOverview() {
     const { user } = useUser();
-    const { radarData, trendData, loading } = usePerformanceData(user?.uid);
+    const { radarData, trendData, loading, overallProgress } = usePerformanceData(user?.uid);
 
     return (
         <Card className="col-span-1 lg:col-span-2 overflow-hidden border-none shadow-xl bg-card/30 backdrop-blur-md">
