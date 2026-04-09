@@ -43,13 +43,36 @@ function EnrollmentRow({ enrollment: initialEnrollment }: { enrollment: Enrollme
     try {
       const batch = writeBatch(firestore);
 
+      // 1. Update user sub-collection enrollment
       const enrollmentRef = doc(firestore, 'users', enrollment.userId, 'enrollments', enrollment.id);
-      batch.update(enrollmentRef, { enrollmentStatus: 'active' });
+      batch.update(enrollmentRef, { 
+          enrollmentStatus: 'active',
+          paymentStatus: 'paid' 
+      });
 
+      // 2. If it's a manual payment, update the top-level enrollments record if it exists
+      // The enrollment.id is used for both.
+      try {
+        const topLevelRef = doc(firestore, 'enrollments', enrollment.id);
+        batch.update(topLevelRef, { 
+            enrollmentStatus: 'active',
+            paymentStatus: 'paid'
+        });
+      } catch (e) {
+        // Top level might not exist for older/website payments
+      }
+
+      // 3. Add to active_courses
       const activeCourseRef = doc(firestore, 'users', enrollment.userId, 'active_courses', enrollment.courseId);
-      batch.set(activeCourseRef, { enrolledAt: new Date() });
-      
-      if (user.role === 'user') {
+      batch.set(activeCourseRef, { 
+          enrolledAt: new Date(),
+          courseId: enrollment.courseId,
+          batchId: enrollment.batchId || '',
+          batchName: enrollment.batchName || ''
+      });
+
+      // 4. Update user role
+      if (user.role === 'user' || !user.role) {
           const userRef = doc(firestore, 'users', enrollment.userId);
           batch.update(userRef, { role: 'student' });
       }
@@ -62,7 +85,11 @@ function EnrollmentRow({ enrollment: initialEnrollment }: { enrollment: Enrollme
       });
       
       // Optimistically update local state
-      setEnrollment(prev => ({ ...prev, enrollmentStatus: 'active' }));
+      setEnrollment(prev => ({ 
+          ...prev, 
+          enrollmentStatus: 'active',
+          paymentStatus: 'paid'
+      }));
 
     } catch (error) {
       console.error('Error approving enrollment:', error);
@@ -101,9 +128,16 @@ function EnrollmentRow({ enrollment: initialEnrollment }: { enrollment: Enrollme
         <TableCell><Badge variant="outline">{enrollment.courseId}</Badge></TableCell>
         <TableCell><Badge variant="secondary">{enrollment.batchName || 'N/A'}</Badge></TableCell>
         <TableCell>
-            <Badge variant={enrollment.enrollmentStatus === 'active' ? 'default' : 'destructive'} className="capitalize">
-                {enrollment.enrollmentStatus}
-            </Badge>
+            <div className="flex flex-col gap-1">
+                <Badge variant={enrollment.enrollmentStatus === 'active' ? 'default' : 'destructive'} className="capitalize w-fit">
+                    {enrollment.enrollmentStatus}
+                </Badge>
+                {enrollment.paymentStatus === 'pending_manual' && (
+                    <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 text-[10px] w-fit">
+                        Manual Payment
+                    </Badge>
+                )}
+            </div>
         </TableCell>
         <TableCell>{enrollment.enrollmentDate?.toDate().toLocaleDateString()}</TableCell>
         <TableCell className="text-right">

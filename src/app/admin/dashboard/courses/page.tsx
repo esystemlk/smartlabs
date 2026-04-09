@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, setDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -34,7 +35,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { GraduationCap, MoreHorizontal, PlusCircle, Trash, Edit, ArrowLeft, Users, CheckCircle2, XCircle } from 'lucide-react';
+import { GraduationCap, MoreHorizontal, PlusCircle, Trash, Edit, ArrowLeft, Users, CheckCircle2, XCircle, Upload } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -63,6 +64,8 @@ const batchSchema = z.object({
   name: z.string().min(3, 'Batch name is required'),
   schedule: z.string().optional(),
   teacherId: z.string().optional(),
+  timetableImageUrl: z.string().optional(),
+  timetableDetails: z.string().optional(),
 });
 
 type BatchFormValues = z.infer<typeof batchSchema>;
@@ -84,6 +87,7 @@ export default function CourseManagementPage() {
   const [isBatchDialogOpen, setIsBatchDialogOpen] = useState(false);
   const [courseForBatches, setCourseForBatches] = useState<any>(null);
   const [selectedBatch, setSelectedBatch] = useState<any>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const coursesQuery = useMemoFirebase(
     () => (firestore ? collection(firestore, 'courses') : null),
@@ -120,6 +124,13 @@ export default function CourseManagementPage() {
 
   const batchForm = useForm<BatchFormValues>({
     resolver: zodResolver(batchSchema),
+    defaultValues: {
+      name: '',
+      schedule: '',
+      teacherId: '',
+      timetableImageUrl: '',
+      timetableDetails: ''
+    }
   });
 
   // Course Dialog Handlers
@@ -169,11 +180,39 @@ export default function CourseManagementPage() {
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { storage } = useFirebase();
+    const file = e.target.files?.[0];
+    if (!file || !storage) return;
+
+    setIsUploading(true);
+    try {
+      const storageRef = ref(storage, `batches/${Date.now()}-${file.name}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+
+      batchForm.setValue('timetableImageUrl', downloadURL);
+      toast({
+        title: "Image Uploaded",
+        description: "Timetable image has been uploaded successfully.",
+      });
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast({
+        title: "Upload Failed",
+        description: "Failed to upload image. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   // Batch Dialog Handlers
   const handleBatchDialogOpen = (course: any) => {
     setCourseForBatches(course);
     setSelectedBatch(null);
-    batchForm.reset({ name: '', schedule: '', teacherId: '' });
+    batchForm.reset({ name: '', schedule: '', teacherId: '', timetableImageUrl: '', timetableDetails: '' });
     setIsBatchDialogOpen(true);
   }
 
@@ -194,7 +233,7 @@ export default function CourseManagementPage() {
         toast({ title: 'Success', description: 'Batch added.' });
       }
       setSelectedBatch(null);
-      batchForm.reset({ name: '', schedule: '', teacherId: '' });
+      batchForm.reset({ name: '', schedule: '', teacherId: '', timetableImageUrl: '', timetableDetails: '' });
     } catch (error) {
       console.error('Error saving batch:', error);
       toast({ variant: 'destructive', title: 'Error', description: 'Could not save batch.' });
@@ -500,8 +539,53 @@ export default function CourseManagementPage() {
                       <FormField control={batchForm.control} name="schedule" render={({ field }) => (
                         <FormItem><FormLabel>Schedule</FormLabel><FormControl><Input placeholder="e.g., Sat & Sun, 10am - 12pm" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
+                      <FormField control={batchForm.control} name="timetableImageUrl" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Timetable Image</FormLabel>
+                          <div className="flex gap-2">
+                            <FormControl>
+                              <Input placeholder="Upload or enter URL" {...field} />
+                            </FormControl>
+                            <div className="relative">
+                              <input
+                                type="file"
+                                id="timetable-upload"
+                                className="hidden"
+                                accept="image/*"
+                                onChange={handleFileUpload}
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                asChild
+                                disabled={isUploading}
+                              >
+                                <label htmlFor="timetable-upload" className="cursor-pointer flex items-center gap-2">
+                                  {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                  Upload
+                                </label>
+                              </Button>
+                            </div>
+                          </div>
+                          {field.value && (
+                            <div className="mt-2 relative w-full aspect-video rounded-lg overflow-hidden border">
+                              <img src={field.value} alt="Timetable Preview" className="object-contain w-full h-full" />
+                            </div>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={batchForm.control} name="timetableDetails" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Additional Timetable Details</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Enter any extra details about this batch's timetable..." className="min-h-[100px]" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
                       <div className="flex justify-end gap-2 mt-4">
-                        {selectedBatch && <Button type="button" variant="ghost" onClick={() => { setSelectedBatch(null); batchForm.reset(); }}>Cancel Edit</Button>}
+                        {selectedBatch && <Button type="button" variant="ghost" onClick={() => { setSelectedBatch(null); batchForm.reset({ name: '', schedule: '', teacherId: '', timetableImageUrl: '', timetableDetails: '' }); }}>Cancel Edit</Button>}
                         <Button type="submit">{selectedBatch ? 'Update Batch' : 'Add Batch'}</Button>
                       </div>
                     </form>
