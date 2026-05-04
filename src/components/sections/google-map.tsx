@@ -96,7 +96,7 @@ export function GoogleMap() {
           >
             <iframe
               title="Smart Labs Location"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.785368688487!2d79.88836527582531!3d6.916327618477755!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae259174092d60b%3A0xc3c945145f470125!2sSmart%20Labs!5e0!3m2!1sen!2slk!4v1714820000000!5m2!1sen!2slk"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.835160868128!2d79.89376177582528!3d6.908518918552686!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x255d3c7aeb13728d%3A0x926352d0e6d006a7!2sSmartLabs%20PVT%20Ltd!5e0!3m2!1sen!2slk!4v1714820000000!5m2!1sen!2slk"
               width="100%"
               height="100%"
               style={{ border: 0 }}
