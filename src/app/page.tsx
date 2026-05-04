@@ -874,7 +874,7 @@ export default function Home() {
               </motion.div>
             </motion.div>
 
-            {/* Right Visual Column - Ultra Advanced Dashboard */}
+            {/* Right Visual Column - Premium Visual Stack */}
             <motion.div
               style={{
                 opacity: heroOpacity,
@@ -898,9 +898,77 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="relative w-full aspect-square rounded-[48px]" />
+              <div className="relative w-full min-h-[520px] pt-32">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="absolute left-0 top-28 w-[78%] rounded-[34px] border border-white/30 dark:border-slate-700/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-7 shadow-[0_25px_60px_rgba(15,23,42,0.2)]"
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-widest text-primary">Now Running</p>
+                      <h3 className="mt-2 text-2xl font-black tracking-tight">PTE Small Group Batches</h3>
+                      <p className="mt-2 text-sm text-muted-foreground">3 to 10 students per group for focused speaking and writing improvement.</p>
+                    </div>
+                    <Users className="h-9 w-9 text-primary" />
+                  </div>
+                  <div className="mt-6 grid grid-cols-2 gap-3">
+                    <div className="rounded-2xl border border-border/60 bg-background/80 p-3">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-accent-3">Mode</p>
+                      <p className="mt-1 text-sm font-semibold">Online</p>
+                    </div>
+                    <div className="rounded-2xl border border-border/60 bg-background/80 p-3">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-accent-1">Type</p>
+                      <p className="mt-1 text-sm font-semibold">Power Sessions</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="absolute right-0 bottom-4 w-[70%] rounded-[30px] border border-primary/30 bg-gradient-to-br from-primary/10 via-accent-3/10 to-accent-1/10 backdrop-blur-xl p-6 shadow-[0_20px_50px_rgba(79,70,229,0.25)]"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-widest text-primary">Flexible Package</p>
+                      <p className="text-3xl font-black tracking-tight">LKR 20,000</p>
+                    </div>
+                    <Video className="h-10 w-10 text-primary" />
+                  </div>
+                  <p className="mt-3 text-sm text-foreground/80">20-hour recordings + LMS access (valid for 1 month).</p>
+                  <div className="mt-4 flex items-center gap-2 text-xs font-bold text-primary">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Best for students with non-fixed schedules
+                  </div>
+                </motion.div>
+              </div>
             </motion.div>
 
+          </div>
+        </div>
+      </section>
+
+      <section className="relative py-8 bg-gradient-to-r from-primary/5 via-accent-3/5 to-accent-1/5 border-y border-primary/10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              { icon: Users, title: "Small Group Online", desc: "3-10 students per batch for better attention" },
+              { icon: Zap, title: "Power Sessions", desc: "Selected PTE components with focused strategy" },
+              { icon: Calendar, title: "Limited Physical Seats", desc: "In-person classes available for limited seats" }
+            ].map((item) => (
+              <div key={item.title} className="rounded-2xl bg-background/80 border border-border/60 px-5 py-4 backdrop-blur-sm flex items-start gap-3">
+                <div className="p-2 rounded-xl bg-primary/10">
+                  <item.icon className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-bold text-sm">{item.title}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{item.desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -1399,7 +1467,7 @@ export default function Home() {
                   href={course.href}
                   className="block h-full"
                 >
-                  <div className="relative h-full glass-card rounded-3xl p-6 sm:p-8 overflow-hidden border-2 border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
+                  <div className="relative h-full glass-card rounded-3xl p-6 sm:p-8 overflow-hidden border border-white/40 dark:border-slate-700/40 hover:border-primary/40 transition-all duration-500 hover:shadow-[0_30px_80px_rgba(79,70,229,0.2)] hover:-translate-y-2 backdrop-blur-xl bg-white/70 dark:bg-slate-900/60">
                     {/* Background Gradient */}
                     <div className={`absolute inset-0 bg-gradient-to-br ${course.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
 
@@ -1413,7 +1481,7 @@ export default function Home() {
                       </div>
 
                       {/* Title & Description */}
-                      <h3 className="font-display text-xl sm:text-2xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
+                      <h3 className="font-display text-xl sm:text-2xl font-black tracking-tight text-foreground mb-3 group-hover:text-primary transition-colors">
                         {course.title}
                       </h3>
                       <p className="text-sm sm:text-base text-muted-foreground mb-6 leading-relaxed">
@@ -1490,7 +1558,7 @@ export default function Home() {
                   href={method.href || "#"}
                   target={method.href?.startsWith('http') ? "_blank" : "_self"}
                   className={cn(
-                    "relative block h-full glass-card rounded-2xl sm:rounded-3xl p-6 sm:p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border border-border/50 hover:border-primary/30",
+                    "relative block h-full glass-card rounded-2xl sm:rounded-3xl p-6 sm:p-8 hover:shadow-[0_24px_60px_rgba(79,70,229,0.16)] transition-all duration-300 hover:-translate-y-1 border border-white/40 dark:border-slate-700/40 hover:border-primary/35 bg-white/75 dark:bg-slate-900/65 backdrop-blur-xl",
                     !method.href && "pointer-events-none"
                   )}
                 >
