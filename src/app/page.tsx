@@ -663,23 +663,23 @@ export default function Home() {
               </div>
 
               {/* Advanced Bento CTA Section */}
-              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+              <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 justify-center items-center w-full">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.1 }}
-                  className="w-full sm:w-auto"
+                  className="w-full lg:w-auto"
                 >
                   <Button
                     size="xl"
-                    className="w-full sm:w-[320px] h-24 group relative rounded-[32px] bg-slate-900 dark:bg-white text-white dark:text-slate-900 overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-95 shadow-2xl"
+                    className="w-full lg:w-[280px] h-24 group relative rounded-[32px] bg-slate-900 dark:bg-white text-white dark:text-slate-900 overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-95 shadow-2xl"
                     asChild
                   >
                     <a href={LMS_URL} target="_blank" rel="noopener noreferrer">
                       <div className="relative z-10 flex flex-col items-start gap-1">
                         <span className="text-xs font-black uppercase tracking-widest opacity-60 text-left">Get Started</span>
-                        <span className="text-2xl font-black tracking-tight flex items-center gap-3">
-                          Start Free Trial <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform" />
+                        <span className="text-xl font-black tracking-tight flex items-center gap-3">
+                          Start Free Trial <ArrowRight className="h-5 w-5 group-hover:translate-x-2 transition-transform" />
                         </span>
                       </div>
                       <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-150 transition-transform duration-700">
@@ -692,20 +692,45 @@ export default function Home() {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.15 }}
+                  className="w-full lg:w-auto"
+                >
+                  <Button
+                    size="xl"
+                    className="w-full lg:w-[280px] h-24 group relative rounded-[32px] bg-primary text-white overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-95 shadow-2xl shadow-primary/20"
+                    asChild
+                  >
+                    <Link href="/level-test">
+                      <div className="relative z-10 flex flex-col items-start gap-1">
+                        <span className="text-xs font-black uppercase tracking-widest text-white/70 text-left">Diagnostic</span>
+                        <span className="text-xl font-black tracking-tight flex items-center gap-3">
+                          Free Level Test <Activity className="h-5 w-5 group-hover:animate-pulse transition-transform" />
+                        </span>
+                      </div>
+                      <div className="absolute -bottom-4 -right-4 p-6 opacity-10 group-hover:scale-125 transition-transform duration-700">
+                        <Scan className="h-20 w-20" />
+                      </div>
+                    </Link>
+                  </Button>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.2 }}
-                  className="w-full sm:w-auto"
+                  className="w-full lg:w-auto"
                 >
                   <Button
                     variant="outline"
                     size="xl"
-                    className="w-full sm:w-[320px] h-24 group relative rounded-[32px] border-2 border-primary/20 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:border-primary/50"
+                    className="w-full lg:w-[280px] h-24 group relative rounded-[32px] border-2 border-primary/20 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:border-primary/50"
                     asChild
                   >
                     <a href={LMS_URL} target="_blank" rel="noopener noreferrer">
                       <div className="relative z-10 flex flex-col items-start gap-1">
                         <span className="text-xs font-black uppercase tracking-widest text-primary text-left">Consultation</span>
-                        <span className="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
-                          Book Expert Call <PlayCircle className="h-6 w-6 text-primary group-hover:rotate-12 transition-transform" />
+                        <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
+                          Book Expert Call <PlayCircle className="h-5 w-5 text-primary group-hover:rotate-12 transition-transform" />
                         </span>
                       </div>
                       <div className="absolute -bottom-6 -right-6 p-6 opacity-5 group-hover:opacity-10 transition-all duration-700">
