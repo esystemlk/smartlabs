@@ -80,6 +80,7 @@ import { logTestCompletion } from "@/lib/services/activity.service";
 import { EventPopup } from "@/components/events/event-popup";
 import { useHomepageCourses, useLearningMethods, useFeatures, useFAQs, useComparisons } from "@/hooks/use-homepage-content";
 import { useTestimonials } from "@/hooks/use-testimonials";
+import { GoogleReviews } from "@/components/sections/google-reviews";
 import { LMS_URL, testimonials } from "@/lib/constants";
 import { WebinarPoster } from "@/components/webinar/webinar-poster";
 import {
@@ -1745,66 +1746,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials Section - Elite Feedback */}
-      <section className="py-24 sm:py-32 relative overflow-hidden bg-white dark:bg-slate-950">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center text-center space-y-6 mb-24">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              className="px-4 py-2 rounded-full bg-accent-4/10 text-accent-4 text-[10px] font-black uppercase tracking-[0.3em]"
-            >
-              Success Narratives
-            </motion.div>
-            <h2 className="text-5xl sm:text-7xl font-black tracking-tight leading-none">
-              Voice of <br />
-              <span className="text-primary italic">The Community</span>
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {displayTestimonials.map((testimonial: any, i: number) => {
-              const name = testimonial.author || testimonial.name || "Student";
-              const role = testimonial.role || testimonial.course || "PTE Student";
-              const content = testimonial.content || testimonial.quote || "";
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                >
-                  <div className="h-full p-10 rounded-[48px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 relative group hover:bg-white dark:hover:bg-slate-800 transition-all duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)]">
-                    <Quote className="absolute top-10 right-10 h-12 w-12 text-primary/5 group-hover:text-primary/10 transition-colors" />
-                    <div className="flex gap-1 mb-8">
-                      {[1, 2, 3, 4, 5].map(star => (
-                        <Star key={star} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      ))}
-                    </div>
-                    <p className="text-lg text-muted-foreground leading-relaxed mb-10 italic">"{content}"</p>
-                    <div className="flex items-center gap-4 mt-auto">
-                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent-3 flex items-center justify-center text-white font-black text-xl">
-                        {name[0]}
-                      </div>
-                      <div>
-                        <div className="font-black text-lg tracking-tight">{name}</div>
-                        <div className="text-xs font-bold text-primary uppercase tracking-widest">{role}</div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          <div className="mt-20 w-full">
-            <Script src="https://elfsightcdn.com/platform.js" strategy="lazyOnload" />
-            <div className="elfsight-app-ed94a5c0-fc6e-4053-b156-5d243e3c3aca" data-elfsight-app-lazy></div>
-          </div>
-        </div>
-      </section>
+      {/* Google Reviews Section */}
+      <GoogleReviews />
 
       {/* FAQ Section - Ultra Modern Accordion */}
       <section className="py-24 sm:py-32 bg-slate-50 dark:bg-slate-900/50 relative overflow-hidden">
