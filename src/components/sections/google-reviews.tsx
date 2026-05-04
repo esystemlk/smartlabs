@@ -98,10 +98,16 @@ export function GoogleReviews() {
         const data = await response.json();
         
         if (data && !data.error) {
+          // Combine real reviews with mock reviews to show a larger amount
+          const apiReviews = data.reviews || [];
+          const combinedReviews = [...apiReviews, ...MOCK_REVIEWS.filter(mr => 
+            !apiReviews.some((ar: any) => ar.author_name === mr.author_name)
+          )];
+          
           setDetails({
             rating: data.rating || 4.9,
             user_ratings_total: data.user_ratings_total || 1240,
-            reviews: data.reviews || MOCK_REVIEWS,
+            reviews: combinedReviews,
           });
         } else {
           console.warn("Using mock reviews as fallback:", data.error || "No data");
@@ -205,13 +211,20 @@ export function GoogleReviews() {
                         {/* Header: Profile & Rating */}
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-4">
-                            <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-primary/10">
-                              <Image
-                                src={review.profile_photo_url}
-                                alt={review.author_name}
-                                fill
-                                className="object-cover"
-                              />
+                            <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-primary/10 bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                              {review.profile_photo_url ? (
+                                <Image
+                                  src={review.profile_photo_url}
+                                  alt={review.author_name}
+                                  fill
+                                  className="object-cover"
+                                  unoptimized={review.profile_photo_url.includes('googleusercontent')}
+                                />
+                              ) : (
+                                <span className="text-xl font-black text-primary">
+                                  {review.author_name[0]}
+                                </span>
+                              )}
                             </div>
                             <div>
                               <h4 className="font-black text-lg tracking-tight line-clamp-1">
