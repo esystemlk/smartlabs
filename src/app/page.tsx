@@ -81,6 +81,7 @@ import { EventPopup } from "@/components/events/event-popup";
 import { useHomepageCourses, useLearningMethods, useFeatures, useFAQs, useComparisons } from "@/hooks/use-homepage-content";
 import { useTestimonials } from "@/hooks/use-testimonials";
 import { GoogleReviews } from "@/components/sections/google-reviews";
+import { GoogleMap } from "@/components/sections/google-map";
 import { LMS_URL, testimonials } from "@/lib/constants";
 import { WebinarPoster } from "@/components/webinar/webinar-poster";
 import {
@@ -1785,6 +1786,9 @@ export default function Home() {
           </Accordion>
         </div>
       </section>
+
+      {/* Map Section */}
+      <GoogleMap />
 
       {/* Global Call to Action - Final Impact */}
       <section className="py-24 sm:py-32 relative overflow-hidden bg-[#020617]">
