@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, LayoutDashboard, LogOut, Target, Globe, Zap, Sparkles, Book, Video, Phone, ArrowRight, Search, Robot } from "lucide-react";
+import { Menu, X, ChevronDown, LayoutDashboard, LogOut, Target, Globe, Zap, Sparkles, Book, Video, Phone, ArrowRight, Search, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth } from "@/firebase";
@@ -72,7 +72,7 @@ const featured = [
 
 const navLinks = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "AI Tutor", href: "/dashboard/ai-tutor", icon: Robot },
+  { name: "AI Tutor", href: "/dashboard/ai-tutor", icon: Bot },
   { name: "LMS Portal", href: LMS_URL, external: true },
   { name: "Windows App", href: "/download/windows" },
   { name: "Level Test", href: "/level-test", highlight: true },

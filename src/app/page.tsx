@@ -53,7 +53,14 @@ import {
   Download,
   Laptop,
   Bell,
-  Calendar
+  Calendar,
+  Quote,
+  Layout,
+  Check,
+  X,
+  HelpCircle,
+  ChevronRight,
+  PlayCircle
 } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { AnimatedNumber } from "@/components/ui/animated-number";
@@ -61,7 +68,6 @@ import { AnimatedCheckmark } from "@/components/ui/animated-checkmark";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Layout, Check, X, HelpCircle, ChevronRight, PlayCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { auth, db } from '@/lib/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -73,7 +79,8 @@ import { useSiteStats } from "@/hooks/use-site-stats";
 import { logTestCompletion } from "@/lib/services/activity.service";
 import { EventPopup } from "@/components/events/event-popup";
 import { useHomepageCourses, useLearningMethods, useFeatures, useFAQs, useComparisons } from "@/hooks/use-homepage-content";
-import { LMS_URL } from "@/lib/constants";
+import { useTestimonials } from "@/hooks/use-testimonials";
+import { LMS_URL, testimonials } from "@/lib/constants";
 import { WebinarPoster } from "@/components/webinar/webinar-poster";
 import {
   CalendarBlank as PhCalendar,
@@ -325,6 +332,7 @@ export default function Home() {
   const { features: realFeatures, loading: featuresLoading } = useFeatures();
   const { faqs: realFAQs, loading: faqsLoading } = useFAQs();
   const { comparisons: realComparisons, loading: comparisonsLoading } = useComparisons();
+  const { testimonials: realTestimonials, loading: testimonialsLoading } = useTestimonials();
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
@@ -358,6 +366,7 @@ export default function Home() {
 
   const displayFAQs = realFAQs.length > 0 ? realFAQs : faqs;
   const displayComparisons = realComparisons.length > 0 ? realComparisons : comparisons;
+  const displayTestimonials = realTestimonials.length > 0 ? realTestimonials : testimonials;
   const featuredCourses = (() => {
     const targets = ['/pte', '/ielts', '/celpip'];
     const selected = displayCourses.filter((c: any) => targets.includes(c.href));
@@ -523,8 +532,7 @@ export default function Home() {
     }
   };
   return (
-    <>
-
+    <main className="relative">
       <EventPopup />
 
 
@@ -1836,34 +1844,39 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {displayTestimonials.map((testimonial, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-              >
-                <div className="h-full p-10 rounded-[48px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 relative group hover:bg-white dark:hover:bg-slate-800 transition-all duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)]">
-                  <Quote className="absolute top-10 right-10 h-12 w-12 text-primary/5 group-hover:text-primary/10 transition-colors" />
-                  <div className="flex gap-1 mb-8">
-                    {[1, 2, 3, 4, 5].map(star => (
-                      <Star key={star} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-                  <p className="text-lg text-muted-foreground leading-relaxed mb-10 italic">"{testimonial.content}"</p>
-                  <div className="flex items-center gap-4 mt-auto">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent-3 flex items-center justify-center text-white font-black text-xl">
-                      {testimonial.author[0]}
+            {displayTestimonials.map((testimonial: any, i: number) => {
+              const name = testimonial.author || testimonial.name || "Student";
+              const role = testimonial.role || testimonial.course || "PTE Student";
+              const content = testimonial.content || testimonial.quote || "";
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                >
+                  <div className="h-full p-10 rounded-[48px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 relative group hover:bg-white dark:hover:bg-slate-800 transition-all duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)]">
+                    <Quote className="absolute top-10 right-10 h-12 w-12 text-primary/5 group-hover:text-primary/10 transition-colors" />
+                    <div className="flex gap-1 mb-8">
+                      {[1, 2, 3, 4, 5].map(star => (
+                        <Star key={star} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      ))}
                     </div>
-                    <div>
-                      <div className="font-black text-lg tracking-tight">{testimonial.author}</div>
-                      <div className="text-xs font-bold text-primary uppercase tracking-widest">{testimonial.role}</div>
+                    <p className="text-lg text-muted-foreground leading-relaxed mb-10 italic">"{content}"</p>
+                    <div className="flex items-center gap-4 mt-auto">
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent-3 flex items-center justify-center text-white font-black text-xl">
+                        {name[0]}
+                      </div>
+                      <div>
+                        <div className="font-black text-lg tracking-tight">{name}</div>
+                        <div className="text-xs font-bold text-primary uppercase tracking-widest">{role}</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </div>
 
           <div className="mt-20 w-full">
