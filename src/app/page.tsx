@@ -763,54 +763,12 @@ export default function Home() {
               }}
               className="relative hidden lg:block"
             >
-              <div className="relative w-full aspect-[4/5] max-h-[800px]">
-                {/* Main Card - High Tech LMS Preview */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9, y: 40 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{ delay: 0.5, duration: 1 }}
-                  className="absolute inset-0 z-10 rounded-[48px] border border-white/30 dark:border-slate-700/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl p-3 shadow-[0_50px_100px_rgba(0,0,0,0.15)] overflow-hidden group"
-                >
-                  <div className="relative h-full w-full rounded-[36px] overflow-hidden bg-slate-100 dark:bg-slate-950">
-                    <Image
-                      src="/images/lms-preview.png"
-                      alt="LMS Dashboard"
-                      fill
-                      className="object-cover object-top opacity-90 group-hover:scale-105 transition-transform duration-1000"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60" />
-
-                    {/* Overlay Stats */}
-                    <div className="absolute bottom-8 left-8 right-8 grid grid-cols-2 gap-4">
-                      <div className="p-6 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-white/60">Current Progress</p>
-                        <p className="text-3xl font-black text-white mt-1">84%</p>
-                        <div className="mt-3 h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: "84%" }}
-                            transition={{ delay: 1.5, duration: 1 }}
-                            className="h-full bg-primary shadow-[0_0_15px_rgba(79,70,229,0.5)]"
-                          />
-                        </div>
-                      </div>
-                      <div className="p-6 rounded-3xl bg-primary backdrop-blur-md border border-white/20 shadow-2xl">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-white/60">Estimated Score</p>
-                        <p className="text-3xl font-black text-white mt-1">79+</p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <TrendingUp className="h-4 w-4 text-white" />
-                          <span className="text-[10px] font-bold text-white uppercase tracking-widest">Improving Fast</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-
-                {/* Floating Detail Cards */}
+              <div className="relative w-full aspect-[4/5] max-h-[800px] flex items-center justify-center">
+                {/* Floating Detail Cards - Repositioned since image is removed */}
                 <motion.div
                   animate={{ y: [0, -20, 0], x: [0, 10, 0] }}
                   transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -top-12 -right-12 z-20 w-64 p-6 rounded-[32px] bg-white dark:bg-slate-800 shadow-2xl border border-slate-100 dark:border-slate-700"
+                  className="absolute top-1/4 right-0 z-20 w-64 p-6 rounded-[32px] bg-white dark:bg-slate-800 shadow-2xl border border-slate-100 dark:border-slate-700"
                 >
                   <div className="flex items-center gap-4 mb-4">
                     <div className="w-10 h-10 rounded-xl bg-accent-3/10 flex items-center justify-center text-accent-3">
@@ -827,7 +785,7 @@ export default function Home() {
                 <motion.div
                   animate={{ y: [0, 20, 0], x: [0, -10, 0] }}
                   transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                  className="absolute -bottom-12 -left-12 z-20 w-72 p-6 rounded-[32px] bg-slate-900 text-white shadow-2xl border border-white/10"
+                  className="absolute bottom-1/4 left-0 z-20 w-72 p-6 rounded-[32px] bg-slate-900 text-white shadow-2xl border border-white/10"
                 >
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-[10px] font-black uppercase tracking-widest text-white/50">New Message</span>
@@ -845,7 +803,7 @@ export default function Home() {
                 </motion.div>
 
                 {/* Decorative Background Elements */}
-                <div className="absolute -inset-10 -z-10 bg-gradient-to-br from-primary/20 via-transparent to-accent-1/20 blur-3xl opacity-50 rounded-full" />
+                <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/20 via-transparent to-accent-1/20 blur-3xl opacity-50 rounded-full" />
               </div>
             </motion.div>
 
@@ -1476,7 +1434,7 @@ export default function Home() {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 animate-gradient italic">Victory Path</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl">
-              World-class preparation frameworks for PTE, IELTS & CELPIP, engineered by international experts.
+              World-class preparation frameworks for PTE & CELPIP, engineered by international experts.
             </p>
           </div>
 

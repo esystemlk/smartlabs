@@ -33,17 +33,17 @@ export const courseData = [
 export const testimonials = [
     {
         name: 'Priya Sharma',
-        course: 'IELTS Student',
-        quote: 'The personalized study plan was a game-changer! I improved my score by 1.5 bands in just 6 weeks. The instructors at Smart Labs are fantastic.',
+        course: 'PTE Student',
+        quote: 'The personalized study plan was a game-changer! I improved my score significantly in just 6 weeks. The instructors at Smart Labs are fantastic.',
         avatar: 'https://picsum.photos/100/100?random=1',
-        achievement: 'Score 8.0'
+        achievement: 'Score 79+'
     },
     {
         name: 'John Adebayo',
-        course: 'OET Student',
-        quote: 'As a doctor, the OET course was perfectly tailored to my needs. The role-playing sessions gave me the confidence I needed for the speaking test.',
+        course: 'CELPIP Student',
+        quote: 'The CELPIP course was perfectly tailored to my needs. The practice sessions gave me the confidence I needed for the speaking test.',
         avatar: 'https://picsum.photos/100/100?random=2',
-        achievement: 'Grade A'
+        achievement: 'Level 10+'
     },
     {
         name: 'Chen Wei',
@@ -55,10 +55,10 @@ export const testimonials = [
 ];
 
 export const resourceLibrary = [
-    { id: '1', type: 'test', title: 'IELTS Academic - Sample Test', format: 'PDF', icon: 'FileText', url: '#' },
+    { id: '1', type: 'test', title: 'PTE Academic - Sample Test', format: 'PDF', icon: 'FileText', url: '#' },
     { id: '2', type: 'test', title: 'PTE Academic - Full-length Mock Test', format: 'PDF', icon: 'FileText', url: '#' },
-    { id: '3', type: 'video', title: 'OET Speaking Role-play Example', format: 'Video', icon: 'Video', url: '#' },
-    { id: '4', type: 'list', title: 'TOEFL Vocabulary List', format: 'PDF', icon: 'FileText', url: '#' },
-    { id: '5', type: 'video', title: 'IELTS Writing Task 1 Strategy', format: 'Video', icon: 'Video', url: '#' },
-    { id: '6', type: 'test', title: 'OET Nursing - Sample Case Notes', format: 'PDF', icon: 'FileText', url: '#' },
+    { id: '3', type: 'video', title: 'CELPIP Speaking Role-play Example', format: 'Video', icon: 'Video', url: '#' },
+    { id: '4', type: 'list', title: 'PTE Vocabulary List', format: 'PDF', icon: 'FileText', url: '#' },
+    { id: '5', type: 'video', title: 'PTE Writing Strategy', format: 'Video', icon: 'Video', url: '#' },
+    { id: '6', type: 'test', title: 'CELPIP - Sample Reading Notes', format: 'PDF', icon: 'FileText', url: '#' },
 ];

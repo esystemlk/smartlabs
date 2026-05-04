@@ -253,15 +253,6 @@ const practiceTests = [
     hasAiScore: true,
   },
   {
-    exam: 'IELTS',
-    section: 'Writing',
-    title: 'IELTS Writing Task 2: Essay',
-    description: 'Practice writing a full essay for the IELTS Academic Writing Task 2.',
-    href: '/dashboard/practice-tests/ielts-writing-task2',
-    status: 'Available',
-    hasAiScore: true,
-  },
-  {
     exam: 'CELPIP',
     section: 'Listening',
     title: 'CELPIP Listening Practice',
@@ -272,7 +263,7 @@ const practiceTests = [
   },
 ];
 
-const exams = ['PTE', 'IELTS', 'CELPIP'];
+const exams = ['PTE', 'CELPIP'];
 const sectionsByExam = exams.reduce(
   (acc, exam) => {
     acc[exam] = [...new Set(practiceTests.filter((t) => t.exam === exam).map((t) => t.section))];
@@ -287,12 +278,6 @@ const examDetails: { [key: string]: { icon: any; color: string; iconColor: strin
     color: 'from-accent-1/20 to-accent-1/5',
     iconColor: 'text-accent-1',
     description: "Practice all PTE question types with AI feedback."
-  },
-  IELTS: {
-    icon: Globe,
-    color: 'from-accent-2/20 to-accent-2/5',
-    iconColor: 'text-accent-2',
-    description: "Prepare for your IELTS exam with targeted exercises."
   },
   CELPIP: {
     icon: Zap,

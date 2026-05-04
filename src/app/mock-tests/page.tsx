@@ -19,12 +19,6 @@ const mockTestCourses = [
     status: "Available"
   },
   {
-    title: "IELTS Mock Tests",
-    description: "Practice with academic and general training mock tests.",
-    href: "#",
-    status: "Coming Soon"
-  },
-  {
     title: "CELPIP Mock Tests",
     description: "Prepare for your Canadian immigration journey with our practice tests.",
     href: "#",

@@ -99,74 +99,6 @@ export default function CoursesPage() {
         'Note: Recorded program is fully self-study based'
       ].join(', '),
       price: 0
-    },
-    {
-      id: 'ielts-boostify',
-      name: 'IELTS Boostify Package',
-      subtitle: 'Online via Zoom',
-      themeColor: 'accent-3',
-      duration: '1 Month | 16 Hours',
-      days: 'Tuesday & Saturday',
-      startTime: '8.00 PM – 10.00 PM',
-      features: [
-        'Complete IELTS exam strategies',
-        'Speaking mock exams',
-        'Real exam style practice platform',
-        '2 months class recordings',
-        'Structured lessons for all modules'
-      ].join(', '),
-      price: 25000
-    },
-    {
-      id: 'ielts-mastery',
-      name: 'IELTS Mastery Package',
-      subtitle: 'Advanced training and difficult questions focus',
-      themeColor: 'primary',
-      duration: '1 Month | 24 Hours',
-      days: 'Tuesday, Wednesday, Saturday',
-      startTime: '8.00 PM – 10.00 PM',
-      features: [
-        'Everything in Boostify package',
-        'Extra 8 hours advanced training',
-        'Special focus on difficult questions',
-        'Speaking mock tests',
-        '2 months recordings access'
-      ].join(', '),
-      price: 35000
-    },
-    {
-      id: 'ielts-hybrid',
-      name: 'IELTS Hybrid (Online + Physical)',
-      subtitle: 'Online + weekend campus sessions',
-      themeColor: 'accent-2',
-      duration: '32 Hours (Online 16 + Physical 16)',
-      days: 'Online: Tue & Sat | Physical: Sat & Sun',
-      startTime: 'Online: 8.00 PM – 10.00 PM | Physical: 11.30 AM – 1.30 PM',
-      features: [
-        'Full IELTS strategies',
-        'Speaking mock exams',
-        'Practice platforms with scoring',
-        '2 months recordings',
-        'Extra physical practice sessions'
-      ].join(', '),
-      price: 50000
-    },
-    {
-      id: 'ielts-physical',
-      name: 'IELTS Physical Class Package',
-      subtitle: 'On-site learning with feedback',
-      themeColor: 'accent',
-      duration: '1 Month | 16 Hours',
-      days: 'Saturday & Sunday',
-      startTime: '11.30 AM – 1.30 PM',
-      features: [
-        'Face-to-face IELTS training',
-        'Strategies for high band score',
-        'Speaking practice with feedback',
-        'Structured lessons for all modules',
-        'Seats: Only 12 students per batch'
-      ].join(', '),
-      price: 40000
     }
   ];
   const coursesQuery = useMemoFirebase(
@@ -211,8 +143,8 @@ export default function CoursesPage() {
                 <span className="gradient-text italic">Success Path</span>
               </h1>
               <p className="text-lg md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium">
-                Elite preparation programs for PTE & IELTS. <br className="hidden md:block" />
-                Engineered for results, delivered with excellence.
+                Elite preparation programs for PTE & CELPIP. <br className="hidden md:block" />
+                Engineered for success, powered by AI.
               </p>
             </motion.div>
           </div>

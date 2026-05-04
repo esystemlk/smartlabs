@@ -366,7 +366,7 @@ function IntroStep({ onStart }: { onStart: () => void }) {
                         <Trophy className="h-6 w-6 text-purple-600" />
                     </div>
                     <h3 className="font-bold">50 Marks Total</h3>
-                    <p className="text-sm text-muted-foreground">Scored based on official IELTS/PTE standards.</p>
+                    <p className="text-sm text-muted-foreground">Scored based on official PTE/CELPIP standards.</p>
                 </div>
                 <div className="p-6 bg-card border rounded-2xl flex flex-col items-center gap-3">
                     <div className="p-3 bg-green-100 rounded-xl">
@@ -606,7 +606,7 @@ function ReadingSection({ answers, setAnswers }: any) {
             <CardHeader className="px-0">
                 <CardTitle className="text-2xl flex items-center gap-3">
                     <BookOpen className="h-6 w-6 text-primary" />
-                    Section 5: IELTS Reading
+                    Section 5: Academic Reading
                 </CardTitle>
                 <CardDescription>Read the passage and answer the questions below. (10 Marks)</CardDescription>
             </CardHeader>
