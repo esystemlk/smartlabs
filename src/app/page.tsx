@@ -584,19 +584,19 @@ export default function Home() {
         />
 
         <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-12 relative z-10 w-full">
-          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+          <div className="flex flex-col items-center text-center">
 
-            {/* Left Content Column - Modern Asymmetrical */}
+            {/* Content Column - Modern Centered */}
             <motion.div
               style={{ opacity: heroOpacity }}
-              className="space-y-12 relative"
+              className="space-y-12 relative max-w-5xl mx-auto"
             >
               {/* Premium Status Bar */}
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
-                className="inline-flex items-center gap-6 p-1.5 pr-6 rounded-2xl bg-white/5 dark:bg-slate-900/40 border border-white/20 dark:border-slate-800/50 backdrop-blur-2xl shadow-2xl"
+                className="inline-flex items-center gap-6 p-1.5 pr-6 rounded-2xl bg-white/5 dark:bg-slate-900/40 border border-white/20 dark:border-slate-800/50 backdrop-blur-2xl shadow-2xl mx-auto"
               >
                 <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-primary/10 border border-primary/20">
                   <div className="relative flex h-2 w-2">
@@ -645,39 +645,39 @@ export default function Home() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.6 }}
-                  className="flex items-center gap-6"
+                  className="flex items-center gap-6 justify-center"
                 >
-                  <div className="h-px flex-1 bg-gradient-to-r from-primary/50 to-transparent" />
+                  <div className="h-px w-24 bg-gradient-to-r from-primary/50 to-transparent" />
                   <span className="text-xs font-black uppercase tracking-[0.4em] text-primary whitespace-nowrap">The Future of PTE Training</span>
-                  <div className="h-px flex-1 bg-gradient-to-l from-primary/50 to-transparent" />
+                  <div className="h-px w-24 bg-gradient-to-l from-primary/50 to-transparent" />
                 </motion.div>
 
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.9 }}
-                  className="text-xl sm:text-2xl text-muted-foreground dark:text-slate-300 max-w-2xl leading-relaxed font-medium"
+                  className="text-xl sm:text-2xl text-muted-foreground dark:text-slate-300 max-w-3xl mx-auto leading-relaxed font-medium"
                 >
                   Experience the most <span className="text-primary font-black italic underline decoration-primary/30 underline-offset-8">advanced AI-driven</span> ecosystem for PTE & CELPIP. Personalized strategies that adapt to your unique learning style.
                 </motion.p>
               </div>
 
               {/* Advanced Bento CTA Section */}
-              <div className="grid sm:grid-cols-2 gap-4 lg:gap-6">
+              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.1 }}
-                  className="col-span-1"
+                  className="w-full sm:w-auto"
                 >
                   <Button
                     size="xl"
-                    className="w-full h-24 group relative rounded-[32px] bg-slate-900 dark:bg-white text-white dark:text-slate-900 overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-95 shadow-2xl"
+                    className="w-full sm:w-[320px] h-24 group relative rounded-[32px] bg-slate-900 dark:bg-white text-white dark:text-slate-900 overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-95 shadow-2xl"
                     asChild
                   >
                     <a href={LMS_URL} target="_blank" rel="noopener noreferrer">
                       <div className="relative z-10 flex flex-col items-start gap-1">
-                        <span className="text-xs font-black uppercase tracking-widest opacity-60">Get Started</span>
+                        <span className="text-xs font-black uppercase tracking-widest opacity-60 text-left">Get Started</span>
                         <span className="text-2xl font-black tracking-tight flex items-center gap-3">
                           Start Free Trial <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform" />
                         </span>
@@ -693,17 +693,17 @@ export default function Home() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.2 }}
-                  className="col-span-1"
+                  className="w-full sm:w-auto"
                 >
                   <Button
                     variant="outline"
                     size="xl"
-                    className="w-full h-24 group relative rounded-[32px] border-2 border-primary/20 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:border-primary/50"
+                    className="w-full sm:w-[320px] h-24 group relative rounded-[32px] border-2 border-primary/20 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:border-primary/50"
                     asChild
                   >
                     <a href={LMS_URL} target="_blank" rel="noopener noreferrer">
                       <div className="relative z-10 flex flex-col items-start gap-1">
-                        <span className="text-xs font-black uppercase tracking-widest text-primary">Consultation</span>
+                        <span className="text-xs font-black uppercase tracking-widest text-primary text-left">Consultation</span>
                         <span className="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
                           Book Expert Call <PlayCircle className="h-6 w-6 text-primary group-hover:rotate-12 transition-transform" />
                         </span>
@@ -721,13 +721,13 @@ export default function Home() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.4 }}
-                className="flex flex-wrap items-center gap-8 pt-6 border-t border-slate-200 dark:border-slate-800"
+                className="flex flex-wrap items-center justify-center gap-8 pt-12 border-t border-slate-200 dark:border-slate-800"
               >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-accent-1/10 flex items-center justify-center text-accent-1">
                     <Trophy className="h-6 w-6" />
                   </div>
-                  <div>
+                  <div className="text-left">
                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Achievement</p>
                     <p className="text-sm font-black">95% Success Rate</p>
                   </div>
@@ -737,7 +737,7 @@ export default function Home() {
                   <div className="w-12 h-12 rounded-2xl bg-accent-2/10 flex items-center justify-center text-accent-2">
                     <Cpu className="h-6 w-6" />
                   </div>
-                  <div>
+                  <div className="text-left">
                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Technology</p>
                     <p className="text-sm font-black">AI Scoring 2.0</p>
                   </div>
@@ -747,66 +747,13 @@ export default function Home() {
                   <div className="w-12 h-12 rounded-2xl bg-accent-3/10 flex items-center justify-center text-accent-3">
                     <Globe className="h-6 w-6" />
                   </div>
-                  <div>
+                  <div className="text-left">
                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Recognition</p>
                     <p className="text-sm font-black">Pearson Certified</p>
                   </div>
                 </div>
               </motion.div>
             </motion.div>
-
-            {/* Right Visual Column - Advanced Interactive Stack */}
-            <motion.div
-              style={{
-                opacity: heroOpacity,
-                scale: heroScale,
-              }}
-              className="relative hidden lg:block"
-            >
-              <div className="relative w-full aspect-[4/5] max-h-[800px] flex items-center justify-center">
-                {/* Floating Detail Cards - Repositioned since image is removed */}
-                <motion.div
-                  animate={{ y: [0, -20, 0], x: [0, 10, 0] }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute top-1/4 right-0 z-20 w-64 p-6 rounded-[32px] bg-white dark:bg-slate-800 shadow-2xl border border-slate-100 dark:border-slate-700"
-                >
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-accent-3/10 flex items-center justify-center text-accent-3">
-                      <Brain className="h-6 w-6" />
-                    </div>
-                    <span className="text-sm font-black tracking-tight">AI Feedback</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">"Your pronunciation of fricative sounds has improved by 12% this week."</p>
-                  <div className="mt-4 flex -space-x-2">
-                    {[1, 2, 3].map(i => <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-slate-200" />)}
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  animate={{ y: [0, 20, 0], x: [0, -10, 0] }}
-                  transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                  className="absolute bottom-1/4 left-0 z-20 w-72 p-6 rounded-[32px] bg-slate-900 text-white shadow-2xl border border-white/10"
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-white/50">New Message</span>
-                    <div className="w-2 h-2 rounded-full bg-accent-1 animate-pulse" />
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                      <GraduationCap className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold">Lahiruka Weeraratne</p>
-                      <p className="text-[10px] text-white/60 mt-1 line-clamp-2">"Great work on your latest essay! Let's focus on..."</p>
-                    </div>
-                  </div>
-                </motion.div>
-
-                {/* Decorative Background Elements */}
-                <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/20 via-transparent to-accent-1/20 blur-3xl opacity-50 rounded-full" />
-              </div>
-            </motion.div>
-
           </div>
         </div>
       </section>
