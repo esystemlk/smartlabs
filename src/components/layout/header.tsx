@@ -45,7 +45,7 @@ const courses = [
   {
     name: "Courses",
     href: "/courses",
-    description: "Browse all PTE & IELTS programs.",
+    description: "Browse all PTE & CELPIP programs.",
     icon: Book,
     color: "text-primary",
     bgColor: "bg-primary/10",

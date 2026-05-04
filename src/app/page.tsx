@@ -128,16 +128,6 @@ const courses = [
     features: ["AI Scoring Practice", "Live Classes", "Full Materials Access", "Mock Tests"],
   },
   {
-    title: "IELTS Mastery",
-    description: "Achieve Band 7.5+ with our comprehensive IELTS training program.",
-    icon: Globe,
-    href: "/courses",
-    color: "from-accent-3/20 to-accent-3/5",
-    iconColor: "text-accent-3",
-    bgGradient: "from-accent-3/10 via-accent-3/5 to-transparent",
-    features: ["Expert Evaluation", "Speaking Practice", "Writing Intensive", "Free Resources"],
-  },
-  {
     title: "CELPIP Prep",
     description: "Your pathway to Canadian immigration with focused CELPIP training.",
     icon: Zap,
@@ -258,7 +248,7 @@ const comparisons = [
 const faqs = [
   {
     q: "How accurate is the AI scoring engine?",
-    a: "Our AI scoring engine is built using advanced natural language processing and is continuously refined based on official PTE, IELTS, and CELPIP scoring rubrics. It provides detailed feedback on grammar, vocabulary, coherence, and task achievement to help you improve effectively."
+    a: "Our AI scoring engine is built using advanced natural language processing and is continuously refined based on official PTE and CELPIP scoring rubrics. It provides detailed feedback on grammar, vocabulary, coherence, and task achievement to help you improve effectively."
   },
   {
     q: "Can I switch between individual and group classes?",
@@ -270,7 +260,7 @@ const faqs = [
   },
   {
     q: "Do you provide assistance with exam booking?",
-    a: "Yes, our support team guides you through the official registration process for PTE, IELTS, and CELPIP to ensure all your details are correct for the test day."
+    a: "Yes, our support team guides you through the official registration process for PTE and CELPIP to ensure all your details are correct for the test day."
   }
 ];
 
@@ -668,7 +658,7 @@ export default function Home() {
                   transition={{ delay: 0.9 }}
                   className="text-xl sm:text-2xl text-muted-foreground dark:text-slate-300 max-w-2xl leading-relaxed font-medium"
                 >
-                  Experience the most <span className="text-primary font-black italic underline decoration-primary/30 underline-offset-8">advanced AI-driven</span> ecosystem for PTE, IELTS & CELPIP. Personalized strategies that adapt to your unique learning style.
+                  Experience the most <span className="text-primary font-black italic underline decoration-primary/30 underline-offset-8">advanced AI-driven</span> ecosystem for PTE & CELPIP. Personalized strategies that adapt to your unique learning style.
                 </motion.p>
               </div>
 

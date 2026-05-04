@@ -10,7 +10,6 @@ export const NAV_LINKS: NavLink[] = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About Us' },
   { href: '/pte', label: 'PTE' },
-  { href: '/ielts', label: 'IELTS' },
   { href: '/celpip', label: 'CELPIP' },
   { href: '/corporate-training', label: 'Corporate Training' },
   { href: '/contact', label: 'Contact' },
@@ -22,12 +21,6 @@ export const courseData = [
     description: 'Achieve your desired score in the Pearson Test of English Academic with our PTE training in Colombo.',
     duration: '4 Weeks',
     features: ['AI Scoring Practice', 'Test-taking Strategies', 'Integrated Skills Practice'],
-  },
-  {
-    title: 'IELTS',
-    description: 'Prepare for the International English Language Testing System with our comprehensive IELTS tuition in Rajagiriya.',
-    duration: '8 Weeks',
-    features: ['Mock Tests', 'Personalized Feedback', 'Vocabulary Building'],
   },
   {
     title: 'CELPIP',
