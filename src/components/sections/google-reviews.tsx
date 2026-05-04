@@ -93,25 +93,21 @@ export function GoogleReviews() {
 
   useEffect(() => {
     async function fetchReviews() {
-      if (!API_KEY) {
-        setLoading(false);
-        return;
-      }
-
       try {
-        const response = await fetch(
-          `https://maps.googleapis.com/maps/api/place/details/json?place_id=${PLACE_ID}&fields=rating,user_ratings_total,reviews&key=${API_KEY}`
-        );
+        const response = await fetch("/api/google-reviews");
         const data = await response.json();
-        if (data.result) {
+        
+        if (data && !data.error) {
           setDetails({
-            rating: data.result.rating || 4.9,
-            user_ratings_total: data.result.user_ratings_total || 1240,
-            reviews: data.result.reviews || MOCK_REVIEWS,
+            rating: data.rating || 4.9,
+            user_ratings_total: data.user_ratings_total || 1240,
+            reviews: data.reviews || MOCK_REVIEWS,
           });
+        } else {
+          console.warn("Using mock reviews as fallback:", data.error || "No data");
         }
       } catch (error) {
-        console.error("Error fetching Google reviews:", error);
+        console.error("Error fetching Google reviews through proxy:", error);
       } finally {
         setLoading(false);
       }
