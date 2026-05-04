@@ -145,30 +145,30 @@ const courses = [
 const learningMethods = [
   {
     icon: Video,
-    title: "Recorded Classes",
-    description: "Access our comprehensive library of recorded sessions anytime, anywhere.",
+    title: "Recorded + LMS Package",
+    description: "20-hour long class recordings with LMS access for LKR 20,000, valid for 1 month.",
     color: "bg-accent-1/10 text-accent-1",
     gradient: "from-accent-1/20 to-accent-1/5"
   },
   {
     icon: Users,
-    title: "Individual Classes",
-    description: "One-on-one personalized sessions with expert instructors.",
+    title: "Online Group Classes",
+    description: "Small focused online groups with 3 to 10 students for better attention and interaction.",
     color: "bg-accent-2/10 text-accent-2",
     gradient: "from-accent-2/20 to-accent-2/5",
     href: "https://register.smartlabs.lk"
   },
   {
     icon: Brain,
-    title: "AI Scoring Tests",
-    description: "Get instant feedback with our advanced AI-powered scoring system.",
+    title: "Power Sessions",
+    description: "High-impact power sessions for selected PTE components to improve weak areas fast.",
     color: "bg-accent-3/10 text-accent-3",
     gradient: "from-accent-3/20 to-accent-3/5"
   },
   {
     icon: BookOpen,
-    title: "Grammar Clinic",
-    description: "Master English grammar with our specialized clinic sessions.",
+    title: "Limited Physical Classes",
+    description: "Very limited in-person classes with limited seats for students who prefer classroom guidance.",
     color: "bg-accent-4/10 text-accent-4",
     gradient: "from-accent-4/20 to-accent-4/5"
   },
@@ -635,12 +635,12 @@ export default function Home() {
                   className="space-y-3"
                 >
                   <h1 className="font-display text-5xl sm:text-7xl lg:text-9xl font-black tracking-tighter text-foreground dark:text-white leading-[0.85]">
-                    ELEVATE
+                    MASTER
                   </h1>
                   <div className="flex items-center gap-6">
                     <h1 className="font-display text-5xl sm:text-7xl lg:text-9xl font-black tracking-tighter leading-[0.85]">
                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 animate-gradient">
-                        YOUR
+                        PTE
                       </span>
                     </h1>
                     <motion.div
@@ -672,7 +672,7 @@ export default function Home() {
                 >
                   <TypewriterEffect
                     words={[
-                      { text: "ENGLISH", className: "text-4xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-foreground dark:text-white" },
+                      { text: "WITH SMART LABS", className: "text-4xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-foreground dark:text-white" },
                     ]}
                     className="text-5xl sm:text-6xl lg:text-8xl font-black"
                     cursorClassName="bg-primary h-10 sm:h-14 lg:h-20 w-1 sm:w-2"
@@ -687,11 +687,33 @@ export default function Home() {
                 transition={{ delay: 1 }}
                 className="text-xl sm:text-2xl text-muted-foreground dark:text-white/70 max-w-2xl leading-relaxed font-medium"
               >
-                Experience the convergence of{" "}
-                <span className="text-primary font-bold">AI-powered precision</span> and{" "}
-                <span className="text-accent-3 font-bold">world-class expertise</span>.
-                Real-time scoring, unlimited practice, guaranteed results.
+                PTE-focused training with{" "}
+                <span className="text-primary font-bold">online small group classes (3-10 students)</span>,{" "}
+                <span className="text-accent-3 font-bold">power sessions for selected components</span>, and flexible{" "}
+                LMS + recordings for students without fixed study times.
               </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.05 }}
+                className="flex flex-wrap gap-3"
+              >
+                {[
+                  "PTE Specialist Programs",
+                  "Online Group Classes (3-10)",
+                  "Power Sessions by Component",
+                  "Limited Physical Seats",
+                  "20H Recording + LMS Package"
+                ].map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-4 py-2 rounded-full bg-background/70 dark:bg-slate-900/60 border border-primary/20 text-sm font-semibold text-foreground/90 dark:text-white/90"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </motion.div>
 
               {/* Advanced CTA Section */}
               <motion.div
@@ -1500,6 +1522,50 @@ export default function Home() {
                 </Link>
               </motion.div>
             ))}
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-10 sm:mt-14"
+          >
+            <div className="glass-card rounded-3xl sm:rounded-[36px] p-6 sm:p-10 border border-primary/20 bg-gradient-to-br from-primary/5 via-accent-3/5 to-accent-1/5">
+              <div className="grid lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-widest mb-5">
+                    <Video className="h-4 w-4" />
+                    <span>New PTE Package</span>
+                  </div>
+                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight mb-4">
+                    Recording Classes + LMS Access
+                  </h3>
+                  <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+                    For students who do not have a fixed time to learn, we now offer a flexible self-paced option:
+                    20-hour long class recordings with LMS access, so you can study anytime and revise as often as needed.
+                  </p>
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    {["20 Hours Recorded Lessons", "Full LMS Access", "Valid for 1 Month", "Best for Flexible Schedules"].map((item) => (
+                      <div key={item} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-background/80 border border-border/60">
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-medium">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-primary/20 bg-background/80 p-6 flex flex-col justify-center">
+                  <p className="text-xs font-black uppercase tracking-widest text-primary mb-2">Package Fee</p>
+                  <p className="text-4xl font-black tracking-tight">LKR 20,000</p>
+                  <p className="text-sm text-muted-foreground mt-2">One month validity</p>
+                  <Button className="mt-6 w-full bg-primary hover:bg-primary/90 text-white" asChild>
+                    <a href={LMS_URL} target="_blank" rel="noopener noreferrer">
+                      Enroll Now
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            </div>
           </motion.div>
 
           {/* Journey Roadmap */}
