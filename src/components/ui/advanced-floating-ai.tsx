@@ -74,10 +74,6 @@ const quickActions: QuickAction[] = [
     { icon: PenTool, label: 'PTE Essay', prompt: 'Give me a template for PTE Essay', color: 'from-pink-500 to-rose-500', category: 'action', mode: 'pte' },
     { icon: Target, label: 'PTE Scoring', prompt: 'Explain PTE scoring criteria', color: 'from-amber-500 to-yellow-500', category: 'info', mode: 'pte' },
 
-    // IELTS Addons
-    { icon: FileText, label: 'Writing Task 2', prompt: 'Assess my IELTS Writing Task 2 structure', color: 'from-purple-500 to-violet-500', category: 'action', mode: 'ielts' },
-    { icon: MessageSquare, label: 'Cue Cards', prompt: 'Give me a practice Cue Card topic', color: 'from-indigo-500 to-blue-500', category: 'action', mode: 'ielts' },
-
     // CELPIP Addons
     { icon: Mic, label: 'Speaking', prompt: 'Tips for CELPIP Speaking Task 1', color: 'from-emerald-500 to-teal-500', category: 'info', mode: 'celpip' },
     { icon: BookOpen, label: 'Reading', prompt: 'How to manage time in CELPIP Reading?', color: 'from-cyan-500 to-blue-500', category: 'info', mode: 'celpip' },
@@ -88,7 +84,7 @@ export function AdvancedFloatingAI() {
     const [messages, setMessages] = useState<Message[]>([
         {
             role: 'assistant',
-            content: 'Hi! 👋 I\'m your **Smart Labs AI Assistant**. Select a mode above to get specialized help for PTE, IELTS, or CELPIP, or ask me anything!',
+            content: 'Hi! 👋 I\'m your **Smart Labs AI Assistant**. Select a mode above to get specialized help for PTE or CELPIP, or ask me anything!',
             timestamp: new Date(),
             type: 'text'
         },

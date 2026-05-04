@@ -135,7 +135,7 @@ export default function SupportPage() {
                         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
                             <div className="text-left">
                                 <h2 className="text-3xl font-black mb-2 tracking-tight">Need immediate answers?</h2>
-                                <p className="text-white/70 max-w-md">Check out our frequently asked questions for detailed guides on PTE, IELTS, and platform usage.</p>
+                                <p className="text-white/70 max-w-md">Check out our frequently asked questions for detailed guides on PTE and platform usage.</p>
                             </div>
                             <Link href="/help-center">
                                 <Button className="h-14 px-10 rounded-2xl bg-white text-slate-900 hover:bg-slate-100 font-black uppercase tracking-widest shadow-xl shadow-black/20">

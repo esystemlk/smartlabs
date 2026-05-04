@@ -32,11 +32,11 @@ const features = [
     "How to use advanced tenses correctly",
     "How to write in passive voice",
     "Linking sentences logically to improve writing flow",
-    "Strategies for IELTS / PTE Writing & Speaking scores"
+    "Strategies for PTE Writing & Speaking scores"
 ];
 
 const targetAudience = [
-    "Students preparing for IELTS, PTE, CELPIP",
+    "Students preparing for PTE, CELPIP",
     "Anyone planning professional English exams",
     "Students struggling with sentence structure",
     "Learners wanting to improve academic writing",
@@ -73,7 +73,7 @@ export default function GrammarClinicPage() {
                                     <span className="text-[#1E40AF]">Clinic</span>
                                 </h1>
                                 <p className="text-2xl md:text-3xl font-black text-muted-foreground italic leading-tight mb-8">
-                                    Foundation for IELTS, PTE & <br />
+                                    Foundation for PTE & <br />
                                     Professional English Exams
                                 </p>
                                 <p className="text-xl text-muted-foreground max-w-xl font-medium">
@@ -170,7 +170,7 @@ export default function GrammarClinicPage() {
                         <div className="space-y-6">
                             <h2 className="text-3xl font-black font-headline tracking-tight text-[#1E40AF]">Grammar Clinic – LKR 5,000</h2>
                             <p className="text-lg md:text-xl font-medium leading-relaxed italic text-muted-foreground">
-                                "Build the most important foundation required for IELTS, PTE, CELPIP, and all professional English exams. This weekend program focuses on upgrading your grammar skills and helping you construct advanced academic sentences with confidence."
+                                "Build the most important foundation required for PTE, CELPIP, and all professional English exams. This weekend program focuses on upgrading your grammar skills and helping you construct advanced academic sentences with confidence."
                             </p>
                             <p className="text-base text-muted-foreground leading-relaxed">
                                 Through this course, you will learn advanced sentence structures, coherence and cohesion techniques, academic vocabulary, passive voice, complex sentences, and advanced tense usage. This is the best starting point for anyone planning to take an international English exam.
@@ -257,7 +257,8 @@ export default function GrammarClinicPage() {
                                 </div>
                             ))}
                             <div className="md:col-span-2 lg:col-span-1 p-6 flex items-center justify-center italic text-white/40 text-sm font-black uppercase text-center border-2 border-dashed border-white/20 rounded-3xl">
-                                Crucial for high scores in <br /> IELTS & PTE Writing
+                                Crucial for high scores in <br />
+                                PTE Writing
                             </div>
                         </div>
                     </div>
@@ -289,7 +290,7 @@ export default function GrammarClinicPage() {
                                         ["Time", "4.00 PM – 6.00 PM Sri Lankan Time"],
                                         ["Investment", "LKR 5,000"],
                                         ["Target Level", "Beginner to Intermediate"],
-                                        ["Core Focus", "Grammar Foundation for IELTS / PTE / CELPIP"]
+                                        ["Core Focus", "Grammar Foundation for PTE / CELPIP"]
                                     ].map((row, i) => (
                                         <TableRow key={i} className="hover:bg-blue-600/5 transition-colors border-muted">
                                             <TableCell className="font-black text-muted-foreground uppercase text-[11px] font-headline">{row[0]}</TableCell>
@@ -324,7 +325,7 @@ export default function GrammarClinicPage() {
                                 </p>
                                 <div className="space-y-4">
                                     {[
-                                        { title: "Low Writing Scores", text: "Poor sentence structure and limited range keeps your band score stuck below 6.5." },
+                                        { title: "Low Writing Scores", text: "Poor sentence structure and limited range keeps your PTE score stuck below 65." },
                                         { title: "Lack of Accuracy", text: "Grammatical errors in speaking distract markers and lower your overall fluency score." },
                                         { title: "Vague Presentation", text: "Weak foundations lead to ideas being lost in poor translation and phrasing." }
                                     ].map((item, i) => (

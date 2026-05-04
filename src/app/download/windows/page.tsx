@@ -82,7 +82,7 @@ export default function WindowsDownloadPage() {
                         transition={{ delay: 0.2 }}
                         className="text-white/60 text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed"
                     >
-                        The ultimate native experience for PTE and IELTS mastery. Version 1.0 features full online sync and real-time AI phonetic tracking.
+                        The ultimate native experience for PTE mastery. Version 1.0 features full online sync and real-time AI phonetic tracking.
                     </motion.p>
                 </div>
 

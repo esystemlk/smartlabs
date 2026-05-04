@@ -54,7 +54,7 @@ const courseSchema = z.object({
   features: z.string().optional(),
   payhereButtonId: z.string().optional(),
   status: z.enum(['active', 'disabled']).optional().default('active'),
-  courseType: z.enum(['pte', 'ielts', 'other']).optional().default('pte'),
+  courseType: z.enum(['pte', 'celpip']).optional().default('pte'),
   description: z.string().optional(), // kept for legacy
 });
 
@@ -437,8 +437,7 @@ export default function CourseManagementPage() {
                           <FormControl><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger></FormControl>
                           <SelectContent>
                             <SelectItem value="pte">PTE Course</SelectItem>
-                            <SelectItem value="ielts">IELTS Course</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
+                            <SelectItem value="celpip">CELPIP Course</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
