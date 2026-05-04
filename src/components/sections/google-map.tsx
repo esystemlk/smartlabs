@@ -42,9 +42,9 @@ export function GoogleMap() {
                 <div>
                   <h4 className="font-black text-lg">Address</h4>
                   <p className="text-muted-foreground text-sm mt-1">
-                    No. 47/1/1, <br />
-                    Kotte Rd, Rajagiriya, <br />
-                    Sri Lanka
+                    Jana Jaya City Mall, <br />
+                    Rajagiriya, <br />
+                    Sri Jayawardenepura Kotte 10100
                   </p>
                 </div>
               </div>
@@ -55,8 +55,8 @@ export function GoogleMap() {
                 <div>
                   <h4 className="font-black text-lg">Opening Hours</h4>
                   <p className="text-muted-foreground text-sm mt-1">
-                    Mon - Fri: 8:30 AM - 5:30 PM <br />
-                    Sat - Sun: 9:00 AM - 4:00 PM
+                    Sat - Thu: 9:00 AM - 6:30 PM <br />
+                    Friday: Closed
                   </p>
                 </div>
               </div>
@@ -67,20 +67,18 @@ export function GoogleMap() {
                 <div>
                   <h4 className="font-black text-lg">Phone</h4>
                   <p className="text-muted-foreground text-sm mt-1">
-                    +94 77 123 4567 <br />
-                    +94 11 234 5678
+                    077 453 3233
                   </p>
                 </div>
               </div>
               <div className="space-y-4">
                 <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-primary">
-                  <Mail className="h-6 w-6" />
+                  <Globe className="h-6 w-6" />
                 </div>
                 <div>
-                  <h4 className="font-black text-lg">Email</h4>
+                  <h4 className="font-black text-lg">Website</h4>
                   <p className="text-muted-foreground text-sm mt-1">
-                    hello@smartlabs.lk <br />
-                    support@smartlabs.lk
+                    smartlabsedu.com
                   </p>
                 </div>
               </div>
