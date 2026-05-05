@@ -74,6 +74,7 @@ const navLinks = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "AI Tutor", href: "/dashboard/ai-tutor", icon: Bot },
   { name: "LMS Portal", href: LMS_URL, external: true },
+  { name: "Workshops", href: "/workshops" },
   { name: "Windows App", href: "/download/windows" },
   { name: "Level Test", href: "/level-test", highlight: true },
   { name: "Events", href: "/events" },
@@ -149,7 +150,8 @@ export default function Header() {
               alt="Smart Labs Logo"
               width={180}
               height={64}
-              className="relative z-10 transition-transform group-hover:scale-105 h-auto w-auto max-h-[64px]"
+              className="relative z-10 transition-transform group-hover:scale-105"
+              style={{ width: 'auto', height: 'auto', maxHeight: '64px' }}
               priority
             />
           </Link>

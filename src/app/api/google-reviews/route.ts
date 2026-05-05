@@ -5,7 +5,12 @@ export async function GET() {
   const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
   if (!PLACE_ID || !API_KEY) {
-    return NextResponse.json({ error: 'Missing API credentials' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Missing API credentials', 
+      reviews: [], 
+      rating: 0, 
+      user_ratings_total: 0 
+    }, { status: 200 });
   }
 
   try {

@@ -863,6 +863,7 @@ export default function Home() {
                   src="/la.png"
                   alt="Lahiruka Weeraratne - Founder of Smart Labs"
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover transition-transform duration-700 hover:scale-105"
                   priority
                 />

@@ -47,7 +47,7 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <Image src="/logo.png" alt="Smart Labs Logo" width={40} height={40} />
+              <Image src="/logo.png" alt="Smart Labs Logo" width={180} height={64} style={{ width: 'auto', height: 'auto', maxHeight: '64px' }} />
             </Link>
             <p className="text-muted-foreground mb-6 max-w-sm">
               Empowering learners worldwide with expert-led exam preparation and professional development courses.
@@ -133,6 +133,7 @@ export default function Footer() {
               alt="PayHere Secured"
               width={800}
               height={100}
+              style={{ width: 'auto', height: 'auto' }}
               className="object-contain"
               unoptimized
             />

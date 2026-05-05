@@ -61,8 +61,8 @@ export default function AdminDashboardPage() {
         return (
             <div className="flex h-screen items-center justify-center">
                 <div className="text-center flex flex-col items-center gap-4">
-                    <Image src="/logo.png" alt="Smart Labs Logo" width={80} height={80} className="animate-pulse-glow" />
-                    <p className="text-lg font-semibold">Verifying Access...</p>
+                <Image src="/logo.png" alt="Smart Labs Logo" width={80} height={80} style={{ width: 'auto', height: 'auto' }} className="animate-pulse-glow" />
+                <p className="text-lg font-semibold">Verifying Access...</p>
                     <p className="text-sm text-muted-foreground">Please wait while we check your credentials.</p>
                 </div>
             </div>
@@ -80,6 +80,7 @@ export default function AdminDashboardPage() {
         { title: "Support Center", value: "Open", desc: "Manage student queries.", icon: MessageSquare, href: "/admin/dashboard/support" },
         { title: "Payment History", value: "View All", desc: "Browse successful transactions.", icon: DollarSign, href: "/admin/dashboard/payments" },
         { title: "Event Management", value: "Manage", desc: "Manage popups & events.", icon: Sparkles, href: "/admin/dashboard/events", color: "text-primary", bg: "bg-primary/5", border: "border-primary/20" },
+        { title: "Workshop Management", value: "Manage", desc: "Manage free monthly workshops.", icon: Presentation, href: "/admin/dashboard/workshops", color: "text-green-500", bg: "bg-green-500/5", border: "border-green-500/20" },
         { title: "Session Manager", value: "Zoom Links", desc: "Manage active session links.", icon: Video, href: "/admin/dashboard/sessions", color: "text-accent-3", bg: "bg-accent-3/5", border: "border-accent-3/20" },
         { title: "Level Test Results", value: "Reports", desc: "Review student diagnostics.", icon: Brain, href: "/admin/dashboard/level-tests", color: "text-primary", bg: "bg-primary/5", border: "border-primary/20" },
         { title: "Webinar Management", value: "Manage", desc: "Manage webinar registrations.", icon: Presentation, href: "/admin/dashboard/webinars", color: "text-blue-500", bg: "bg-blue-500/5", border: "border-blue-500/20" },
