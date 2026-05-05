@@ -10,8 +10,7 @@
 ## 🚀 The Engine Description
 The **Esystemlk Accessibility Engine V6.5** is an enterprise-grade, high-performance inclusivity layer designed to make any website 100% accessible to users with visual, auditory, cognitive, and motor impairments. 
 
-Unlike standard widgets, this engine operates as a **Real-Time DOM Manipulator**, allowing users to reconfigure your website's entire UI/UX to match their specific needs without reloading the page.
-
+Unlike standard widgets, this engine operates as a **Real-Time DOM Manipulator**, allowing users to reconfigure your website's entire UI/UX to match their specific needs without reloading the page
 ### 💎 Key Capabilities:
 *   **Visual Precision:** Advanced magnification, text-outline glows, and irlen-color overlays for Dyslexia and Visual Stress.
 *   **Cognitive Focus:** "Focus Mode" and "Reading Masks" that strip distractions and help users maintain attention on content.
