@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { MapPin, Phone, Mail, Clock } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, Globe } from "lucide-react";
 
 export function GoogleMap() {
   const address = "Smart Labs, 123/A, Rajagiriya Road, Rajagiriya, Sri Lanka"; // Update with actual address
