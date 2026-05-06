@@ -125,6 +125,9 @@ export default function WorkshopDetailPage({ params }: { params: Promise<{ id: s
         setActionLoading(false);
     };
 
+    const whatsappLink = workshop.whatsappLink || "https://chat.whatsapp.com/IUrSQ6Hh6mBEXk3k5ivBOD?mode=gi_t";
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(whatsappLink)}`;
+
     if (loading || isUserLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -249,19 +252,17 @@ export default function WorkshopDetailPage({ params }: { params: Promise<{ id: s
                                                 asChild
                                                 className="w-full h-16 rounded-2xl bg-white text-primary hover:bg-white/90 font-black"
                                             >
-                                                <Link href={workshop.whatsappLink || "#"} target="_blank">
+                                                <Link href={whatsappLink} target="_blank">
                                                     Join WhatsApp Group
                                                 </Link>
                                             </Button>
                                             
-                                            {workshop.whatsappQR && (
-                                                <div className="p-4 bg-white rounded-3xl flex flex-col items-center gap-3">
-                                                    <div className="relative w-40 h-40">
-                                                        <Image src={workshop.whatsappQR} alt="WhatsApp QR" fill className="object-contain" />
-                                                    </div>
-                                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest">Scan to Join</p>
+                                            <div className="p-4 bg-white rounded-3xl flex flex-col items-center gap-3">
+                                                <div className="relative w-40 h-40">
+                                                    <Image src={qrUrl} alt="WhatsApp QR" fill className="object-contain" />
                                                 </div>
-                                            )}
+                                                <p className="text-[10px] font-black text-primary uppercase tracking-widest">Scan to Join</p>
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16" />
