@@ -125,9 +125,6 @@ export default function WorkshopDetailPage({ params }: { params: Promise<{ id: s
         setActionLoading(false);
     };
 
-    const whatsappLink = workshop.whatsappLink || "https://chat.whatsapp.com/IUrSQ6Hh6mBEXk3k5ivBOD?mode=gi_t";
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(whatsappLink)}`;
-
     if (loading || isUserLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -145,6 +142,9 @@ export default function WorkshopDetailPage({ params }: { params: Promise<{ id: s
             </div>
         );
     }
+
+    const whatsappLink = workshop.whatsappLink || "https://chat.whatsapp.com/IUrSQ6Hh6mBEXk3k5ivBOD?mode=gi_t";
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(whatsappLink)}`;
 
     return (
         <div className="w-full bg-slate-50 dark:bg-[#020617] min-h-screen pb-24 pt-32">
