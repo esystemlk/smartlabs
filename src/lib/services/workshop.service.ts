@@ -29,30 +29,71 @@ export interface Workshop {
     seatsAvailable: number;
     thumbnailUrl?: string;
     youtubeLink: string;
-    notesFileUrl?: string;
-    notesFileName?: string;
+    whatsappLink?: string;
+    whatsappQR?: string;
     benefits: string[];
     isActive: boolean;
     createdAt: any;
 }
 
-export interface WorkshopRegistration {
+export interface StudentProblem {
     id?: string;
     workshopId: string;
     userId: string;
-    fullName: string;
-    email: string;
-    phone: string;
-    studentLevel?: string;
-    country?: string;
-    registrationDate: any;
-    hasReviewed?: boolean;
+    studentName: string;
+    problem: string;
+    createdAt: any;
 }
 
-// ─── Workshop Management ─────────────────────────────────────────────
+// ... (Existing types remain the same)
 
 const WORKSHOPS_COLLECTION = 'workshops';
 const REGISTRATIONS_COLLECTION = 'registrations';
+const PROBLEMS_COLLECTION = 'workshop_problems';
+
+// ... (Existing functions remain)
+
+/**
+ * Submit a problem/question for the workshop
+ */
+export async function submitWorkshopProblem(
+    db: Firestore,
+    data: Omit<StudentProblem, 'createdAt'>
+): Promise<boolean> {
+    try {
+        await addDoc(collection(db, PROBLEMS_COLLECTION), {
+            ...data,
+            createdAt: serverTimestamp()
+        });
+        return true;
+    } catch (error) {
+        console.error('Error submitting problem:', error);
+        return false;
+    }
+}
+
+/**
+ * Get all submitted problems (Admin only)
+ */
+export async function getWorkshopProblems(db: Firestore, workshopId?: string): Promise<StudentProblem[]> {
+    try {
+        const problemsRef = collection(db, PROBLEMS_COLLECTION);
+        let q = query(problemsRef, orderBy('createdAt', 'desc'));
+        
+        if (workshopId) {
+            q = query(problemsRef, where('workshopId', '==', workshopId), orderBy('createdAt', 'desc'));
+        }
+        
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        } as StudentProblem));
+    } catch (error) {
+        console.error('Error fetching problems:', error);
+        return [];
+    }
+}
 
 /**
  * Get all active workshops

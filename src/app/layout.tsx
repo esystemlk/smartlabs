@@ -13,6 +13,7 @@ import { CommandPalette } from '@/components/layout/command-palette';
 import { MouseSpotlight } from '@/components/ui/mouse-spotlight';
 import { WebinarBanner } from '@/components/webinar/webinar-banner';
 import { AdvancedFloatingAI } from '@/components/ui/advanced-floating-ai';
+import { WorkshopPopup } from '@/components/events/workshop-popup';
 
 // ... (Metadata code remains the same)
 
@@ -39,6 +40,7 @@ export default function RootLayout({
           <CommandPalette />
           <LayoutManager />
           <WebinarBanner />
+          <WorkshopPopup />
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
