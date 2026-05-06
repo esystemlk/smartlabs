@@ -79,7 +79,6 @@ export default function AdminDashboardPage() {
         { title: "Blog Management", value: "Manage", desc: "Create and edit blog posts.", icon: FileText, href: "/admin/dashboard/blog" },
         { title: "Support Center", value: "Open", desc: "Manage student queries.", icon: MessageSquare, href: "/admin/dashboard/support" },
         { title: "Payment History", value: "View All", desc: "Browse successful transactions.", icon: DollarSign, href: "/admin/dashboard/payments" },
-        { title: "Event Management", value: "Manage", desc: "Manage popups & events.", icon: Sparkles, href: "/admin/dashboard/events", color: "text-primary", bg: "bg-primary/5", border: "border-primary/20" },
         { title: "Workshop Management", value: "Manage", desc: "Manage free monthly workshops.", icon: Presentation, href: "/admin/dashboard/workshops", color: "text-green-500", bg: "bg-green-500/5", border: "border-green-500/20" },
         { title: "Session Manager", value: "Zoom Links", desc: "Manage active session links.", icon: Video, href: "/admin/dashboard/sessions", color: "text-accent-3", bg: "bg-accent-3/5", border: "border-accent-3/20" },
         { title: "Level Test Results", value: "Reports", desc: "Review student diagnostics.", icon: Brain, href: "/admin/dashboard/level-tests", color: "text-primary", bg: "bg-primary/5", border: "border-primary/20" },

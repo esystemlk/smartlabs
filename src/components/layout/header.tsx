@@ -77,7 +77,6 @@ const navLinks = [
   { name: "Workshops", href: "/workshops" },
   { name: "Windows App", href: "/download/windows" },
   { name: "Level Test", href: "/level-test", highlight: true },
-  { name: "Events", href: "/events" },
   { name: "About", href: "/about" },
   { name: "Help", href: "/support", icon: HelpCircle },
 ];
