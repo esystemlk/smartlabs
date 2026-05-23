@@ -60,21 +60,12 @@ const featured = [
     icon: LayoutDashboard,
     description: "Access your coursework & grades.",
     external: true
-  },
-  {
-    name: "Windows Desktop App",
-    href: "/download/windows",
-    icon: ZapIcon,
-    description: "Get the full PC experience.",
-    isDownload: true
-  }
 ];
 
 const navLinks = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "AI Essay Practice", href: "/ai-essay-practice" },
+  { name: "Essay Practise", href: "/ai-essay-practice" },
   { name: "LMS Portal", href: LMS_URL, external: true },
-  { name: "Windows App", href: "/download/windows" },
   { name: "Level Test", href: "/level-test", highlight: true },
   { name: "Help", href: "/support", icon: HelpCircle },
 ];
@@ -223,16 +214,6 @@ export default function Header() {
                             </div>
                           </Link>
                         ))}
-                      </div>
-
-                      <div className="mt-8 pt-6 border-t border-border/50">
-                        <div className="bg-gradient-to-br from-primary/10 to-transparent p-4 rounded-2xl border border-primary/10 group/download">
-                          <p className="text-[10px] font-black text-primary uppercase tracking-widest">Available for Windows</p>
-                          <p className="text-xs font-bold mt-1 leading-tight">Install Smart Labs Desktop</p>
-                          <Link href="/download/windows" className="text-[10px] font-black text-primary flex items-center mt-3 bg-primary/10 px-3 py-1.5 rounded-lg w-fit hover:bg-primary hover:text-white transition-all">
-                            DOWNLOAD PC APP <ArrowRight className="h-3 w-3 ml-1 group-hover/download:translate-x-1 transition-transform" />
-                          </Link>
-                        </div>
                       </div>
                     </div>
                   </motion.div>

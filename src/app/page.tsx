@@ -764,7 +764,7 @@ export default function Home() {
               },
               {
                 icon: Laptop,
-                title: "AI Essay Practice Arena",
+                title: "Essay Practise",
                 desc: "Practise PTE essays with instant scoring and detailed feedback using Gemini AI.",
                 color: "bg-accent-1/10 text-accent-1",
                 badge: "New Release",

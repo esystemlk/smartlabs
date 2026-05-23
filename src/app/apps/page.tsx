@@ -97,8 +97,8 @@ export default function AppsPage() {
                         <Apple className="mr-2 h-5 w-5" /> Download for macOS
                     </Button>
                     <Button size="lg" variant="outline" asChild>
-                        <a href="https://mega.nz/file/utJzGKKD#7xtY6f4bjXDDPHdVkLoJ0B1WGhFllmfSmG9twSC3-Pg" target="_blank" rel="noopener noreferrer">
-                           <WindowsIcon /> Download for Windows
+                        <a href="#" target="_blank" rel="noopener noreferrer">
+                           <Apple className="mr-2 h-5 w-5" /> Download for macOS (Coming Soon)
                         </a>
                     </Button>
               </div>
