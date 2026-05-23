@@ -29,9 +29,9 @@ ESSAY: ${input.essay}
 Please evaluate the essay based on the following criteria:
 1.  **Content (0-3 points)**: Does the essay address all aspects of the topic with relevant ideas and examples?
 2.  **Form (0-2 points)**: Is the word count between 200 and 300 words? (2 for in range, 1 for close, 0 for far off).
-3.  **Development, Structure and Coherence (0-2 points)**: Is the essay well-organized with a clear introduction, body paragraphs, and conclusion?
-4.  **Grammar (0-2 points)**: Is the grammar correct and varied?
-5.  **Vocabulary (0-2 points)**: Is the vocabulary range good and used appropriately?
+3.  **Argumentary Quality & Structure (0-2 points)**: Does the essay show excellent argumentary quality with logical flow, cohesive structure, and powerful linking words? Is there a clear introduction, developed body paragraphs with strong arguments, and a strong conclusion?
+4.  **Grammar (0-2 points)**: Is the grammar correct and varied? Are there complex sentence structures?
+5.  **Vocabulary Range (0-2 points)**: Does the essay demonstrate a broad lexical repertoire with idiomatic expressions and advanced academic vocabulary without repetition? Penalize if the same words are used repeatedly.
 6.  **Spelling (0-2 points)**: Is the spelling correct?
 
 Calculate the scores for each criterion and sum them for the 'overallScore'. Provide specific, constructive 'feedback' explaining the scores for each category and giving overall suggestions for improvement.`,

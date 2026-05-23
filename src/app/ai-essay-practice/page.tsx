@@ -493,7 +493,7 @@ export default function AIEssayPractice() {
             {[
               { name: "Content", color: "bg-violet-50 text-violet-700 border-violet-200" },
               { name: "Form", color: "bg-blue-50 text-blue-700 border-blue-200" },
-              { name: "Development & Coherence", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+              { name: "Argumentary Quality & Structure", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
               { name: "Grammar", color: "bg-amber-50 text-amber-700 border-amber-200" },
               { name: "General Linguistic Range", color: "bg-red-50 text-red-700 border-red-200" },
               { name: "Vocabulary Range", color: "bg-pink-50 text-pink-700 border-pink-200" },

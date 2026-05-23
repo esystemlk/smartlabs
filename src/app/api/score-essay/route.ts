@@ -25,10 +25,10 @@ CRITERION 2 — FORM (Score 0–2)
 1: Length is between 120 and 199 OR between 301 and 380 words.
 0: Length is less than 120 OR more than 380 words. Essay is written in capital letters, contains no punctuation or only consists of bullet points.
 
-CRITERION 3 — DEVELOPMENT, STRUCTURE AND COHERENCE (Score 0–2)
-2: Shows good development and logical structure.
-1: Is incidentally less well structured, and some elements or paragraphs are poorly linked.
-0: Lacks coherence and mainly consists of lists or loose elements.
+CRITERION 3 — ARGUMENTARY QUALITY & STRUCTURE (Score 0–2)
+2: Shows excellent argumentary quality, logical flow, and cohesive structure using powerful linking words. Clear introduction, developed body paragraphs, and strong conclusion.
+1: Is incidentally less well structured, some arguments are weak or unsupported, or paragraphs are poorly linked.
+0: Lacks argumentary quality and coherence, mainly consists of lists, weak arguments, or loose elements.
 
 CRITERION 4 — GRAMMAR (Score 0–2)
 2: Shows consistent grammatical control of complex language. Errors are rare and difficult to spot.
@@ -41,9 +41,9 @@ CRITERION 5 — GENERAL LINGUISTIC RANGE (Score 0–2)
 0: Contains mainly basic language and lacks precision.
 
 CRITERION 6 — VOCABULARY RANGE (Score 0–2)
-2: Good command of a broad lexical repertoire, idiomatic expressions and colloquialisms.
-1: Shows a good range of vocabulary for matters connected to general academic topics. Lexical shortcomings lead to circumlocution or some imprecision.
-0: Contains mainly basic vocabulary insufficient to deal with the topic at the required level.
+2: Good command of a broad lexical repertoire, idiomatic expressions, and advanced academic vocabulary without repetition.
+1: Shows a good range of vocabulary for matters connected to general academic topics. Lexical shortcomings lead to circumlocution or some repetition of words.
+0: Contains mainly basic vocabulary insufficient to deal with the topic at the required level, or uses the same words repeatedly.
 
 CRITERION 7 — SPELLING (Score 0–2)
 2: Correct spelling.
@@ -94,7 +94,7 @@ JSON structure you must return:
   "criteria": [
     {"name":"Content","score":<0-3>,"max":3,"color":"#8b5cf6","comment":"<1 sentence>"},
     {"name":"Form","score":<0-2>,"max":2,"color":"#2563eb","comment":"<1 sentence>"},
-    {"name":"Development, Structure and Coherence","score":<0-2>,"max":2,"color":"#10b981","comment":"<1 sentence>"},
+    {"name":"Argumentary Quality & Structure","score":<0-2>,"max":2,"color":"#10b981","comment":"<1 sentence>"},
     {"name":"Grammar","score":<0-2>,"max":2,"color":"#f59e0b","comment":"<1 sentence>"},
     {"name":"General Linguistic Range","score":<0-2>,"max":2,"color":"#ef4444","comment":"<1 sentence>"},
     {"name":"Vocabulary Range","score":<0-2>,"max":2,"color":"#ec4899","comment":"<1 sentence>"},

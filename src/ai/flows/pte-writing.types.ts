@@ -27,7 +27,7 @@ export type PteWriteEssayInput = z.infer<typeof PteWriteEssayInputSchema>;
 export const PteWriteEssayOutputSchema = z.object({
   contentScore: z.number().min(0).max(3).describe("Content: How well the topic is addressed."),
   formScore: z.number().min(0).max(2).describe("Form: Word count between 200 and 300."),
-  structureScore: z.number().min(0).max(2).describe("Development, Structure and Coherence: Overall essay structure and flow."),
+  structureScore: z.number().min(0).max(2).describe("Argumentary Quality & Structure: Overall essay structure, argument quality, and logical flow using linking words."),
   grammarScore: z.number().min(0).max(2).describe("Grammar: Grammatical accuracy."),
   vocabularyScore: z.number().min(0).max(2).describe("Vocabulary: Range and appropriateness of vocabulary."),
   spellingScore: z.number().min(0).max(2).describe("Spelling: Accuracy of spelling."),
