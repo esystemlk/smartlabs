@@ -387,7 +387,7 @@ export default function Home() {
   }>>([]);
 
   useEffect(() => {
-    setParticles([...Array(30)].map(() => ({
+    setParticles([...Array(10)].map(() => ({
       left: `${Math.random() * 100}%`,
       top: `${Math.random() * 100}%`,
       duration: 3 + Math.random() * 4,
@@ -530,8 +530,8 @@ export default function Home() {
 
       {/* Hero Section - Ultra Advanced Redesign */}
       <section className="relative overflow-hidden min-h-[100vh] flex items-center bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-[#020617] dark:via-[#0a0e27] dark:to-[#0f0a1e] py-12 lg:py-20">
-        {/* Animated Particle System - Enhanced */}
-        <div className="absolute inset-0 -z-30">
+        {/* Animated Particle System - Hidden on mobile for performance */}
+        <div className="absolute inset-0 -z-30 hidden sm:block">
           {particles.map((particle, i) => (
             <motion.div
               key={i}
@@ -554,71 +554,27 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Advanced Grid Pattern - Interactive */}
-        <motion.div
-          style={{ y: y1 }}
-          className="absolute inset-0 -z-20 opacity-[0.03] dark:opacity-[0.1]"
-        >
+        {/* Advanced Grid Pattern - Hidden on mobile for performance */}
+        <div className="absolute inset-0 -z-20 opacity-[0.03] dark:opacity-[0.1] hidden sm:block">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:48px_48px]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_0%,#020617_100%)] opacity-40 dark:opacity-60" />
-        </motion.div>
+        </div>
 
-        {/* Dynamic Gradient Orbs - More Vivid */}
-        <motion.div
-          animate={{
-            x: [0, 150, 0],
-            y: [0, -100, 0],
-            scale: [1, 1.4, 1],
-            rotate: [0, 90, 0],
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-0 left-0 w-[1000px] h-[1000px] bg-gradient-to-r from-primary/30 via-accent-3/20 to-accent-1/20 blur-[180px] rounded-full opacity-40 pointer-events-none"
+        {/* Dynamic Gradient Orbs - Smaller on mobile, animated only on desktop */}
+        <div
+          className="absolute top-0 left-0 w-[300px] h-[300px] sm:w-[600px] sm:h-[600px] lg:w-[1000px] lg:h-[1000px] bg-gradient-to-r from-primary/20 via-accent-3/10 to-accent-1/10 sm:from-primary/30 sm:via-accent-3/20 sm:to-accent-1/20 blur-[80px] sm:blur-[180px] rounded-full opacity-30 sm:opacity-40 pointer-events-none"
         />
-        <motion.div
-          animate={{
-            x: [0, -120, 0],
-            y: [0, 80, 0],
-            scale: [1, 1.5, 1],
-            rotate: [0, -90, 0],
-          }}
-          transition={{ duration: 30, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute bottom-0 right-0 w-[900px] h-[900px] bg-gradient-to-l from-accent-2/20 via-primary/20 to-accent-4/20 blur-[160px] rounded-full opacity-30 pointer-events-none"
+        <div
+          className="absolute bottom-0 right-0 w-[250px] h-[250px] sm:w-[500px] sm:h-[500px] lg:w-[900px] lg:h-[900px] bg-gradient-to-l from-accent-2/10 via-primary/10 to-accent-4/10 sm:from-accent-2/20 sm:via-primary/20 sm:to-accent-4/20 blur-[60px] sm:blur-[160px] rounded-full opacity-20 sm:opacity-30 pointer-events-none"
         />
 
         <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-12 relative z-10 w-full">
           <div className="flex flex-col items-center text-center">
 
             {/* Content Column - Modern Centered */}
-            <motion.div
-              style={{ opacity: heroOpacity }}
-              className="space-y-12 relative max-w-5xl mx-auto"
+            <div
+              className="space-y-8 sm:space-y-12 relative max-w-5xl mx-auto w-full"
             >
-              {/* Premium Status Bar */}
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="inline-flex items-center gap-6 p-1.5 pr-6 rounded-2xl bg-white/5 dark:bg-slate-900/40 border border-white/20 dark:border-slate-800/50 backdrop-blur-2xl shadow-2xl mx-auto"
-              >
-                <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-primary/10 border border-primary/20">
-                  <div className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                  </div>
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">System Online</span>
-                </div>
-                <div className="flex -space-x-3 items-center">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="w-8 h-8 rounded-full border-2 border-background overflow-hidden bg-slate-200">
-                      <Image src={`/images/monsters/monster-green-study.png`} alt="User" width={32} height={32} className="object-cover" />
-                    </div>
-                  ))}
-                  <div className="w-8 h-8 rounded-full border-2 border-background bg-primary/20 flex items-center justify-center text-[10px] font-black text-primary backdrop-blur-sm">
-                    +5k
-                  </div>
-                </div>
-                <span className="text-xs font-bold text-muted-foreground">Joined by <span className="text-foreground dark:text-white font-black">5,000+</span> Students</span>
-              </motion.div>
 
               {/* Ultra-Detailed Headline */}
               <div className="space-y-8">
@@ -627,7 +583,7 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <h1 className="font-display text-6xl sm:text-8xl xl:text-9xl font-black tracking-tight leading-[0.85] text-slate-900 dark:text-white">
+                  <h1 className="font-display text-5xl sm:text-7xl xl:text-8xl font-black tracking-tight leading-[0.95] sm:leading-[0.85] text-slate-900 dark:text-white break-words">
                     UNLEASH <br />
                     <span className="relative inline-block">
                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 animate-gradient">
@@ -647,20 +603,20 @@ export default function Home() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.6 }}
-                  className="flex items-center gap-6 justify-center"
+                  className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 justify-center w-full px-4"
                 >
-                  <div className="h-px w-24 bg-gradient-to-r from-primary/50 to-transparent" />
-                  <span className="text-xs font-black uppercase tracking-[0.4em] text-primary whitespace-nowrap">The Future of PTE Training</span>
-                  <div className="h-px w-24 bg-gradient-to-l from-primary/50 to-transparent" />
+                  <div className="hidden sm:block h-px w-16 md:w-24 bg-gradient-to-r from-primary/50 to-transparent" />
+                  <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] sm:tracking-[0.4em] text-primary text-center leading-relaxed">The Future of PTE Training</span>
+                  <div className="hidden sm:block h-px w-16 md:w-24 bg-gradient-to-l from-primary/50 to-transparent" />
                 </motion.div>
 
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.9 }}
-                  className="text-xl sm:text-2xl text-muted-foreground dark:text-slate-300 max-w-3xl mx-auto leading-relaxed font-medium"
+                  className="text-lg sm:text-xl md:text-2xl text-muted-foreground dark:text-slate-300 max-w-3xl mx-auto leading-relaxed font-medium px-4"
                 >
-                  Experience the most <span className="text-primary font-black italic underline decoration-primary/30 underline-offset-8">advanced AI-driven</span> ecosystem for PTE & CELPIP. Personalized strategies that adapt to your unique learning style.
+                  Experience the most <span className="text-primary font-black italic underline decoration-primary/30 underline-offset-4 sm:underline-offset-8">advanced AI-driven</span> ecosystem for PTE & CELPIP. Personalized strategies that adapt to your unique learning style.
                 </motion.p>
               </div>
 
@@ -725,7 +681,7 @@ export default function Home() {
                   <Button
                     variant="outline"
                     size="xl"
-                    className="w-full lg:w-[280px] h-24 group relative rounded-[32px] border-2 border-primary/20 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:border-primary/50"
+                    className="w-full lg:w-[280px] h-24 group relative rounded-[32px] border-2 border-primary/20 bg-white/90 dark:bg-slate-900/50 overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:border-primary/50"
                     asChild
                   >
                     <a href={LMS_URL} target="_blank" rel="noopener noreferrer">
@@ -780,7 +736,7 @@ export default function Home() {
                   </div>
                 </div>
               </motion.div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>

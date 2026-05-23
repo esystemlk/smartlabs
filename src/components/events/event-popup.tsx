@@ -67,7 +67,7 @@ export function EventPopup() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={handleClose}
-                        className="absolute inset-0 bg-background/60 backdrop-blur-sm pointer-events-auto"
+                        className="absolute inset-0 bg-background/80 pointer-events-auto"
                     />
 
                     {/* Modal Container */}
@@ -101,7 +101,7 @@ export function EventPopup() {
                                 </AnimatePresence>
 
                                 <div className="absolute top-6 left-6">
-                                    <span className="px-4 py-1.5 rounded-full bg-primary/20 backdrop-blur-md border border-primary/30 text-white text-[10px] font-black uppercase tracking-widest">
+                                    <span className="px-4 py-1.5 rounded-full bg-primary/30 border border-primary/30 text-white text-[10px] font-black uppercase tracking-widest">
                                         {currentEvent.category}
                                     </span>
                                 </div>

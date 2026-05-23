@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { db } from '@/lib/firebase';
+import { getActiveWorkshops } from '@/lib/services/workshop.service';
+
 export function WorkshopPopup() {
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
@@ -14,14 +17,27 @@ export function WorkshopPopup() {
     useEffect(() => {
         // Only show once per session
         const hasSeenPopup = sessionStorage.getItem('hasSeenWorkshopPopup');
+        let timer: NodeJS.Timeout;
         
         if (!hasSeenPopup && !pathname.includes('/admin') && !pathname.includes('/dashboard')) {
-            const timer = setTimeout(() => {
-                setIsOpen(true);
-            }, 5000); // 5 seconds delay
-
-            return () => clearTimeout(timer);
+            const checkWorkshops = async () => {
+                try {
+                    const activeWorkshops = await getActiveWorkshops(db);
+                    if (activeWorkshops.length > 0) {
+                        timer = setTimeout(() => {
+                            setIsOpen(true);
+                        }, 5000); // 5 seconds delay
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch active workshops for popup:", error);
+                }
+            };
+            checkWorkshops();
         }
+
+        return () => {
+            if (timer) clearTimeout(timer);
+        };
     }, [pathname]);
 
     const handleClose = () => {
@@ -32,7 +48,7 @@ export function WorkshopPopup() {
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}

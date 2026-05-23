@@ -363,7 +363,7 @@ export default function AIEssayPractice() {
 
       {/* Sticky Selected Topic Banner at Top */}
       {selectedTopic && (
-        <div className="fixed top-20 left-0 right-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-lg px-4 py-3 transform transition-all duration-300">
+        <div className="fixed top-20 left-0 right-0 z-30 bg-white shadow-md border-b border-slate-200 px-4 py-3 transform transition-all duration-300">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3 w-full md:w-3/4">
               <span className="shrink-0 bg-[#f97316] text-white font-black text-xs px-2.5 py-1 rounded">
@@ -420,14 +420,14 @@ export default function AIEssayPractice() {
           </p>
 
           {/* Stats Bar */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mt-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto mt-8">
             {[
               { value: "40", label: "Predicted Topics", icon: <ListChecks size={22} weight="duotone" className="text-[#2563eb]" /> },
               { value: "85+", label: "Target Band", icon: <Target size={22} weight="duotone" className="text-[#2563eb]" /> },
               { value: "6", label: "Marking Criteria", icon: <ChartBar size={22} weight="duotone" className="text-[#2563eb]" /> },
               { value: "20 Min", label: "Practice Timer", icon: <Timer size={22} weight="duotone" className="text-[#2563eb]" /> }
             ].map((stat, i) => (
-              <div key={i} className="p-6 rounded-2xl bg-slate-50 border border-slate-200 hover:shadow-md transition-shadow">
+              <div key={i} className="p-4 md:p-6 rounded-2xl bg-slate-50 border border-slate-200 hover:shadow-md transition-shadow">
                 <div className="flex justify-center mb-2">{stat.icon}</div>
                 <div className="text-3xl font-black text-[#f97316] mb-1">{stat.value}</div>
                 <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">{stat.label}</div>
@@ -516,7 +516,7 @@ export default function AIEssayPractice() {
           </div>
 
           {/* Filter Bar */}
-          <div className="flex flex-wrap gap-2 max-w-full overflow-x-auto no-scrollbar pb-2">
+          <div className="flex flex-nowrap md:flex-wrap gap-2 max-w-full overflow-x-auto no-scrollbar pb-2">
             {FILTERS.map(filter => (
               <button
                 key={filter}

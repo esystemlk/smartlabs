@@ -72,10 +72,8 @@ const featured = [
 
 const navLinks = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "AI Tutor", href: "/dashboard/ai-tutor", icon: Bot },
   { name: "AI Essay Practice", href: "/ai-essay-practice" },
   { name: "LMS Portal", href: LMS_URL, external: true },
-  { name: "Workshops", href: "/workshops" },
   { name: "Windows App", href: "/download/windows" },
   { name: "Level Test", href: "/level-test", highlight: true },
   { name: "About", href: "/about" },
@@ -137,7 +135,7 @@ export default function Header() {
   return (
     <header
       className={cn(
-        "fixed left-0 right-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/10 transition-all duration-500",
+        "fixed left-0 right-0 z-40 bg-background border-b border-border/10 transition-all duration-500",
         isDesktopClient ? "top-8" : "top-0"
       )}
     >
