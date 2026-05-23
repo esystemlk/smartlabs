@@ -524,7 +524,7 @@ export default function Home() {
     }
   };
   return (
-    <main className="relative">
+    <main className="relative overflow-x-hidden w-full max-w-[100vw]">
       <EventPopup />
 
 
@@ -583,7 +583,7 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <h1 className="font-display text-5xl sm:text-7xl xl:text-8xl font-black tracking-tight leading-[0.95] sm:leading-[0.85] text-slate-900 dark:text-white break-words">
+                  <h1 className="font-display text-4xl sm:text-7xl xl:text-8xl font-black tracking-tight leading-[0.95] sm:leading-[0.85] text-slate-900 dark:text-white break-words">
                     UNLEASH <br />
                     <span className="relative inline-block">
                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 animate-gradient">
