@@ -45,7 +45,16 @@ export interface StudentProblem {
     createdAt: any;
 }
 
-// ... (Existing types remain the same)
+export interface WorkshopRegistration {
+    id?: string;
+    workshopId: string;
+    userId: string;
+    studentName: string;
+    email: string;
+    phone?: string;
+    registrationDate: any;
+    hasReviewed: boolean;
+}
 
 const WORKSHOPS_COLLECTION = 'workshops';
 const REGISTRATIONS_COLLECTION = 'registrations';

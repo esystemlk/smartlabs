@@ -795,21 +795,24 @@ export default function Home() {
                 title: "Elite Group Batches",
                 desc: "Focused groups of 3-10 students for personalized attention.",
                 color: "bg-primary/10 text-primary",
-                badge: "Limited Seats"
+                badge: "Limited Seats",
+                href: "/courses"
               },
               {
                 icon: Zap,
                 title: "Dynamic Power Sessions",
                 desc: "Intensive 2-hour sessions targeting your weakest components.",
                 color: "bg-accent-3/10 text-accent-3",
-                badge: "Live Daily"
+                badge: "Live Daily",
+                href: "https://register.smartlabs.lk"
               },
               {
                 icon: Laptop,
-                title: "Premium LMS Ecosystem",
-                desc: "24/7 access to recordings, practice tests, and AI tools.",
+                title: "AI Essay Practice Arena",
+                desc: "Practise PTE essays with instant scoring and detailed feedback using Gemini AI.",
                 color: "bg-accent-1/10 text-accent-1",
-                badge: "Free Trial"
+                badge: "New Release",
+                href: "/ai-essay-practice"
               }
             ].map((item, idx) => (
               <motion.div
@@ -819,22 +822,24 @@ export default function Home() {
                 transition={{ delay: 1.6 + idx * 0.1 }}
                 className="group relative"
               >
-                <div className="h-full p-8 rounded-[40px] bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/40 dark:border-slate-800/60 shadow-xl transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
-                  <div className="flex justify-between items-start mb-6">
-                    <div className={cn("p-4 rounded-2xl", item.color)}>
-                      <item.icon className="h-6 w-6" />
+                <Link href={item.href} className="group relative block h-full">
+                  <div className="h-full p-8 rounded-[40px] bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/40 dark:border-slate-800/60 shadow-xl transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
+                    <div className="flex justify-between items-start mb-6">
+                      <div className={cn("p-4 rounded-2xl", item.color)}>
+                        <item.icon className="h-6 w-6" />
+                      </div>
+                      <span className={cn("px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border", item.color.replace('10', '20'))}>
+                        {item.badge}
+                      </span>
                     </div>
-                    <span className={cn("px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border", item.color.replace('10', '20'))}>
-                      {item.badge}
-                    </span>
+                    <h3 className="text-xl font-black mb-3 tracking-tight">{item.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                    <div className="mt-6 flex items-center gap-2 text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span>{item.href.startsWith('http') ? 'Register Now' : 'Try Practice Arena'}</span>
+                      <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                    </div>
                   </div>
-                  <h3 className="text-xl font-black mb-3 tracking-tight">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
-                  <div className="mt-6 flex items-center gap-2 text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span>Learn more</span>
-                    <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
+                </Link>
               </motion.div>
             ))}
           </div>
@@ -1377,6 +1382,12 @@ export default function Home() {
                           </div>
                         </motion.div>
                       )}
+                    </div>
+
+                    <div className="mt-8 pt-6 border-t border-white/5 text-center">
+                      <Link href="/ai-essay-practice" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-[#f97316] hover:text-[#fb923c] transition-colors">
+                        🚀 Open Full AI Essay Practice & Marking Arena <ArrowRight className="h-4 w-4" />
+                      </Link>
                     </div>
                   </div>
                 </div>

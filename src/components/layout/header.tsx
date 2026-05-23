@@ -73,6 +73,7 @@ const featured = [
 const navLinks = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "AI Tutor", href: "/dashboard/ai-tutor", icon: Bot },
+  { name: "AI Essay Practice", href: "/ai-essay-practice" },
   { name: "LMS Portal", href: LMS_URL, external: true },
   { name: "Workshops", href: "/workshops" },
   { name: "Windows App", href: "/download/windows" },
