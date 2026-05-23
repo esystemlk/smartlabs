@@ -27,6 +27,7 @@ import {
   Exam,
   Brain,
   ChartBar,
+  Trophy,
 } from '@phosphor-icons/react';
 
 interface Topic {
@@ -824,6 +825,30 @@ export default function AIEssayPractice() {
               </p>
             </div>
 
+            {/* Actionable Feedback Details */}
+            {aiResult.actionableFeedback && aiResult.actionableFeedback.length > 0 && (
+              <div className="p-8 rounded-3xl bg-blue-50/40 border border-blue-200 shadow-sm mb-12">
+                <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2 mb-6">
+                  <Warning size={22} weight="duotone" /> Detailed Issues & Fixes
+                </h3>
+                <div className="space-y-6">
+                  {(aiResult.actionableFeedback || []).map((item, idx) => (
+                    <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-200 flex flex-col md:flex-row gap-4">
+                      <div className="md:w-1/2">
+                        <span className="text-[10px] font-black uppercase text-red-500 tracking-widest mb-1 block">What went wrong</span>
+                        <p className="text-sm text-slate-700 font-medium">{item.issue}</p>
+                      </div>
+                      <div className="hidden md:block w-px bg-slate-100"></div>
+                      <div className="md:w-1/2">
+                        <span className="text-[10px] font-black uppercase text-emerald-500 tracking-widest mb-1 block">How to improve</span>
+                        <p className="text-sm text-slate-600">{item.howToFix}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Model Essay */}
             {aiResult.modelEssay && aiResult.modelEssay.trim() !== "" && (
               <div className="p-8 rounded-3xl bg-emerald-50/30 border border-emerald-200 shadow-sm mb-12">
@@ -856,30 +881,6 @@ export default function AIEssayPractice() {
                   className="text-slate-700 text-sm leading-relaxed whitespace-pre-line bg-white p-6 rounded-2xl border border-slate-200 custom-scrollbar max-h-[350px] overflow-y-auto"
                   dangerouslySetInnerHTML={{ __html: aiResult.reviewedEssayHtml }}
                 />
-              </div>
-            )}
-
-            {/* Actionable Feedback Details */}
-            {aiResult.actionableFeedback && aiResult.actionableFeedback.length > 0 && (
-              <div className="p-8 rounded-3xl bg-blue-50/40 border border-blue-200 shadow-sm mb-12">
-                <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2 mb-6">
-                  <Warning size={22} weight="duotone" /> Detailed Issues & Fixes
-                </h3>
-                <div className="space-y-6">
-                  {(aiResult.actionableFeedback || []).map((item, idx) => (
-                    <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-200 flex flex-col md:flex-row gap-4">
-                      <div className="md:w-1/2">
-                        <span className="text-[10px] font-black uppercase text-red-500 tracking-widest mb-1 block">What went wrong</span>
-                        <p className="text-sm text-slate-700 font-medium">{item.issue}</p>
-                      </div>
-                      <div className="hidden md:block w-px bg-slate-100"></div>
-                      <div className="md:w-1/2">
-                        <span className="text-[10px] font-black uppercase text-emerald-500 tracking-widest mb-1 block">How to improve</span>
-                        <p className="text-sm text-slate-600">{item.howToFix}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
             )}
 
