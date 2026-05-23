@@ -49,6 +49,65 @@ interface VocabUpgrade {
   better: string;
 }
 
+interface StructureDetail {
+  paragraphCount: number;
+  paragraphCountCorrect: boolean;
+  introduction: string;
+  bodyParagraph1: string;
+  bodyParagraph2: string;
+  conclusion: string;
+  overallBalance: string;
+  followsIdealStrategy: boolean;
+}
+
+interface CoherenceAnalysis {
+  oneIdeaPerParagraph: boolean;
+  logicalFlow: string;
+  paragraphUnity: string;
+  sentenceConnection: string;
+  transitionQuality: string;
+  breakPoints: string[];
+}
+
+interface ThesisDevelopment {
+  clarityOfThesis: string;
+  consistencyOfArguments: string;
+  bodySupportsThesis: boolean;
+  conclusionProvesThesis: boolean;
+  overallAnalysis: string;
+}
+
+interface ArgumentativeQuality {
+  explanationDepth: string;
+  logicQuality: string;
+  exampleSupport: string;
+  relevanceOfIdeas: string;
+  criticalThinking: string;
+  weakArguments: string[];
+  howToImprove: string[];
+}
+
+interface VocabCollocations {
+  strongVocabulary: string[];
+  collocationsUsed: { collocation: string; evaluation: string }[];
+  repetitiveVocabulary: string[];
+  awkwardPhrases: string[];
+  memorizedLanguage: string[];
+}
+
+interface GrammarDetail {
+  mistakes: { original: string; corrected: string; explanation: string }[];
+  punctuationMistakes: string[];
+  awkwardSentences: string[];
+  sentenceVariety: string;
+}
+
+interface ImprovementPlan {
+  top5Weaknesses: string[];
+  sentenceCorrections: { original: string; improved: string }[];
+  strategicTips: string[];
+}
+
 interface AIResponse {
   overallBand: number;
   bandLabel: string;
@@ -57,14 +116,21 @@ interface AIResponse {
   criteria: Criterion[];
   strengths: string[];
   improvements: string[];
-  structureAnalysis: string;
+  structureAnalysis?: string;
   modelEssay: string;
   reviewedEssayHtml: string;
   actionableFeedback?: { issue: string; howToFix: string }[];
   vocabUpgrades: VocabUpgrade[];
-  _metadata?: {
-    modelUsed: string;
-  };
+  _metadata?: { modelUsed: string };
+  contentAnalysis?: { score: number; reason: string };
+  structureDetail?: StructureDetail;
+  coherenceAnalysis?: CoherenceAnalysis;
+  thesisDevelopment?: ThesisDevelopment;
+  argumentativeQuality?: ArgumentativeQuality;
+  vocabularyCollocations?: VocabCollocations;
+  grammarAnalysis?: GrammarDetail;
+  improvementPlan?: ImprovementPlan;
+  wouldScore79Plus?: { answer: boolean; explanation: string };
 }
 
 const TOPICS: Topic[] = [
@@ -780,6 +846,422 @@ export default function AIEssayPractice() {
               </div>
             </div>
 
+            {/* ── Content Score Analysis ── */}
+            {aiResult.contentAnalysis && (
+              <div className="p-8 rounded-3xl bg-violet-50/40 border border-violet-200 shadow-sm mb-8">
+                <div className="flex items-center justify-between gap-4 mb-4">
+                  <h3 className="text-lg font-bold text-violet-700 flex items-center gap-2">
+                    <Target size={22} weight="duotone" /> Content Analysis
+                  </h3>
+                  <span className="font-jetbrains text-2xl font-black text-violet-700">
+                    {aiResult.contentAnalysis.score}<span className="text-sm font-bold text-violet-400">/6</span>
+                  </span>
+                </div>
+                <p className="text-slate-700 text-sm leading-relaxed">{aiResult.contentAnalysis.reason}</p>
+              </div>
+            )}
+
+            {/* ── Structure Per-Paragraph Analysis ── */}
+            {aiResult.structureDetail && (
+              <div className="p-8 rounded-3xl bg-amber-50/40 border border-amber-200 mb-8 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                  <h3 className="text-lg font-bold text-amber-700 flex items-center gap-2">
+                    <TreeStructure size={22} weight="duotone" /> Essay Structure Analysis
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full border ${
+                      aiResult.structureDetail.paragraphCountCorrect
+                        ? 'text-emerald-700 bg-emerald-100 border-emerald-200'
+                        : 'text-red-700 bg-red-100 border-red-200'
+                    }`}>
+                      {aiResult.structureDetail.paragraphCount} Paragraphs
+                    </span>
+                    <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full border ${
+                      aiResult.structureDetail.followsIdealStrategy
+                        ? 'text-emerald-700 bg-emerald-100 border-emerald-200'
+                        : 'text-orange-700 bg-orange-100 border-orange-200'
+                    }`}>
+                      {aiResult.structureDetail.followsIdealStrategy ? 'Ideal Strategy ✓' : 'Needs Improvement'}
+                    </span>
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4 mb-4">
+                  {([
+                    { label: "Introduction (2 sentences)", content: aiResult.structureDetail.introduction, accent: "border-l-violet-400" },
+                    { label: "Body Paragraph 1 (~5 sentences)", content: aiResult.structureDetail.bodyParagraph1, accent: "border-l-blue-400" },
+                    { label: "Body Paragraph 2 (~5 sentences)", content: aiResult.structureDetail.bodyParagraph2, accent: "border-l-emerald-400" },
+                    { label: "Conclusion (1 sentence)", content: aiResult.structureDetail.conclusion, accent: "border-l-orange-400" },
+                  ] as const).map((para, idx) => (
+                    <div key={idx} className={`bg-white p-5 rounded-2xl border border-slate-200 border-l-4 ${para.accent}`}>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-2">{para.label}</span>
+                      <p className="text-sm text-slate-700 leading-relaxed">{para.content}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-white p-4 rounded-2xl border border-slate-200">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-1">Overall Balance</span>
+                  <p className="text-sm text-slate-700">{aiResult.structureDetail.overallBalance}</p>
+                </div>
+              </div>
+            )}
+
+            {/* ── Coherence & Cohesion Analysis ── */}
+            {aiResult.coherenceAnalysis && (
+              <div className="p-8 rounded-3xl bg-pink-50/40 border border-pink-200 shadow-sm mb-8">
+                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                  <h3 className="text-lg font-bold text-pink-700 flex items-center gap-2">
+                    <ArrowRight size={22} weight="duotone" /> Coherence & Cohesion Analysis
+                  </h3>
+                  <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full border ${
+                    aiResult.coherenceAnalysis.oneIdeaPerParagraph
+                      ? 'text-emerald-700 bg-emerald-100 border-emerald-200'
+                      : 'text-red-700 bg-red-100 border-red-200'
+                  }`}>
+                    {aiResult.coherenceAnalysis.oneIdeaPerParagraph ? 'One Idea Per Paragraph ✓' : 'Mixed Ideas Detected ✗'}
+                  </span>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4 mb-4">
+                  {([
+                    { label: "Logical Flow", content: aiResult.coherenceAnalysis.logicalFlow },
+                    { label: "Paragraph Unity", content: aiResult.coherenceAnalysis.paragraphUnity },
+                    { label: "Sentence Connection", content: aiResult.coherenceAnalysis.sentenceConnection },
+                    { label: "Transition Quality", content: aiResult.coherenceAnalysis.transitionQuality },
+                  ] as const).map((item, idx) => (
+                    <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-200">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-pink-500 block mb-1">{item.label}</span>
+                      <p className="text-sm text-slate-700 leading-relaxed">{item.content}</p>
+                    </div>
+                  ))}
+                </div>
+                {(aiResult.coherenceAnalysis.breakPoints || []).length > 0 && (
+                  <div className="bg-red-50 border border-red-200 p-4 rounded-2xl">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-red-600 block mb-2">Coherence Break Points</span>
+                    <ul className="space-y-1">
+                      {aiResult.coherenceAnalysis.breakPoints.map((bp, idx) => (
+                        <li key={idx} className="text-sm text-slate-700 flex items-start gap-2">
+                          <span className="text-red-500 mt-0.5 shrink-0">•</span> {bp}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Thesis Development Analysis ── */}
+            {aiResult.thesisDevelopment && (
+              <div className="p-8 rounded-3xl bg-blue-50/40 border border-blue-200 shadow-sm mb-8">
+                <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2 mb-5">
+                  <Brain size={22} weight="duotone" /> Thesis Development Analysis
+                </h3>
+                <div className="flex flex-wrap gap-3 mb-5">
+                  {([
+                    { label: "Body Supports Thesis", value: aiResult.thesisDevelopment.bodySupportsThesis },
+                    { label: "Conclusion Proves Thesis", value: aiResult.thesisDevelopment.conclusionProvesThesis },
+                  ] as const).map((check, idx) => (
+                    <span key={idx} className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border ${
+                      check.value
+                        ? 'text-emerald-700 bg-emerald-100 border-emerald-200'
+                        : 'text-red-700 bg-red-100 border-red-200'
+                    }`}>
+                      {check.value
+                        ? <CheckCircle size={14} weight="duotone" />
+                        : <XCircle size={14} weight="duotone" />}
+                      {check.label}
+                    </span>
+                  ))}
+                </div>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {([
+                    { label: "Clarity of Thesis", content: aiResult.thesisDevelopment.clarityOfThesis },
+                    { label: "Consistency of Arguments", content: aiResult.thesisDevelopment.consistencyOfArguments },
+                    { label: "Overall Analysis", content: aiResult.thesisDevelopment.overallAnalysis },
+                  ] as const).map((item, idx) => (
+                    <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-200">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-blue-500 block mb-1">{item.label}</span>
+                      <p className="text-sm text-slate-700 leading-relaxed">{item.content}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── Argumentative Quality ── */}
+            {aiResult.argumentativeQuality && (
+              <div className="p-8 rounded-3xl bg-emerald-50/40 border border-emerald-200 shadow-sm mb-8">
+                <h3 className="text-lg font-bold text-emerald-700 flex items-center gap-2 mb-6">
+                  <Lightbulb size={22} weight="duotone" /> Argumentative Quality
+                </h3>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  {([
+                    { label: "Explanation Depth", content: aiResult.argumentativeQuality.explanationDepth },
+                    { label: "Logic Quality", content: aiResult.argumentativeQuality.logicQuality },
+                    { label: "Example Support", content: aiResult.argumentativeQuality.exampleSupport },
+                    { label: "Relevance of Ideas", content: aiResult.argumentativeQuality.relevanceOfIdeas },
+                    { label: "Critical Thinking", content: aiResult.argumentativeQuality.criticalThinking },
+                  ] as const).map((item, idx) => (
+                    <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-200">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 block mb-1">{item.label}</span>
+                      <p className="text-sm text-slate-700 leading-relaxed">{item.content}</p>
+                    </div>
+                  ))}
+                </div>
+                {(aiResult.argumentativeQuality.weakArguments || []).length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-500">Weak Arguments & How to Improve</h4>
+                    {aiResult.argumentativeQuality.weakArguments.map((weak, idx) => (
+                      <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-200 flex flex-col md:flex-row gap-4">
+                        <div className="md:w-1/2">
+                          <span className="text-[10px] font-black uppercase text-red-500 tracking-widest mb-1 block">Weak Argument</span>
+                          <p className="text-sm text-slate-700 font-medium italic">&ldquo;{weak}&rdquo;</p>
+                        </div>
+                        <div className="hidden md:block w-px bg-slate-100 shrink-0" />
+                        <div className="md:w-1/2">
+                          <span className="text-[10px] font-black uppercase text-emerald-500 tracking-widest mb-1 block">How to Improve</span>
+                          <p className="text-sm text-slate-600">{(aiResult.argumentativeQuality?.howToImprove || [])[idx] || ""}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Vocabulary & Collocations ── */}
+            {aiResult.vocabularyCollocations && (
+              <div className="p-8 rounded-3xl bg-amber-50/40 border border-amber-200 shadow-sm mb-8">
+                <h3 className="text-lg font-bold text-amber-700 flex items-center gap-2 mb-6">
+                  <Star size={22} weight="duotone" /> Vocabulary & Collocations
+                </h3>
+                {(aiResult.vocabularyCollocations.collocationsUsed || []).length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-3">Collocations Found in Essay</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-sm">
+                        <thead>
+                          <tr className="border-b border-amber-200 text-slate-500 uppercase text-[10px] tracking-widest font-black">
+                            <th className="py-2 px-4">Collocation</th>
+                            <th className="py-2 px-4">Evaluation</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-amber-100">
+                          {aiResult.vocabularyCollocations.collocationsUsed.map((col, idx) => (
+                            <tr key={idx} className="bg-white/60 hover:bg-white transition-colors">
+                              <td className="py-3 px-4 font-bold text-slate-700">{col.collocation}</td>
+                              <td className="py-3 px-4">
+                                <span className={`text-xs font-black uppercase px-2.5 py-0.5 rounded-full border ${
+                                  col.evaluation.toLowerCase().includes('natural')
+                                    ? 'text-emerald-700 bg-emerald-100 border-emerald-200'
+                                    : col.evaluation.toLowerCase().includes('forced') || col.evaluation.toLowerCase().includes('incorrect')
+                                    ? 'text-red-700 bg-red-100 border-red-200'
+                                    : 'text-amber-700 bg-amber-100 border-amber-200'
+                                }`}>
+                                  {col.evaluation}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {(aiResult.vocabularyCollocations.strongVocabulary || []).length > 0 && (
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 block mb-2">Strong Vocabulary</span>
+                      <div className="flex flex-wrap gap-2">
+                        {aiResult.vocabularyCollocations.strongVocabulary.map((word, idx) => (
+                          <span key={idx} className="text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full">{word}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {(aiResult.vocabularyCollocations.repetitiveVocabulary || []).length > 0 && (
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-red-500 block mb-2">Repetitive Vocabulary</span>
+                      <div className="flex flex-wrap gap-2">
+                        {aiResult.vocabularyCollocations.repetitiveVocabulary.map((word, idx) => (
+                          <span key={idx} className="text-xs font-bold bg-red-50 text-red-700 border border-red-200 px-2.5 py-1 rounded-full">{word}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {(aiResult.vocabularyCollocations.awkwardPhrases || []).length > 0 && (
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-orange-500 block mb-2">Awkward Phrases</span>
+                      <ul className="space-y-1">
+                        {aiResult.vocabularyCollocations.awkwardPhrases.map((phrase, idx) => (
+                          <li key={idx} className="text-sm text-slate-700 flex items-start gap-1.5">
+                            <span className="text-orange-500 shrink-0">•</span>{phrase}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {(aiResult.vocabularyCollocations.memorizedLanguage || []).length > 0 && (
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-purple-500 block mb-2">Memorized / Robotic Language</span>
+                      <ul className="space-y-1">
+                        {aiResult.vocabularyCollocations.memorizedLanguage.map((phrase, idx) => (
+                          <li key={idx} className="text-sm text-slate-700 flex items-start gap-1.5">
+                            <span className="text-purple-500 shrink-0">•</span>{phrase}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ── Grammar Analysis ── */}
+            {aiResult.grammarAnalysis && (
+              <div className="p-8 rounded-3xl bg-red-50/30 border border-red-200 shadow-sm mb-8">
+                <h3 className="text-lg font-bold text-red-700 flex items-center gap-2 mb-6">
+                  <PencilLine size={22} weight="duotone" /> Grammar Analysis
+                </h3>
+                {aiResult.grammarAnalysis.sentenceVariety && (
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 mb-5">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-1">Sentence Variety</span>
+                    <p className="text-sm text-slate-700 leading-relaxed">{aiResult.grammarAnalysis.sentenceVariety}</p>
+                  </div>
+                )}
+                {(aiResult.grammarAnalysis.mistakes || []).length > 0 && (
+                  <div className="mb-5">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-3">Grammar Corrections</h4>
+                    <div className="space-y-3">
+                      {aiResult.grammarAnalysis.mistakes.map((mistake, idx) => (
+                        <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-200">
+                          <div className="flex flex-col md:flex-row gap-3 mb-3">
+                            <div className="md:w-1/2">
+                              <span className="text-[9px] font-black uppercase text-red-500 tracking-widest block mb-1">Original</span>
+                              <p className="text-sm text-slate-700 italic">&ldquo;{mistake.original}&rdquo;</p>
+                            </div>
+                            <div className="hidden md:flex items-center text-slate-300 text-lg shrink-0">→</div>
+                            <div className="md:w-1/2">
+                              <span className="text-[9px] font-black uppercase text-emerald-500 tracking-widest block mb-1">Corrected</span>
+                              <p className="text-sm text-emerald-700 font-semibold">&ldquo;{mistake.corrected}&rdquo;</p>
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-500 bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">{mistake.explanation}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {(aiResult.grammarAnalysis.punctuationMistakes || []).length > 0 && (
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 mb-4">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-2">Punctuation Issues</span>
+                    <ul className="space-y-1">
+                      {aiResult.grammarAnalysis.punctuationMistakes.map((issue, idx) => (
+                        <li key={idx} className="text-sm text-slate-700 flex items-start gap-2">
+                          <span className="text-red-500 shrink-0">•</span>{issue}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {(aiResult.grammarAnalysis.awkwardSentences || []).length > 0 && (
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-2">Awkward Sentences</span>
+                    <ul className="space-y-2">
+                      {aiResult.grammarAnalysis.awkwardSentences.map((sentence, idx) => (
+                        <li key={idx} className="text-sm text-slate-600 italic flex items-start gap-2">
+                          <span className="text-orange-500 not-italic shrink-0">•</span>{sentence}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Final Improvement Plan ── */}
+            {aiResult.improvementPlan && (
+              <div className="p-8 rounded-3xl bg-indigo-50/40 border border-indigo-200 shadow-sm mb-8">
+                <h3 className="text-lg font-bold text-indigo-700 flex items-center gap-2 mb-6">
+                  <TrendUp size={22} weight="duotone" /> Final Improvement Plan
+                </h3>
+                <div className="mb-6">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-3">Top 5 Weaknesses</h4>
+                  <div className="space-y-2">
+                    {(aiResult.improvementPlan.top5Weaknesses || []).map((weakness, idx) => (
+                      <div key={idx} className="flex items-start gap-3 bg-white p-3 rounded-xl border border-slate-200">
+                        <span className="w-6 h-6 rounded-full bg-indigo-100 border border-indigo-200 text-indigo-700 font-black text-xs flex items-center justify-center shrink-0 mt-0.5">
+                          {idx + 1}
+                        </span>
+                        <p className="text-sm text-slate-700">{weakness}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {(aiResult.improvementPlan.sentenceCorrections || []).length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-3">Sentence-Level Corrections</h4>
+                    <div className="space-y-3">
+                      {aiResult.improvementPlan.sentenceCorrections.map((correction, idx) => (
+                        <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-200">
+                          <div className="mb-2">
+                            <span className="text-[9px] font-black uppercase text-red-500 tracking-widest block mb-1">Original</span>
+                            <p className="text-sm text-slate-600 italic">&ldquo;{correction.original}&rdquo;</p>
+                          </div>
+                          <div>
+                            <span className="text-[9px] font-black uppercase text-emerald-500 tracking-widest block mb-1">Improved Version</span>
+                            <p className="text-sm text-emerald-700 font-semibold">&ldquo;{correction.improved}&rdquo;</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {(aiResult.improvementPlan.strategicTips || []).length > 0 && (
+                  <div>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-3">Strategic Tips to Increase Score Quickly</h4>
+                    <div className="space-y-2">
+                      {aiResult.improvementPlan.strategicTips.map((tip, idx) => (
+                        <div key={idx} className="flex items-start gap-3 bg-indigo-50/80 p-3 rounded-xl border border-indigo-100">
+                          <Lightning size={16} weight="duotone" className="text-indigo-500 shrink-0 mt-0.5" />
+                          <p className="text-sm text-slate-700">{tip}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Would Score 79+? Verdict ── */}
+            {aiResult.wouldScore79Plus && (
+              <div className={`p-8 rounded-3xl shadow-sm mb-8 border-2 ${
+                aiResult.wouldScore79Plus.answer
+                  ? 'bg-emerald-50 border-emerald-300'
+                  : 'bg-red-50 border-red-300'
+              }`}>
+                <div className="flex items-start gap-5">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 text-2xl font-black ${
+                    aiResult.wouldScore79Plus.answer ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                  }`}>
+                    {aiResult.wouldScore79Plus.answer ? '✓' : '✗'}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className={`text-lg font-black mb-2 ${
+                      aiResult.wouldScore79Plus.answer ? 'text-emerald-700' : 'text-red-700'
+                    }`}>
+                      {aiResult.wouldScore79Plus.answer
+                        ? 'Yes — this essay would realistically score 79+ in PTE Writing.'
+                        : 'No — this essay would not realistically score 79+ in PTE Writing.'}
+                    </h3>
+                    <p className={`text-sm leading-relaxed ${
+                      aiResult.wouldScore79Plus.answer ? 'text-emerald-800' : 'text-red-800'
+                    }`}>
+                      {aiResult.wouldScore79Plus.explanation}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Strengths & Weaknesses */}
             <div className="grid md:grid-cols-2 gap-8 mb-12">
               
@@ -815,15 +1297,17 @@ export default function AIEssayPractice() {
 
             </div>
 
-            {/* Structure Analysis */}
-            <div className="p-8 rounded-3xl bg-amber-50/40 border border-amber-200 mb-12 shadow-sm">
-              <h3 className="text-lg font-bold text-amber-700 flex items-center gap-2 mb-4">
-                <TreeStructure size={22} weight="duotone" /> Essay Structure & Flow
-              </h3>
-              <p className="text-slate-700 text-sm leading-relaxed italic">
-                {aiResult.structureAnalysis}
-              </p>
-            </div>
+            {/* Structure Analysis (legacy string fallback) */}
+            {typeof aiResult.structureAnalysis === 'string' && aiResult.structureAnalysis.trim() !== "" && (
+              <div className="p-8 rounded-3xl bg-amber-50/40 border border-amber-200 mb-12 shadow-sm">
+                <h3 className="text-lg font-bold text-amber-700 flex items-center gap-2 mb-4">
+                  <TreeStructure size={22} weight="duotone" /> Essay Structure & Flow
+                </h3>
+                <p className="text-slate-700 text-sm leading-relaxed italic">
+                  {aiResult.structureAnalysis}
+                </p>
+              </div>
+            )}
 
             {/* Actionable Feedback Details */}
             {aiResult.actionableFeedback && aiResult.actionableFeedback.length > 0 && (
