@@ -74,13 +74,23 @@ export default function LoginPage() {
         userRole = userData.role || 'user';
         hasCompletedOnboarding = userData.hasCompletedOnboarding || false;
 
-        await updateDoc(userRef, { lastLogin: serverTimestamp() });
+        // Always enforce the correct role for known admin/developer emails on
+        // every login — this corrects any account whose role was set wrong or
+        // was created before the developer role existed.
+        const userEmail = user.email || '';
+        if (ADMIN_EMAILS.includes(userEmail)) {
+          const correctRole = userEmail === "thimira.vishwa2003@gmail.com" ? 'developer' : 'admin';
+          userRole = correctRole; // use correct role for redirect logic below
+          await updateDoc(userRef, { role: correctRole, lastLogin: serverTimestamp() });
+        } else {
+          await updateDoc(userRef, { lastLogin: serverTimestamp() });
+        }
 
       } else {
         const userEmail = user.email || '';
         if (ADMIN_EMAILS.includes(userEmail)) {
           userRole = userEmail === "thimira.vishwa2003@gmail.com" ? 'developer' : 'admin';
-          hasCompletedOnboarding = true; // Admins skip onboarding
+          hasCompletedOnboarding = true;
         }
         await setDoc(userRef, {
           uid: user.uid,

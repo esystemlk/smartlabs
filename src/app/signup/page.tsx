@@ -14,7 +14,7 @@ import {
   User,
 } from 'firebase/auth';
 import { useAuth, useFirebase } from '@/firebase';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -115,14 +115,25 @@ export default function SignupPage() {
           router.push('/welcome');
         }
       } else {
-        // User already exists, treat as login
+        // User already exists — enforce correct role for admin/developer emails,
+        // then redirect as normal.
+        const userData = userDoc.data();
+        const userEmail = user.email || '';
+        let existingRole: string = userData.role || 'user';
+
+        if (ADMIN_EMAILS.includes(userEmail)) {
+          const correctRole = userEmail === "thimira.vishwa2003@gmail.com" ? 'developer' : 'admin';
+          existingRole = correctRole;
+          await updateDoc(userRef, { role: correctRole, lastLogin: serverTimestamp() });
+        }
+
         setIsLoading(false);
         toast({
           title: 'Login Successful!',
           description: `Welcome back, ${finalDisplayName || user.email}!`,
         });
-        const userData = userDoc.data();
-        if (userData.role === 'admin' || userData.role === 'developer') {
+
+        if (existingRole === 'admin' || existingRole === 'developer') {
           router.push('/admin/dashboard');
         } else if (userData.hasCompletedOnboarding) {
           router.push('/dashboard');

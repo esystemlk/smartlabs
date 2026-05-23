@@ -5,26 +5,41 @@ let adminAuth: admin.auth.Auth | undefined;
 
 if (!admin.apps.length) {
   const serviceAccountString = process.env.FIREBASE_ADMIN_CONFIG;
-  if (serviceAccountString) {
-    try {
-      const serviceAccount = JSON.parse(serviceAccountString);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-      });
-      console.log("Firebase Admin SDK initialized successfully.");
-      adminDb = admin.firestore();
-      adminAuth = admin.auth();
-    } catch (e: any) {
-      console.error('Firebase admin initialization error:', e.message);
-    }
+
+  if (!serviceAccountString) {
+    console.error(
+      '❌ [firebase-admin] FIREBASE_ADMIN_CONFIG env var is MISSING. ' +
+      'Set it in .env.local. Firebase Admin SDK not initialized.'
+    );
   } else {
-    // This will be logged during build, which is fine.
-    console.warn("FIREBASE_ADMIN_CONFIG environment variable is not set. Firebase Admin SDK not initialized.");
+    let serviceAccount: object | null = null;
+
+    try {
+      serviceAccount = JSON.parse(serviceAccountString);
+    } catch (parseErr: unknown) {
+      const msg = parseErr instanceof Error ? parseErr.message : String(parseErr);
+      console.error(
+        '❌ [firebase-admin] FIREBASE_ADMIN_CONFIG is set but JSON.parse() FAILED. ' +
+        'The JSON in .env.local is malformed. Error:', msg,
+        '\nFirst 120 chars of value:', serviceAccountString.slice(0, 120)
+      );
+    }
+
+    if (serviceAccount) {
+      try {
+        admin.initializeApp({ credential: admin.credential.cert(serviceAccount as admin.ServiceAccount) });
+        adminDb   = admin.firestore();
+        adminAuth = admin.auth();
+        console.log('✅ [firebase-admin] Firebase Admin SDK initialized successfully.');
+      } catch (initErr: unknown) {
+        const msg = initErr instanceof Error ? initErr.message : String(initErr);
+        console.error('❌ [firebase-admin] initializeApp() failed:', msg);
+      }
+    }
   }
 } else {
-    // If the app is already initialized, get the instances.
-    adminDb = admin.firestore();
-    adminAuth = admin.auth();
+  adminDb   = admin.firestore();
+  adminAuth = admin.auth();
 }
 
 export { adminDb, adminAuth };

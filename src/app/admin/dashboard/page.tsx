@@ -7,7 +7,7 @@ import { doc, getDoc, collection } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { signOut } from 'firebase/auth';
-import { LogOut, Users, UserCog, MessageSquare, GraduationCap, FileText, Library, DollarSign, UserCheck, Home, LayoutDashboard, Sparkles, Video, Brain, Presentation } from 'lucide-react';
+import { LogOut, Users, UserCog, MessageSquare, GraduationCap, FileText, Library, DollarSign, UserCheck, Home, LayoutDashboard, Sparkles, Video, Brain, Presentation, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -70,6 +70,17 @@ export default function AdminDashboardPage() {
     }
 
     const navItems = [
+        // ── AI API Settings — always visible; page enforces developer-only access ──
+        {
+            title : "AI API Settings",
+            value : currentUserRole === 'developer' ? "Configure" : "Developer Only",
+            desc  : "Manage Gemini API key, model status & usage tracking.",
+            icon  : ShieldCheck,
+            href  : "/admin/dashboard/ai-settings",
+            color : "text-primary",
+            bg    : "bg-primary/5",
+            border: "border-primary/30",
+        },
         { title: "Total Users", value: users?.length ?? 0, desc: "Live count of registered users.", icon: Users, href: null },
         { title: "User Management", value: "Manage", desc: "Manage roles and access.", icon: UserCog, href: "/admin/dashboard/users" },
         { title: "Course Management", value: "Manage", desc: "Add, edit, or delete courses.", icon: GraduationCap, href: "/admin/dashboard/courses" },

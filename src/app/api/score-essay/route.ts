@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
+import { adminDb } from '@/lib/firebase-admin';
 
+// ─── Model list (priority order) ─────────────────────────────────────────────
 const MODELS = [
   { name: 'gemini-2.5-flash', api: 'v1beta' },
   { name: 'gemini-2.5-pro',   api: 'v1beta' },
@@ -7,6 +9,109 @@ const MODELS = [
   { name: 'gemini-3.1-pro',   api: 'v1beta' },
 ];
 
+// ─── In-memory API key cache (refreshes every 2 min or on cache_control signal) ─
+let _cachedKey: string | null = null;
+let _cacheExpiry  = 0;
+let _cacheVersion = 0;        // mirrors Firestore cache_control.keyVersion
+
+const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
+
+async function getApiKey(): Promise<string | null> {
+  try {
+    if (adminDb) {
+      // Check if admin has invalidated the cache
+      const ccSnap = await adminDb.collection('system_config').doc('cache_control').get();
+      const remoteVersion: number = ccSnap.exists ? (ccSnap.data()?.keyVersion ?? 0) : 0;
+
+      const cacheStillValid =
+        _cachedKey &&
+        Date.now() < _cacheExpiry &&
+        _cacheVersion === remoteVersion;
+
+      if (!cacheStillValid) {
+        // Fetch from Firestore
+        const snap = await adminDb.collection('system_config').doc('ai_settings').get();
+        if (snap.exists) {
+          const key = snap.data()?.geminiApiKey as string | undefined;
+          if (key) {
+            _cachedKey    = key;
+            _cacheExpiry  = Date.now() + CACHE_TTL_MS;
+            _cacheVersion = remoteVersion;
+            console.log('[score-essay] API key loaded from Firestore.');
+            return key;
+          }
+        }
+      } else {
+        return _cachedKey;
+      }
+    }
+  } catch (e) {
+    console.warn('[score-essay] Firestore key read failed, falling back to .env:', e);
+  }
+
+  // Fall back to environment variables
+  return process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || null;
+}
+
+// ─── Fire-and-forget usage tracking ──────────────────────────────────────────
+async function trackModelUsage(
+  model   : string,
+  success : boolean,
+  errorMsg?: string
+) {
+  try {
+    if (!adminDb) return;
+    const ref = adminDb.collection('system_config').doc('model_usage');
+
+    // Build the nested update using dot-notation keys (Firestore merges safely)
+    const updates: Record<string, unknown> = {
+      totalRequests                                 : adminDb.collection('system_config').doc('model_usage') as unknown, // placeholder; overridden below
+      [`models.${model}.lastUsedAt`]               : new Date(),
+      [`models.${model}.lastStatus`]                : success ? 'active' : 'exhausted',
+    };
+    // We can't use FieldValue without importing from firebase-admin/firestore.
+    // Use a transaction-free increment pattern: read + write (acceptable for low traffic).
+    const snap = await ref.get();
+    const data = snap.data() ?? {};
+    const models: Record<string, Record<string, unknown>> = (data.models as Record<string, Record<string, unknown>>) ?? {};
+    const m     = (models[model] ?? {}) as Record<string, unknown>;
+
+    const patch: Record<string, unknown> = {
+      totalRequests: ((data.totalRequests as number) ?? 0) + 1,
+      [`models.${model}.successCount`]: ((m.successCount as number) ?? 0) + (success ? 1 : 0),
+      [`models.${model}.failureCount`]: ((m.failureCount as number) ?? 0) + (success ? 0 : 1),
+      [`models.${model}.lastUsedAt`]  : new Date(),
+      [`models.${model}.lastStatus`]  : success ? 'active' : 'exhausted',
+    };
+    if (!success && errorMsg) {
+      patch[`models.${model}.lastError`] = errorMsg;
+    }
+
+    // Use update() with dot-notation — Firestore does not allow dots in set() keys,
+    // but update() with strings is fine.
+    try {
+      await ref.update(patch);
+    } catch {
+      // Document didn't exist yet — create it
+      await ref.set({
+        totalRequests: 1,
+        models: {
+          [model]: {
+            successCount: success ? 1 : 0,
+            failureCount: success ? 0 : 1,
+            lastUsedAt  : new Date(),
+            lastStatus  : success ? 'active' : 'exhausted',
+            lastError   : !success && errorMsg ? errorMsg : '',
+          },
+        },
+      });
+    }
+  } catch (e) {
+    console.warn('[score-essay] Usage tracking failed (non-blocking):', e);
+  }
+}
+
+// ─── Prompt ──────────────────────────────────────────────────────────────────
 const SYSTEM_PROMPT = `You are an expert PTE Academic Essay evaluator trained in modern high-scoring PTE writing strategies. Evaluate the student essay very critically and strategically based on actual PTE scoring requirements.
 
 MAIN PTE SCORING AREAS:
@@ -151,17 +256,19 @@ Return ONLY valid JSON (absolutely no markdown, no text outside the JSON object)
   "actionableFeedback": [{"issue": "<specific identifiable problem in the essay>", "howToFix": "<concrete specific solution>"}]
 }`;
 
+// ─── JSON extractor ───────────────────────────────────────────────────────────
 function extractJson(text: string): string {
   let cleaned = text.trim();
   cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
   const start = cleaned.indexOf('{');
-  const end = cleaned.lastIndexOf('}');
+  const end   = cleaned.lastIndexOf('}');
   if (start !== -1 && end !== -1 && end > start) {
     return cleaned.substring(start, end + 1);
   }
   return cleaned.trim();
 }
 
+// ─── Main handler ─────────────────────────────────────────────────────────────
 export async function POST(request: Request) {
   try {
     const { topic, essay, wordCount, requestModelEssay } = await request.json();
@@ -173,9 +280,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY;
+    const apiKey = await getApiKey();
     if (!apiKey) {
-      console.error('Server Configuration Error: Gemini API key is missing.');
+      console.error('Server Configuration Error: Gemini API key is missing from both Firestore and .env.');
       return NextResponse.json(
         { error: 'Gemini API key is not configured on the server.' },
         { status: 500 }
@@ -196,8 +303,7 @@ Now evaluate this essay carefully following all the scoring rules. Be critical, 
     }
 
     let responseText = '';
-    let usedModel = '';
-    let lastError: unknown = null;
+    let usedModel    = '';
     const errorLog: string[] = [];
 
     for (const { name: model, api } of MODELS) {
@@ -206,33 +312,23 @@ Now evaluate this essay carefully following all the scoring rules. Be critical, 
         const url = `https://generativelanguage.googleapis.com/${api}/models/${model}:generateContent?key=${apiKey}`;
 
         const response = await fetch(url, {
-          method: 'POST',
+          method : 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [
-              {
-                role: 'user',
-                parts: [{ text: userMessage }]
-              }
-            ],
-            systemInstruction: {
-              parts: [{ text: SYSTEM_PROMPT }]
-            },
-            generationConfig: {
-              maxOutputTokens: 8192,
-              temperature: 0.1,
-            }
-          })
+          body   : JSON.stringify({
+            contents         : [{ role: 'user', parts: [{ text: userMessage }] }],
+            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            generationConfig : { maxOutputTokens: 8192, temperature: 0.1 },
+          }),
         });
 
         if (!response.ok) {
           const errorBody = await response.text();
           let msg = `HTTP ${response.status}`;
-          try { msg = JSON.parse(errorBody)?.error?.message || msg; } catch {}
-          const logMsg = `${model}: ${msg}`;
-          errorLog.push(logMsg);
-          console.warn(`[score-essay] ${logMsg}`);
-          lastError = new Error(logMsg);
+          try { msg = JSON.parse(errorBody)?.error?.message || msg; } catch { /* ignore */ }
+          const errorCode = response.status === 429 ? 'QUOTA_EXCEEDED' : `HTTP_${response.status}`;
+          errorLog.push(`${model}: ${msg}`);
+          console.warn(`[score-essay] ${model}: ${msg}`);
+          trackModelUsage(model, false, errorCode).catch(() => {});
           continue;
         }
 
@@ -243,43 +339,40 @@ Now evaluate this essay carefully following all the scoring rules. Be critical, 
           const reason = data.candidates?.[0]?.finishReason || 'no text returned';
           errorLog.push(`${model}: empty response (${reason})`);
           console.warn(`[score-essay] ${model}: empty response — ${reason}`);
-          lastError = new Error(`Empty response from ${model}`);
+          trackModelUsage(model, false, `EMPTY_${reason}`).catch(() => {});
           continue;
         }
 
         const jsonStr = extractJson(text);
-        JSON.parse(jsonStr);
+        JSON.parse(jsonStr); // validate
         responseText = jsonStr;
-        usedModel = model;
+        usedModel    = model;
         console.log(`[score-essay] ✓ Success with model: ${model}`);
+        trackModelUsage(model, true).catch(() => {});
         break;
 
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
         errorLog.push(`${model}: ${msg}`);
         console.warn(`[score-essay] ${model} threw:`, msg);
-        lastError = err;
+        trackModelUsage(model, false, 'EXCEPTION').catch(() => {});
       }
     }
-
-    void lastError;
 
     if (!responseText) {
       console.error('[score-essay] All models exhausted:', errorLog);
       return NextResponse.json(
         {
-          error: 'All AI models failed to score the essay. Please try again in a moment.',
+          error  : 'All AI models failed to score the essay. Please try again in a moment.',
           details: errorLog,
         },
         { status: 502 }
       );
     }
 
-    const parsedJson = JSON.parse(responseText);
-
     return NextResponse.json({
-      ...parsedJson,
-      _metadata: { modelUsed: usedModel }
+      ...JSON.parse(responseText),
+      _metadata: { modelUsed: usedModel },
     });
 
   } catch (error: unknown) {
