@@ -60,6 +60,7 @@ const featured = [
     icon: LayoutDashboard,
     description: "Access your coursework & grades.",
     external: true
+  }
 ];
 
 const navLinks = [
