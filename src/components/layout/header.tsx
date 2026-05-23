@@ -76,7 +76,6 @@ const navLinks = [
   { name: "LMS Portal", href: LMS_URL, external: true },
   { name: "Windows App", href: "/download/windows" },
   { name: "Level Test", href: "/level-test", highlight: true },
-  { name: "About", href: "/about" },
   { name: "Help", href: "/support", icon: HelpCircle },
 ];
 

@@ -12,7 +12,6 @@ const footerLinks = {
     { name: "Corporate Training", href: "/corporate-training" },
   ],
   company: [
-    { name: "About Us", href: "/about" },
     { name: "Blog", href: "/blog" },
     { name: "Apps", href: "/apps" },
     { name: "Contact", href: "/contact" },
