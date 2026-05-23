@@ -63,6 +63,7 @@ const featured = [
 ];
 
 const navLinks = [
+  { name: "Home", href: "/" },
   { name: "Courses", href: "/courses" },
   { name: "Essay Practise", href: "/ai-essay-practice" },
   { name: "LMS Portal", href: LMS_URL, external: true },
