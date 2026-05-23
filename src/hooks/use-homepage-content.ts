@@ -9,8 +9,13 @@ export function useHomepageCourses() {
     useEffect(() => {
         const fetchCourses = async () => {
             setLoading(true);
-            const data = await homepageContentService.getCourses();
-            setCourses(data);
+            try {
+                const data = await homepageContentService.getCourses();
+                setCourses(data || []);
+            } catch (error) {
+                console.error('Error fetching courses:', error);
+                setCourses([]);
+            }
             setLoading(false);
         };
         fetchCourses();
@@ -26,8 +31,13 @@ export function useLearningMethods() {
     useEffect(() => {
         const fetchMethods = async () => {
             setLoading(true);
-            const data = await homepageContentService.getLearningMethods();
-            setMethods(data);
+            try {
+                const data = await homepageContentService.getLearningMethods();
+                setMethods(data || []);
+            } catch (error) {
+                console.error('Error fetching learning methods:', error);
+                setMethods([]);
+            }
             setLoading(false);
         };
         fetchMethods();
@@ -43,8 +53,13 @@ export function useFeatures() {
     useEffect(() => {
         const fetchFeatures = async () => {
             setLoading(true);
-            const data = await homepageContentService.getFeatures();
-            setFeatures(data);
+            try {
+                const data = await homepageContentService.getFeatures();
+                setFeatures(data || []);
+            } catch (error) {
+                console.error('Error fetching features:', error);
+                setFeatures([]);
+            }
             setLoading(false);
         };
         fetchFeatures();
@@ -60,8 +75,13 @@ export function useFAQs() {
     useEffect(() => {
         const fetchFAQs = async () => {
             setLoading(true);
-            const data = await homepageContentService.getFAQs();
-            setFaqs(data);
+            try {
+                const data = await homepageContentService.getFAQs();
+                setFaqs(data || []);
+            } catch (error) {
+                console.error('Error fetching FAQs:', error);
+                setFaqs([]);
+            }
             setLoading(false);
         };
         fetchFAQs();
@@ -77,8 +97,13 @@ export function useComparisons() {
     useEffect(() => {
         const fetchComparisons = async () => {
             setLoading(true);
-            const data = await homepageContentService.getComparisons();
-            setComparisons(data);
+            try {
+                const data = await homepageContentService.getComparisons();
+                setComparisons(data || []);
+            } catch (error) {
+                console.error('Error fetching comparisons:', error);
+                setComparisons([]);
+            }
             setLoading(false);
         };
         fetchComparisons();

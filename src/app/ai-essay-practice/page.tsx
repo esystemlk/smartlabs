@@ -211,7 +211,7 @@ export default function AIEssayPractice() {
     }, 100);
   };
 
-  const wordCount = essayText.trim() === "" ? 0 : essayText.trim().split(/\s+/).length;
+  const wordCount = essayText && essayText.trim() !== "" ? essayText.trim().split(/\s+/).length : 0;
   
   const getWordCountColor = () => {
     if (wordCount >= 180 && wordCount <= 260) return "text-emerald-600";
@@ -299,8 +299,8 @@ export default function AIEssayPractice() {
   };
 
   const filteredTopics = selectedFilter === "All"
-    ? TOPICS
-    : TOPICS.filter(t => t.category === selectedFilter);
+    ? (TOPICS || [])
+    : (TOPICS || []).filter(t => t.category === selectedFilter);
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sora selection:bg-[#f97316]/20 selection:text-slate-900 custom-scrollbar pb-24">
@@ -421,12 +421,12 @@ export default function AIEssayPractice() {
 
           {/* Stats Bar */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto mt-8">
-            {[
+            {([
               { value: "40", label: "Predicted Topics", icon: <ListChecks size={22} weight="duotone" className="text-[#2563eb]" /> },
               { value: "85+", label: "Target Band", icon: <Target size={22} weight="duotone" className="text-[#2563eb]" /> },
               { value: "6", label: "Marking Criteria", icon: <ChartBar size={22} weight="duotone" className="text-[#2563eb]" /> },
               { value: "20 Min", label: "Practice Timer", icon: <Timer size={22} weight="duotone" className="text-[#2563eb]" /> }
-            ].map((stat, i) => (
+            ] || []).map((stat, i) => (
               <div key={i} className="p-4 md:p-6 rounded-2xl bg-slate-50 border border-slate-200 hover:shadow-md transition-shadow">
                 <div className="flex justify-center mb-2">{stat.icon}</div>
                 <div className="text-3xl font-black text-[#f97316] mb-1">{stat.value}</div>
@@ -445,7 +445,7 @@ export default function AIEssayPractice() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {[
+          {([
             {
               step: "Step 1",
               title: "Pick a Topic",
@@ -464,7 +464,7 @@ export default function AIEssayPractice() {
               desc: "Receive a Band score, criterion-by-criterion marks, strengths, weaknesses & a model essay.",
               icon: <Lightning size={28} weight="duotone" className="text-[#f59e0b]" />
             }
-          ].map((item, i) => (
+          ] || []).map((item, i) => (
             <div key={i} className="p-8 rounded-3xl bg-white border border-slate-200 hover:border-[#f97316]/40 transition-all group duration-300 shadow-sm hover:shadow-lg">
               <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
                 {item.icon}
@@ -490,7 +490,7 @@ export default function AIEssayPractice() {
             <p className="text-[11px] text-slate-500 font-bold mt-1">Our AI evaluates essays against 6 core parameters:</p>
           </div>
           <div className="flex flex-wrap justify-center items-center gap-3">
-            {[
+            {([
               { name: "Content", color: "bg-violet-50 text-violet-700 border-violet-200" },
               { name: "Form", color: "bg-blue-50 text-blue-700 border-blue-200" },
               { name: "Argumentary Quality & Structure", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
@@ -498,7 +498,7 @@ export default function AIEssayPractice() {
               { name: "General Linguistic Range", color: "bg-red-50 text-red-700 border-red-200" },
               { name: "Vocabulary Range", color: "bg-pink-50 text-pink-700 border-pink-200" },
               { name: "Spelling", color: "bg-indigo-50 text-indigo-700 border-indigo-200" }
-            ].map((pill, i) => (
+            ] || []).map((pill, i) => (
               <span key={i} className={`px-4 py-2 rounded-full border text-xs font-black tracking-wide ${pill.color} shadow-sm`}>
                 {pill.name}
               </span>
@@ -517,7 +517,7 @@ export default function AIEssayPractice() {
 
           {/* Filter Bar */}
           <div className="flex flex-nowrap md:flex-wrap gap-2 max-w-full overflow-x-auto no-scrollbar pb-2">
-            {FILTERS.map(filter => (
+            {(FILTERS || []).map(filter => (
               <button
                 key={filter}
                 onClick={() => setSelectedFilter(filter)}
@@ -535,7 +535,7 @@ export default function AIEssayPractice() {
 
         {/* Topic Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTopics.map(topic => {
+          {(filteredTopics || []).map(topic => {
             const isSelected = selectedTopic?.id === topic.id;
             const catColors = CATEGORY_COLORS[topic.category] || { bg: "bg-slate-50", text: "text-slate-600", border: "border-slate-200" };
             
@@ -726,7 +726,7 @@ export default function AIEssayPractice() {
                 Section Breakdown
               </h3>
               <div className="grid md:grid-cols-2 gap-6">
-                {aiResult.criteria.map((criterion, i) => {
+                {(aiResult.criteria || []).map((criterion, i) => {
                   const percent = (criterion.score / criterion.max) * 100;
                   
                   return (
@@ -788,7 +788,7 @@ export default function AIEssayPractice() {
                   <CheckCircle size={22} weight="duotone" /> Core Strengths
                 </h3>
                 <ul className="space-y-4">
-                  {aiResult.strengths.map((str, idx) => (
+                  {(aiResult.strengths || []).map((str, idx) => (
                     <li key={idx} className="text-slate-700 text-sm leading-relaxed flex items-start gap-3">
                       <span className="text-emerald-600 text-base leading-none shrink-0">•</span>
                       <span>{str}</span>
@@ -803,7 +803,7 @@ export default function AIEssayPractice() {
                   <Lightbulb size={22} weight="duotone" /> Areas for Improvement
                 </h3>
                 <ul className="space-y-4">
-                  {aiResult.improvements.map((imp, idx) => (
+                  {(aiResult.improvements || []).map((imp, idx) => (
                     <li key={idx} className="text-slate-700 text-sm leading-relaxed flex items-start gap-3">
                       <span className="text-orange-600 text-base leading-none shrink-0">•</span>
                       <span>{imp}</span>
@@ -866,7 +866,7 @@ export default function AIEssayPractice() {
                   <Warning size={22} weight="duotone" /> Detailed Issues & Fixes
                 </h3>
                 <div className="space-y-6">
-                  {aiResult.actionableFeedback.map((item, idx) => (
+                  {(aiResult.actionableFeedback || []).map((item, idx) => (
                     <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-200 flex flex-col md:flex-row gap-4">
                       <div className="md:w-1/2">
                         <span className="text-[10px] font-black uppercase text-red-500 tracking-widest mb-1 block">What went wrong</span>
@@ -898,7 +898,7 @@ export default function AIEssayPractice() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {aiResult.vocabUpgrades.map((upgrade, idx) => (
+                    {(aiResult.vocabUpgrades || []).map((upgrade, idx) => (
                       <tr key={idx} className="hover:bg-slate-50 transition-colors">
                         <td className="py-4 px-4 font-bold text-slate-500">{upgrade.basic}</td>
                         <td className="py-4 px-4 font-extrabold text-emerald-600">{upgrade.better}</td>
@@ -938,7 +938,7 @@ export default function AIEssayPractice() {
 
       {/* Toast Notification Container */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none">
-        {toasts.map(toast => (
+        {(toasts || []).map(toast => (
           <div
             key={toast.id}
             className={`pointer-events-auto flex items-center gap-3 px-5 py-4 rounded-2xl border text-sm font-semibold shadow-xl animate-slide-up bg-white text-slate-800 min-w-[280px] max-w-sm ${

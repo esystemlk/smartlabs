@@ -341,28 +341,28 @@ export default function Home() {
   };
 
   // Use real data from Firebase with fallback to static data
-  const displayCourses = realCourses.length > 0 ? realCourses.map(course => ({
+  const displayCourses = (realCourses && realCourses.length > 0) ? realCourses.map(course => ({
     ...course,
     icon: iconMap[course.icon] || Target
   })) : courses;
 
-  const displayMethods = realMethods.length > 0 ? realMethods.map(method => ({
+  const displayMethods = (realMethods && realMethods.length > 0) ? realMethods.map(method => ({
     ...method,
     icon: iconMap[method.icon] || Video
   })) : learningMethods;
 
-  const displayFeatures = realFeatures.length > 0 ? realFeatures.map(feature => ({
+  const displayFeatures = (realFeatures && realFeatures.length > 0) ? realFeatures.map(feature => ({
     ...feature,
     icon: iconMap[feature.icon] || Cpu
   })) : features;
 
-  const displayFAQs = realFAQs.length > 0 ? realFAQs : faqs;
-  const displayComparisons = realComparisons.length > 0 ? realComparisons : comparisons;
-  const displayTestimonials = realTestimonials.length > 0 ? realTestimonials : testimonials;
+  const displayFAQs = (realFAQs && realFAQs.length > 0) ? realFAQs : faqs;
+  const displayComparisons = (realComparisons && realComparisons.length > 0) ? realComparisons : comparisons;
+  const displayTestimonials = (realTestimonials && realTestimonials.length > 0) ? realTestimonials : testimonials;
   const featuredCourses = (() => {
     const targets = ['/pte', '/ielts', '/celpip'];
-    const selected = displayCourses.filter((c: any) => targets.includes(c.href));
-    return selected.length > 0 ? selected : displayCourses.slice(0, 3);
+    const selected = displayCourses && displayCourses.length > 0 ? displayCourses.filter((c: any) => targets.includes(c.href)) : [];
+    return selected.length > 0 ? selected : (displayCourses && displayCourses.length > 0 ? displayCourses.slice(0, 3) : []);
   })();
 
   const { scrollYProgress } = useScroll();
