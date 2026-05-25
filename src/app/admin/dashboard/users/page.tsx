@@ -5,7 +5,7 @@ import { useUser, useFirebase, useCollection, useMemoFirebase } from '@/firebase
 import { doc, updateDoc } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Shield, UserCheck, UserX, UserCog, ArrowLeft } from 'lucide-react';
+import { MoreHorizontal, Shield, UserCheck, UserX, UserCog, ArrowLeft, CreditCard, RefreshCw, Star } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -25,6 +25,29 @@ export default function UserManagementPage() {
     [firestore]
   );
   const { data: users, isLoading: usersLoading } = useCollection(usersQuery);
+
+  const handleAddCredits = async (
+    targetUid: string,
+    action: 'add_paid' | 'set_monthly' | 'reset',
+    amount?: number,
+    monthlyDays?: number
+  ) => {
+    if (!currentUser) return;
+    try {
+      const idToken = await currentUser.getIdToken();
+      const res = await fetch('/api/admin/manage-credits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+        body: JSON.stringify({ targetUid, action, amount, monthlyDays }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast({ title: 'Credits Updated', description: data.message });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      toast({ variant: 'destructive', title: 'Error', description: msg });
+    }
+  };
 
   const handleRoleChange = (userId: string, newRole: 'user' | 'teacher' | 'admin' | 'developer') => {
     if (!firestore || !currentUser) return;
@@ -78,6 +101,7 @@ export default function UserManagementPage() {
                             <TableHead>User</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Role</TableHead>
+                            <TableHead>Essay Credits</TableHead>
                             <TableHead>
                                 <span className="sr-only">Actions</span>
                             </TableHead>
@@ -101,6 +125,16 @@ export default function UserManagementPage() {
                                 <TableCell>
                                     <Badge variant={user.role === 'admin' || user.role === 'developer' ? 'destructive' : user.role === 'teacher' ? 'secondary' : 'outline'} className="capitalize">{user.role || 'user'}</Badge>
                                 </TableCell>
+                                <TableCell className="text-xs text-muted-foreground">
+                                  {['admin','developer','teacher'].includes(user.role)
+                                    ? <Badge variant="secondary" className="text-xs">Unlimited</Badge>
+                                    : user.essayMonthlyExpiry && new Date(user.essayMonthlyExpiry?.toDate?.() ?? 0) > new Date()
+                                      ? <Badge className="text-xs bg-violet-100 text-violet-700 border-violet-200 hover:bg-violet-100">Monthly ✓</Badge>
+                                      : user.essayPaidCredits > 0
+                                        ? <Badge variant="outline" className="text-xs">{user.essayPaidCredits} paid</Badge>
+                                        : <span className="text-[11px]">Free: {2 - Math.min(2, user.essayFreeUsed ?? 0)} left</span>
+                                  }
+                                </TableCell>
                                 <TableCell>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -116,6 +150,13 @@ export default function UserManagementPage() {
                                             <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'admin')}><Shield className="mr-2 h-4 w-4" /> Make Admin</DropdownMenuItem>
                                              <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'developer')}><UserCog className="mr-2 h-4 w-4" /> Make Developer</DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'user')}><UserCheck className="mr-2 h-4 w-4" /> Make Student</DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuLabel className="text-xs text-muted-foreground">Essay Credits</DropdownMenuLabel>
+                                            <DropdownMenuItem onClick={() => handleAddCredits(user.id, 'add_paid', 10)}><CreditCard className="mr-2 h-4 w-4 text-blue-500" /> Add 10 Credits ($3)</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleAddCredits(user.id, 'add_paid', 20)}><CreditCard className="mr-2 h-4 w-4 text-emerald-500" /> Add 20 Credits ($5)</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleAddCredits(user.id, 'add_paid', 40)}><CreditCard className="mr-2 h-4 w-4 text-violet-500" /> Add 40 Credits ($10)</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleAddCredits(user.id, 'set_monthly', undefined, 30)}><Star className="mr-2 h-4 w-4 text-amber-500" /> Monthly Plan (30 days)</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleAddCredits(user.id, 'reset')}><RefreshCw className="mr-2 h-4 w-4 text-slate-500" /> Reset Essay Credits</DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem className="text-red-600 focus:text-red-500"><UserX className="mr-2 h-4 w-4" /> Suspend User</DropdownMenuItem>
                                         </DropdownMenuContent>

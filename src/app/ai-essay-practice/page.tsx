@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
+import { useUser, useFirestore } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import {
   PencilLine,
   Timer,
@@ -28,6 +30,13 @@ import {
   Brain,
   ChartBar,
   Trophy,
+  Lock,
+  ShoppingCart,
+  ShieldWarning,
+  SignIn,
+  CurrencyDollar,
+  Crown,
+  Package,
 } from '@phosphor-icons/react';
 
 interface Topic {
@@ -207,26 +216,96 @@ interface Toast {
   type: 'success' | 'error' | 'warning' | 'info';
 }
 
+interface CreditInfo {
+  freeUsed: number;
+  paidCredits: number;
+  hasMonthly: boolean;
+}
+
 export default function AIEssayPractice() {
+  // ── Firebase auth + credits ───────────────────────────────────────────────
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+
+  const [creditInfo, setCreditInfo]     = useState<CreditInfo | null>(null);
+  const [creditLoading, setCreditLoading] = useState(false);
+
+  // ── Modal / overlay state ──────────────────────────────────────────────────
+  const [showSignInModal, setShowSignInModal]   = useState(false);
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [isBlocked, setIsBlocked]               = useState(false);
+  const [blockedMessage, setBlockedMessage]     = useState('');
+
+  // ── Essay practice state ──────────────────────────────────────────────────
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
-  
+
   const [showWritingArea, setShowWritingArea] = useState(false);
   const [essayText, setEssayText] = useState("");
   const [requestModelEssay, setRequestModelEssay] = useState(false);
   const [timeLeft, setTimeLeft] = useState(1200); // 20 minutes in seconds
   const [isTimerRunning, setIsTimerRunning] = useState(false);
-  
+
   const [targetScore, setTargetScore] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [aiResult, setAiResult] = useState<AIResponse | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [animateProgress, setAnimateProgress] = useState(false);
-  
+
   const [toasts, setToasts] = useState<Toast[]>([]);
-  
+
   const writingAreaRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+
+  // ── Derived credit state ──────────────────────────────────────────────────
+  const creditsRemaining = useMemo<number | null>(() => {
+    if (!creditInfo) return null;
+    if (creditInfo.hasMonthly) return -1; // -1 = unlimited
+    if (creditInfo.paidCredits > 0) return creditInfo.paidCredits;
+    return Math.max(0, 2 - creditInfo.freeUsed);
+  }, [creditInfo]);
+
+  // hasCredits: null = unknown (loading), true = can score, false = blocked
+  const hasCredits = creditsRemaining === null ? null : creditsRemaining === -1 || creditsRemaining > 0;
+
+  // ── Load credit info when user changes ───────────────────────────────────
+  useEffect(() => {
+    if (!user) { setCreditInfo(null); return; }
+    let cancelled = false;
+    setCreditLoading(true);
+    (async () => {
+      try {
+        const snap = await getDoc(doc(firestore, 'users', user.uid));
+        if (cancelled) return;
+        const data = snap.data() ?? {};
+        const monthlyExpiry = (data.essayMonthlyExpiry as { toDate?: () => Date } | undefined)?.toDate?.() ?? null;
+        setCreditInfo({
+          freeUsed:   (data.essayFreeUsed    as number) ?? 0,
+          paidCredits:(data.essayPaidCredits as number) ?? 0,
+          hasMonthly: !!(monthlyExpiry && monthlyExpiry > new Date()),
+        });
+      } catch { /* silent — server-side check is authoritative */ }
+      finally { if (!cancelled) setCreditLoading(false); }
+    })();
+    return () => { cancelled = true; };
+  }, [user, firestore]);
+
+  // ── Device fingerprint ────────────────────────────────────────────────────
+  async function generateDeviceFingerprint(): Promise<string> {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const components = [
+        navigator.userAgent,
+        navigator.language,
+        `${screen.width}x${screen.height}x${screen.colorDepth}`,
+        String(navigator.hardwareConcurrency ?? 0),
+        navigator.platform ?? '',
+        tz,
+      ].join('|');
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(components));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch { return ''; }
+  }
 
   const showToast = (message: string, type: Toast['type'] = 'info') => {
     const id = Date.now();
@@ -275,11 +354,24 @@ export default function AIEssayPractice() {
 
   const startWritingHandler = () => {
     if (!selectedTopic) return;
+
+    // Gate: must be signed in
+    if (!user && !isUserLoading) {
+      setShowSignInModal(true);
+      return;
+    }
+
+    // Gate: must have credits
+    if (hasCredits === false) {
+      setShowPurchaseModal(true);
+      return;
+    }
+
     setShowWritingArea(true);
     setEssayText("");
     setTimeLeft(1200);
     setIsTimerRunning(true);
-    
+
     // Clear old results
     setShowResults(false);
     setAiResult(null);
@@ -304,26 +396,64 @@ export default function AIEssayPractice() {
       return;
     }
 
+    // Client-side auth guard (server also enforces this)
+    if (!user) {
+      setShowSignInModal(true);
+      return;
+    }
+
+    // Client-side credit guard
+    if (hasCredits === false) {
+      setShowPurchaseModal(true);
+      return;
+    }
+
     setIsSubmitting(true);
     setIsTimerRunning(false);
 
     try {
+      // Get Firebase ID token + device fingerprint
+      const [idToken, fingerprint] = await Promise.all([
+        user.getIdToken(),
+        generateDeviceFingerprint(),
+      ]);
+
       const response = await fetch('/api/score-essay', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,
+          'x-device-fingerprint': fingerprint,
         },
         body: JSON.stringify({
           topic: selectedTopic?.text,
           essay: essayText,
           wordCount,
           requestModelEssay,
-          targetScore: targetScore ?? null
-        })
+          targetScore: targetScore ?? null,
+        }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
+
+        // Handle specific error codes
+        if (errorData.code === 'NO_AUTH' || errorData.code === 'INVALID_AUTH') {
+          setShowSignInModal(true);
+          setIsTimerRunning(true);
+          return;
+        }
+        if (errorData.code === 'NO_CREDITS') {
+          setShowPurchaseModal(true);
+          setIsTimerRunning(true);
+          return;
+        }
+        if (errorData.code === 'BLOCKED_DEVICE') {
+          setIsBlocked(true);
+          setBlockedMessage(errorData.error || '');
+          return;
+        }
+
         throw new Error(errorData.error || "Failed to process essay.");
       }
 
@@ -332,15 +462,28 @@ export default function AIEssayPractice() {
       setShowResults(true);
       showToast("Evaluation complete! View your Band Score below.", "success");
 
+      // Refresh credit count
+      if (user) {
+        const snap = await getDoc(doc(firestore, 'users', user.uid));
+        const data = snap.data() ?? {};
+        const monthlyExpiry = (data.essayMonthlyExpiry as { toDate?: () => Date } | undefined)?.toDate?.() ?? null;
+        setCreditInfo({
+          freeUsed:    (data.essayFreeUsed    as number) ?? 0,
+          paidCredits: (data.essayPaidCredits as number) ?? 0,
+          hasMonthly:  !!(monthlyExpiry && monthlyExpiry > new Date()),
+        });
+      }
+
       // Scroll to results section
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
       setIsTimerRunning(true); // resume timer if error occurs
-      showToast(error.message || "An error occurred with Gemini marking. Please try again.", "error");
+      const msg = error instanceof Error ? error.message : "An error occurred. Please try again.";
+      showToast(msg, "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -458,9 +601,10 @@ export default function AIEssayPractice() {
               onClick={startWritingHandler}
               className="shrink-0 w-full md:w-auto justify-center bg-gradient-to-r from-[#f97316] to-[#fb923c] text-white font-extrabold text-sm px-6 py-2.5 rounded-xl shadow-lg hover:shadow-orange-200 transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2"
             >
-              <PencilLine size={18} weight="bold" />
-              <span>Start Writing</span>
-              <CaretDown size={14} weight="bold" className="animate-bounce" />
+              {!user && !isUserLoading
+                ? <><Lock size={16} weight="bold" /><span>Sign In to Start</span></>
+                : <><PencilLine size={18} weight="bold" /><span>Start Writing</span><CaretDown size={14} weight="bold" className="animate-bounce" /></>
+              }
             </button>
           </div>
         </div>
@@ -755,6 +899,41 @@ export default function AIEssayPractice() {
               </div>
             </div>
 
+            {/* Credit Info Bar */}
+            {user && !creditLoading && creditInfo && (
+              <div className="flex items-center justify-between gap-3 p-4 rounded-2xl border mb-4
+                bg-slate-50 border-slate-200">
+                <div className="flex items-center gap-2.5">
+                  <CurrencyDollar size={18} weight="duotone" className="text-[#f97316] shrink-0" />
+                  <span className="text-sm font-bold text-slate-700">Essay Credits</span>
+                </div>
+                {creditsRemaining === -1 ? (
+                  <span className="flex items-center gap-1.5 px-3 py-1 bg-violet-100 border border-violet-200 rounded-full text-xs font-black text-violet-700">
+                    <Crown size={13} weight="fill" /> Unlimited Monthly
+                  </span>
+                ) : creditsRemaining === 0 ? (
+                  <button
+                    onClick={() => setShowPurchaseModal(true)}
+                    className="flex items-center gap-1.5 px-3 py-1 bg-red-100 border border-red-200 rounded-full text-xs font-black text-red-700 hover:bg-red-200 transition-colors"
+                  >
+                    <XCircle size={13} weight="fill" /> No credits — Purchase
+                  </button>
+                ) : creditsRemaining !== null && creditsRemaining <= 2 && creditInfo.paidCredits === 0 ? (
+                  <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border ${
+                    creditsRemaining === 1
+                      ? 'bg-amber-100 border-amber-200 text-amber-700'
+                      : 'bg-emerald-100 border-emerald-200 text-emerald-700'
+                  }`}>
+                    <Star size={13} weight="fill" /> {creditsRemaining} free essay{creditsRemaining !== 1 ? 's' : ''} remaining
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5 px-3 py-1 bg-blue-100 border border-blue-200 rounded-full text-xs font-black text-blue-700">
+                    <Package size={13} weight="fill" /> {creditsRemaining} credits remaining
+                  </span>
+                )}
+              </div>
+            )}
+
             {/* Submission Actions */}
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
               <div className="flex flex-col gap-2">
@@ -781,7 +960,7 @@ export default function AIEssayPractice() {
               </div>
               <button
                 onClick={submitEssayHandler}
-                disabled={isSubmitting || essayText.trim().length === 0}
+                disabled={isSubmitting || essayText.trim().length === 0 || hasCredits === false}
                 className="w-full sm:w-auto bg-[#2563eb] hover:bg-[#1a4fd6] text-white font-extrabold px-10 py-4 rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3"
               >
                 {isSubmitting ? (
@@ -1615,6 +1794,173 @@ export default function AIEssayPractice() {
 
           </div>
         </section>
+      )}
+
+      {/* ── Sign-In Modal ── */}
+      {showSignInModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="bg-white rounded-3xl p-8 md:p-10 max-w-md w-full shadow-2xl border border-slate-200 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center mx-auto mb-5">
+              <Lock size={32} weight="duotone" className="text-[#2563eb]" />
+            </div>
+            <h2 className="font-display-serif text-2xl font-black text-slate-900 mb-2">Sign In Required</h2>
+            <p className="text-slate-500 text-sm leading-relaxed mb-2">
+              You need a SmartLabs account to use AI essay scoring.
+            </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl px-5 py-4 mb-6 text-left">
+              <p className="text-xs font-black text-blue-700 uppercase tracking-widest mb-2">Free Plan Includes</p>
+              <ul className="space-y-1.5">
+                <li className="flex items-center gap-2 text-sm text-slate-700 font-medium">
+                  <CheckCircle size={15} weight="duotone" className="text-emerald-500 shrink-0" />
+                  2 free AI essay scorings (lifetime)
+                </li>
+                <li className="flex items-center gap-2 text-sm text-slate-700 font-medium">
+                  <CheckCircle size={15} weight="duotone" className="text-emerald-500 shrink-0" />
+                  Full band score with 7-criterion breakdown
+                </li>
+                <li className="flex items-center gap-2 text-sm text-slate-700 font-medium">
+                  <CheckCircle size={15} weight="duotone" className="text-emerald-500 shrink-0" />
+                  Model essay, grammar review, vocab upgrades
+                </li>
+              </ul>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link
+                href="/register"
+                className="flex-1 bg-[#f97316] hover:bg-[#fb923c] text-white font-extrabold px-6 py-3 rounded-xl text-sm text-center transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
+                onClick={() => setShowSignInModal(false)}
+              >
+                <SignIn size={16} weight="bold" /> Create Free Account
+              </Link>
+              <Link
+                href="/login"
+                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold px-6 py-3 rounded-xl text-sm text-center transition-all hover:scale-[1.02]"
+                onClick={() => setShowSignInModal(false)}
+              >
+                Sign In
+              </Link>
+            </div>
+            <button
+              onClick={() => setShowSignInModal(false)}
+              className="mt-4 text-xs text-slate-400 hover:text-slate-600 transition-colors font-bold"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Purchase Credits Modal ── */}
+      {showPurchaseModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-8 overflow-y-auto">
+          <div className="bg-white rounded-3xl p-8 md:p-10 max-w-lg w-full shadow-2xl border border-slate-200 my-auto">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 rounded-2xl bg-orange-50 border border-orange-200 flex items-center justify-center mx-auto mb-4">
+                <ShoppingCart size={32} weight="duotone" className="text-[#f97316]" />
+              </div>
+              <h2 className="font-display-serif text-2xl font-black text-slate-900 mb-2">Unlock More Essay Scoring</h2>
+              <p className="text-slate-500 text-sm leading-relaxed">
+                You have used your 2 complimentary essays. Purchase credits to keep practising.
+              </p>
+            </div>
+
+            {/* Credit packages */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {([
+                { credits: 10, price: 3, label: '10 Credits', note: 'Starter', color: 'border-slate-200 hover:border-blue-300' },
+                { credits: 20, price: 5, label: '20 Credits', note: '★ Best Value', color: 'border-[#f97316] bg-orange-50', featured: true },
+                { credits: 40, price: 10, label: '40 Credits', note: 'Most Credits', color: 'border-slate-200 hover:border-emerald-300' },
+              ]).map(pkg => (
+                <div
+                  key={pkg.credits}
+                  className={`p-4 rounded-2xl border-2 text-center transition-all cursor-pointer hover:shadow-md ${pkg.color} ${pkg.featured ? 'ring-2 ring-[#f97316]/30' : ''}`}
+                >
+                  <Package size={20} weight="duotone" className={`mx-auto mb-2 ${pkg.featured ? 'text-[#f97316]' : 'text-slate-400'}`} />
+                  <div className="font-black text-slate-900 text-sm mb-0.5">{pkg.label}</div>
+                  <div className={`text-2xl font-black mb-0.5 ${pkg.featured ? 'text-[#f97316]' : 'text-slate-800'}`}>${pkg.price}</div>
+                  <div className={`text-[10px] font-black uppercase tracking-wider ${pkg.featured ? 'text-[#f97316]' : 'text-slate-400'}`}>{pkg.note}</div>
+                </div>
+              ))}
+
+              {/* Monthly unlimited */}
+              <div className="p-4 rounded-2xl border-2 border-violet-300 bg-violet-50 text-center col-span-2 hover:shadow-md transition-all cursor-pointer hover:border-violet-500">
+                <Crown size={20} weight="duotone" className="mx-auto mb-2 text-violet-600" />
+                <div className="font-black text-violet-800 text-sm mb-0.5">Unlimited Monthly Plan</div>
+                <div className="text-2xl font-black text-violet-700 mb-0.5">$50<span className="text-sm font-bold text-violet-400">/month</span></div>
+                <div className="text-[10px] font-black uppercase tracking-wider text-violet-500">No limits — practise as much as you want</div>
+              </div>
+            </div>
+
+            {/* CTA */}
+            <div className="bg-slate-50 rounded-2xl p-4 mb-4 text-center">
+              <p className="text-sm text-slate-600 font-medium mb-1">To purchase, contact us via:</p>
+              <div className="flex flex-col sm:flex-row justify-center gap-2">
+                <a
+                  href="https://wa.me/message/your-whatsapp-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-sm px-5 py-2.5 rounded-xl transition-all hover:scale-[1.02]"
+                >
+                  WhatsApp
+                </a>
+                <a
+                  href="mailto:info@smartlabs.com"
+                  className="inline-flex items-center justify-center gap-2 bg-[#2563eb] hover:bg-[#1a4fd6] text-white font-extrabold text-sm px-5 py-2.5 rounded-xl transition-all hover:scale-[1.02]"
+                >
+                  Email Us
+                </a>
+              </div>
+            </div>
+
+            <div className="flex justify-center gap-4 text-xs text-slate-400 font-bold">
+              <button onClick={() => setShowPurchaseModal(false)} className="hover:text-slate-600 transition-colors">
+                Maybe Later
+              </button>
+              {user && (
+                <button
+                  onClick={() => { setShowPurchaseModal(false); window.location.href = '/dashboard'; }}
+                  className="hover:text-slate-600 transition-colors"
+                >
+                  Back to Dashboard
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Blocked Device Overlay ── */}
+      {isBlocked && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+          <div className="bg-white rounded-3xl p-8 md:p-10 max-w-md w-full shadow-2xl border-2 border-red-200 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-red-50 border border-red-200 flex items-center justify-center mx-auto mb-5">
+              <ShieldWarning size={32} weight="duotone" className="text-red-500" />
+            </div>
+            <h2 className="font-display-serif text-2xl font-black text-slate-900 mb-3">Device Limit Reached</h2>
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-5 text-left">
+              <p className="text-sm text-red-800 leading-relaxed">
+                {blockedMessage || 'This device has been used with a different account that has already reached the free essay limit.'}
+              </p>
+            </div>
+            <p className="text-xs text-slate-500 leading-relaxed mb-6">
+              Free essay scoring is limited to 2 essays per device to ensure fair access for all SmartLabs students. This policy applies across all accounts on the same device.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <a
+                href="mailto:info@smartlabs.com?subject=Essay%20Scoring%20Block%20Appeal"
+                className="flex-1 bg-[#2563eb] hover:bg-[#1a4fd6] text-white font-extrabold px-6 py-3 rounded-xl text-sm text-center transition-all hover:scale-[1.02]"
+              >
+                Contact Support
+              </a>
+              <button
+                onClick={() => { setIsBlocked(false); setShowPurchaseModal(true); }}
+                className="flex-1 bg-[#f97316] hover:bg-[#fb923c] text-white font-extrabold px-6 py-3 rounded-xl text-sm transition-all hover:scale-[1.02]"
+              >
+                Purchase Credits
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Toast Notification Container */}

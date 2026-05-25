@@ -5,330 +5,500 @@ import { useRouter } from 'next/navigation';
 import { useUser, useFirebase, useCollection, useMemoFirebase } from '@/firebase';
 import { useUserActivity } from '@/hooks/use-user-activity';
 import { doc, getDoc, collection } from 'firebase/firestore';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-    CardFooter
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { SpotlightCard } from '@/components/ui/spotlight-card';
-import {
-    CaretRight,
-    MonitorPlay,
-    FileText,
-    BookOpen,
-    ChartBar,
-    CalendarBlank,
-    ChatCircleDots,
-    Briefcase,
-    GraduationCap,
-    Clock,
-    House,
-    BookBookmark,
-    Check,
-    Globe,
-    Lightning,
-    Target,
-    Robot,
-    Sparkle,
-    Play,
-    Columns,
-    CircleNotch
-} from '@phosphor-icons/react';
-import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { motion } from 'framer-motion';
 import { PerformanceOverview } from '@/components/dashboard/PerformanceOverview';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
-import { QuickActions } from '@/components/dashboard/QuickActions';
-import { LMS_URL } from '@/lib/constants';
+import Link from 'next/link';
+import {
+  Microphone,
+  PencilSimple,
+  BookOpen,
+  Headphones,
+  Lightning,
+  Target,
+  Robot,
+  Briefcase,
+  CaretRight,
+  Sparkle,
+  Fire,
+  Star,
+  ArrowRight,
+  ChatCircleDots,
+  GraduationCap,
+  Globe,
+  CalendarBlank,
+} from '@phosphor-icons/react';
 
-const lmsFeatures = [
-    { title: 'Learn with AI Tutor', description: 'Personalized neural faculty for PTE and CELPIP.', href: '/dashboard/ai-tutor', icon: Robot, color: "text-accent-1", bg: "bg-accent-1/10", border: "hover:border-accent-1/50", gradient: "from-accent-1/20 to-transparent" },
-    { title: 'AI Score Master', description: 'Precision PTE practice with the neural scoring matrix.', href: '/dashboard/ai-score-test', icon: Target, color: "text-indigo-500", bg: "bg-indigo-500/10", border: "hover:border-indigo-500/50", gradient: "from-indigo-500/20 to-transparent" },
-    { title: 'Video Gallery', description: 'Watch our latest educational videos and updates.', href: '/videos', icon: MonitorPlay, color: "text-red-500", bg: "bg-red-500/10", border: "hover:border-red-500/50", gradient: "from-red-500/20 to-transparent" },
-    { title: 'Practice Test Area', description: 'Access the AI Scoring Engine and practice materials.', href: '/dashboard/practice-tests', icon: BookOpen, color: "text-purple-500", bg: "bg-purple-500/10", border: "hover:border-purple-500/50", gradient: "from-purple-500/20 to-transparent" },
-    { title: 'Interactive Workshops', description: 'Join live masterclasses and group training sessions.', href: '/workshops', icon: CalendarBlank, color: "text-orange-500", bg: "bg-orange-500/10", border: "hover:border-orange-500/50", gradient: "from-orange-500/20 to-transparent" },
-    { title: 'LMS Portal', description: 'Login to the student learning system.', href: LMS_URL, icon: Globe, color: "text-blue-500", bg: "bg-blue-500/10", border: "hover:border-blue-500/50", gradient: "from-blue-500/20 to-transparent" },
-    { title: 'Support Chat', description: 'Get help from our support team.', href: '/dashboard/support', icon: ChatCircleDots, color: "text-cyan-500", bg: "bg-cyan-500/10", border: "hover:border-cyan-500/50", gradient: "from-cyan-500/20 to-transparent" },
-    { title: 'Back to Homepage', description: 'Return to the main website.', href: '/', icon: House, color: "text-gray-500", bg: "bg-gray-500/10", border: "hover:border-gray-500/50", gradient: "from-gray-500/20 to-transparent" },
+// ─── PTE Section Data ────────────────────────────────────────────────────────
+
+const pteSections = [
+  {
+    id: 'speaking',
+    title: 'Speaking',
+    icon: Microphone,
+    description: 'Pronunciation, fluency & oral communication',
+    gradient: 'from-blue-600 to-blue-400',
+    lightBg: 'bg-blue-500/5',
+    border: 'border-blue-500/20',
+    hoverBorder: 'hover:border-blue-500/40',
+    iconColor: 'text-blue-500',
+    iconBg: 'bg-blue-500/10',
+    badgeClass: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+    tasks: [
+      { title: 'Read Aloud', href: '/dashboard/practice-tests/pte-speaking-read-aloud', ai: true, hot: true },
+      { title: 'Repeat Sentence', href: '/dashboard/practice-tests/pte-speaking-repeat-sentence', ai: true, hot: true },
+      { title: 'Describe Image', href: '/dashboard/practice-tests/pte-speaking-describe-image', ai: true, hot: false },
+      { title: 'Re-tell Lecture', href: '/dashboard/practice-tests/pte-speaking-retell-lecture', ai: true, hot: false },
+      { title: 'Answer Short Question', href: '/dashboard/practice-tests/pte-speaking-answer-short-question', ai: true, hot: false },
+    ],
+    sectionHref: '/dashboard/ai-score-test/speaking',
+  },
+  {
+    id: 'writing',
+    title: 'Writing',
+    icon: PencilSimple,
+    description: 'Essay writing & summarization skills',
+    gradient: 'from-violet-600 to-purple-400',
+    lightBg: 'bg-violet-500/5',
+    border: 'border-violet-500/20',
+    hoverBorder: 'hover:border-violet-500/40',
+    iconColor: 'text-violet-500',
+    iconBg: 'bg-violet-500/10',
+    badgeClass: 'bg-violet-500/10 text-violet-600 border-violet-500/20',
+    tasks: [
+      { title: 'Write Essay', href: '/ai-essay-practice', ai: true, hot: true, featured: true },
+      { title: 'Summarize Written Text', href: '/dashboard/practice-tests/pte-writing-summarize-text', ai: true, hot: true },
+    ],
+    sectionHref: '/dashboard/ai-score-test/writing',
+  },
+  {
+    id: 'reading',
+    title: 'Reading',
+    icon: BookOpen,
+    description: 'Comprehension, vocabulary & analysis',
+    gradient: 'from-emerald-600 to-green-400',
+    lightBg: 'bg-emerald-500/5',
+    border: 'border-emerald-500/20',
+    hoverBorder: 'hover:border-emerald-500/40',
+    iconColor: 'text-emerald-500',
+    iconBg: 'bg-emerald-500/10',
+    badgeClass: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+    tasks: [
+      { title: 'R&W Fill in the Blanks', href: '/dashboard/practice-tests/pte-reading-fill-in-blanks-dropdown', ai: false, hot: true },
+      { title: 'MCQ Multiple Answer', href: '/dashboard/practice-tests/pte-reading-multiple-choice-multiple-answer', ai: false, hot: false },
+      { title: 'Re-order Paragraphs', href: '/dashboard/practice-tests/pte-reading-reorder-paragraphs', ai: false, hot: false },
+      { title: 'Fill in the Blanks', href: '/dashboard/practice-tests/pte-reading-fill-in-blanks-drag-drop', ai: false, hot: false },
+      { title: 'MCQ Single Answer', href: '/dashboard/practice-tests/pte-reading-test', ai: true, hot: false },
+    ],
+    sectionHref: '/dashboard/ai-score-test/reading',
+  },
+  {
+    id: 'listening',
+    title: 'Listening',
+    icon: Headphones,
+    description: 'Audio comprehension & dictation accuracy',
+    gradient: 'from-orange-600 to-amber-400',
+    lightBg: 'bg-orange-500/5',
+    border: 'border-orange-500/20',
+    hoverBorder: 'hover:border-orange-500/40',
+    iconColor: 'text-orange-500',
+    iconBg: 'bg-orange-500/10',
+    badgeClass: 'bg-orange-500/10 text-orange-600 border-orange-500/20',
+    tasks: [
+      { title: 'Write from Dictation', href: '/dashboard/practice-tests/pte-listening-write-from-dictation', ai: true, hot: true, featured: true },
+      { title: 'Summarize Spoken Text', href: '/dashboard/practice-tests/pte-listening-summarize-spoken-text', ai: true, hot: true },
+      { title: 'MCQ Multiple Answer', href: '/dashboard/practice-tests/pte-listening-multiple-choice-multiple-answer', ai: false, hot: false },
+      { title: 'Fill in the Blanks', href: '/dashboard/practice-tests/pte-listening-fill-in-blanks', ai: false, hot: false },
+      { title: 'Highlight Correct Summary', href: '/dashboard/practice-tests/pte-listening-highlight-correct-summary', ai: false, hot: false },
+      { title: 'MCQ Single Answer', href: '/dashboard/practice-tests/pte-listening-multiple-choice-single-answer', ai: false, hot: false },
+      { title: 'Select Missing Word', href: '/dashboard/practice-tests/pte-listening-select-missing-word', ai: false, hot: false },
+      { title: 'Highlight Incorrect Words', href: '/dashboard/practice-tests/pte-listening-highlight-incorrect-words', ai: false, hot: false },
+    ],
+    sectionHref: '/dashboard/ai-score-test/listening',
+  },
 ];
 
+// ─── Feature Spotlight Cards ──────────────────────────────────────────────────
+
+const featureCards = [
+  {
+    title: 'AI Essay Scorer',
+    subtitle: 'Write Essay · Full AI Analysis',
+    description: 'Get instant band scores, 7-criteria breakdown, model essay, and target score analysis.',
+    href: '/ai-essay-practice',
+    icon: PencilSimple,
+    gradient: 'from-violet-600 via-purple-600 to-fuchsia-600',
+    badge: 'Most Advanced',
+    badgeColor: 'bg-white/20 text-white',
+  },
+  {
+    title: 'AI Score Tests',
+    subtitle: 'All 20 Question Types',
+    description: 'Practice every PTE question type with AI-powered scoring and instant feedback.',
+    href: '/dashboard/practice-tests',
+    icon: Target,
+    gradient: 'from-blue-600 via-indigo-600 to-blue-700',
+    badge: '20 Task Types',
+    badgeColor: 'bg-white/20 text-white',
+  },
+  {
+    title: 'AI Tutor',
+    subtitle: 'Personalized Guidance',
+    description: 'Chat with your AI tutor for PTE strategies, grammar help, and study plans.',
+    href: '/dashboard/ai-tutor',
+    icon: Robot,
+    gradient: 'from-emerald-600 via-teal-600 to-cyan-600',
+    badge: 'Always Available',
+    badgeColor: 'bg-white/20 text-white',
+  },
+];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function calculateStudyStreak(activities: any[]) {
+  if (!activities || activities.length === 0) return 0;
+  const sorted = [...activities].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  let streak = 0;
+  let lastDate: Date | null = null;
+  for (const activity of sorted) {
+    const cur = new Date(activity.timestamp);
+    cur.setHours(0, 0, 0, 0);
+    if (!lastDate) {
+      streak = 1;
+    } else {
+      const diff = Math.ceil(Math.abs(cur.getTime() - lastDate.getTime()) / 86400000);
+      if (diff === 1) streak++;
+      else if (diff > 1) break;
+    }
+    lastDate = cur;
+  }
+  return streak;
+}
+
+// ─── Section Card ─────────────────────────────────────────────────────────────
+
+function SectionCard({ section, index }: { section: (typeof pteSections)[0]; index: number }) {
+  const Icon = section.icon;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.08, duration: 0.4 }}
+      className={`rounded-2xl border-2 ${section.border} ${section.lightBg} ${section.hoverBorder} transition-all duration-300 overflow-hidden group`}
+    >
+      {/* Section Header */}
+      <div className={`bg-gradient-to-r ${section.gradient} p-5 flex items-center justify-between`}>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+            <Icon weight="bold" className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h3 className="text-white font-black text-base">{section.title}</h3>
+            <p className="text-white/70 text-[11px] font-medium">{section.tasks.length} practice tasks</p>
+          </div>
+        </div>
+        <Link href={section.sectionHref}>
+          <Button size="sm" variant="ghost" className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl text-xs font-bold h-8 px-3">
+            View All <CaretRight weight="bold" className="ml-1 h-3 w-3" />
+          </Button>
+        </Link>
+      </div>
+
+      {/* Task List */}
+      <div className="p-3 space-y-1">
+        {section.tasks.map((task, i) => (
+          <Link key={i} href={task.href} className="block group/task">
+            <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/50 dark:hover:bg-white/5 transition-all duration-150">
+              <div className={`w-2 h-2 rounded-full ${task.hot ? 'bg-primary/60' : 'bg-muted-foreground/20'} shrink-0`} />
+              <span className="text-sm font-semibold flex-1 text-foreground/80 group-hover/task:text-foreground transition-colors">
+                {task.title}
+              </span>
+              <div className="flex items-center gap-1.5">
+                {task.featured && (
+                  <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-500/10 text-amber-600 border-amber-500/20 font-black">
+                    🔥 Top
+                  </Badge>
+                )}
+                {task.ai && (
+                  <Badge className={`text-[9px] px-1.5 py-0 h-4 ${section.badgeClass} font-black border`}>
+                    AI
+                  </Badge>
+                )}
+                <CaretRight weight="bold" className="h-3 w-3 text-muted-foreground/40 group-hover/task:text-muted-foreground transition-colors" />
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* Bottom CTA */}
+      <div className="px-4 pb-4">
+        <Link href={section.sectionHref} className="block">
+          <div className={`flex items-center justify-center gap-2 py-2 rounded-xl border-2 ${section.border} ${section.hoverBorder} text-xs font-black uppercase tracking-wider ${section.iconColor} transition-all hover:bg-white/50 dark:hover:bg-white/5`}>
+            Practice {section.title} <ArrowRight weight="bold" className="h-3 w-3" />
+          </div>
+        </Link>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-    const { user, isUserLoading } = useUser();
-    const { firestore } = useFirebase();
-    const router = useRouter();
-    const [userRole, setUserRole] = useState('');
+  const { user, isUserLoading } = useUser();
+  const { firestore } = useFirebase();
+  const router = useRouter();
+  const [userRole, setUserRole] = useState('');
 
-    const enrollmentsQuery = useMemoFirebase(
-        () => (firestore && user ? collection(firestore, `users/${user.uid}/enrollments`) : null),
-        [firestore, user]
-    );
-    const { data: enrollments, isLoading: enrollmentsLoading } = useCollection(enrollmentsQuery);
-    const { activities: userActivities, loading: userActivitiesLoading } = useUserActivity(user?.uid);
+  const enrollmentsQuery = useMemoFirebase(
+    () => (firestore && user ? collection(firestore, `users/${user.uid}/enrollments`) : null),
+    [firestore, user]
+  );
+  const { data: enrollments, isLoading: enrollmentsLoading } = useCollection(enrollmentsQuery);
+  const { activities: userActivities, loading: userActivitiesLoading } = useUserActivity(user?.uid);
 
-    const activeEnrollments = useMemo(() => {
-        return enrollments?.filter(e => e.enrollmentStatus === 'active') || [];
-    }, [enrollments]);
+  const studyStreak = useMemo(() => calculateStudyStreak(userActivities), [userActivities]);
 
-    const pendingEnrollments = useMemo(() => {
-        return enrollments?.filter(e => e.enrollmentStatus === 'pending') || [];
-    }, [enrollments]);
+  const todayCount = useMemo(() => {
+    if (!userActivities) return 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return userActivities.filter((a: any) => {
+      const d = a.timestamp instanceof Date ? a.timestamp : new Date(a.timestamp);
+      return d >= today;
+    }).length;
+  }, [userActivities]);
 
-    const calculateStudyStreak = (activities: any[]) => {
-        if (!activities || activities.length === 0) {
-            return 0;
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    } else if (user && firestore) {
+      const userRef = doc(firestore, 'users', user.uid);
+      getDoc(userRef).then(userDoc => {
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setUserRole(userData.role);
+          if (userData.role === 'user' && !userData.hasCompletedOnboarding) {
+            router.push('/welcome');
+          }
+        } else {
+          router.push('/login');
         }
-
-        // Sort activities by timestamp in descending order
-        const sortedActivities = [...activities].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-
-        let streak = 0;
-        let lastActivityDate: Date | null = null;
-
-        for (const activity of sortedActivities) {
-            const currentActivityDate = new Date(activity.timestamp);
-            currentActivityDate.setHours(0, 0, 0, 0); // Normalize to start of day
-
-            if (!lastActivityDate) {
-                // First activity, start streak
-                streak = 1;
-            } else {
-                const diffTime = Math.abs(currentActivityDate.getTime() - lastActivityDate.getTime());
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                if (diffDays === 1) {
-                    // Consecutive day
-                    streak++;
-                } else if (diffDays > 1) {
-                    // Gap in activity, streak broken
-                    break;
-                }
-                // If diffDays is 0, it's multiple activities on the same day, continue current streak
-            }
-            lastActivityDate = currentActivityDate;
-        }
-        return streak;
-    };
-
-    const studyStreak = useMemo(() => {
-        return calculateStudyStreak(userActivities);
-    }, [userActivities]);
-
-    useEffect(() => {
-        if (!isUserLoading && !user) {
-            router.push('/login');
-        } else if (user && firestore) {
-            const userRef = doc(firestore, 'users', user.uid);
-            getDoc(userRef).then(userDoc => {
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    setUserRole(userData.role);
-                    if (userData.role === 'user' && !userData.hasCompletedOnboarding) {
-                        router.push('/welcome');
-                    }
-                } else {
-                    router.push('/login');
-                }
-            });
-        }
-    }, [user, isUserLoading, router, firestore]);
-
-    const isLoading = isUserLoading || enrollmentsLoading || !userRole || userActivitiesLoading;
-
-    if (isLoading) {
-        return (
-            <div className="space-y-8">
-                <Skeleton className="h-12 w-1/3" />
-                <Skeleton className="h-40 w-full" />
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <Skeleton className="h-64 w-full" />
-                    <Skeleton className="h-64 w-full" />
-                    <Skeleton className="h-64 w-full" />
-                </div>
-            </div>
-        );
+      });
     }
+  }, [user, isUserLoading, router, firestore]);
 
-    const isAdminOrDev = userRole === 'admin' || userRole === 'developer' || userRole === 'teacher';
+  const isLoading = isUserLoading || enrollmentsLoading || !userRole || userActivitiesLoading;
+  const isAdminOrDev = userRole === 'admin' || userRole === 'developer' || userRole === 'teacher';
 
+  if (isLoading) {
     return (
-        <>
-            {/* Colorful Header */}
-            <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-600 via-blue-600 to-cyan-500 p-8 sm:p-12 mb-12 shadow-2xl border border-white/10 group">
-                {/* Animated Background Elements */}
-                <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white/10 blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
-                <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-40 w-40 rounded-full bg-black/20 blur-2xl group-hover:scale-125 transition-transform duration-700"></div>
-                <div className="absolute inset-0 bg-grid-white/[0.1] -z-0"></div>
-
-                <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8 text-white">
-                    <div className="max-w-2xl">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 border border-white/20 text-[10px] font-black uppercase tracking-widest mb-6"
-                        >
-                            <Lightning weight="bold" className="h-3 w-3 fill-white" /> AI Enhanced Platform
-                        </motion.div>
-                        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 font-display tracking-tight leading-tight">
-                            Welcome back, <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">
-                                {user?.displayName?.split(' ')[0]}!
-                            </span>
-                        </h1>
-                        <p className="text-blue-50 text-base sm:text-lg max-w-xl font-medium opacity-90 leading-relaxed">
-                            Your linguistic intelligence has increased by <span className="font-bold underline decoration-accent-2 underline-offset-4">12%</span> this week. Keep up the momentum!
-                        </p>
-                    </div>
-
-                    <div className="hidden lg:flex flex-col items-end gap-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="glass-card bg-white/10 border-white/20 p-4 rounded-3xl min-w-[140px] text-center">
-                                <div className="text-2xl font-black">740</div>
-                                <div className="text-[10px] font-bold uppercase opacity-60">Real Credits</div>
-                            </div>
-                            <div className="glass-card bg-white/10 border-white/20 p-4 rounded-3xl min-w-[140px] text-center">
-                                <div className="text-2xl font-black">{studyStreak}</div>
-                                <div className="text-[10px] font-bold uppercase opacity-60">Study Streak</div>
-                            </div>
-                        </div>
-                        <Button className="bg-white text-primary hover:bg-white/90 rounded-2xl h-12 px-6 font-bold shadow-xl">
-                            Resume Last Lesson
-                        </Button>
-                    </div>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-                {/* Advanced Analytics */}
-                <PerformanceOverview />
-
-                {/* Recent Activity */}
-                <RecentActivity />
-
-                {/* Quick Actions */}
-                <QuickActions />
-            </div>
-
-            {isAdminOrDev && (
-                <Card className="mb-12 overflow-hidden border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent relative group">
-                    <div className="absolute inset-y-0 right-0 w-64 bg-gradient-to-l from-primary/10 to-transparent -z-10 group-hover:w-96 transition-all" />
-                    <CardHeader className="flex-row items-center justify-between">
-                        <div className="space-y-1">
-                            <CardTitle className="text-xl font-bold flex items-center gap-2">
-                                <Briefcase className="h-5 w-5 text-primary" /> Multi-Role Terminal
-                            </CardTitle>
-                            <CardDescription>Administrative functions are unlocked for your account.</CardDescription>
-                        </div>
-                        <Button asChild className="rounded-xl px-8 h-12 bg-primary group-hover:scale-105 transition-transform">
-                            <Link href="/admin/dashboard" className="flex items-center gap-2">
-                                Launch Admin Panel <CaretRight weight="bold" className="h-4 w-4" />
-                            </Link>
-                        </Button>
-                    </CardHeader>
-                </Card>
-            )}
-
-            {/* Main Menu Grid with Premium Styling */}
-            <div className="mb-12">
-                <div className="flex justify-between items-end mb-8">
-                    <div>
-                        <h2 className="text-2xl font-black font-display tracking-tight flex items-center gap-2">
-                            <Lightning weight="bold" className="h-6 w-6 text-primary" /> Command Center
-                        </h2>
-                        <p className="text-sm text-muted-foreground mt-1 font-medium">Access your learning modules and portals</p>
-                    </div>
-                    <Button variant="ghost" className="text-xs font-bold uppercase tracking-widest hover:bg-primary/5">View All Modules</Button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                    {lmsFeatures.map((feature, idx) => {
-                        const Icon = feature.icon;
-                        return (
-                            <Link href={feature.href} key={idx} className="block cursor-pointer group">
-                                <SpotlightCard className={`h-full rounded-[2rem] border-2 bg-card/40 backdrop-blur-md p-8 flex flex-col transition-all duration-500 ${feature.border} group-hover:-translate-y-2 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)]`}>
-                                    <div className={`relative z-10 w-14 h-14 rounded-2xl ${feature.bg} flex items-center justify-center mb-6 transition-all group-hover:rotate-12 group-hover:scale-110 shadow-lg`}>
-                                        <Icon className={`h-7 w-7 ${feature.color}`} />
-                                    </div>
-
-                                    <div className="relative z-10 flex-grow">
-                                        <h3 className="text-lg font-black mb-2 group-hover:text-primary transition-colors leading-tight">{feature.title}</h3>
-                                        <p className="text-xs text-muted-foreground font-medium leading-relaxed opacity-80">{feature.description}</p>
-                                    </div>
-
-                                    <div className="relative z-10 mt-6 flex items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">
-                                        Initialize <CaretRight weight="bold" className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-2" />
-                                    </div>
-                                </SpotlightCard>
-                            </Link>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Enrollment Status - Modern Section */}
-            <div className="mb-12">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                    <h2 className="text-2xl font-black font-display tracking-tight flex items-center gap-2">
-                        <GraduationCap className="h-6 w-6 text-primary" /> Academic Enrollment
-                    </h2>
-                </div>
-
-                <Card className="overflow-hidden border-2 border-dashed bg-muted/20 backdrop-blur-sm rounded-[2.5rem]">
-                    <CardContent className="p-10">
-                        {enrollments && enrollments.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {enrollments.map(e => (
-                                    <motion.div
-                                        key={e.id}
-                                        whileHover={{ scale: 1.02 }}
-                                        className={`p-6 rounded-3xl border ${e.enrollmentStatus === 'pending' ? 'bg-amber-500/5 border-amber-500/20' : 'bg-green-500/5 border-green-500/20'}`}
-                                    >
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div>
-                                                <Badge variant={e.enrollmentStatus === 'pending' ? 'outline' : 'default'} className={e.enrollmentStatus === 'pending' ? 'text-amber-600 border-amber-500' : 'bg-green-500 hover:bg-green-600'}>
-                                                    {e.enrollmentStatus.toUpperCase()}
-                                                </Badge>
-                                                <h4 className="text-xl font-black mt-2">{e.courseId}</h4>
-                                                <p className="text-sm font-bold opacity-60">{e.batchName}</p>
-                                            </div>
-                                            <div className={`p-3 rounded-2xl ${e.enrollmentStatus === 'pending' ? 'bg-amber-100' : 'bg-green-100'}`}>
-                                                {e.enrollmentStatus === 'pending' ? <Clock className="h-6 w-6 text-amber-600" /> : <Check className="h-6 w-6 text-green-600" />}
-                                            </div>
-                                        </div>
-                                        <p className="text-sm text-muted-foreground font-medium mb-6">
-                                            {e.enrollmentStatus === 'pending' ? "Security verification in progress. Access will be granted shortly." : "Full academic access granted. All modules are unlocked."}
-                                        </p>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                            <Button className="w-full rounded-2xl font-bold h-12" variant={e.enrollmentStatus === 'pending' ? 'outline' : 'default'}>
-                                                {e.enrollmentStatus === 'pending' ? "Check Status" : "Enter Classroom"}
-                                            </Button>
-                                            <Button asChild className="w-full rounded-2xl font-bold h-12" variant="outline">
-                                                <Link href={LMS_URL}>Go to LMS</Link>
-                                            </Button>
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-8">
-                                <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <BookBookmark weight="bold" className="h-10 w-10 text-primary" />
-                                </div>
-                                <h3 className="text-2xl font-black mb-2">Initialize Your Journey</h3>
-                                <p className="text-muted-foreground font-medium mb-8 max-w-sm mx-auto">You haven't enrolled in any courses yet. Unlock your potential today.</p>
-                                <Button asChild size="lg" className="rounded-2xl px-10 h-14 font-black tracking-widest shadow-xl shadow-primary/20"><Link href="/courses">BROWSE ACADEMIC COURSES</Link></Button>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            </div>
-        </>
+      <div className="space-y-6">
+        <Skeleton className="h-36 w-full rounded-2xl" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-72 w-full rounded-2xl" />)}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Skeleton className="h-96 w-full rounded-2xl lg:col-span-2" />
+          <Skeleton className="h-96 w-full rounded-2xl" />
+        </div>
+      </div>
     );
+  }
+
+  return (
+    <div className="space-y-8 max-w-7xl mx-auto">
+
+      {/* ─── Welcome Hero ─────────────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: -16 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-white/10 p-6 sm:p-8"
+      >
+        {/* Background glow */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-violet-500/15 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4 pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          {/* Left — Greeting */}
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-[10px] font-black uppercase tracking-widest text-white/70 mb-3">
+              <Lightning weight="fill" className="h-3 w-3 text-yellow-400" />
+              AI-Powered PTE Practice
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-black text-white leading-tight">
+              {getGreeting()},<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-violet-400">
+                {user?.displayName?.split(' ')[0] || 'Student'}!
+              </span>
+            </h1>
+            <p className="text-white/50 text-sm font-medium mt-2">
+              Ready to improve your PTE score today? Let's practice.
+            </p>
+          </div>
+
+          {/* Right — Stats */}
+          <div className="flex flex-wrap gap-3">
+            <div className="bg-white/10 border border-white/10 rounded-2xl px-5 py-3 text-center min-w-[90px]">
+              <div className="text-2xl font-black text-white flex items-center justify-center gap-1">
+                {studyStreak}
+                <Fire weight="fill" className="h-5 w-5 text-orange-400" />
+              </div>
+              <div className="text-[10px] font-bold uppercase text-white/50 tracking-widest mt-0.5">Day Streak</div>
+            </div>
+            <div className="bg-white/10 border border-white/10 rounded-2xl px-5 py-3 text-center min-w-[90px]">
+              <div className="text-2xl font-black text-white">{todayCount}</div>
+              <div className="text-[10px] font-bold uppercase text-white/50 tracking-widest mt-0.5">Today</div>
+            </div>
+            <div className="bg-white/10 border border-white/10 rounded-2xl px-5 py-3 text-center min-w-[90px]">
+              <div className="text-2xl font-black text-white">{userActivities?.length || 0}</div>
+              <div className="text-[10px] font-bold uppercase text-white/50 tracking-widest mt-0.5">Total Practice</div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ─── Admin Panel Banner ─────────────────────────────────────────────── */}
+      {isAdminOrDev && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between gap-4 p-4 rounded-xl border-2 border-primary/20 bg-primary/5"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Briefcase weight="bold" className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-black">Admin Access Unlocked</p>
+              <p className="text-xs text-muted-foreground font-medium">Your account has administrative privileges.</p>
+            </div>
+          </div>
+          <Button asChild size="sm" className="rounded-xl font-bold shrink-0">
+            <Link href="/admin/dashboard">Admin Panel <CaretRight weight="bold" className="ml-1 h-3 w-3" /></Link>
+          </Button>
+        </motion.div>
+      )}
+
+      {/* ─── Practice Hub ──────────────────────────────────────────────────── */}
+      <div>
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
+              <Target weight="bold" className="h-5 w-5 text-primary" />
+              PTE Practice Hub
+            </h2>
+            <p className="text-xs text-muted-foreground font-medium mt-0.5">
+              All 20 PTE question types — organised by section
+            </p>
+          </div>
+          <Button asChild variant="outline" size="sm" className="rounded-xl font-bold text-xs hidden sm:flex">
+            <Link href="/dashboard/practice-tests">Browse All Tasks</Link>
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {pteSections.map((section, i) => (
+            <SectionCard key={section.id} section={section} index={i} />
+          ))}
+        </div>
+      </div>
+
+      {/* ─── Analytics ─────────────────────────────────────────────────────── */}
+      <div>
+        <h2 className="text-xl font-black tracking-tight flex items-center gap-2 mb-5">
+          <Sparkle weight="fill" className="h-5 w-5 text-primary" />
+          Your Performance
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <PerformanceOverview />
+          <RecentActivity />
+        </div>
+      </div>
+
+      {/* ─── Feature Spotlight ─────────────────────────────────────────────── */}
+      <div>
+        <h2 className="text-xl font-black tracking-tight flex items-center gap-2 mb-5">
+          <Star weight="fill" className="h-5 w-5 text-amber-500" />
+          AI Features
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {featureCards.map((card, i) => {
+            const Icon = card.icon;
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 + i * 0.1 }}
+              >
+                <Link href={card.href} className="block group">
+                  <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.gradient} p-6 h-full min-h-[180px] flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}>
+                    {/* Glow */}
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+                    <div className="relative z-10">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                          <Icon weight="bold" className="h-5 w-5 text-white" />
+                        </div>
+                        <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${card.badgeColor}`}>
+                          {card.badge}
+                        </span>
+                      </div>
+                      <h3 className="text-white font-black text-lg leading-tight">{card.title}</h3>
+                      <p className="text-white/60 text-[11px] font-semibold mt-0.5">{card.subtitle}</p>
+                    </div>
+
+                    <div className="relative z-10 mt-4">
+                      <p className="text-white/70 text-xs font-medium leading-relaxed mb-3">{card.description}</p>
+                      <div className="flex items-center gap-1.5 text-white text-xs font-black group-hover:gap-2.5 transition-all">
+                        Start Practicing <ArrowRight weight="bold" className="h-3.5 w-3.5" />
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ─── More Tools Row ────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pb-4">
+        {[
+          { title: 'Live Workshops', href: '/workshops', icon: CalendarBlank, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+          { title: 'Support Chat', href: '/dashboard/support', icon: ChatCircleDots, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
+          { title: 'My Courses', href: '/courses', icon: GraduationCap, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+          { title: 'Main Website', href: '/', icon: Globe, color: 'text-gray-500', bg: 'bg-gray-500/10' },
+        ].map((item, i) => {
+          const Icon = item.icon;
+          return (
+            <Link key={i} href={item.href} className="block group">
+              <div className="flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:border-border bg-card/40 hover:bg-card transition-all duration-200">
+                <div className={`w-8 h-8 rounded-lg ${item.bg} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
+                  <Icon weight="bold" className={`h-4 w-4 ${item.color}`} />
+                </div>
+                <span className="text-xs font-bold text-muted-foreground group-hover:text-foreground transition-colors truncate">
+                  {item.title}
+                </span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+
+    </div>
+  );
 }

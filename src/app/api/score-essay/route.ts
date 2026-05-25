@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
+import { adminDb, adminAuth } from '@/lib/firebase-admin';
 
 // ─── Model list (priority order) ─────────────────────────────────────────────
 const MODELS = [
@@ -495,9 +495,171 @@ function extractJson(text: string): string {
   return cleaned.trim();
 }
 
+// ─── Auth + credit system ─────────────────────────────────────────────────────
+
+type AuthCreditResult =
+  | { ok: true;  uid: string; unlimited: boolean }
+  | { ok: false; status: number; code: string; message: string; extra?: Record<string, unknown> };
+
+const UNLIMITED_ROLES = new Set(['admin', 'developer', 'teacher']);
+const FREE_ESSAY_LIMIT = 2;
+
+async function verifyAuthAndCredits(
+  authHeader:  string | null,
+  fingerprint: string | null
+): Promise<AuthCreditResult> {
+  if (!adminDb || !adminAuth) {
+    return { ok: false, status: 500, code: 'SERVER_ERROR', message: 'Server configuration error.' };
+  }
+
+  // 1. Require Authorization header
+  if (!authHeader?.startsWith('Bearer ')) {
+    return {
+      ok: false,
+      status: 401,
+      code: 'NO_AUTH',
+      message: 'You must be signed in to score essays. Please create a free account to continue.',
+    };
+  }
+
+  // 2. Verify Firebase ID token
+  let uid: string;
+  try {
+    const decoded = await adminAuth.verifyIdToken(authHeader.slice(7));
+    uid = decoded.uid;
+  } catch {
+    return {
+      ok: false,
+      status: 401,
+      code: 'INVALID_AUTH',
+      message: 'Your session has expired. Please sign in again.',
+    };
+  }
+
+  // 3. Load user document
+  const userSnap = await adminDb.collection('users').doc(uid).get();
+  const userData = userSnap.data() ?? {};
+  const role: string = (userData.role as string) ?? 'student';
+
+  // 4. Unlimited roles bypass all credit checks
+  if (UNLIMITED_ROLES.has(role)) {
+    return { ok: true, uid, unlimited: true };
+  }
+
+  // 5. Anti-abuse: check if this device fingerprint belongs to a different account
+  //    that has already exhausted free credits
+  if (fingerprint && fingerprint.length > 8) {
+    try {
+      const fpSnap = await adminDb.collection('deviceFingerprints').doc(fingerprint).get();
+      if (fpSnap.exists) {
+        const fpData = fpSnap.data()!;
+        const firstUid: string = (fpData.firstUid as string) ?? '';
+        if (firstUid && firstUid !== uid) {
+          const origSnap = await adminDb.collection('users').doc(firstUid).get();
+          const origData = origSnap.data() ?? {};
+          const origRole = (origData.role as string) ?? 'student';
+          if (!UNLIMITED_ROLES.has(origRole)) {
+            const origFree: number      = (origData.essayFreeUsed as number)    ?? 0;
+            const origPaid: number      = (origData.essayPaidCredits as number) ?? 0;
+            const origExpiry            = origData.essayMonthlyExpiry?.toDate?.() ?? null;
+            const origHasMonthly        = !!(origExpiry && origExpiry > new Date());
+            if (origFree >= FREE_ESSAY_LIMIT && origPaid <= 0 && !origHasMonthly) {
+              return {
+                ok: false,
+                status: 403,
+                code: 'BLOCKED_DEVICE',
+                message:
+                  'This device has already been used to access free essay scoring on a different account. ' +
+                  'Free credits are limited to 2 essays per device to ensure fair access for all students. ' +
+                  'Please purchase credits to continue, or contact support if you believe this is an error.',
+              };
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[score-essay] Fingerprint check failed (non-blocking):', e);
+    }
+  }
+
+  // 6. Check current user credit balance
+  const freeUsed: number   = (userData.essayFreeUsed    as number) ?? 0;
+  const paidCredits: number = (userData.essayPaidCredits as number) ?? 0;
+  const monthlyExpiry       = userData.essayMonthlyExpiry?.toDate?.() ?? null;
+  const hasMonthly          = !!(monthlyExpiry && monthlyExpiry > new Date());
+
+  if (!hasMonthly && paidCredits <= 0 && freeUsed >= FREE_ESSAY_LIMIT) {
+    return {
+      ok: false,
+      status: 402,
+      code: 'NO_CREDITS',
+      message: `You have used your ${FREE_ESSAY_LIMIT} free essay scorings. Purchase credits to keep practising.`,
+      extra: { freeUsed, freeTotal: FREE_ESSAY_LIMIT, paidCredits, hasMonthly },
+    };
+  }
+
+  return { ok: true, uid, unlimited: false };
+}
+
+async function deductEssayCredit(uid: string): Promise<void> {
+  if (!adminDb) return;
+  try {
+    const userRef  = adminDb.collection('users').doc(uid);
+    const userSnap = await userRef.get();
+    const userData = userSnap.data() ?? {};
+
+    const monthlyExpiry = userData.essayMonthlyExpiry?.toDate?.() ?? null;
+    if (monthlyExpiry && monthlyExpiry > new Date()) return; // monthly plan — no deduction
+
+    const paidCredits: number = (userData.essayPaidCredits as number) ?? 0;
+    if (paidCredits > 0) {
+      await userRef.update({ essayPaidCredits: paidCredits - 1 });
+    } else {
+      const freeUsed: number = (userData.essayFreeUsed as number) ?? 0;
+      await userRef.update({ essayFreeUsed: freeUsed + 1 });
+    }
+  } catch (e) {
+    console.warn('[score-essay] Credit deduction failed:', e);
+  }
+}
+
+async function recordDeviceFingerprint(uid: string, fingerprint: string): Promise<void> {
+  if (!adminDb || !fingerprint || fingerprint.length < 8) return;
+  try {
+    const fpRef  = adminDb.collection('deviceFingerprints').doc(fingerprint);
+    const fpSnap = await fpRef.get();
+    if (!fpSnap.exists) {
+      await fpRef.set({ firstUid: uid, firstSeenAt: new Date(), lastSeenAt: new Date(), allUids: [uid] });
+    } else {
+      const data    = fpSnap.data()!;
+      const allUids = Array.isArray(data.allUids)
+        ? (data.allUids as string[])
+        : [(data.firstUid as string) ?? uid];
+      if (!allUids.includes(uid)) allUids.push(uid);
+      await fpRef.update({ lastSeenAt: new Date(), allUids });
+    }
+  } catch (e) {
+    console.warn('[score-essay] Fingerprint record failed:', e);
+  }
+}
+
 // ─── Main handler ─────────────────────────────────────────────────────────────
 export async function POST(request: Request) {
   try {
+    // ── 1. Auth + credit check (before body parse — saves AI quota on blocked requests) ──
+    const authHeader  = request.headers.get('Authorization');
+    const fingerprint = request.headers.get('x-device-fingerprint') ?? '';
+
+    const authResult = await verifyAuthAndCredits(authHeader, fingerprint);
+    if (!authResult.ok) {
+      return NextResponse.json(
+        { error: authResult.message, code: authResult.code, ...(authResult.extra ?? {}) },
+        { status: authResult.status }
+      );
+    }
+    const { uid, unlimited } = authResult;
+
+    // ── 2. Parse request body ─────────────────────────────────────────────────
     const { topic, essay, wordCount, requestModelEssay, targetScore } = await request.json();
 
     if (!topic || !essay) {
@@ -659,6 +821,12 @@ Note: Only list criteria in criteriaGaps that are actually below the required th
         parsed.targetScoreAnalysis.achieved = calculatedBand >= targetScore;
         parsed.targetScoreAnalysis.gap      = Math.max(0, targetScore - calculatedBand);
       }
+    }
+
+    // ── Deduct credit + record device fingerprint (fire-and-forget) ──────────
+    if (!unlimited) {
+      deductEssayCredit(uid).catch(() => {});
+      if (fingerprint) recordDeviceFingerprint(uid, fingerprint).catch(() => {});
     }
 
     return NextResponse.json({
