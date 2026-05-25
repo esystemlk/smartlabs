@@ -901,8 +901,7 @@ export default function AIEssayPractice() {
 
             {/* Credit Info Bar */}
             {user && !creditLoading && creditInfo && (
-              <div className="flex items-center justify-between gap-3 p-4 rounded-2xl border mb-4
-                bg-slate-50 border-slate-200">
+              <div className="flex items-center justify-between gap-3 p-4 rounded-2xl border mb-4 bg-slate-50 border-slate-200">
                 <div className="flex items-center gap-2.5">
                   <CurrencyDollar size={18} weight="duotone" className="text-[#f97316] shrink-0" />
                   <span className="text-sm font-bold text-slate-700">Essay Credits</span>
