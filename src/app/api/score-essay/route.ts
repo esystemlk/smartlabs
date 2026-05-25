@@ -579,7 +579,7 @@ Note: Only list criteria in criteriaGaps that are actually below the required th
           body   : JSON.stringify({
             contents         : [{ role: 'user', parts: [{ text: userMessage }] }],
             systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-            generationConfig : { maxOutputTokens: 8192, temperature: 0.1 },
+            generationConfig : { maxOutputTokens: 65536, temperature: 0.1 },
           }),
         });
 
