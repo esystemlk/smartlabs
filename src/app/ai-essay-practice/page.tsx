@@ -91,6 +91,7 @@ interface VocabCollocations {
   strongVocabulary: string[];
   collocationsUsed: { collocation: string; evaluation: string }[];
   repetitiveVocabulary: string[];
+  impreciseWords: string[];
   awkwardPhrases: string[];
   memorizedLanguage: string[];
 }
@@ -1268,6 +1269,18 @@ export default function AIEssayPractice() {
                           <span key={idx} className="text-xs font-bold bg-red-50 text-red-700 border border-red-200 px-2.5 py-1 rounded-full">{word}</span>
                         ))}
                       </div>
+                    </div>
+                  )}
+                  {(aiResult.vocabularyCollocations.impreciseWords || []).length > 0 && (
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-red-500 block mb-2">Imprecise Word Choices</span>
+                      <ul className="space-y-1">
+                        {aiResult.vocabularyCollocations.impreciseWords.map((item, idx) => (
+                          <li key={idx} className="text-sm text-slate-700 flex items-start gap-1.5">
+                            <span className="text-red-500 shrink-0">•</span>{item}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   )}
                   {(aiResult.vocabularyCollocations.awkwardPhrases || []).length > 0 && (

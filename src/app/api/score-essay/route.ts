@@ -198,18 +198,53 @@ SCORE:
   1: Only simple sentences; no variety; no controlled complex structures
   0: Sentence structure completely uncontrolled — cannot be parsed
 
-━━━ 5. VOCABULARY (0–2)  ← Enabling skill ━━━
-Check every content word:
-  [V1] List ALL collocations found and label each: natural / forced / incorrect
-  [V2] List every content word used 3+ times (word repetition)
-  [V3] Identify ALL memorised opener/closer phrases: "In today's fast-paced world", "It goes without saying", "First and foremost", "Last but not least", "In conclusion I believe", "To sum up", "In my humble opinion", "Needless to say", "At the end of the day"
-  [V4] Check for informal register: "kids", "stuff", "a lot of things", "very big", "got"
-  [V5] Check word form errors: using an adjective where a noun is needed, etc.
+━━━ 5. VOCABULARY RANGE (0–2)  ← Enabling skill — PTE measures this as a % sub-score ━━━
+PTE's Vocabulary Range metric is strict. Run ALL checks before scoring. Always look for what is WRONG.
 
-SCORE:
-  2: 3+ natural collocations [V1]; no word repeated 3+ times [V2]; zero memorised phrases [V3]; academic register throughout [V4]
-  1: 1–2 natural collocations; OR 1 word repeated 3+ times; OR 1–2 memorised phrases; mostly appropriate register
-  0: No natural collocations; multiple repetitions; multiple memorised phrases; basic or informal register
+  [V1] COLLOCATIONS — scan every noun+verb, adjective+noun, verb+adverb pair:
+    List EVERY collocation found. Label each: natural / forced / incorrect.
+    Natural = the combination is standard in academic writing. Forced = unusual pairing. Incorrect = wrong collocation.
+    Minimum 3 natural collocations needed for a score of 2.
+
+  [V2] WORD REPETITION — go through every content word (nouns, verbs, adjectives, adverbs):
+    Flag any content word that appears MORE THAN TWICE in the essay.
+    Also flag if topic keywords (key nouns from the question) are repeated without substitution — this directly reduces vocabulary range.
+    Even words like "education", "society", "technology" count if overused without synonyms.
+
+  [V3] VOCABULARY PRECISION — this is the most common failure point. Check every key word:
+    Is the student using the most precise word available, or a vague general word?
+    PENALISE these imprecise substitutions:
+      "good" → should be: beneficial, advantageous, effective, constructive, favourable
+      "bad" → should be: detrimental, harmful, counterproductive, adverse, damaging
+      "big/large" → should be: significant, substantial, considerable, extensive, widespread
+      "important" → should be: crucial, pivotal, indispensable, fundamental, critical
+      "show" → should be: demonstrate, illustrate, indicate, reveal, highlight
+      "help" → should be: facilitate, enable, support, enhance, promote, foster
+      "make" → should be: generate, create, produce, establish, develop
+      "many people" → should be: a significant proportion of individuals, the majority of the population
+      "a lot of" → should be: a considerable number of, a substantial amount of
+      "use" → should be: utilise, employ, apply, implement, leverage
+    Flag EVERY instance of imprecise word choice — do not overlook even one.
+
+  [V4] ACADEMIC REGISTER — check every sentence:
+    Flag informal words: "kids", "stuff", "things", "got", "very big", "really", "a lot"
+    Flag contractions: don't, can't, it's, they're (unacceptable in formal academic writing)
+    Flag conversational phrases: "you know", "of course", "as we all know", "everyone knows"
+
+  [V5] MEMORISED PHRASES — flag EVERY occurrence:
+    "In today's fast-paced world" / "It goes without saying" / "First and foremost" /
+    "Last but not least" / "In conclusion I believe" / "To sum up" / "In my humble opinion" /
+    "Needless to say" / "At the end of the day" / "plays a crucial role" (overused) /
+    "plays an important role" (overused) / "since time immemorial" / "pros and cons"
+
+  [V6] VOCABULARY SPREAD — estimate the % of unique content words:
+    Divide unique content words by total content words.
+    Below 80% unique → score 0. Below 90% unique → score 1. 90%+ unique → can score 2.
+
+SCORE (only score 2 if ALL conditions met):
+  2: 3+ natural collocations [V1] + no content word used 3+ times [V2] + precise word choices throughout [V3] + no informal register [V4] + zero memorised phrases [V5] + ~90%+ word variety [V6]
+  1: Mostly good vocabulary but fails 1–2 of the above checks (e.g., 1–2 imprecise words, OR 1 repetition, OR 1 memorised phrase)
+  0: Fails 3+ checks — vague vocabulary, clear repetition, memorised phrases, informal register
 
 ━━━ 6. GRAMMAR (0–2)  ← Enabling skill ━━━
 Check every sentence for:
@@ -237,48 +272,101 @@ SCORE:
   0: 5+ spelling errors OR spelling errors that impede readability
 
 ═══════════════════════════════════════════════
-PART B — STRICT MODEL ESSAY THEORY
+PART B — STRICT MODEL ESSAY GENERATION
 (Apply ONLY when modelEssay is requested)
 ═══════════════════════════════════════════════
 
-A Band 85+ PTE essay follows this EXACT sentence-by-sentence structure:
+TARGET: This essay must score 90%+ on BOTH Vocabulary Range AND Argument Quality when evaluated by PTE's official scoring engine. Apply the rules below without exception.
+
+━━━ STRUCTURE (mandatory) ━━━
 
 PARAGRAPH 1 — INTRODUCTION (exactly 2 sentences, ~40 words):
-  Sentence 1 — BACKGROUND: Paraphrase the topic in completely your own words. Do NOT copy the topic.
-    Introduce the context of the issue naturally. No position yet.
-  Sentence 2 — THESIS: State your clear position AND preview BOTH main arguments.
-    Formula: "While [acknowledging counter-position], [your position] because [argument 1] and [argument 2]."
+  S1 — BACKGROUND: Paraphrase the topic in your own words. Do NOT copy any phrase from the topic verbatim.
+    Introduce the context naturally. No position stated yet.
+  S2 — THESIS: State a CLEAR POSITION and preview BOTH main arguments in specific terms.
+    Formula: "While [acknowledging counter-position], [position] because [argument 1] and [argument 2]."
+    The two arguments must be DISTINCT — not variations of the same idea.
 
 PARAGRAPH 2 — BODY 1 (exactly 5 sentences, ~70 words):
-  Sentence 1 — TOPIC SENTENCE: State the FIRST main argument. Must directly prove the thesis. Specific, not vague.
-  Sentence 2 — EXPLANATION: WHY is this true? Use cause-and-effect reasoning. Do NOT restate the topic sentence.
-  Sentence 3 — ELABORATION: Develop further. A secondary reason, consequence, or supporting contrast.
-  Sentence 4 — EXAMPLE: A specific, concrete example (can be hypothetical but must be realistic and precise).
-  Sentence 5 — LINK: Connect this argument back to the thesis. No new ideas.
+  S1 — TOPIC SENTENCE: State the first argument specifically. Must be debatable and directly prove the thesis.
+    ✗ WRONG: "Education is beneficial for people." (too generic)
+    ✓ RIGHT: "Access to quality education directly determines an individual's capacity to compete in the modern workforce."
+  S2 — MECHANISM (cause-effect explanation): Explain the causal chain — WHY and HOW this is true.
+    Must use cause-effect language: "This is because...", "As a result...", "This leads to...", "Consequently...", "This means that..."
+    ✗ WRONG: "Education helps people get jobs." (repeats the claim, no mechanism)
+    ✓ RIGHT: "This is because structured learning develops critical thinking and technical competencies that employers actively seek, thereby enhancing graduates' employability."
+  S3 — ELABORATION: Add a second layer of reasoning — a consequence, implication, or contrast that deepens S2.
+    Must contribute NEW information — never paraphrase S2.
+    Use: "Furthermore...", "Moreover...", "This is particularly evident when...", "Even in cases where...", "Unlike..."
+  S4 — SPECIFIC EVIDENCE: A concrete, precise example. Generic examples destroy Argument Quality scores.
+    ✗ BANNED: "For example, many people in the world...", "For instance, various studies show...", "Many countries have..."
+    ✓ REQUIRED: A specific scenario, realistic hypothetical with precise detail, or named context.
+    ✓ EXAMPLE: "For instance, a student from a low-income household who gains a university scholarship can break the cycle of generational poverty by securing a professional career that was previously inaccessible to their family."
+  S5 — LINK BACK: One sentence connecting this argument back to the thesis. No new ideas.
 
 PARAGRAPH 3 — BODY 2 (exactly 5 sentences, ~70 words):
-  Same 5-sentence structure as Body 1 but with the SECOND main argument.
-  The second argument must be clearly DIFFERENT from the first — not a variation of the same point.
-  For "discuss both views" topics: BP1 = View 1, BP2 = View 2 + your position on it.
+  Same S1–S5 structure as Body 1 with the SECOND distinct argument.
+  For "discuss both views" topics: BP1 = View A fully argued, BP2 = View B fully argued + your position.
+  For "agree/disagree" topics: Both body paragraphs argue FOR your stated position with two different reasons.
+  The second argument must be clearly independent from the first — not the same point rephrased.
 
 PARAGRAPH 4 — CONCLUSION (exactly 1 sentence, ~20 words):
-  Restate the thesis in completely different words. DO NOT copy the thesis.
-  DO NOT use "In conclusion" or "To sum up" — restate the position directly.
-  Formula: "Given that [argument 1 rephrased] and [argument 2 rephrased], [position restated]."
+  Restate the thesis in completely different vocabulary. Do NOT copy any phrase from the thesis sentence.
+  Do NOT start with "In conclusion", "To sum up", "Therefore I believe".
+  Formula: "Given that [argument 1 rephrased with different words] and [argument 2 rephrased], [position restated]."
 
-VOCABULARY RULES FOR MODEL ESSAY:
-  • Include at least 3 natural academic collocations
-  • BANNED phrases: "In today's fast-paced world", "It goes without saying", "First and foremost", "Last but not least", "In conclusion I believe", "To sum up", "In my humble opinion", "Needless to say"
-  • Sentence variety REQUIRED: at least 2 complex sentences (subordinating conjunction), 1 compound sentence, 1 sentence with relative clause
-  • Word count: 220–250 words — count before finalising
+━━━ ARGUMENT QUALITY REQUIREMENTS (target 90%+) ━━━
+The most common reason model essays score low on Argument Quality is shallow reasoning. Every argument must pass:
 
-QUALITY CHECKLIST before outputting model essay:
-  ✓ Thesis in sentence 2 is specifically proven by BP1 and BP2
-  ✓ Every sentence in BP1 proves only the BP1 topic sentence — zero drift to other ideas
-  ✓ Every sentence in BP2 proves only the BP2 topic sentence — zero drift to other ideas
-  ✓ Conclusion says the same thing as the thesis but in different words
-  ✓ No banned phrases used anywhere
-  ✓ Word count is 220–250
+  [AQ1] DEPTH TEST: Does S2 go beyond restating S1? Does it explain the causal mechanism, not just rephrase the claim?
+  [AQ2] SPECIFICITY TEST: Is S4 a genuinely specific example — not "many people", not "various countries", not "studies show"?
+  [AQ3] DEVELOPMENT TEST: Does S3 add a new dimension (consequence, implication, contrast) — not just a reworded S2?
+  [AQ4] RELEVANCE TEST: Does every sentence in each body paragraph DIRECTLY prove that paragraph's topic sentence?
+  [AQ5] INDEPENDENCE TEST: Are BP1 and BP2 arguing genuinely DIFFERENT aspects — not the same point from two angles?
+
+Before writing, plan: "My BP1 argument is X. The mechanism is Y. My specific evidence is Z."
+After writing, check each body paragraph against AQ1–AQ5. Rewrite any sentence that fails.
+
+━━━ VOCABULARY RANGE REQUIREMENTS (target 90%+) ━━━
+The most common vocabulary failure is imprecise word choice and repetition. Apply strictly:
+
+  [VR1] NO IMPRECISE WORDS — replace every instance before finalising:
+    "good/bad" → beneficial/detrimental, advantageous/counterproductive
+    "important/big" → crucial/significant, pivotal/substantial, indispensable/considerable
+    "show/help/make/use/get" → demonstrate/facilitate/generate/employ/acquire
+    "people/things/stuff" → individuals/factors/elements (context-specific)
+    "a lot of/many" → a significant proportion of/a considerable number of/the majority of
+
+  [VR2] ZERO CONTENT WORD REPETITION — scan every noun, verb, adjective after writing:
+    If any content word appears more than twice, replace one occurrence with a precise synonym.
+    This includes topic keywords — vary them: "education" → "academic development", "schooling", "the educational system"
+
+  [VR3] COLLOCATIONS — use at least 4 natural academic collocations from this list (pick ones that fit the topic naturally):
+    significant impact, long-term consequences, sustainable development, academic performance,
+    economic growth, critical thinking, social responsibility, technological advancement,
+    environmental protection, fundamental right, global community, professional development,
+    mental health, cultural diversity, public awareness, equal opportunity
+
+  [VR4] ZERO BANNED PHRASES — scan entire essay before finalising:
+    "In today's fast-paced world" / "It goes without saying" / "First and foremost" /
+    "Last but not least" / "In conclusion I believe" / "To sum up" / "In my humble opinion" /
+    "Needless to say" / "plays a crucial/important role" (overused) / "pros and cons"
+
+  [VR5] SENTENCE VARIETY — verify before finalising:
+    At least 2 complex sentences using: although, because, since, while, unless, even though, given that
+    At least 1 compound sentence using: and, but, yet, so
+    At least 1 relative clause using: which, who, whose, that
+
+━━━ FINAL CHECKS before outputting model essay ━━━
+  ✓ AQ1–AQ5: every argument passes the depth, specificity, development, relevance, independence tests
+  ✓ VR1: no imprecise word remains — scan every key word
+  ✓ VR2: no content word appears more than twice — scan for repetition
+  ✓ VR3: 4+ natural collocations confirmed
+  ✓ VR4: zero banned phrases — scan the full text
+  ✓ VR5: sentence variety confirmed (2 complex, 1 compound, 1 relative clause)
+  ✓ Structure: intro=2 sentences, BP1=5, BP2=5, conclusion=1
+  ✓ Word count: 220–250 — count and adjust if needed
+  ✓ Conclusion uses completely different vocabulary from the thesis sentence
 
 ═══════════════════════════════════════════════
 SCORING RULES
@@ -337,20 +425,21 @@ Return ONLY valid JSON (no markdown, no text outside the JSON object). overallBa
     "overallAnalysis": "<2 sentences: overall assessment of how well the thesis is developed from introduction to conclusion>"
   },
   "argumentativeQuality": {
-    "explanationDepth": "<are arguments explained deeply with reasoning and cause-effect logic — or just stated as facts?>",
-    "logicQuality": "<is each claim logically supported? are there logical gaps or unsupported jumps?>",
-    "exampleSupport": "<how effectively examples are used to support the main points>",
-    "relevanceOfIdeas": "<do all ideas stay clearly relevant to the topic and thesis — or do some drift off-topic?>",
-    "criticalThinking": "<does the writer demonstrate critical thinking beyond surface-level observations?>",
-    "weakArguments": ["<quote or closely paraphrase a specific weak or undeveloped argument from the essay>"],
-    "howToImprove": ["<specific actionable instruction to strengthen the corresponding weak argument>"]
+    "explanationDepth": "<for EACH body paragraph: does S2 explain the causal mechanism (why/how) — or does it just restate S1? Quote specific evidence of shallow or deep reasoning>",
+    "logicQuality": "<is each claim logically supported with a clear causal chain? identify any logical gap where a cause-effect link is missing or unjustified>",
+    "exampleSupport": "<are S4 examples specific and concrete — or generic (many people / various countries / studies show)? quote the actual example and rate its specificity>",
+    "relevanceOfIdeas": "<does every sentence in BP1 prove only BP1's topic sentence, and every sentence in BP2 prove only BP2's topic sentence? flag any sentence that drifts>",
+    "criticalThinking": "<does the writer go beyond obvious surface observations? do they address implications, consequences, or nuance — or just state commonly known facts?>",
+    "weakArguments": ["<quote the EXACT sentence that is the weakest argument — identify whether it fails on depth, specificity, or relevance>"],
+    "howToImprove": ["<give a rewritten version of the weak argument showing what a strong causal-chain argument looks like for this specific point>"]
   },
   "vocabularyCollocations": {
-    "strongVocabulary": ["<strong natural academic word or phrase used effectively>"],
-    "collocationsUsed": [{"collocation": "<exact collocation found in essay>", "evaluation": "<natural / forced / incorrect>"}],
-    "repetitiveVocabulary": ["<word or phrase that appears too many times in the essay>"],
-    "awkwardPhrases": ["<unnatural or awkward phrase found in essay>"],
-    "memorizedLanguage": ["<phrase that sounds memorized, template-based, or robotic>"]
+    "strongVocabulary": ["<precise academic word used correctly — include the sentence it appears in>"],
+    "collocationsUsed": [{"collocation": "<exact collocation found>", "evaluation": "<natural / forced / incorrect — explain why>"}],
+    "repetitiveVocabulary": ["<content word + exact count — e.g. 'education × 4' — that reduces vocabulary range>"],
+    "impreciseWords": ["<vague word used + the precise alternative that should have been used — e.g. 'important → crucial/pivotal'>"],
+    "awkwardPhrases": ["<unnatural or imprecise phrase with suggested replacement>"],
+    "memorizedLanguage": ["<exact memorised phrase found — flag even subtle ones like 'plays a crucial role'>"]
   },
   "grammarAnalysis": {
     "mistakes": [{"original": "<exact sentence from the essay containing the error>", "corrected": "<fully corrected version of that sentence>", "explanation": "<brief explanation of the specific error>"}],
@@ -435,13 +524,25 @@ ${essay}
 Now evaluate this essay carefully following all the scoring rules. Be critical, strategic, and realistic in your assessment. Return only valid JSON with no extra text.`;
 
     if (requestModelEssay) {
-      userMessage += `\n\nMODEL ESSAY REQUIRED — follow the strict PTE theory from Part B exactly:
-Para 1 (2 sentences): Sentence 1 = background paraphrase of the topic. Sentence 2 = thesis stating your position + 2 main arguments.
-Para 2 (5 sentences): S1=topic sentence proving thesis, S2=cause-effect explanation, S3=elaboration/development, S4=specific concrete example, S5=link back to thesis.
-Para 3 (5 sentences): Same structure, second distinct argument. For discuss-both-views topics: BP1=View1, BP2=View2.
-Para 4 (1 sentence): Restate thesis in completely different words. No new ideas. Do NOT use "In conclusion" or "To sum up".
-Rules: 220-250 words exactly. 3+ natural collocations. No banned phrases. At least 2 complex sentences, 1 compound, 1 relative clause.
-Before writing, confirm your thesis is proven by both body paragraphs. After writing, check your conclusion says the same thing as the thesis but differently. Place the essay in the 'modelEssay' field.`;
+      userMessage += `\n\nMODEL ESSAY REQUIRED — follow Part B exactly. This essay must score 90%+ on BOTH Argument Quality AND Vocabulary Range.
+
+STRUCTURE:
+Para 1 (2 sentences): S1=background paraphrase (no copying). S2=thesis with clear position + 2 specific distinct arguments previewed.
+Para 2 (5 sentences): S1=specific debatable topic sentence. S2=causal mechanism using cause-effect language (NOT a restatement of S1). S3=elaboration adding a NEW consequence or implication (NOT a paraphrase of S2). S4=SPECIFIC concrete example — no "many people/various countries/studies show". S5=link back to thesis.
+Para 3 (5 sentences): Same structure, second INDEPENDENT argument (not a variation of BP1).
+Para 4 (1 sentence): Thesis restated in completely different vocabulary. No "In conclusion" opener.
+
+ARGUMENT QUALITY CHECKS (run before finalising):
+- Does S2 in each body paragraph explain WHY/HOW using cause-effect reasoning — not just restate S1?
+- Is S4 in each body paragraph a specific, precise example — not generic?
+- Are BP1 and BP2 genuinely different arguments?
+
+VOCABULARY RANGE CHECKS (run before finalising):
+- Replace every: good/bad/big/important/show/help/make/use with precise academic alternatives
+- Scan every content word — if any noun/verb/adjective appears more than twice, replace one
+- Confirm 4+ natural collocations, zero banned phrases, 2+ complex sentences
+
+Word count: 220–250. Place the final essay in the 'modelEssay' field.`;
     } else {
       userMessage += `\n\nLeave the 'modelEssay' field as an empty string.`;
     }
