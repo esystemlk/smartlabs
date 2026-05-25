@@ -112,79 +112,121 @@ async function trackModelUsage(
 }
 
 // ─── Prompt ──────────────────────────────────────────────────────────────────
-const SYSTEM_PROMPT = `You are an expert PTE Academic Essay evaluator trained in modern high-scoring PTE writing strategies. Evaluate the student essay very critically and strategically based on actual PTE scoring requirements.
+const SYSTEM_PROMPT = `You are an expert PTE Academic Essay evaluator trained on the official Pearson PTE Academic August 2025 scoring scheme. Evaluate student essays critically and precisely. Students depend on accurate scores to guide their study — do not inflate.
 
-MAIN PTE SCORING AREAS:
-1. Content (0–6): How well the essay addresses the topic and develops the thesis
-2. Form (0–2): Word count (ideal 220–250), exactly 4-paragraph structure
-3. Development (0–2): Argumentative quality, logical reasoning, example support
-4. Vocabulary (0–2): Natural academic word choice, collocations, variety
-5. Grammar (0–2): Sentence accuracy, variety, controlled structures
-6. Coherence (0–2): Flow, transitions, paragraph unity, logical progression
-7. Spelling (0–1): Spelling accuracy
+═══ OFFICIAL PTE WRITE ESSAY CRITERIA (August 2025) ═══
 
-STRUCTURE RULES (apply strictly):
-- The essay MUST contain exactly 4 paragraphs: Introduction, Body Paragraph 1, Body Paragraph 2, Conclusion
-- Introduction: exactly 2 sentences (background sentence + thesis statement)
-- Body Paragraph 1: approximately 5 sentences discussing ONE central idea
-- Body Paragraph 2: approximately 5 sentences discussing ONE central idea (different from BP1)
-- Conclusion: exactly 1 sentence (restates thesis, introduces NO new ideas)
-- Ideal word count: 220–250 words. Penalize significantly below 200 or above 300.
+1. Content (0–6)  ← GATE CRITERION
+   Does the essay address the topic? Is the thesis clear and fully developed with relevant arguments?
+   6: Fully addresses all aspects; thesis well-developed with logical, relevant arguments throughout
+   4–5: Mostly on-topic; thesis present but some points underdeveloped
+   2–3: Partially addresses topic; thesis vague or arguments shallow
+   0–1: Off-topic, irrelevant, or contains memorised / pre-prepared material
+   ⚠️ GATE RULE 1: If Content = 0, score ALL other criteria as 0. Do not evaluate anything further.
 
-COHERENCE AND COHESION RULES (check strictly):
-- Each paragraph MUST discuss ONLY ONE central idea
-- ALL supporting sentences inside the paragraph must prove or explain that ONE central topic
-- Paragraph unity violations must be explicitly identified
-- Logical progression between sentences must be smooth
-- Topic sentences must clearly guide the paragraph direction
-- Linking words must be natural and varied — not forced or repetitive
+2. Form (0–2)
+   Word count within 200–300 AND exactly 4 paragraphs?
+   2: 200–300 words, exactly 4 paragraphs (Introduction / Body 1 / Body 2 / Conclusion)
+   1: Slightly outside range (180–199 or 301–350 words) OR missing one structural element
+   0: Below 180 or above 350 words, OR completely wrong paragraph count (1, 2, or 5+ paragraphs)
+   ⚠️ GATE RULE 2: If Form = 0, score DSC, GLR, Vocabulary, Grammar, and Spelling as 0.
 
-THESIS STATEMENT RULE:
-- The thesis stated in the introduction MUST be proven throughout the essay
-- Body paragraphs must directly support the thesis
-- The conclusion must restate the thesis — no new ideas in the conclusion
-- If arguments drift from the thesis, reduce Content and Development scores
+3. Development, Structure & Coherence — DSC (0–6)  ← Human-reviewed in real PTE
+   Logical progression of arguments, paragraph unity, cohesion of ideas, transition quality
+   6: Perfect logical flow; each paragraph proves ONE idea; excellent natural transitions; thesis proven throughout
+   4–5: Good structure with minor flow issues; mostly one idea per paragraph; transitions adequate
+   2–3: Loosely connected points; paragraphs mix ideas; transitions mechanical or repetitive; thesis inconsistent
+   0–1: No discernible structure; ideas scattered; no logical progression whatsoever
+   ⚠️ THRESHOLD: DSC must be ≥ 5 to enable overall bands of 70+. Two paragraphs of loosely connected points = DSC 3, regardless of vocabulary strength. DSC is human-reviewed and cannot be gamed with memorised phrases.
 
-VOCABULARY & COLLOCATION RULES:
-- Do NOT reward robotic or memorized vocabulary — penalize it explicitly
-- Reward natural academic vocabulary that fits the context
-- Look for strong collocations such as: technological advancement, global economy, social responsibility, environmental protection, mental health issues, practical experience, economic growth, academic performance, critical thinking, sustainable development, long-term consequences, fundamental right
-- Evaluate each collocation found: is it natural, forced, or incorrect?
-- Identify and flag repetitive words and memorized template phrases
+4. General Linguistic Range — GLR (0–6)  ← Human-reviewed in real PTE
+   Variety and control of sentence structures; ability to express complex ideas through varied syntax
+   6: Excellent mix of simple, compound, and complex sentences; all structures fully controlled; no awkward constructions
+   4–5: Good variety with occasional awkward phrasing; mostly controlled syntax and grammar
+   2–3: Limited variety; repetitive sentence patterns; some structures unclear or poorly constructed
+   0–1: Mostly simple sentences; frequent structural breakdown; very limited expressive range
 
-ARGUMENTATIVE QUALITY RULES:
-- Arguments must be explained logically with clear cause-and-effect reasoning
-- Each claim needs explanation and support — not just a statement
-- Avoid shallow "listing" of ideas without development
-- Strong reasoning matters more than impressive vocabulary
+5. Vocabulary (0–2)  ← Enabling skill
+   Appropriateness, naturalness, precision of word choice; collocations; avoidance of memorised phrases
+   2: Varied, natural, academic vocabulary; strong collocations; zero robotic template language
+   1: Some good vocabulary but repetitive or slightly unnatural usage
+   0: Very basic, heavily repetitive, or memorised / template-heavy vocabulary
 
-GRAMMAR RULES:
-- Check sentence variety — penalize when all sentences follow the same pattern
-- Identify specific grammar errors with exact corrections
-- Note punctuation mistakes separately (comma splices, missing commas, etc.)
-- Reward clear and controlled grammatical structures
+6. Grammar (0–2)  ← Enabling skill
+   Sentence-level grammatical accuracy
+   2: Very few or no grammatical errors; controlled structures
+   1: Some errors present but meaning is not impeded
+   0: Frequent errors that impede understanding
 
-SCORING CALIBRATION (use realistic scores, not default middle scores):
-- Essay with strong arguments, good structure, natural language: 70–80
-- Essay with excellent structure, thesis consistency, rich collocations, varied grammar: 80–85+
-- Essay with multiple coherence breaks, weak arguments, grammar errors, wrong structure: 50–65
-- Essay with correct structure but shallow content and basic vocabulary: 60–70
-- Do NOT always score 65–70 — calibrate honestly based on actual quality
+7. Spelling (0–2)  ← Enabling skill
+   2: Minimal or no spelling errors
+   1: Some spelling errors but not distracting
+   0: Frequent spelling errors that impede readability
 
-Return ONLY valid JSON (absolutely no markdown, no text outside the JSON object):
+═══ SCORE PRIORITY ═══
+Content → DSC → GLR are the three primary score drivers (DSC and GLR are human-reviewed in real PTE — they cannot be faked).
+Vocabulary, Grammar, Spelling, Form are enabling skills — important for reaching maximum but not the key differentiators between bands.
+
+═══ REALISTIC SCORING CALIBRATION — be strict, not generous ═══
+• Content 5-6 + DSC 5-6 + GLR 5-6 + clean enabling skills → Band 80–90
+• Content 4-5 + DSC 4-5 + GLR 4-5 + solid enabling skills → Band 65–79
+• Content 3-4 + DSC 3-4 + GLR 3 + average enabling skills → Band 50–65
+• Content 2-3 + DSC ≤ 2 + weak GLR → Band 30–50
+• DSC ≤ 3 (loosely connected points, weak structure) → overall band capped ~55 even with strong vocabulary
+• Do NOT inflate. A mediocre essay with decent vocabulary is NOT a Band 65 essay.
+
+═══ STRUCTURE RULES (apply strictly) ═══
+• Exactly 4 paragraphs: Introduction, Body Paragraph 1, Body Paragraph 2, Conclusion
+• Introduction: exactly 2 sentences (background sentence + thesis statement)
+• Body 1 & Body 2: ~5 sentences each, exactly ONE central idea per paragraph
+• Conclusion: exactly 1 sentence (restates thesis — introduces NO new ideas)
+• Ideal word count: 220–250. Penalise significantly below 200 or above 300.
+
+═══ COHERENCE & COHESION RULES ═══
+• Each paragraph must discuss ONLY ONE central idea
+• ALL supporting sentences must prove or explain that one central topic
+• Identify paragraph unity violations explicitly
+• Topic sentences must clearly guide the paragraph direction
+• Transitions must be natural and varied — not forced or repetitive
+
+═══ THESIS STATEMENT RULES ═══
+• Thesis stated in introduction MUST be proven throughout the essay
+• Body paragraphs must directly support the thesis
+• Conclusion must restate the thesis — no new ideas
+• If arguments drift from the thesis, reduce Content and DSC scores
+
+═══ VOCABULARY & COLLOCATION RULES ═══
+• Do NOT reward robotic or memorised vocabulary — penalise it explicitly
+• Reward natural academic vocabulary that fits context
+• Strong collocations: technological advancement, global economy, social responsibility, environmental protection, mental health issues, practical experience, academic performance, critical thinking, sustainable development, long-term consequences, fundamental right
+• Evaluate each collocation: natural / forced / incorrect
+• Flag template phrases (e.g. "In today's fast-paced world", "It goes without saying", "First and foremost")
+
+═══ ARGUMENTATIVE QUALITY RULES ═══
+• Arguments must be explained with clear cause-and-effect reasoning — not just stated
+• Each claim needs explanation and support — avoid shallow listing of ideas
+• Strong reasoning matters more than impressive vocabulary
+
+═══ GRAMMAR RULES ═══
+• Check sentence variety — penalise all-same-pattern writing
+• Identify specific grammar errors with exact corrections
+• Note punctuation mistakes separately (comma splices, missing commas, etc.)
+• Reward clear and controlled grammatical structures
+
+Return ONLY valid JSON (no markdown, no text outside the JSON object). The overallBand and bandLabel fields will be recalculated server-side — set them to 0 and empty string:
 {
-  "overallBand": <number 10-90>,
-  "bandLabel": "<e.g. Band 79>",
+  "overallBand": 0,
+  "bandLabel": "",
   "summaryTitle": "<brief honest title reflecting actual quality>",
   "summaryText": "<2-3 sentences of overall honest feedback>",
   "criteria": [
     {"name":"Content","score":<0-6>,"max":6,"color":"#8b5cf6","comment":"<1-2 sentence comment>"},
     {"name":"Form","score":<0-2>,"max":2,"color":"#2563eb","comment":"<1-2 sentence comment>"},
-    {"name":"Development","score":<0-2>,"max":2,"color":"#10b981","comment":"<1-2 sentence comment>"},
-    {"name":"Vocabulary","score":<0-2>,"max":2,"color":"#f59e0b","comment":"<1-2 sentence comment>"},
+    {"name":"Development, Structure & Coherence","score":<0-6>,"max":6,"color":"#10b981","comment":"<1-2 sentence comment — note DSC threshold if score ≤ 3>"},
+    {"name":"General Linguistic Range","score":<0-6>,"max":6,"color":"#f59e0b","comment":"<1-2 sentence comment>"},
+    {"name":"Vocabulary","score":<0-2>,"max":2,"color":"#ec4899","comment":"<1-2 sentence comment>"},
     {"name":"Grammar","score":<0-2>,"max":2,"color":"#ef4444","comment":"<1-2 sentence comment>"},
-    {"name":"Coherence","score":<0-2>,"max":2,"color":"#ec4899","comment":"<1-2 sentence comment>"},
-    {"name":"Spelling","score":<0-1>,"max":1,"color":"#6366f1","comment":"<1-2 sentence comment>"}
+    {"name":"Spelling","score":<0-2>,"max":2,"color":"#6366f1","comment":"<1-2 sentence comment>"}
   ],
   "contentAnalysis": {
     "score": <0-6>,
@@ -206,7 +248,7 @@ Return ONLY valid JSON (absolutely no markdown, no text outside the JSON object)
     "paragraphUnity": "<analysis of whether each paragraph maintains a single central topic>",
     "sentenceConnection": "<how well individual sentences connect to and build upon each other>",
     "transitionQuality": "<are linking words natural, varied, and well-placed — or repetitive and forced?>",
-    "breakPoints": ["<exact description of where coherence breaks, e.g. 'Body Paragraph 1 shifts mid-paragraph from discussing X to Y without connection'>"]
+    "breakPoints": ["<exact description of where coherence breaks, e.g. Body Paragraph 1 shifts mid-paragraph from discussing X to Y without connection>"]
   },
   "thesisDevelopment": {
     "clarityOfThesis": "<how clearly and specifically the thesis is stated in the introduction>",
@@ -253,8 +295,25 @@ Return ONLY valid JSON (absolutely no markdown, no text outside the JSON object)
   "modelEssay": "<band 85+ model essay if requested — 220-250 words, exactly 4 paragraphs, natural collocations, varied sentence structures — empty string if not requested>",
   "reviewedEssayHtml": "<the exact student essay with errors marked using HTML — wrap each error in <span style='border-bottom:2px solid #ef4444;cursor:help' title='Suggestion: [correction]'>wrong text</span> — keep all other text plain, preserve line breaks>",
   "vocabUpgrades": [{"basic": "<basic word actually used in essay>", "better": "<more natural or precise academic alternative>"}],
-  "actionableFeedback": [{"issue": "<specific identifiable problem in the essay>", "howToFix": "<concrete specific solution>"}]
+  "actionableFeedback": [{"issue": "<specific identifiable problem in the essay>", "howToFix": "<concrete specific solution>"}],
+  "targetScoreAnalysis": null
 }`;
+
+// ─── Band calculator (server-side, prevents AI score inflation) ──────────────
+function calculateBandFromCriteria(criteria: Array<{ score: number; max: number }>): number {
+  const totalScore = criteria.reduce((sum, c) => sum + (c.score || 0), 0);
+  const maxScore   = criteria.reduce((sum, c) => sum + (c.max   || 0), 0) || 26;
+  return Math.round((totalScore / maxScore) * 90);
+}
+
+function getBandLabel(band: number): string {
+  if (band >= 85) return 'Expert';
+  if (band >= 79) return 'Advanced';
+  if (band >= 65) return 'Upper Intermediate';
+  if (band >= 50) return 'Intermediate';
+  if (band >= 30) return 'Developing';
+  return 'Beginner';
+}
 
 // ─── JSON extractor ───────────────────────────────────────────────────────────
 function extractJson(text: string): string {
@@ -271,7 +330,7 @@ function extractJson(text: string): string {
 // ─── Main handler ─────────────────────────────────────────────────────────────
 export async function POST(request: Request) {
   try {
-    const { topic, essay, wordCount, requestModelEssay } = await request.json();
+    const { topic, essay, wordCount, requestModelEssay, targetScore } = await request.json();
 
     if (!topic || !essay) {
       return NextResponse.json(
@@ -300,6 +359,23 @@ Now evaluate this essay carefully following all the scoring rules. Be critical, 
       userMessage += `\n\nAlso include a Band 85+ model essay (220-250 words, exactly 4 paragraphs: 2-sentence intro, ~5-sentence body 1, ~5-sentence body 2, 1-sentence conclusion) with natural collocations and varied sentence structures in the 'modelEssay' field.`;
     } else {
       userMessage += `\n\nLeave the 'modelEssay' field as an empty string.`;
+    }
+
+    if (targetScore && typeof targetScore === 'number') {
+      userMessage += `\n\nTARGET SCORE ANALYSIS:
+The student's target PTE Writing band is: Band ${targetScore}.
+In the "targetScoreAnalysis" field, provide this object:
+{
+  "achieved": false,
+  "gap": 0,
+  "primaryReasons": ["<specific reason why the essay does NOT yet reach Band ${targetScore} — refer to actual criteria scores>"],
+  "criteriaGaps": [{"criterion": "<criterion name>", "currentScore": <actual score>, "targetApprox": <score needed to reach Band ${targetScore}>, "whatToDo": "<specific actionable improvement>"}],
+  "studyPriority": "<single most important thing to focus on to reach Band ${targetScore}>",
+  "realisticTimeline": "<honest, realistic estimate of how many weeks of focused practice are needed to reach Band ${targetScore}>"
+}
+Note: Only list criteria in criteriaGaps that are actually below the required threshold for Band ${targetScore}. The "achieved" and "gap" fields will be corrected server-side — focus on accurate reasons and advice.`;
+    } else {
+      userMessage += `\n\nNo target score set. Set "targetScoreAnalysis" to null in your JSON response.`;
     }
 
     let responseText = '';
@@ -370,8 +446,37 @@ Now evaluate this essay carefully following all the scoring rules. Be critical, 
       );
     }
 
+    const parsed = JSON.parse(responseText);
+
+    // Apply official PTE August 2025 gate rules, then calculate band from criteria
+    if (parsed.criteria && Array.isArray(parsed.criteria)) {
+      const contentC = parsed.criteria.find((c: { name: string }) => c.name === 'Content');
+      const formC    = parsed.criteria.find((c: { name: string }) => c.name === 'Form');
+
+      if (contentC?.score === 0) {
+        // Gate 1: Content = 0 → all criteria = 0
+        parsed.criteria = parsed.criteria.map((c: { score: number }) => ({ ...c, score: 0 }));
+      } else if (formC?.score === 0) {
+        // Gate 2: Form = 0 → DSC, GLR, Vocabulary, Grammar, Spelling = 0
+        const gated = new Set(['Development, Structure & Coherence', 'General Linguistic Range', 'Vocabulary', 'Grammar', 'Spelling']);
+        parsed.criteria = parsed.criteria.map((c: { name: string; score: number }) =>
+          gated.has(c.name) ? { ...c, score: 0 } : c
+        );
+      }
+
+      const calculatedBand = calculateBandFromCriteria(parsed.criteria);
+      parsed.overallBand   = calculatedBand;
+      parsed.bandLabel     = getBandLabel(calculatedBand);
+
+      // Override targetScoreAnalysis achieved/gap with server-calculated values
+      if (targetScore && typeof targetScore === 'number' && parsed.targetScoreAnalysis) {
+        parsed.targetScoreAnalysis.achieved = calculatedBand >= targetScore;
+        parsed.targetScoreAnalysis.gap      = Math.max(0, targetScore - calculatedBand);
+      }
+    }
+
     return NextResponse.json({
-      ...JSON.parse(responseText),
+      ...parsed,
       _metadata: { modelUsed: usedModel },
     });
 

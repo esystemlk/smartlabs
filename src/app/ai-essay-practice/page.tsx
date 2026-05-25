@@ -108,6 +108,15 @@ interface ImprovementPlan {
   strategicTips: string[];
 }
 
+interface TargetScoreAnalysis {
+  achieved: boolean;
+  gap: number;
+  primaryReasons: string[];
+  criteriaGaps: { criterion: string; currentScore: number; targetApprox: number; whatToDo: string }[];
+  studyPriority: string;
+  realisticTimeline: string;
+}
+
 interface AIResponse {
   overallBand: number;
   bandLabel: string;
@@ -131,6 +140,7 @@ interface AIResponse {
   grammarAnalysis?: GrammarDetail;
   improvementPlan?: ImprovementPlan;
   wouldScore79Plus?: { answer: boolean; explanation: string };
+  targetScoreAnalysis?: TargetScoreAnalysis | null;
 }
 
 const TOPICS: Topic[] = [
@@ -206,6 +216,7 @@ export default function AIEssayPractice() {
   const [timeLeft, setTimeLeft] = useState(1200); // 20 minutes in seconds
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   
+  const [targetScore, setTargetScore] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [aiResult, setAiResult] = useState<AIResponse | null>(null);
   const [showResults, setShowResults] = useState(false);
@@ -305,7 +316,8 @@ export default function AIEssayPractice() {
           topic: selectedTopic?.text,
           essay: essayText,
           wordCount,
-          requestModelEssay
+          requestModelEssay,
+          targetScore: targetScore ?? null
         })
       });
 
@@ -354,6 +366,7 @@ export default function AIEssayPractice() {
     setEssayText("");
     setIsTimerRunning(false);
     setTimeLeft(1200);
+    setTargetScore(null);
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
     showToast("Please choose another essay topic.", "info");
@@ -554,20 +567,21 @@ export default function AIEssayPractice() {
               <Exam size={18} weight="duotone" />
               Official Scoring Rubric
             </h3>
-            <p className="text-[11px] text-slate-500 font-bold mt-1">Our AI evaluates essays against 6 core parameters:</p>
+            <p className="text-[11px] text-slate-500 font-bold mt-1">Pearson August 2025 scheme — 7 criteria, max 26 points:</p>
           </div>
           <div className="flex flex-wrap justify-center items-center gap-3">
             {([
-              { name: "Content", color: "bg-violet-50 text-violet-700 border-violet-200" },
-              { name: "Form", color: "bg-blue-50 text-blue-700 border-blue-200" },
-              { name: "Argumentary Quality & Structure", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-              { name: "Grammar", color: "bg-amber-50 text-amber-700 border-amber-200" },
-              { name: "General Linguistic Range", color: "bg-red-50 text-red-700 border-red-200" },
-              { name: "Vocabulary Range", color: "bg-pink-50 text-pink-700 border-pink-200" },
-              { name: "Spelling", color: "bg-indigo-50 text-indigo-700 border-indigo-200" }
+              { name: "Content", scale: "0–6", color: "bg-violet-50 text-violet-700 border-violet-200" },
+              { name: "Form", scale: "0–2", color: "bg-blue-50 text-blue-700 border-blue-200" },
+              { name: "Development, Structure & Coherence", scale: "0–6", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+              { name: "General Linguistic Range", scale: "0–6", color: "bg-amber-50 text-amber-700 border-amber-200" },
+              { name: "Vocabulary", scale: "0–2", color: "bg-pink-50 text-pink-700 border-pink-200" },
+              { name: "Grammar", scale: "0–2", color: "bg-red-50 text-red-700 border-red-200" },
+              { name: "Spelling", scale: "0–2", color: "bg-indigo-50 text-indigo-700 border-indigo-200" }
             ] || []).map((pill, i) => (
-              <span key={i} className={`px-4 py-2 rounded-full border text-xs font-black tracking-wide ${pill.color} shadow-sm`}>
+              <span key={i} className={`px-4 py-2 rounded-full border text-xs font-black tracking-wide ${pill.color} shadow-sm flex items-center gap-1.5`}>
                 {pill.name}
+                <span className="opacity-60 font-bold text-[10px]">{pill.scale}</span>
               </span>
             ))}
           </div>
@@ -670,6 +684,56 @@ export default function AIEssayPractice() {
               <span className="flex items-center gap-1"><ArrowRight size={14} weight="duotone" className="text-[#2563eb]" /> Use linking words</span>
               <span className="flex items-center gap-1"><Target size={14} weight="duotone" className="text-[#2563eb]" /> Include counter-argument</span>
             </div>
+
+            {/* Target Score Selector */}
+            {!showResults && (
+              <div className="p-5 bg-white border-2 border-slate-200 rounded-2xl mb-6 hover:border-[#f97316]/30 transition-colors">
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2">
+                    <Trophy size={16} weight="duotone" className="text-[#f59e0b]" />
+                    <span className="text-sm font-black text-slate-800">What is Your Target Band Score?</span>
+                    <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">Optional</span>
+                  </div>
+                  {targetScore !== null && (
+                    <button
+                      onClick={() => setTargetScore(null)}
+                      className="text-xs text-slate-400 hover:text-slate-600 font-bold transition-colors"
+                      disabled={isSubmitting}
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+                  Set your goal and the AI will tell you if you reached it — or exactly what is holding you back.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {([50, 58, 65, 70, 79, 85, 90] as const).map(score => (
+                    <button
+                      key={score}
+                      onClick={() => setTargetScore(targetScore === score ? null : score)}
+                      disabled={isSubmitting}
+                      className={`px-4 py-2 rounded-xl text-sm font-extrabold transition-all border ${
+                        targetScore === score
+                          ? 'bg-[#f97316] text-white border-[#f97316] shadow-md shadow-orange-100'
+                          : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-[#f97316]/40 hover:bg-orange-50 hover:text-slate-800'
+                      }`}
+                    >
+                      {score}
+                      {score === 79 && (
+                        <span className={`ml-1 text-[9px] font-black uppercase ${targetScore === score ? 'opacity-80' : 'text-slate-400'}`}>PR</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+                {targetScore !== null && (
+                  <p className="mt-3 text-xs font-bold text-[#f97316] flex items-center gap-1.5">
+                    <Target size={12} weight="bold" />
+                    Target: Band {targetScore} — AI will analyse if you reached this goal after marking.
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Textarea Input */}
             <div className="relative mb-6">
@@ -785,6 +849,125 @@ export default function AIEssayPractice() {
               </div>
 
             </div>
+
+            {/* ── Target Score Analysis ── */}
+            {targetScore !== null && aiResult.targetScoreAnalysis && (
+              <div className={`p-8 rounded-3xl shadow-sm mb-12 border-2 ${
+                aiResult.targetScoreAnalysis.achieved
+                  ? 'bg-emerald-50 border-emerald-300'
+                  : 'bg-orange-50 border-orange-200'
+              }`}>
+                {/* Header row */}
+                <div className="flex flex-wrap items-start gap-5 mb-6">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
+                    aiResult.targetScoreAnalysis.achieved ? 'bg-emerald-100' : 'bg-orange-100'
+                  }`}>
+                    {aiResult.targetScoreAnalysis.achieved
+                      ? <Trophy size={28} weight="duotone" className="text-emerald-600" />
+                      : <Target size={28} weight="duotone" className="text-orange-600" />}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className={`text-lg font-black mb-2 ${
+                      aiResult.targetScoreAnalysis.achieved ? 'text-emerald-700' : 'text-orange-700'
+                    }`}>
+                      {aiResult.targetScoreAnalysis.achieved
+                        ? `Band ${targetScore} Target Achieved!`
+                        : `Band ${targetScore} Target Not Yet Reached`}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-2 text-xs font-black">
+                      <span className="px-3 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600">
+                        Target: <span className="text-slate-900">{targetScore}</span>
+                      </span>
+                      <span className="text-slate-400 text-base">→</span>
+                      <span className={`px-3 py-1.5 rounded-full border ${
+                        aiResult.targetScoreAnalysis.achieved
+                          ? 'bg-emerald-100 border-emerald-200 text-emerald-700'
+                          : 'bg-red-100 border-red-200 text-red-700'
+                      }`}>
+                        Your Score: <span>{aiResult.overallBand}</span>
+                      </span>
+                      {!aiResult.targetScoreAnalysis.achieved && (
+                        <span className="px-3 py-1.5 rounded-full bg-red-100 border border-red-200 text-red-700">
+                          Gap: –{aiResult.targetScoreAnalysis.gap} pts
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Achieved — congratulations */}
+                {aiResult.targetScoreAnalysis.achieved && (
+                  <p className="text-sm text-emerald-800 leading-relaxed bg-emerald-100/60 p-4 rounded-2xl border border-emerald-200">
+                    Congratulations! Your essay meets the quality standard for Band {targetScore}. Keep practising to push your score even higher and maintain consistency across different topics.
+                  </p>
+                )}
+
+                {/* Not achieved — detailed breakdown */}
+                {!aiResult.targetScoreAnalysis.achieved && (
+                  <>
+                    {/* Primary reasons */}
+                    {(aiResult.targetScoreAnalysis.primaryReasons || []).length > 0 && (
+                      <div className="mb-6">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-orange-700 mb-3">
+                          Why you have not reached Band {targetScore} yet
+                        </h4>
+                        <div className="space-y-2">
+                          {aiResult.targetScoreAnalysis.primaryReasons.map((reason, idx) => (
+                            <div key={idx} className="flex items-start gap-2.5 bg-white p-3.5 rounded-xl border border-orange-200">
+                              <XCircle size={16} weight="duotone" className="text-orange-500 shrink-0 mt-0.5" />
+                              <p className="text-sm text-slate-700 leading-relaxed">{reason}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Criteria gaps */}
+                    {(aiResult.targetScoreAnalysis.criteriaGaps || []).length > 0 && (
+                      <div className="mb-6">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">
+                          Criteria You Need to Improve
+                        </h4>
+                        <div className="space-y-3">
+                          {aiResult.targetScoreAnalysis.criteriaGaps.map((gap, idx) => (
+                            <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-200">
+                              <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+                                <span className="font-black text-sm text-slate-800">{gap.criterion}</span>
+                                <div className="flex items-center gap-2 text-xs font-extrabold">
+                                  <span className="px-2.5 py-1 rounded-lg bg-red-50 border border-red-200 text-red-700">Now: {gap.currentScore}</span>
+                                  <span className="text-slate-300 text-base">→</span>
+                                  <span className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700">Need: {gap.targetApprox}+</span>
+                                </div>
+                              </div>
+                              <p className="text-xs text-slate-600 leading-relaxed">{gap.whatToDo}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Study priority + timeline */}
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {aiResult.targetScoreAnalysis.studyPriority && (
+                        <div className="bg-orange-100/80 p-4 rounded-2xl border border-orange-200">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-orange-600 block mb-2">Top Priority to Reach Band {targetScore}</span>
+                          <p className="text-sm font-semibold text-slate-800 flex items-start gap-2 leading-relaxed">
+                            <Lightning size={16} weight="duotone" className="text-orange-500 shrink-0 mt-0.5" />
+                            {aiResult.targetScoreAnalysis.studyPriority}
+                          </p>
+                        </div>
+                      )}
+                      {aiResult.targetScoreAnalysis.realisticTimeline && (
+                        <div className="bg-white p-4 rounded-2xl border border-slate-200">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-2">Realistic Timeline</span>
+                          <p className="text-sm text-slate-700 leading-relaxed">{aiResult.targetScoreAnalysis.realisticTimeline}</p>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* Criterion Scoring Bars */}
             <div className="mb-12">
