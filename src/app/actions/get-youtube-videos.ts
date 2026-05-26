@@ -26,7 +26,7 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
     try {
         const response = await fetch(
             `https://www.googleapis.com/youtube/v3/search?key=${YOUTUBE_API_KEY}&channelId=${CHANNEL_ID}&part=snippet,id&order=date&maxResults=9&type=video`,
-            { next: { revalidate: 0 } } // No cache for debug
+            { next: { revalidate: 3600 } }
         );
 
         if (!response.ok) {

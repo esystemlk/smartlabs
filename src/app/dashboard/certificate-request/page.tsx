@@ -15,7 +15,9 @@ import { CertificatePreview } from '@/components/certificates/CertificatePreview
 import type { CertificateRequest } from '@/types/certificate';
 import Link from 'next/link';
 
-export default function CertificateRequestPage() {
+import { Suspense } from 'react';
+
+function CertificateRequestContent() {
   const { user, isUserLoading } = useUser();
   const { firestore } = useFirebase();
   const router = useRouter();
@@ -186,5 +188,21 @@ export default function CertificateRequestPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function CertificateRequestPage() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-6 max-w-5xl mx-auto">
+        <Skeleton className="h-24 w-full rounded-2xl" />
+        <div className="grid lg:grid-cols-2 gap-6">
+          <Skeleton className="h-96 w-full rounded-2xl" />
+          <Skeleton className="h-96 w-full rounded-2xl" />
+        </div>
+      </div>
+    }>
+      <CertificateRequestContent />
+    </Suspense>
   );
 }
