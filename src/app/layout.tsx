@@ -12,7 +12,6 @@ import { AccessibilityWidget } from '@/components/accessibility/accessibility-wi
 import { CommandPalette } from '@/components/layout/command-palette';
 import { MouseSpotlight } from '@/components/ui/mouse-spotlight';
 import { WebinarBanner } from '@/components/webinar/webinar-banner';
-import { AdvancedFloatingAI } from '@/components/ui/advanced-floating-ai';
 import { WorkshopPopup } from '@/components/events/workshop-popup';
 
 // ... (Metadata code remains the same)
@@ -46,7 +45,6 @@ export default function RootLayout({
           <Footer />
           <Toaster />
           <CookieBanner />
-          <AdvancedFloatingAI />
         </FirebaseClientProvider>
       </body>
     </html>

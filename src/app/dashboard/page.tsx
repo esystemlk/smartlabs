@@ -26,6 +26,8 @@ import {
   Fire,
   Star,
   ArrowRight,
+  ArrowLeft,
+  House,
   ChatCircleDots,
   GraduationCap,
   Globe,
@@ -320,6 +322,22 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
 
+      {/* ─── Back to Home ─────────────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.35 }}
+      >
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-muted/60 hover:bg-muted border border-border/50 text-sm font-semibold text-muted-foreground hover:text-foreground transition-all duration-200 group"
+        >
+          <ArrowLeft weight="bold" className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
+          <House weight="bold" className="h-4 w-4" />
+          Back to Home
+        </Link>
+      </motion.div>
+
       {/* ─── Welcome Hero ─────────────────────────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
@@ -478,9 +496,9 @@ export default function DashboardPage() {
       {/* ─── More Tools Row ────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pb-4">
         {[
+          { title: 'My Certificate', href: '/dashboard/certificate-request', icon: Star, color: 'text-amber-500', bg: 'bg-amber-500/10' },
           { title: 'Live Workshops', href: '/workshops', icon: CalendarBlank, color: 'text-orange-500', bg: 'bg-orange-500/10' },
           { title: 'Support Chat', href: '/dashboard/support', icon: ChatCircleDots, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
-          { title: 'My Courses', href: '/courses', icon: GraduationCap, color: 'text-blue-500', bg: 'bg-blue-500/10' },
           { title: 'Main Website', href: '/', icon: Globe, color: 'text-gray-500', bg: 'bg-gray-500/10' },
         ].map((item, i) => {
           const Icon = item.icon;

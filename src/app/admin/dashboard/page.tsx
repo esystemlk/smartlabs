@@ -94,6 +94,7 @@ export default function AdminDashboardPage() {
         { title: "Session Manager", value: "Zoom Links", desc: "Manage active session links.", icon: Video, href: "/admin/dashboard/sessions", color: "text-accent-3", bg: "bg-accent-3/5", border: "border-accent-3/20" },
         { title: "Level Test Results", value: "Reports", desc: "Review student diagnostics.", icon: Brain, href: "/admin/dashboard/level-tests", color: "text-primary", bg: "bg-primary/5", border: "border-primary/20" },
         { title: "Webinar Management", value: "Manage", desc: "Manage webinar registrations.", icon: Presentation, href: "/admin/dashboard/webinars", color: "text-blue-500", bg: "bg-blue-500/5", border: "border-blue-500/20" },
+        { title: "Certificate Requests", value: "Manage", desc: "Review and issue PTE certificates.", icon: FileText, href: "/admin/dashboard/certificates", color: "text-amber-500", bg: "bg-amber-500/5", border: "border-amber-500/20" },
         { title: "Student Dashboard", value: "Go To", desc: "Switch to student view.", icon: LayoutDashboard, href: "/dashboard" },
         { title: "Main Website", value: "Go To", desc: "View the public homepage.", icon: Home, href: "/" },
     ];

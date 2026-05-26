@@ -4,5 +4,6 @@ export const firebaseConfig = {
   "apiKey": "AIzaSyCOwWJwPln4v4ihUBu-3L5QRj34UR-ext0",
   "authDomain": "smart-labs-ekk8j.firebaseapp.com",
   "measurementId": "",
+  "storageBucket": "smart-labs-ekk8j.firebasestorage.app",
   "messagingSenderId": "43848204138"
 };

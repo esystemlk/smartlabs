@@ -16,14 +16,12 @@ import {
   Activity,
   Microscope,
   Database,
-  ShieldCheck,
   Terminal,
   Code2,
   Map,
   Search,
   Book,
   Feather,
-  Award,
   Star,
   ArrowRight,
   Play,
@@ -38,9 +36,6 @@ import {
   Brain,
   Video,
   Users,
-  CheckCircle2,
-  Rocket,
-  TrendingUp,
   Clock,
   MessageSquare,
   BookOpen,
@@ -50,7 +45,6 @@ import {
   BarChart3,
   Flag,
   Monitor,
-  Download,
   Laptop,
   Bell,
   Calendar,
@@ -59,8 +53,7 @@ import {
   Check,
   X,
   HelpCircle,
-  ChevronRight,
-  PlayCircle
+  ChevronRight
 } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { AnimatedNumber } from "@/components/ui/animated-number";
@@ -124,20 +117,48 @@ const courses = [
     description: "Master the Pearson Test of English with AI-powered practice and expert strategies.",
     icon: Target,
     href: "/courses",
-    color: "from-accent-1/20 to-accent-1/5",
-    iconColor: "text-accent-1",
-    bgGradient: "from-accent-1/10 via-accent-1/5 to-transparent",
+    color: "from-blue-500/20 to-blue-500/5",
+    iconColor: "text-blue-500",
+    bgGradient: "from-blue-500/10 via-blue-500/5 to-transparent",
     features: ["AI Scoring Practice", "Live Classes", "Full Materials Access", "Mock Tests"],
+    badge: "Most Popular",
+    badgeColor: "bg-blue-500/10 text-blue-600 border-blue-500/30",
   },
   {
-    title: "CELPIP Prep",
-    description: "Your pathway to Canadian immigration with focused CELPIP training.",
+    title: "KET Exam",
+    description: "Cambridge A2 Key — the essential first step in your Cambridge English journey, building core reading, writing, listening and speaking skills.",
+    icon: Globe,
+    href: "/courses",
+    color: "from-emerald-500/20 to-emerald-500/5",
+    iconColor: "text-emerald-500",
+    bgGradient: "from-emerald-500/10 via-emerald-500/5 to-transparent",
+    features: ["Reading & Writing", "Listening Skills", "Speaking Practice", "Cambridge Prep"],
+    badge: "Cambridge",
+    badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
+  },
+  {
+    title: "IELTS",
+    description: "International English Language Testing System — the world's most widely accepted English qualification for study, work and migration.",
     icon: Zap,
     href: "/courses",
-    color: "from-accent-4/20 to-accent-4/5",
-    iconColor: "text-accent-4",
-    bgGradient: "from-accent-4/10 via-accent-4/5 to-transparent",
-    features: ["Self-Paced Learning", "Video Guides", "Practice Tests", "Expert Tips"],
+    color: "from-violet-500/20 to-violet-500/5",
+    iconColor: "text-violet-500",
+    bgGradient: "from-violet-500/10 via-violet-500/5 to-transparent",
+    features: ["Academic & General", "All Four Skills", "Band Score Targeting", "Expert Coaching"],
+    badge: "Global",
+    badgeColor: "bg-violet-500/10 text-violet-600 border-violet-500/30",
+  },
+  {
+    title: "PET Exam",
+    description: "Cambridge B1 Preliminary — a mid-level qualification proving you can communicate in English in everyday situations at work and study.",
+    icon: BookOpen,
+    href: "/courses",
+    color: "from-amber-500/20 to-amber-500/5",
+    iconColor: "text-amber-500",
+    bgGradient: "from-amber-500/10 via-amber-500/5 to-transparent",
+    features: ["Grammar Clinic", "Vocabulary Mastery", "Reading Skills", "Writing Practice"],
+    badge: "Cambridge",
+    badgeColor: "bg-amber-500/10 text-amber-600 border-amber-500/30",
   },
 ];
 
@@ -297,6 +318,24 @@ const features = [
   }
 ];
 
+// ─── Google Review type used by the hero slideshow ───────────────────────────
+interface HeroGoogleReview {
+  author_name: string;
+  profile_photo_url: string;
+  rating: number;
+  text: string;
+  relative_time_description: string;
+}
+
+const HERO_FALLBACK_REVIEWS: HeroGoogleReview[] = [
+  { author_name: "Sarah Wijesinghe", profile_photo_url: "", rating: 5, relative_time_description: "2 days ago",
+    text: "Smart Labs is the best PTE centre in Sri Lanka. I achieved a score of 82 in just 4 weeks!" },
+  { author_name: "Kasun Perera", profile_photo_url: "", rating: 5, relative_time_description: "1 week ago",
+    text: "The instructors are experts and the mock exams are very similar to the actual PTE test. Highly recommended!" },
+  { author_name: "Nimali Fernando", profile_photo_url: "", rating: 5, relative_time_description: "2 weeks ago",
+    text: "Excellent training. The practice sessions built my confidence and the study materials are comprehensive." },
+];
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -399,6 +438,27 @@ export default function Home() {
   const y2 = useTransform(scrollYProgress, [0, 0.5], [0, -100]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.9]);
+
+  // Hero review slideshow — real Google Reviews
+  const [heroGoogleReviews, setHeroGoogleReviews] = useState<HeroGoogleReview[]>(HERO_FALLBACK_REVIEWS);
+  useEffect(() => {
+    fetch('/api/google-reviews')
+      .then(r => r.json())
+      .then(data => {
+        const reviews: HeroGoogleReview[] = data?.reviews ?? [];
+        if (reviews.length > 0) setHeroGoogleReviews(reviews);
+      })
+      .catch(() => {}); // keep fallbacks on network error
+  }, []);
+
+  const [heroReviewIndex, setHeroReviewIndex] = useState(0);
+  useEffect(() => {
+    if (heroGoogleReviews.length <= 1) return;
+    const timer = setInterval(() => {
+      setHeroReviewIndex(i => (i + 1) % heroGoogleReviews.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [heroGoogleReviews.length]);
 
   // Set random topic and ID on mount
   useEffect(() => {
@@ -528,221 +588,286 @@ export default function Home() {
       <EventPopup />
 
 
-      {/* Hero Section - Ultra Advanced Redesign */}
-      <section className="relative overflow-hidden min-h-[100vh] flex items-center bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-[#020617] dark:via-[#0a0e27] dark:to-[#0f0a1e] py-12 lg:py-20">
-        {/* Animated Particle System - Hidden on mobile for performance */}
-        <div className="absolute inset-0 -z-30 hidden sm:block">
-          {particles.map((particle, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-1 h-1 bg-primary/40 rounded-full"
-              style={{
-                left: particle.left,
-                top: particle.top,
-              }}
-              animate={{
-                y: [0, -60, 0],
-                opacity: [0.1, 0.9, 0.1],
-                scale: [1, 2, 1],
-              }}
-              transition={{
-                duration: particle.duration * 1.5,
-                repeat: Infinity,
-                delay: particle.delay,
-              }}
-            />
-          ))}
-        </div>
+      {/* Hero Section — Diagonal Split */}
+      <section className="relative overflow-hidden">
+        <style>{`
+          @keyframes hero-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+          @keyframes accent-line  { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
+          @keyframes orb-pulse    { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.08); } }
+          @keyframes card-bob     { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+        `}</style>
 
-        {/* Advanced Grid Pattern - Hidden on mobile for performance */}
-        <div className="absolute inset-0 -z-20 opacity-[0.03] dark:opacity-[0.1] hidden sm:block">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:48px_48px]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_0%,#020617_100%)] opacity-40 dark:opacity-60" />
-        </div>
+        {/* Top accent gradient line */}
+        <div className="absolute top-0 left-0 right-0 h-[3px] origin-left z-50"
+             style={{ background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent-3)), hsl(var(--accent-1)))', animation: 'accent-line 1.2s cubic-bezier(0.16,1,0.3,1) 0.1s both' }} />
 
-        {/* Dynamic Gradient Orbs - Smaller on mobile, animated only on desktop */}
-        <div
-          className="absolute top-0 left-0 w-[300px] h-[300px] sm:w-[600px] sm:h-[600px] lg:w-[1000px] lg:h-[1000px] bg-gradient-to-r from-primary/20 via-accent-3/10 to-accent-1/10 sm:from-primary/30 sm:via-accent-3/20 sm:to-accent-1/20 blur-[80px] sm:blur-[180px] rounded-full opacity-30 sm:opacity-40 pointer-events-none"
-        />
-        <div
-          className="absolute bottom-0 right-0 w-[250px] h-[250px] sm:w-[500px] sm:h-[500px] lg:w-[900px] lg:h-[900px] bg-gradient-to-l from-accent-2/10 via-primary/10 to-accent-4/10 sm:from-accent-2/20 sm:via-primary/20 sm:to-accent-4/20 blur-[60px] sm:blur-[160px] rounded-full opacity-20 sm:opacity-30 pointer-events-none"
-        />
+        {/* ── DESKTOP (lg+) ──────────────────────────────── */}
+        <div className="hidden lg:flex relative min-h-screen items-stretch">
 
-        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-12 relative z-10 w-full">
-          <div className="flex flex-col items-center text-center">
+          {/* Navy backdrop (full section) */}
+          <div className="absolute inset-0 bg-slate-950" />
 
-            {/* Content Column - Modern Centered */}
-            <div
-              className="space-y-8 sm:space-y-12 relative max-w-5xl mx-auto w-full"
-            >
+          {/* White left panel — diagonal right edge */}
+          <div className="absolute inset-0 bg-white pointer-events-none"
+               style={{ clipPath: 'polygon(0 0, 55% 0, 39% 100%, 0 100%)' }} />
 
-              {/* Ultra-Detailed Headline */}
-              <div className="space-y-8">
-                <motion.div
-                  initial={{ opacity: 0, y: 40 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <h1 className="font-display text-4xl sm:text-7xl xl:text-8xl font-black tracking-tight leading-[0.95] sm:leading-[0.85] text-slate-900 dark:text-white break-words">
-                    UNLEASH <br />
-                    <span className="relative inline-block">
-                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 animate-gradient">
-                        YOUR SCORE
-                      </span>
-                      <motion.div
-                        initial={{ scaleX: 0 }}
-                        animate={{ scaleX: 1 }}
-                        transition={{ delay: 0.8, duration: 1 }}
-                        className="absolute -bottom-4 left-0 w-full h-3 bg-primary/20 rounded-full blur-sm"
-                      />
-                    </span>
-                  </h1>
-                </motion.div>
+          {/* Dot grid clipped to white zone */}
+          <div className="absolute inset-0 pointer-events-none opacity-35"
+               style={{ backgroundImage: 'radial-gradient(circle, #e2e8f0 1px, transparent 1px)', backgroundSize: '36px 36px', clipPath: 'polygon(0 0, 55% 0, 39% 100%, 0 100%)' }} />
 
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.6 }}
-                  className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 justify-center w-full px-4"
-                >
-                  <div className="hidden sm:block h-px w-16 md:w-24 bg-gradient-to-r from-primary/50 to-transparent" />
-                  <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] sm:tracking-[0.4em] text-primary text-center leading-relaxed">The Future of PTE Training</span>
-                  <div className="hidden sm:block h-px w-16 md:w-24 bg-gradient-to-l from-primary/50 to-transparent" />
-                </motion.div>
+          {/* Navy glow orbs (right side) */}
+          <div className="absolute top-1/3 right-1/4 w-80 h-80 rounded-full pointer-events-none"
+               style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.13) 0%, transparent 65%)', animation: 'orb-pulse 10s ease-in-out infinite', willChange: 'transform' }} />
+          <div className="absolute bottom-1/4 right-12 w-56 h-56 rounded-full pointer-events-none"
+               style={{ background: 'radial-gradient(circle, rgba(6,182,212,0.09) 0%, transparent 65%)', animation: 'orb-pulse 14s ease-in-out infinite reverse', willChange: 'transform' }} />
 
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.9 }}
-                  className="text-lg sm:text-xl md:text-2xl text-muted-foreground dark:text-slate-300 max-w-3xl mx-auto leading-relaxed font-medium px-4"
-                >
-                  Experience the most <span className="text-primary font-black italic underline decoration-primary/30 underline-offset-4 sm:underline-offset-8">advanced AI-driven</span> ecosystem for PTE & CELPIP. Personalized strategies that adapt to your unique learning style.
-                </motion.p>
-              </div>
+          {/* Subtle grid on navy side */}
+          <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
+               style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)', backgroundSize: '56px 56px', clipPath: 'polygon(43% 0, 100% 0, 100% 100%, 30% 100%)' }} />
 
-              {/* Advanced Bento CTA Section */}
-              <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 justify-center items-center w-full">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.1 }}
-                  className="w-full lg:w-auto"
-                >
-                  <Button
-                    size="xl"
-                    className="w-full lg:w-[280px] h-24 group relative rounded-[32px] bg-slate-900 dark:bg-white text-white dark:text-slate-900 overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-95 shadow-2xl"
-                    asChild
-                  >
-                    <a href={LMS_URL} target="_blank" rel="noopener noreferrer">
-                      <div className="relative z-10 flex flex-col items-start gap-1">
-                        <span className="text-xs font-black uppercase tracking-widest opacity-60 text-left">Get Started</span>
-                        <span className="text-xl font-black tracking-tight flex items-center gap-3">
-                          Start Free Trial <ArrowRight className="h-5 w-5 group-hover:translate-x-2 transition-transform" />
-                        </span>
-                      </div>
-                      <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-150 transition-transform duration-700">
-                        <Rocket className="h-20 w-20" />
-                      </div>
-                    </a>
-                  </Button>
-                </motion.div>
+          {/* ── LEFT content (white side) ── */}
+          <div className="relative z-10 w-[46%] flex flex-col justify-center px-14 xl:px-20 pt-28 pb-20">
 
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.15 }}
-                  className="w-full lg:w-auto"
-                >
-                  <Button
-                    size="xl"
-                    className="w-full lg:w-[280px] h-24 group relative rounded-[32px] bg-primary text-white overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-95 shadow-2xl shadow-primary/20"
-                    asChild
-                  >
-                    <Link href="/level-test">
-                      <div className="relative z-10 flex flex-col items-start gap-1">
-                        <span className="text-xs font-black uppercase tracking-widest text-white/70 text-left">Diagnostic</span>
-                        <span className="text-xl font-black tracking-tight flex items-center gap-3">
-                          Free Level Test <Activity className="h-5 w-5 group-hover:animate-pulse transition-transform" />
-                        </span>
-                      </div>
-                      <div className="absolute -bottom-4 -right-4 p-6 opacity-10 group-hover:scale-125 transition-transform duration-700">
-                        <Scan className="h-20 w-20" />
-                      </div>
-                    </Link>
-                  </Button>
-                </motion.div>
+            <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-[11px] font-bold uppercase tracking-[0.5em] text-slate-400 mb-6">
+              Welcome to
+            </motion.p>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.2 }}
-                  className="w-full lg:w-auto"
-                >
-                  <Button
-                    variant="outline"
-                    size="xl"
-                    className="w-full lg:w-[280px] h-24 group relative rounded-[32px] border-2 border-primary/20 bg-white/90 dark:bg-slate-900/50 overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:border-primary/50"
-                    asChild
-                  >
-                    <a href={LMS_URL} target="_blank" rel="noopener noreferrer">
-                      <div className="relative z-10 flex flex-col items-start gap-1">
-                        <span className="text-xs font-black uppercase tracking-widest text-primary text-left">Consultation</span>
-                        <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
-                          Book Expert Call <PlayCircle className="h-5 w-5 text-primary group-hover:rotate-12 transition-transform" />
-                        </span>
-                      </div>
-                      <div className="absolute -bottom-6 -right-6 p-6 opacity-5 group-hover:opacity-10 transition-all duration-700">
-                        <Users className="h-24 w-24" />
-                      </div>
-                    </a>
-                  </Button>
-                </motion.div>
-              </div>
-
-              {/* Key Highlights Row */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.4 }}
-                className="flex flex-wrap items-center justify-center gap-8 pt-12 border-t border-slate-200 dark:border-slate-800"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-accent-1/10 flex items-center justify-center text-accent-1">
-                    <Trophy className="h-6 w-6" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Achievement</p>
-                    <p className="text-sm font-black">95% Success Rate</p>
-                  </div>
-                </div>
-                <div className="w-px h-10 bg-slate-200 dark:bg-slate-800 hidden sm:block" />
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-accent-2/10 flex items-center justify-center text-accent-2">
-                    <Cpu className="h-6 w-6" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Technology</p>
-                    <p className="text-sm font-black">AI Scoring 2.0</p>
-                  </div>
-                </div>
-                <div className="w-px h-10 bg-slate-200 dark:bg-slate-800 hidden sm:block" />
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-accent-3/10 flex items-center justify-center text-accent-3">
-                    <Globe className="h-6 w-6" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Recognition</p>
-                    <p className="text-sm font-black">Pearson Certified</p>
-                  </div>
-                </div>
+            <div style={{ overflow: 'hidden' }}>
+              <motion.h1 initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ duration: 0.85, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                className="font-black text-slate-900 leading-none tracking-tighter"
+                style={{ fontSize: 'clamp(4rem, 10vw, 8.5rem)', lineHeight: 0.88 }}>
+                SMART
+              </motion.h1>
+            </div>
+            <div style={{ overflow: 'hidden', marginBottom: '1.75rem' }}>
+              <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ duration: 0.85, delay: 0.52, ease: [0.16, 1, 0.3, 1] }}
+                className="font-black leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1"
+                style={{ fontSize: 'clamp(4rem, 10vw, 8.5rem)', lineHeight: 0.88 }}>
+                LABS
               </motion.div>
             </div>
+
+            <motion.div initial={{ scaleX: 0, opacity: 0 }} animate={{ scaleX: 1, opacity: 1 }}
+              transition={{ duration: 0.7, delay: 0.95, ease: [0.16, 1, 0.3, 1] }}
+              style={{ originX: 0 }} className="h-px w-20 bg-slate-200 mb-5" />
+
+            <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 1.05 }}
+              className="text-sm text-slate-500 mb-1.5">
+              by&nbsp;<span className="font-semibold text-slate-800 italic">Laheer Weeraratne</span>
+            </motion.p>
+
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 1.2 }}
+              className="text-[10px] font-medium text-slate-400 tracking-[0.35em] uppercase mb-10">
+              PTE &nbsp;·&nbsp; IELTS &nbsp;·&nbsp; KET &nbsp;·&nbsp; PET
+            </motion.p>
+
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 1.4 }}>
+              <Button size="xl" className="h-14 px-10 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black text-base transition-all hover:scale-[1.04] shadow-xl shadow-slate-900/10" asChild>
+                <Link href="/level-test">
+                  <Activity className="mr-2.5 h-5 w-5" />
+                  Take Free Level Test
+                </Link>
+              </Button>
+            </motion.div>
+          </div>
+
+          {/* ── RIGHT content (navy side) ── */}
+          <div className="relative z-10 w-[54%] flex flex-col justify-center pr-14 xl:pr-20 pt-28 pb-20"
+               style={{ paddingLeft: 'clamp(90px, 14vw, 210px)' }}>
+
+            <motion.p initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.7 }}
+              className="text-[10px] font-black uppercase tracking-[0.45em] text-blue-400 mb-3">
+              Sri Lanka's #1
+            </motion.p>
+            <motion.h2 initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, delay: 0.85 }}
+              className="text-3xl xl:text-4xl font-black text-white leading-[1.1] tracking-tight mb-8">
+              English Training<br />Platform
+            </motion.h2>
+
+            {/* Stats 2×2 */}
+            <div className="grid grid-cols-2 gap-3 mb-8">
+              {[
+                { value: siteStats ? `${siteStats.studentsCount.toLocaleString()}+` : '5,000+', label: 'Students Trained', color: 'text-blue-400',    border: 'border-blue-500/20' },
+                { value: siteStats ? `${siteStats.successRate}%` : '95%',                        label: 'Success Rate',     color: 'text-emerald-400', border: 'border-emerald-500/20' },
+                { value: siteStats?.targetWeeks ?? '6–8',                                        label: 'Weeks to Target',  color: 'text-violet-400',  border: 'border-violet-500/20' },
+                { value: siteStats?.aiSupport ?? '24/7',                                         label: 'AI Support',       color: 'text-amber-400',   border: 'border-amber-500/20' },
+              ].map((stat, i) => (
+                <motion.div key={stat.label}
+                  initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 1.0 + i * 0.1 }}
+                  className={`bg-white/5 rounded-2xl p-4 border ${stat.border} backdrop-blur-sm`}>
+                  <div className={`text-2xl xl:text-[1.9rem] font-black mb-1 ${stat.color}`}>{stat.value}</div>
+                  <div className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">{stat.label}</div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Course badges */}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}
+              className="flex flex-wrap gap-2 mb-8">
+              {[
+                { name: 'PTE Academic', cls: 'bg-blue-500/10 text-blue-300 border-blue-500/25' },
+                { name: 'IELTS',        cls: 'bg-violet-500/10 text-violet-300 border-violet-500/25' },
+                { name: 'KET Exam',     cls: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/25' },
+                { name: 'PET Exam',     cls: 'bg-amber-500/10 text-amber-300 border-amber-500/25' },
+              ].map(c => (
+                <span key={c.name} className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border ${c.cls}`}>
+                  {c.name}
+                </span>
+              ))}
+            </motion.div>
+
+            {/* ── Live Review Slideshow ── */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 1.7 }}>
+              <div className="bg-white/[0.06] backdrop-blur-sm border border-white/10 rounded-2xl p-5">
+                <AnimatePresence mode="wait">
+                  {heroGoogleReviews.length > 0 && (() => {
+                    const r = heroGoogleReviews[heroReviewIndex % heroGoogleReviews.length];
+                    const initials = r.author_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                    const snippet = r.text.length > 130 ? r.text.slice(0, 130).trimEnd() + '…' : r.text;
+                    return (
+                      <motion.div
+                        key={heroReviewIndex}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.35 }}
+                      >
+                        <div className="flex items-start gap-3 mb-3">
+                          {/* Avatar — photo or initials */}
+                          <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-blue-400 to-violet-500 flex items-center justify-center text-white text-sm font-black">
+                            {r.profile_photo_url ? (
+                              <Image
+                                src={r.profile_photo_url}
+                                alt={r.author_name}
+                                width={36}
+                                height={36}
+                                unoptimized
+                                className="object-cover w-full h-full"
+                              />
+                            ) : initials}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white/80 text-xs leading-relaxed mb-1.5">"{snippet}"</p>
+                            <p className="text-slate-400 text-[10px] font-semibold">— {r.author_name}</p>
+                            <p className="text-slate-600 text-[9px] mt-0.5">{r.relative_time_description}</p>
+                          </div>
+                        </div>
+                        {/* Dynamic star rating */}
+                        <div className="flex gap-0.5">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className={`w-3 h-3 ${i < r.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-700'}`} />
+                          ))}
+                        </div>
+                      </motion.div>
+                    );
+                  })()}
+                </AnimatePresence>
+
+                {/* Dot navigation */}
+                {heroGoogleReviews.length > 1 && (
+                  <div className="flex gap-1.5 mt-4 justify-end">
+                    {heroGoogleReviews.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setHeroReviewIndex(i)}
+                        className={`h-1.5 rounded-full transition-all duration-300 ${
+                          i === heroReviewIndex % heroGoogleReviews.length
+                            ? 'w-4 bg-blue-400'
+                            : 'w-1.5 bg-white/20 hover:bg-white/40'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* ── MOBILE (< lg) ──────────────────────────────── */}
+        <div className="lg:hidden flex flex-col">
+          {/* White top */}
+          <div className="bg-white pt-24 pb-12 px-6 flex flex-col items-center text-center">
+            <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-[11px] font-bold uppercase tracking-[0.5em] text-slate-400 mb-5">
+              Welcome to
+            </motion.p>
+            <div style={{ overflow: 'hidden' }}>
+              <motion.h1 initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ duration: 0.85, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                className="font-black text-slate-900 leading-none tracking-tighter"
+                style={{ fontSize: '18vw', lineHeight: 0.88 }}>
+                SMART
+              </motion.h1>
+            </div>
+            <div style={{ overflow: 'hidden', marginBottom: '1rem' }}>
+              <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ duration: 0.85, delay: 0.52, ease: [0.16, 1, 0.3, 1] }}
+                className="font-black leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1"
+                style={{ fontSize: '18vw', lineHeight: 0.88 }}>
+                LABS
+              </motion.div>
+            </div>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}
+              className="text-sm text-slate-500 mb-1">
+              by <span className="font-semibold text-slate-800 italic">Laheer Weeraratne</span>
+            </motion.p>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0 }}
+              className="text-[10px] font-medium text-slate-400 tracking-[0.3em] uppercase mb-8">
+              PTE · IELTS · KET · PET
+            </motion.p>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.2 }}>
+              <Button size="lg" className="h-12 px-8 rounded-2xl bg-slate-900 text-white font-black" asChild>
+                <Link href="/level-test"><Activity className="mr-2 h-4 w-4" />Take Free Level Test</Link>
+              </Button>
+            </motion.div>
+          </div>
+
+          {/* Navy bottom */}
+          <div className="bg-slate-950 px-6 py-10">
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400 mb-2">Sri Lanka's #1</p>
+            <h2 className="text-2xl font-black text-white mb-6">English Training Platform</h2>
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              {[
+                { value: siteStats ? `${siteStats.studentsCount.toLocaleString()}+` : '5,000+', label: 'Students Trained', color: 'text-blue-400' },
+                { value: siteStats ? `${siteStats.successRate}%` : '95%',                        label: 'Success Rate',     color: 'text-emerald-400' },
+                { value: siteStats?.targetWeeks ?? '6–8',                                        label: 'Weeks to Target',  color: 'text-violet-400' },
+                { value: siteStats?.aiSupport ?? '24/7',                                         label: 'AI Support',       color: 'text-amber-400' },
+              ].map(s => (
+                <div key={s.label} className="bg-white/5 rounded-xl p-3 border border-white/10">
+                  <div className={`text-xl font-black mb-0.5 ${s.color}`}>{s.value}</div>
+                  <div className="text-[9px] text-slate-400 uppercase tracking-wider">{s.label}</div>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {['PTE Academic', 'IELTS', 'KET Exam', 'PET Exam'].map(n => (
+                <span key={n} className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/5 text-slate-300 border border-white/10">{n}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom marquee — pure CSS */}
+        <div className="relative border-t border-slate-100 overflow-hidden bg-white z-10" style={{ padding: '16px 0' }}>
+          <div style={{ display: 'flex', width: 'max-content', animation: 'hero-marquee 30s linear infinite', willChange: 'transform' }}>
+            {[...Array(2)].flatMap((_, ri) =>
+              ["PTE Academic","·","IELTS","·","KET Exam","·","PET Exam","·",
+               "5,000+ Students","·","95% Success Rate","·","AI Powered Scoring","·",
+               "Live Expert Classes","·","6–8 Weeks to Target","·","Pearson Certified","·"].map((item, i) => (
+                <span key={`${ri}-${i}`}
+                  className={item === "·"
+                    ? "mx-5 text-slate-200 select-none"
+                    : "text-[11px] font-semibold text-slate-400 mx-4 whitespace-nowrap uppercase tracking-widest"}>
+                  {item}
+                </span>
+              ))
+            )}
           </div>
         </div>
       </section>
 
-      {/* Floating Feature Bar - Detailed */}
-      <section className="relative -mt-12 z-20">
+      {/* Floating Feature Bar */}
+      <section className="relative py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
@@ -1184,8 +1309,19 @@ export default function Home() {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 animate-gradient italic">Victory Path</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl">
-              World-class preparation frameworks for PTE & CELPIP, engineered by international experts.
+              World-class preparation for PTE, IELTS, KET & PET — engineered by internationally trained experts.
             </p>
+            {/* Exam badges row */}
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              {[
+                { label: "PTE Academic", color: "bg-blue-500/10 text-blue-600 border-blue-500/30" },
+                { label: "KET Exam", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30" },
+                { label: "IELTS", color: "bg-violet-500/10 text-violet-600 border-violet-500/30" },
+                { label: "PET Exam", color: "bg-amber-500/10 text-amber-600 border-amber-500/30" },
+              ].map(b => (
+                <span key={b.label} className={`px-4 py-1.5 rounded-full text-xs font-black border ${b.color}`}>{b.label}</span>
+              ))}
+            </div>
           </div>
 
           <motion.div
@@ -1193,46 +1329,53 @@ export default function Home() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10"
+            className="grid md:grid-cols-2 xl:grid-cols-4 gap-6 lg:gap-8"
           >
-            {displayCourses.map((course, index) => (
+            {displayCourses.map((course: any, index: number) => (
               <motion.div
                 key={course.title}
                 variants={itemVariants}
                 className="group"
               >
                 <Link href={course.href} className="block h-full">
-                  <div className="relative h-full p-10 rounded-[48px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 transition-all duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.08)] hover:-translate-y-4 hover:border-primary/30 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/50">
+                  <div className="relative h-full p-8 rounded-[40px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 transition-all duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.08)] hover:-translate-y-4 hover:border-primary/30 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/50 overflow-hidden">
+                    {/* Badge */}
+                    {course.badge && (
+                      <span className={cn("absolute top-6 right-6 px-2.5 py-1 rounded-full text-[9px] font-black border uppercase tracking-wider", course.badgeColor || "bg-primary/10 text-primary border-primary/30")}>
+                        {course.badge}
+                      </span>
+                    )}
+
                     {/* Icon Container */}
-                    <div className="mb-10">
-                      <div className={cn("inline-flex p-6 rounded-[32px] bg-gradient-to-br shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6", course.color)}>
-                        <course.icon className={cn("h-10 w-10", course.iconColor)} />
+                    <div className="mb-8">
+                      <div className={cn("inline-flex p-5 rounded-[24px] bg-gradient-to-br shadow-xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6", course.color)}>
+                        <course.icon className={cn("h-8 w-8", course.iconColor)} />
                       </div>
                     </div>
 
                     {/* Content */}
-                    <div className="space-y-6">
-                      <h3 className="text-3xl font-black tracking-tight group-hover:text-primary transition-colors">
+                    <div className="space-y-4">
+                      <h3 className="text-2xl font-black tracking-tight group-hover:text-primary transition-colors">
                         {course.title}
                       </h3>
-                      <p className="text-muted-foreground leading-relaxed text-lg line-clamp-3">
+                      <p className="text-muted-foreground leading-relaxed text-sm line-clamp-3">
                         {course.description}
                       </p>
 
-                      <ul className="space-y-4">
-                        {course.features.slice(0, 3).map((feature) => (
-                          <li key={feature} className="flex items-center gap-4 text-sm font-bold text-slate-600 dark:text-slate-400">
-                            <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center text-green-600 shrink-0">
-                              <Check className="h-4 w-4" />
+                      <ul className="space-y-2.5">
+                        {course.features.slice(0, 3).map((feature: string) => (
+                          <li key={feature} className="flex items-center gap-3 text-xs font-bold text-slate-600 dark:text-slate-400">
+                            <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center text-green-600 shrink-0">
+                              <Check className="h-3 w-3" />
                             </div>
                             {feature}
                           </li>
                         ))}
                       </ul>
 
-                      <div className="pt-8 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                        <span className="text-xs font-black uppercase tracking-widest text-primary">View Details</span>
-                        <ArrowRight className="h-5 w-5 text-primary group-hover:translate-x-2 transition-transform" />
+                      <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                        <span className="text-xs font-black uppercase tracking-widest text-primary">Enroll Now</span>
+                        <ArrowRight className="h-4 w-4 text-primary group-hover:translate-x-2 transition-transform" />
                       </div>
                     </div>
                   </div>
@@ -1462,10 +1605,10 @@ export default function Home() {
 
               <div className="relative min-h-[500px] lg:min-h-full group overflow-hidden">
                 <Image
-                  src="/gc.jpg"
+                  src="/gcd.jpg"
                   alt="Grammar Clinic"
                   fill
-                  className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                  className="object-cover object-center transition-transform duration-1000 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-l from-slate-950/60 to-transparent" />
                 <div className="absolute bottom-12 left-12 right-12 p-10 rounded-[40px] bg-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl">
@@ -1565,72 +1708,6 @@ export default function Home() {
 
       {/* Map Section */}
       <GoogleMap />
-
-      {/* Global Call to Action - Final Impact */}
-      <section className="py-24 sm:py-32 relative overflow-hidden bg-[#020617]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(79,70,229,0.2),transparent_70%)]" />
-        <div className="absolute inset-0 bg-grid-white/[0.03]" />
-
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
-          <div className="rounded-[64px] bg-gradient-to-br from-primary/20 via-slate-900 to-accent-1/10 border border-white/10 p-12 sm:p-24 lg:p-32 text-center relative overflow-hidden">
-            <motion.div
-              animate={{
-                scale: [1, 1.2, 1],
-                rotate: [0, 90, 0],
-              }}
-              transition={{ duration: 20, repeat: Infinity }}
-              className="absolute -top-1/2 -right-1/4 w-[600px] h-[600px] bg-primary/20 blur-[120px] rounded-full"
-            />
-
-            <div className="relative z-10 space-y-12">
-              <div className="space-y-6">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white text-[10px] font-black uppercase tracking-[0.4em]"
-                >
-                  Global Registration Active
-                </motion.div>
-                <h2 className="text-6xl sm:text-8xl lg:text-9xl font-black text-white leading-[0.85] tracking-tight">
-                  YOUR FUTURE <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 animate-gradient italic">REDEFINED.</span>
-                </h2>
-                <p className="text-2xl text-slate-400 max-w-2xl mx-auto font-medium">
-                  Join 5,000+ high-achievers who have already decoded the secret to English proficiency.
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-6 justify-center">
-                <Button size="xl" className="h-24 px-12 rounded-[32px] bg-white text-slate-900 hover:bg-slate-100 font-black uppercase tracking-[0.2em] text-lg shadow-2xl group" asChild>
-                  <a href={LMS_URL} target="_blank" rel="noopener noreferrer">
-                    Start Free Trial <Rocket className="ml-4 h-8 w-8 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform" />
-                  </a>
-                </Button>
-                <Button variant="outline" size="xl" className="h-24 px-12 rounded-[32px] border-2 border-white/20 bg-white/5 text-white hover:bg-white/10 font-black uppercase tracking-[0.2em] text-lg backdrop-blur-xl" asChild>
-                  <a href={LMS_URL} target="_blank" rel="noopener noreferrer">
-                    System Demo
-                  </a>
-                </Button>
-              </div>
-
-              <div className="flex flex-wrap justify-center items-center gap-12 pt-12 border-t border-white/5">
-                <div className="flex items-center gap-3">
-                  <ShieldCheck className="h-6 w-6 text-primary" />
-                  <span className="text-xs font-black text-white/60 uppercase tracking-widest">Enterprise Security</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Globe className="h-6 w-6 text-accent-3" />
-                  <span className="text-xs font-black text-white/60 uppercase tracking-widest">Global CDN Access</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Zap className="h-6 w-6 text-accent-1" />
-                  <span className="text-xs font-black text-white/60 uppercase tracking-widest">AI Scoring 2.0</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
     </main>
   );
 }

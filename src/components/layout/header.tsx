@@ -43,13 +43,49 @@ import { LMS_URL } from "@/lib/constants";
 
 const courses = [
   {
-    name: "Courses",
+    name: "All Courses",
     href: "/courses",
-    description: "Browse all PTE & CELPIP programs.",
+    description: "Browse all training programs.",
     icon: Book,
     color: "text-primary",
     bgColor: "bg-primary/10",
     hoverBorder: "hover:border-primary/50"
+  },
+  {
+    name: "PTE Academic",
+    href: "/courses",
+    description: "Pearson Test of English — AI-powered prep.",
+    icon: Target,
+    color: "text-blue-500",
+    bgColor: "bg-blue-500/10",
+    hoverBorder: "hover:border-blue-500/50"
+  },
+  {
+    name: "KET Exam",
+    href: "/courses",
+    description: "Cambridge A2 Key — core English skills foundation.",
+    icon: Globe,
+    color: "text-emerald-500",
+    bgColor: "bg-emerald-500/10",
+    hoverBorder: "hover:border-emerald-500/50"
+  },
+  {
+    name: "IELTS",
+    href: "/courses",
+    description: "International English Language Testing System.",
+    icon: Zap,
+    color: "text-violet-500",
+    bgColor: "bg-violet-500/10",
+    hoverBorder: "hover:border-violet-500/50"
+  },
+  {
+    name: "PET Exam",
+    href: "/courses",
+    description: "Cambridge B1 Preliminary — everyday English proficiency.",
+    icon: Sparkles,
+    color: "text-amber-500",
+    bgColor: "bg-amber-500/10",
+    hoverBorder: "hover:border-amber-500/50"
   },
 ];
 
@@ -67,6 +103,7 @@ const navLinks = [
   { name: "Home", href: "/" },
   { name: "Courses", href: "/courses" },
   { name: "Essay Practise", href: "/ai-essay-practice" },
+  { name: "Certificate", href: "/dashboard/certificate-request", highlight: false, icon: null },
   { name: "LMS Portal", href: LMS_URL, external: true },
   { name: "Level Test", href: "/level-test", highlight: true },
   { name: "Help", href: "/support", icon: HelpCircle },
@@ -82,6 +119,7 @@ export default function Header() {
   const { notifications, loading: notifsLoading } = useNotifications();
 
   const [mounted, setMounted] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   const pathname = usePathname();
   const { user } = useUser();
@@ -90,6 +128,12 @@ export default function Header() {
 
   const [isElectron, setIsElectron] = useState(false);
   const [isMac, setIsMac] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -123,12 +167,17 @@ export default function Header() {
   }
 
   const isDesktopClient = isElectron && !isMac;
+  const isHome = pathname === '/';
+  const isTransparent = isHome && !scrolled;
 
   return (
     <header
       className={cn(
-        "fixed left-0 right-0 z-40 bg-background border-b border-border/10 transition-all duration-500",
-        isDesktopClient ? "top-8" : "top-0"
+        "fixed left-0 right-0 z-40 transition-all duration-500",
+        isDesktopClient ? "top-8" : "top-0",
+        isTransparent
+          ? "bg-transparent border-b border-transparent"
+          : "bg-background/95 backdrop-blur-xl border-b border-border/10 shadow-sm"
       )}
     >
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -168,54 +217,67 @@ export default function Header() {
                     initial={{ opacity: 0, y: 15, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute top-full left-0 mt-3 w-[580px] bg-card/95 backdrop-blur-3xl border border-border/50 rounded-[28px] p-6 shadow-[0_20px_70px_rgba(0,0,0,0.15)] grid grid-cols-2 gap-8"
+                    className="absolute top-full left-0 mt-3 w-[720px] bg-card/95 backdrop-blur-3xl border border-border/50 rounded-[28px] p-6 shadow-[0_20px_70px_rgba(0,0,0,0.15)]"
                   >
-                    <div className="space-y-4">
-                      <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Available Programs</h3>
-                      <div className="space-y-2">
-                        {courses.map((course) => (
-                          <Link
-                            key={course.href}
-                            href={course.href}
-                            className={cn(
-                              "group block p-4 rounded-2xl border border-transparent transition-all",
-                              course.hoverBorder,
-                              pathname === course.href ? "bg-primary/5 border-primary/20" : "hover:bg-muted/50"
-                            )}
-                          >
-                            <div className="flex items-center gap-4">
-                              <div className={cn("p-2.5 rounded-xl shrink-0 transition-transform group-hover:scale-110", course.bgColor, course.color)}>
-                                <course.icon className="h-5 w-5" />
-                              </div>
-                              <div>
-                                <div className="font-bold text-sm text-foreground flex items-center gap-1">
-                                  {course.name}
-                                  <ArrowRight className="h-3 w-3 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
+                    <div className="grid grid-cols-3 gap-6">
+                      <div className="col-span-2 space-y-3">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Available Programs</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                          {courses.slice(1).map((course) => (
+                            <Link
+                              key={course.name}
+                              href={course.href}
+                              className={cn(
+                                "group block p-3 rounded-2xl border border-transparent transition-all",
+                                course.hoverBorder,
+                                "hover:bg-muted/50"
+                              )}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={cn("p-2 rounded-xl shrink-0 transition-transform group-hover:scale-110", course.bgColor, course.color)}>
+                                  <course.icon className="h-4 w-4" />
                                 </div>
-                                <div className="text-[11px] text-muted-foreground font-medium leading-tight mt-0.5">{course.description}</div>
+                                <div>
+                                  <div className="font-bold text-sm text-foreground flex items-center gap-1">
+                                    {course.name}
+                                    <ArrowRight className="h-3 w-3 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
+                                  </div>
+                                  <div className="text-[10px] text-muted-foreground font-medium leading-tight mt-0.5">{course.description}</div>
+                                </div>
                               </div>
-                            </div>
-                          </Link>
-                        ))}
+                            </Link>
+                          ))}
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="space-y-4 border-l pl-8 border-border/50">
-                      <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Featured Resources</h3>
-                      <div className="space-y-3">
-                        {featured.map((item) => (
-                          <Link key={item.name} href={item.href} className="group block p-3 rounded-2xl hover:bg-muted/50 transition-colors">
+                      <div className="space-y-3 border-l pl-6 border-border/50">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Quick Links</h3>
+                        <div className="space-y-2">
+                          {featured.map((item) => (
+                            <Link key={item.name} href={item.href} className="group block p-3 rounded-2xl hover:bg-muted/50 transition-colors">
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                                  <item.icon className="h-4 w-4" />
+                                </div>
+                                <div>
+                                  <div className="font-bold text-xs">{item.name}</div>
+                                  <div className="text-[10px] text-muted-foreground">{item.description}</div>
+                                </div>
+                              </div>
+                            </Link>
+                          ))}
+                          <Link href="/dashboard/certificate-request" className="group block p-3 rounded-2xl hover:bg-amber-500/5 transition-colors border border-transparent hover:border-amber-500/20">
                             <div className="flex items-center gap-3">
-                              <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                                <item.icon className="h-4 w-4" />
+                              <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500">
+                                <Sparkles className="h-4 w-4" />
                               </div>
                               <div>
-                                <div className="font-bold text-xs">{item.name}</div>
-                                <div className="text-[10px] text-muted-foreground">{item.description}</div>
+                                <div className="font-bold text-xs text-amber-600">Get Certificate</div>
+                                <div className="text-[10px] text-muted-foreground">Request your training certificate</div>
                               </div>
                             </div>
                           </Link>
-                        ))}
+                        </div>
                       </div>
                     </div>
                   </motion.div>
@@ -268,21 +330,8 @@ export default function Header() {
             )}
           </div>
 
-          {/* CTA & Search */}
+          {/* CTA & Actions */}
           <div className="hidden lg:flex items-center gap-4">
-            <button
-              onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
-              className="flex items-center gap-6 px-4 py-2 bg-muted/30 border border-border/50 rounded-xl text-xs text-muted-foreground hover:border-primary/30 hover:bg-background transition-all group"
-            >
-              <div className="flex items-center gap-2">
-                <Search className="h-3.5 w-3.5 group-hover:text-primary transition-colors" />
-                <span className="hidden xl:inline">Search Matrix...</span>
-              </div>
-              <div className="flex items-center gap-1 font-sans opacity-40 text-[10px]">
-                <span className="text-[8px] border border-border rounded px-1 group-hover:border-primary group-hover:text-primary transition-colors">⌘</span>
-                <span className="text-[8px] border border-border rounded px-1 group-hover:border-primary group-hover:text-primary transition-colors">K</span>
-              </div>
-            </button>
 
             {/* Notifications */}
             <DropdownMenu onOpenChange={setNotifsOpen}>

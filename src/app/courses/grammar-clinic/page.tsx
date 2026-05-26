@@ -147,10 +147,10 @@ export default function GrammarClinicPage() {
                             <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-orange-500/20 to-transparent blur-3xl animate-pulse" />
                             <div className="relative glass-card overflow-hidden rounded-[40px] border-none shadow-[0_20px_50px_rgba(30,64,175,0.3)] group">
                                 <Image
-                                    src="/images/monsters/monster-yellow-grammar.jpg"
-                                    alt="Grammar Monster"
+                                    src="/gcd.jpg"
+                                    alt="Grammar Clinic"
                                     fill
-                                    className="object-cover transform group-hover:scale-110 transition-transform duration-700"
+                                    className="object-cover object-center transform group-hover:scale-110 transition-transform duration-700"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#1E40AF]/80 via-transparent to-transparent opacity-60 md:opacity-0 group-hover:opacity-100 transition-opacity" />
                                 <div className="absolute bottom-10 left-10 right-10">
