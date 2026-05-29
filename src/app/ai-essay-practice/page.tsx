@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { payhereUrls } from '@/lib/payhere';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import {
@@ -37,7 +39,29 @@ import {
   CurrencyDollar,
   Crown,
   Package,
+  List,
+  X,
+  Infinity as InfinityIcon,
+  FileText,
+  Sparkle as SparkleIcon,
+  CreditCard,
+  House,
+  GraduationCap,
+  Robot,
 } from '@phosphor-icons/react';
+
+/* ─── Essay Credit Packages ───────────────────────────────────────────────── */
+const ESSAY_PACKAGES = [
+  { id: 'essay_10',        label: '10 Tests',   scoring: 10,  gens: 3,   price: 1500,  popular: false, color: 'blue'   },
+  { id: 'essay_20',        label: '20 Tests',   scoring: 20,  gens: 5,   price: 2000,  popular: false, color: 'indigo' },
+  { id: 'essay_30',        label: '30 Tests',   scoring: 30,  gens: 8,   price: 2500,  popular: true,  color: 'orange' },
+  { id: 'essay_40',        label: '40 Tests',   scoring: 40,  gens: 10,  price: 3500,  popular: false, color: 'emerald'},
+  { id: 'essay_100',       label: '100 Tests',  scoring: 100, gens: 25,  price: 6000,  popular: false, color: 'violet' },
+  { id: 'essay_unlimited', label: 'Unlimited',  scoring: -1,  gens: 300, price: 15000, popular: false, color: 'amber'  },
+] as const;
+
+// Uses the central payhere.ts config — switches between sandbox and live automatically
+const PAYHERE_CHECKOUT_URL = payhereUrls.checkout;
 
 interface Topic {
   id: number;
@@ -220,21 +244,33 @@ interface CreditInfo {
   freeUsed: number;
   paidCredits: number;
   hasMonthly: boolean;
+  genCredits: number;
+  role: string;
 }
 
-export default function AIEssayPractice() {
+function AIEssayPracticeInner() {
   // ── Firebase auth + credits ───────────────────────────────────────────────
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const router    = useRouter();
+  const searchParams = useSearchParams();
 
-  const [creditInfo, setCreditInfo]     = useState<CreditInfo | null>(null);
+  const [creditInfo, setCreditInfo]       = useState<CreditInfo | null>(null);
   const [creditLoading, setCreditLoading] = useState(false);
 
   // ── Modal / overlay state ──────────────────────────────────────────────────
-  const [showSignInModal, setShowSignInModal]   = useState(false);
+  const [showSignInModal, setShowSignInModal]     = useState(false);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
-  const [isBlocked, setIsBlocked]               = useState(false);
-  const [blockedMessage, setBlockedMessage]     = useState('');
+  const [isBlocked, setIsBlocked]                 = useState(false);
+  const [blockedMessage, setBlockedMessage]       = useState('');
+
+  // ── Navbar state ──────────────────────────────────────────────────────────
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  // ── PayHere payment state ─────────────────────────────────────────────────
+  const [purchasingPkg, setPurchasingPkg] = useState<string | null>(null);
+  const payhereFormRef = useRef<HTMLFormElement>(null);
+  const [payhereParams, setPayhereParams] = useState<Record<string, string> | null>(null);
 
   // ── Essay practice state ──────────────────────────────────────────────────
   const [selectedFilter, setSelectedFilter] = useState("All");
@@ -258,15 +294,86 @@ export default function AIEssayPractice() {
   const resultsRef = useRef<HTMLDivElement>(null);
 
   // ── Derived credit state ──────────────────────────────────────────────────
+  const UNLIMITED_ROLES = ['admin', 'developer', 'teacher'];
+
+  const isUnlimitedRole = useMemo(() =>
+    creditInfo ? UNLIMITED_ROLES.includes(creditInfo.role) : false,
+  [creditInfo]);
+
   const creditsRemaining = useMemo<number | null>(() => {
     if (!creditInfo) return null;
-    if (creditInfo.hasMonthly) return -1; // -1 = unlimited
+    if (isUnlimitedRole || creditInfo.hasMonthly) return -1; // -1 = unlimited
     if (creditInfo.paidCredits > 0) return creditInfo.paidCredits;
     return Math.max(0, 2 - creditInfo.freeUsed);
-  }, [creditInfo]);
+  }, [creditInfo, isUnlimitedRole]);
+
+  const genCreditsRemaining = useMemo<number | null>(() => {
+    if (!creditInfo) return null;
+    if (isUnlimitedRole) return -1; // unlimited
+    return creditInfo.genCredits;
+  }, [creditInfo, isUnlimitedRole]);
 
   // hasCredits: null = unknown (loading), true = can score, false = blocked
   const hasCredits = creditsRemaining === null ? null : creditsRemaining === -1 || creditsRemaining > 0;
+
+  // ── PayHere purchase function ─────────────────────────────────────────────
+  const handlePurchase = useCallback(async (packageId: string) => {
+    if (!user) { setShowSignInModal(true); return; }
+    setPurchasingPkg(packageId);
+    try {
+      const idToken = await user.getIdToken();
+      const res = await fetch('/api/essay-credits/create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ packageId }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.params) {
+        showToast(data.error || 'Payment setup failed. Please try again.', 'error');
+        return;
+      }
+      setPayhereParams(data.params);
+      // Form will auto-submit via useEffect below
+    } catch {
+      showToast('Network error. Please try again.', 'error');
+    } finally {
+      setPurchasingPkg(null);
+    }
+  }, [user]);
+
+  // Auto-submit PayHere form when params arrive
+  useEffect(() => {
+    if (payhereParams && payhereFormRef.current) {
+      payhereFormRef.current.submit();
+    }
+  }, [payhereParams]);
+
+  // Handle return from PayHere (success / cancelled query param)
+  useEffect(() => {
+    const payment = searchParams?.get('payment');
+    if (payment === 'success') {
+      showToast('Payment successful! Credits added to your account.', 'success');
+      // Refresh credits
+      if (user) {
+        getDoc(doc(firestore, 'users', user.uid)).then(snap => {
+          const data = snap.data() ?? {};
+          const monthlyExpiry = (data.essayMonthlyExpiry as { toDate?: () => Date } | undefined)?.toDate?.() ?? null;
+          setCreditInfo({
+            freeUsed:    (data.essayFreeUsed    as number) ?? 0,
+            paidCredits: (data.essayPaidCredits as number) ?? 0,
+            hasMonthly:  !!(monthlyExpiry && monthlyExpiry > new Date()),
+            genCredits:  (data.essayGenCredits  as number) ?? 0,
+            role:        (data.role             as string) ?? 'student',
+          });
+        });
+      }
+      router.replace('/ai-essay-practice');
+    } else if (payment === 'cancelled') {
+      showToast('Payment was cancelled.', 'warning');
+      router.replace('/ai-essay-practice');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // ── Load credit info when user changes ───────────────────────────────────
   useEffect(() => {
@@ -283,6 +390,8 @@ export default function AIEssayPractice() {
           freeUsed:   (data.essayFreeUsed    as number) ?? 0,
           paidCredits:(data.essayPaidCredits as number) ?? 0,
           hasMonthly: !!(monthlyExpiry && monthlyExpiry > new Date()),
+          genCredits: (data.essayGenCredits  as number) ?? 0,
+          role:       (data.role             as string) ?? 'student',
         });
       } catch { /* silent — server-side check is authoritative */ }
       finally { if (!cancelled) setCreditLoading(false); }
@@ -471,6 +580,8 @@ export default function AIEssayPractice() {
           freeUsed:    (data.essayFreeUsed    as number) ?? 0,
           paidCredits: (data.essayPaidCredits as number) ?? 0,
           hasMonthly:  !!(monthlyExpiry && monthlyExpiry > new Date()),
+          genCredits:  (data.essayGenCredits  as number) ?? 0,
+          role:        (data.role             as string) ?? 'student',
         });
       }
 
@@ -585,6 +696,222 @@ export default function AIEssayPractice() {
         .delay-500 { animation-delay: 500ms; }
       `}</style>
 
+      {/* ── Hidden PayHere Auto-Submit Form ───────────────────────────────── */}
+      {payhereParams && (
+        <form
+          ref={payhereFormRef}
+          method="post"
+          action={PAYHERE_CHECKOUT_URL}
+          style={{ display: 'none' }}
+        >
+          {Object.entries(payhereParams).map(([key, val]) => (
+            <input key={key} type="hidden" name={key} value={val} />
+          ))}
+        </form>
+      )}
+
+      {/* ── TOP NAVBAR ─────────────────────────────────────────────────────── */}
+      <nav className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+
+          {/* Left: Logo */}
+          <Link href="/" className="flex items-center gap-2 shrink-0 group">
+            <span className="font-extrabold text-xl tracking-tight text-slate-900">
+              SMART<span className="text-[#f97316]">LABS</span>
+            </span>
+            <span className="hidden sm:inline bg-[#f97316] text-white text-[9px] font-black tracking-widest px-2 py-0.5 rounded-full uppercase">
+              PTE 2026
+            </span>
+          </Link>
+
+          {/* Center: Desktop nav links */}
+          <div className="hidden md:flex items-center gap-1">
+            {[
+              { label: 'Home',       href: '/',               icon: <House size={15} weight="duotone" /> },
+              { label: 'Dashboard',  href: '/dashboard',      icon: <ChartBar size={15} weight="duotone" /> },
+              { label: 'AI Tutor',   href: '/dashboard/ai-tutor', icon: <Robot size={15} weight="duotone" /> },
+              { label: 'Essay AI',   href: '/ai-essay-practice',  icon: <PencilLine size={15} weight="duotone" />, active: true },
+            ].map(item => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  item.active
+                    ? 'bg-orange-50 text-[#f97316] border border-orange-200'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                {item.icon}{item.label}
+              </Link>
+            ))}
+          </div>
+
+          {/* Right: Credits badge + Burger */}
+          <div className="flex items-center gap-3">
+            {/* Credits badge — shown on desktop */}
+            {user && !creditLoading && creditInfo && (
+              <div className="hidden sm:flex items-center gap-2">
+                {/* Scoring credits */}
+                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-black ${
+                  isUnlimitedRole || creditInfo.hasMonthly
+                    ? 'bg-violet-50 border-violet-200 text-violet-700'
+                    : creditsRemaining === 0
+                    ? 'bg-red-50 border-red-200 text-red-700'
+                    : (creditsRemaining ?? 0) <= 2
+                    ? 'bg-amber-50 border-amber-200 text-amber-700'
+                    : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                }`}>
+                  <Target size={13} weight="duotone" />
+                  {isUnlimitedRole || creditInfo.hasMonthly ? (
+                    <><InfinityIcon size={13} weight="bold" /> Scoring</>
+                  ) : (
+                    <>{creditsRemaining} scoring</>
+                  )}
+                </div>
+
+                {/* Gen credits */}
+                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-black ${
+                  isUnlimitedRole
+                    ? 'bg-violet-50 border-violet-200 text-violet-700'
+                    : (genCreditsRemaining ?? 0) === 0
+                    ? 'bg-slate-50 border-slate-200 text-slate-500'
+                    : 'bg-blue-50 border-blue-200 text-blue-700'
+                }`}>
+                  <FileText size={13} weight="duotone" />
+                  {isUnlimitedRole ? (
+                    <><InfinityIcon size={13} weight="bold" /> Gen</>
+                  ) : (
+                    <>{genCreditsRemaining} gen</>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {!user && !isUserLoading && (
+              <Link
+                href="/login"
+                className="hidden sm:flex items-center gap-1.5 bg-[#f97316] hover:bg-[#fb923c] text-white font-extrabold text-xs px-4 py-2 rounded-lg transition-all"
+              >
+                <SignIn size={14} weight="bold" /> Sign In
+              </Link>
+            )}
+
+            {/* Buy Credits button */}
+            {user && creditsRemaining !== -1 && (
+              <button
+                onClick={() => setShowPurchaseModal(true)}
+                className="hidden sm:flex items-center gap-1.5 bg-[#f97316] hover:bg-[#fb923c] text-white font-extrabold text-xs px-4 py-2 rounded-lg transition-all"
+              >
+                <CreditCard size={14} weight="bold" /> Buy Credits
+              </button>
+            )}
+
+            {/* Hamburger */}
+            <button
+              onClick={() => setMobileNavOpen(v => !v)}
+              className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-slate-700"
+              aria-label="Toggle menu"
+            >
+              {mobileNavOpen ? <X size={20} weight="bold" /> : <List size={20} weight="bold" />}
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* ── MOBILE SIDEBAR DRAWER ──────────────────────────────────────────── */}
+      {mobileNavOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm"
+            onClick={() => setMobileNavOpen(false)}
+          />
+          {/* Drawer */}
+          <div className="fixed top-0 right-0 bottom-0 z-40 w-72 bg-white shadow-2xl flex flex-col overflow-y-auto">
+            {/* Drawer header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+              <span className="font-extrabold text-lg text-slate-900">SMART<span className="text-[#f97316]">LABS</span></span>
+              <button
+                onClick={() => setMobileNavOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50"
+              >
+                <X size={18} weight="bold" />
+              </button>
+            </div>
+
+            {/* User info */}
+            {user && (
+              <div className="px-5 py-4 border-b border-slate-200 bg-slate-50">
+                <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Signed in as</p>
+                <p className="text-sm font-bold text-slate-800 truncate">{user.email}</p>
+                {creditInfo && (
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <div className={`flex flex-col items-center py-2 px-3 rounded-xl border text-xs font-black ${
+                      isUnlimitedRole || creditInfo.hasMonthly ? 'bg-violet-50 border-violet-200 text-violet-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                    }`}>
+                      <Target size={16} weight="duotone" className="mb-1" />
+                      {isUnlimitedRole || creditInfo.hasMonthly ? <InfinityIcon size={14} weight="bold" /> : <span className="text-lg font-black">{creditsRemaining}</span>}
+                      <span className="text-[10px] mt-0.5">Scoring</span>
+                    </div>
+                    <div className={`flex flex-col items-center py-2 px-3 rounded-xl border text-xs font-black ${
+                      isUnlimitedRole ? 'bg-violet-50 border-violet-200 text-violet-700' : (genCreditsRemaining ?? 0) > 0 ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-slate-50 border-slate-200 text-slate-500'
+                    }`}>
+                      <FileText size={16} weight="duotone" className="mb-1" />
+                      {isUnlimitedRole ? <InfinityIcon size={14} weight="bold" /> : <span className="text-lg font-black">{genCreditsRemaining}</span>}
+                      <span className="text-[10px] mt-0.5">Gen</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Nav links */}
+            <nav className="flex-1 px-4 py-4 space-y-1">
+              {[
+                { label: 'Home',            href: '/',                   icon: <House size={18} weight="duotone" /> },
+                { label: 'Dashboard',       href: '/dashboard',          icon: <ChartBar size={18} weight="duotone" /> },
+                { label: 'AI Tutor',        href: '/dashboard/ai-tutor', icon: <Robot size={18} weight="duotone" /> },
+                { label: 'Practice Tests',  href: '/dashboard/practice-tests', icon: <GraduationCap size={18} weight="duotone" /> },
+                { label: 'Essay AI',        href: '/ai-essay-practice',  icon: <PencilLine size={18} weight="duotone" />, active: true },
+              ].map(item => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileNavOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+                    item.active
+                      ? 'bg-orange-50 text-[#f97316] border border-orange-200'
+                      : 'text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  {item.icon}{item.label}
+                </Link>
+              ))}
+            </nav>
+
+            {/* Bottom actions */}
+            <div className="px-4 py-4 border-t border-slate-200 space-y-2">
+              {user ? (
+                <button
+                  onClick={() => { setMobileNavOpen(false); setShowPurchaseModal(true); }}
+                  className="w-full bg-[#f97316] hover:bg-[#fb923c] text-white font-extrabold text-sm px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  <CreditCard size={16} weight="bold" /> Buy Essay Credits
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="w-full flex items-center justify-center gap-2 bg-[#f97316] text-white font-extrabold text-sm px-4 py-3 rounded-xl"
+                >
+                  <SignIn size={16} weight="bold" /> Sign In
+                </Link>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Sticky Selected Topic Banner at Top */}
       {selectedTopic && (
         <div className="fixed top-20 left-0 right-0 z-30 bg-white shadow-md border-b border-slate-200 px-4 py-3 transform transition-all duration-300">
@@ -610,24 +937,146 @@ export default function AIEssayPractice() {
         </div>
       )}
 
+      {/* ── CREDITS DASHBOARD BANNER ───────────────────────────────────────── */}
+      <section className="pt-16 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white border-b border-slate-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+          <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
+
+            {/* Left: title */}
+            <div className="shrink-0">
+              <div className="flex items-center gap-2 mb-1">
+                <Brain size={18} weight="duotone" className="text-[#f97316]" />
+                <span className="text-xs font-black uppercase tracking-widest text-slate-400">AI Essay Scoring</span>
+              </div>
+              <h2 className="text-lg font-extrabold text-white">Your Credit Dashboard</h2>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden md:block w-px h-12 bg-slate-700" />
+
+            {/* Credits */}
+            {!user && !isUserLoading ? (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 bg-slate-800 border border-slate-700 px-4 py-3 rounded-2xl">
+                  <Lock size={16} weight="duotone" className="text-slate-400" />
+                  <span className="text-sm font-bold text-slate-300">Sign in to view your credits</span>
+                </div>
+                <Link href="/login" className="flex items-center gap-1.5 bg-[#f97316] hover:bg-[#fb923c] text-white font-extrabold text-sm px-4 py-2.5 rounded-xl transition-all">
+                  <SignIn size={15} weight="bold" /> Sign In
+                </Link>
+              </div>
+            ) : creditLoading || !creditInfo ? (
+              <div className="flex gap-3">
+                {[1,2].map(i => <div key={i} className="w-36 h-16 rounded-2xl bg-slate-800 animate-pulse" />)}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-3 flex-1">
+                {/* ── Scoring Credits Card ── */}
+                <div className={`flex items-center gap-4 px-5 py-3 rounded-2xl border flex-1 min-w-[160px] ${
+                  isUnlimitedRole || creditInfo.hasMonthly
+                    ? 'bg-violet-900/40 border-violet-700'
+                    : creditsRemaining === 0
+                    ? 'bg-red-900/30 border-red-700'
+                    : 'bg-emerald-900/30 border-emerald-700'
+                }`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    isUnlimitedRole || creditInfo.hasMonthly ? 'bg-violet-700' : creditsRemaining === 0 ? 'bg-red-700' : 'bg-emerald-700'
+                  }`}>
+                    <Target size={20} weight="duotone" className="text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Scoring Credits</p>
+                    {isUnlimitedRole || creditInfo.hasMonthly ? (
+                      <div className="flex items-center gap-1.5">
+                        <InfinityIcon size={22} weight="bold" className="text-violet-400" />
+                        <span className="text-sm font-black text-violet-300">Unlimited</span>
+                        {(isUnlimitedRole) && <Crown size={14} weight="duotone" className="text-amber-400" />}
+                      </div>
+                    ) : (
+                      <div className="flex items-baseline gap-1">
+                        <span className={`text-2xl font-black tabular-nums ${creditsRemaining === 0 ? 'text-red-400' : 'text-emerald-300'}`}>
+                          {creditsRemaining}
+                        </span>
+                        <span className="text-xs text-slate-500">remaining</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* ── Generation Credits Card ── */}
+                <div className={`flex items-center gap-4 px-5 py-3 rounded-2xl border flex-1 min-w-[160px] ${
+                  isUnlimitedRole
+                    ? 'bg-violet-900/40 border-violet-700'
+                    : (genCreditsRemaining ?? 0) === 0
+                    ? 'bg-slate-800 border-slate-700'
+                    : 'bg-blue-900/30 border-blue-700'
+                }`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    isUnlimitedRole ? 'bg-violet-700' : (genCreditsRemaining ?? 0) > 0 ? 'bg-blue-700' : 'bg-slate-700'
+                  }`}>
+                    <FileText size={20} weight="duotone" className="text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Model Essay Gen</p>
+                    {isUnlimitedRole ? (
+                      <div className="flex items-center gap-1.5">
+                        <InfinityIcon size={22} weight="bold" className="text-violet-400" />
+                        <span className="text-sm font-black text-violet-300">Unlimited</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-baseline gap-1">
+                        <span className={`text-2xl font-black tabular-nums ${(genCreditsRemaining ?? 0) === 0 ? 'text-slate-500' : 'text-blue-300'}`}>
+                          {genCreditsRemaining ?? 0}
+                        </span>
+                        <span className="text-xs text-slate-500">remaining</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* ── Free Trial indicator (when user hasn't purchased) ── */}
+                {!isUnlimitedRole && !creditInfo.hasMonthly && creditInfo.paidCredits === 0 && (
+                  <div className="flex items-center gap-4 px-5 py-3 rounded-2xl border bg-amber-900/30 border-amber-700 min-w-[160px]">
+                    <div className="w-10 h-10 rounded-xl bg-amber-700 flex items-center justify-center shrink-0">
+                      <Star size={20} weight="duotone" className="text-white" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Free Trial</p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-black tabular-nums text-amber-300">
+                          {Math.max(0, 2 - creditInfo.freeUsed)}
+                        </span>
+                        <span className="text-xs text-slate-500">/ 2 left</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Right: CTA */}
+            {user && !isUnlimitedRole && !creditInfo?.hasMonthly && (
+              <div className="shrink-0">
+                <button
+                  onClick={() => setShowPurchaseModal(true)}
+                  className="flex items-center gap-2 bg-[#f97316] hover:bg-[#fb923c] text-white font-extrabold text-sm px-5 py-3 rounded-xl shadow-lg transition-all hover:scale-[1.02]"
+                >
+                  <CreditCard size={16} weight="bold" />
+                  <span>Buy Credits</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
       {/* 1. HERO SECTION */}
-      <section className="relative overflow-hidden pt-28 pb-16 dot-grid-light border-b border-slate-200">
+      <section className="relative overflow-hidden pt-12 pb-12 dot-grid-light border-b border-slate-200">
         {/* Decorative Radial Gradients - soft for white theme */}
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-100/50 blur-[120px] rounded-full pointer-events-none -z-10" />
         <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-orange-100/40 blur-[140px] rounded-full pointer-events-none -z-10" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
-          {/* Logo row */}
-          <div className="flex justify-center items-center gap-3 mb-8">
-            <Link href="/" className="font-extrabold text-2xl tracking-tight text-slate-900 flex items-center gap-1 group">
-              <span className="hover:text-slate-600 transition-colors">SMART</span>
-              <span className="text-[#f97316] transition-transform duration-300 group-hover:scale-105">LABS</span>
-            </Link>
-            <span className="bg-gradient-to-r from-[#f97316] to-[#fb923c] text-white text-[10px] font-black tracking-widest px-2.5 py-1 rounded-full uppercase shadow">
-              PTE 2026
-            </span>
-          </div>
-
           {/* Tagline */}
           <div className="inline-flex items-center gap-2 text-[#f97316] font-bold text-xs uppercase tracking-[0.2em] mb-4 bg-orange-50 px-4 py-1.5 rounded-full border border-orange-200">
             <Brain size={14} weight="duotone" />
@@ -730,6 +1179,139 @@ export default function AIEssayPractice() {
               </span>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── PACKAGES SECTION ──────────────────────────────────────────────── */}
+      <section id="packages" className="py-20 bg-slate-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 text-[#f97316] font-bold text-xs uppercase tracking-[0.2em] mb-4 bg-orange-900/30 px-4 py-1.5 rounded-full border border-orange-800">
+              <CreditCard size={14} weight="duotone" />
+              Credit Packages
+            </div>
+            <h2 className="font-display-serif text-3xl md:text-4xl font-black text-white mb-3">
+              Choose Your Practice Plan
+            </h2>
+            <p className="text-slate-400 text-sm font-medium max-w-2xl mx-auto">
+              All payments are secure via PayHere. Credits are added to your account instantly after payment confirmation.
+            </p>
+          </div>
+
+          {/* Package grid */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
+            {ESSAY_PACKAGES.map(pkg => {
+              const isUnlimited = pkg.scoring === -1;
+              const isPurchasing = purchasingPkg === pkg.id;
+              const colorMap: Record<string, { ring: string; badge: string; btn: string; icon: string }> = {
+                blue:    { ring: 'border-blue-700',    badge: 'bg-blue-800 text-blue-200',    btn: 'bg-blue-600 hover:bg-blue-500',    icon: 'text-blue-400' },
+                indigo:  { ring: 'border-indigo-700',  badge: 'bg-indigo-800 text-indigo-200',btn: 'bg-indigo-600 hover:bg-indigo-500',icon: 'text-indigo-400' },
+                orange:  { ring: 'border-[#f97316]',   badge: 'bg-orange-800 text-orange-200',btn: 'bg-[#f97316] hover:bg-[#fb923c]', icon: 'text-[#f97316]' },
+                emerald: { ring: 'border-emerald-700', badge: 'bg-emerald-800 text-emerald-200',btn:'bg-emerald-600 hover:bg-emerald-500',icon:'text-emerald-400'},
+                violet:  { ring: 'border-violet-700',  badge: 'bg-violet-800 text-violet-200',btn: 'bg-violet-600 hover:bg-violet-500',icon: 'text-violet-400' },
+                amber:   { ring: 'border-amber-600',   badge: 'bg-amber-800 text-amber-200',  btn: 'bg-amber-500 hover:bg-amber-400',  icon: 'text-amber-400' },
+              };
+              const c = colorMap[pkg.color] ?? colorMap.blue;
+
+              return (
+                <div
+                  key={pkg.id}
+                  className={`relative bg-slate-800 rounded-3xl border-2 p-6 flex flex-col gap-4 transition-all hover:shadow-xl hover:-translate-y-1 ${c.ring} ${pkg.popular ? 'ring-2 ring-[#f97316]/50' : ''}`}
+                >
+                  {pkg.popular && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#f97316] text-white text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full shadow">
+                      Most Popular
+                    </span>
+                  )}
+
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">{pkg.label}</p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-black text-white">
+                          {(pkg.price / 1000).toFixed(pkg.price % 1000 === 0 ? 0 : 1)}k
+                        </span>
+                        <span className="text-slate-400 text-sm font-bold">LKR</span>
+                      </div>
+                    </div>
+                    <div className={`w-12 h-12 rounded-2xl bg-slate-700 flex items-center justify-center ${c.icon}`}>
+                      {isUnlimited ? <InfinityIcon size={24} weight="bold" /> : <Package size={22} weight="duotone" />}
+                    </div>
+                  </div>
+
+                  {/* Features */}
+                  <div className="space-y-2.5">
+                    {/* Scoring */}
+                    <div className="flex items-center gap-2.5 text-sm">
+                      <div className="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center shrink-0">
+                        <Target size={14} weight="duotone" className={c.icon} />
+                      </div>
+                      <span className="text-slate-300 font-semibold">
+                        {isUnlimited ? (
+                          <span className="flex items-center gap-1">
+                            <InfinityIcon size={14} weight="bold" className="text-amber-400" />
+                            <span className="font-black text-white"> Unlimited</span> essay scorings
+                          </span>
+                        ) : (
+                          <><span className="font-black text-white">{pkg.scoring}</span> essay scoring tests</>
+                        )}
+                      </span>
+                    </div>
+
+                    {/* Gen credits */}
+                    <div className="flex items-center gap-2.5 text-sm">
+                      <div className="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center shrink-0">
+                        <FileText size={14} weight="duotone" className={c.icon} />
+                      </div>
+                      <span className="text-slate-300 font-semibold">
+                        <span className="font-black text-white">{pkg.gens}</span> model essay generations
+                      </span>
+                    </div>
+
+                    {/* Price per test */}
+                    {!isUnlimited && (
+                      <div className="flex items-center gap-2.5 text-sm">
+                        <div className="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center shrink-0">
+                          <CurrencyDollar size={14} weight="duotone" className={c.icon} />
+                        </div>
+                        <span className="text-slate-300 font-semibold">
+                          <span className="font-black text-white">{Math.round(pkg.price / pkg.scoring)}</span> LKR per test
+                        </span>
+                      </div>
+                    )}
+
+                    {isUnlimited && (
+                      <div className="flex items-center gap-2.5 text-sm">
+                        <div className="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center shrink-0">
+                          <Crown size={14} weight="duotone" className="text-amber-400" />
+                        </div>
+                        <span className="text-slate-300 font-semibold">
+                          Valid for <span className="font-black text-white">1 year</span>
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CTA */}
+                  <button
+                    onClick={() => handlePurchase(pkg.id)}
+                    disabled={!!purchasingPkg}
+                    className={`w-full mt-auto py-3 px-4 rounded-2xl font-extrabold text-sm text-white transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${c.btn}`}
+                  >
+                    {isPurchasing ? (
+                      <><svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Setting up...</>
+                    ) : (
+                      <><CreditCard size={16} weight="bold" /> Buy — LKR {pkg.price.toLocaleString()}</>
+                    )}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          <p className="text-center text-xs text-slate-500 font-medium">
+            🔒 Secured by PayHere · Payments processed in LKR · Credits never expire (except unlimited plan)
+          </p>
         </div>
       </section>
 
@@ -901,35 +1483,46 @@ export default function AIEssayPractice() {
 
             {/* Credit Info Bar */}
             {user && !creditLoading && creditInfo && (
-              <div className="flex items-center justify-between gap-3 p-4 rounded-2xl border mb-4 bg-slate-50 border-slate-200">
-                <div className="flex items-center gap-2.5">
-                  <CurrencyDollar size={18} weight="duotone" className="text-[#f97316] shrink-0" />
-                  <span className="text-sm font-bold text-slate-700">Essay Credits</span>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                {/* Scoring credits */}
+                <div className={`flex items-center gap-2.5 p-3.5 rounded-2xl border ${
+                  creditsRemaining === -1
+                    ? 'bg-violet-50 border-violet-200'
+                    : creditsRemaining === 0
+                    ? 'bg-red-50 border-red-200'
+                    : 'bg-slate-50 border-slate-200'
+                }`}>
+                  <Target size={17} weight="duotone" className={creditsRemaining === -1 ? 'text-violet-500' : creditsRemaining === 0 ? 'text-red-500' : 'text-emerald-500'} />
+                  <div>
+                    <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Scoring</p>
+                    {creditsRemaining === -1
+                      ? <span className="flex items-center gap-1 text-xs font-black text-violet-700"><InfinityIcon size={12} weight="bold" /> Unlimited</span>
+                      : creditsRemaining === 0
+                      ? <button onClick={() => setShowPurchaseModal(true)} className="text-xs font-black text-red-600 hover:underline">Buy credits</button>
+                      : <span className="text-sm font-black text-slate-800">{creditsRemaining} left</span>
+                    }
+                  </div>
                 </div>
-                {creditsRemaining === -1 ? (
-                  <span className="flex items-center gap-1.5 px-3 py-1 bg-violet-100 border border-violet-200 rounded-full text-xs font-black text-violet-700">
-                    <Crown size={13} weight="fill" /> Unlimited Monthly
-                  </span>
-                ) : creditsRemaining === 0 ? (
-                  <button
-                    onClick={() => setShowPurchaseModal(true)}
-                    className="flex items-center gap-1.5 px-3 py-1 bg-red-100 border border-red-200 rounded-full text-xs font-black text-red-700 hover:bg-red-200 transition-colors"
-                  >
-                    <XCircle size={13} weight="fill" /> No credits — Purchase
-                  </button>
-                ) : creditsRemaining !== null && creditsRemaining <= 2 && creditInfo.paidCredits === 0 ? (
-                  <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border ${
-                    creditsRemaining === 1
-                      ? 'bg-amber-100 border-amber-200 text-amber-700'
-                      : 'bg-emerald-100 border-emerald-200 text-emerald-700'
-                  }`}>
-                    <Star size={13} weight="fill" /> {creditsRemaining} free essay{creditsRemaining !== 1 ? 's' : ''} remaining
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1.5 px-3 py-1 bg-blue-100 border border-blue-200 rounded-full text-xs font-black text-blue-700">
-                    <Package size={13} weight="fill" /> {creditsRemaining} credits remaining
-                  </span>
-                )}
+
+                {/* Generation credits */}
+                <div className={`flex items-center gap-2.5 p-3.5 rounded-2xl border ${
+                  isUnlimitedRole
+                    ? 'bg-violet-50 border-violet-200'
+                    : (genCreditsRemaining ?? 0) > 0
+                    ? 'bg-blue-50 border-blue-200'
+                    : 'bg-slate-50 border-slate-200'
+                }`}>
+                  <FileText size={17} weight="duotone" className={isUnlimitedRole ? 'text-violet-500' : (genCreditsRemaining ?? 0) > 0 ? 'text-blue-500' : 'text-slate-400'} />
+                  <div>
+                    <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Model Essay Gen</p>
+                    {isUnlimitedRole
+                      ? <span className="flex items-center gap-1 text-xs font-black text-violet-700"><InfinityIcon size={12} weight="bold" /> Unlimited</span>
+                      : (genCreditsRemaining ?? 0) > 0
+                      ? <span className="text-sm font-black text-slate-800">{genCreditsRemaining} left</span>
+                      : <button onClick={() => setShowPurchaseModal(true)} className="text-xs font-black text-slate-500 hover:text-[#f97316] hover:underline transition-colors">Buy package</button>
+                    }
+                  </div>
+                </div>
               </div>
             )}
 
@@ -939,21 +1532,37 @@ export default function AIEssayPractice() {
                 <p className="text-xs text-slate-500 font-medium">
                   PTE essays are scored based on coherence, lexical resource, and grammatical accuracy.
                 </p>
-                <label className="flex items-center gap-2 cursor-pointer group">
+                <label className={`flex items-center gap-2 cursor-pointer group ${!isUnlimitedRole && (genCreditsRemaining ?? 0) === 0 && creditInfo ? 'opacity-50' : ''}`}>
                   <div className="relative flex items-center">
-                    <input 
-                      type="checkbox" 
-                      className="sr-only" 
+                    <input
+                      type="checkbox"
+                      className="sr-only"
                       checked={requestModelEssay}
-                      onChange={(e) => setRequestModelEssay(e.target.checked)}
+                      onChange={(e) => {
+                        if (!isUnlimitedRole && (genCreditsRemaining ?? 0) === 0 && creditInfo) {
+                          setShowPurchaseModal(true);
+                          return;
+                        }
+                        setRequestModelEssay(e.target.checked);
+                      }}
                       disabled={isSubmitting}
                     />
-                    <div className={`w-10 h-5 bg-slate-200 rounded-full shadow-inner transition-colors ${requestModelEssay ? 'bg-[#2563eb]' : ''}`}></div>
+                    <div className={`w-10 h-5 rounded-full shadow-inner transition-colors ${requestModelEssay ? 'bg-[#2563eb]' : 'bg-slate-200'}`}></div>
                     <div className={`absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${requestModelEssay ? 'translate-x-5' : ''}`}></div>
                   </div>
                   <span className="text-xs font-bold text-slate-700 group-hover:text-[#2563eb] transition-colors flex items-center gap-1.5">
                     <Books size={14} weight="duotone" />
                     Include Band 85+ Model Essay
+                    {user && creditInfo && !isUnlimitedRole && (
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-black ${(genCreditsRemaining ?? 0) > 0 ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'}`}>
+                        {(genCreditsRemaining ?? 0) > 0 ? `${genCreditsRemaining} gen left` : 'No gen credits'}
+                      </span>
+                    )}
+                    {isUnlimitedRole && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded font-black bg-violet-100 text-violet-600 flex items-center gap-0.5">
+                        <InfinityIcon size={9} weight="bold" /> Unlimited
+                      </span>
+                    )}
                   </span>
                 </label>
               </div>
@@ -1851,78 +2460,105 @@ export default function AIEssayPractice() {
 
       {/* ── Purchase Credits Modal ── */}
       {showPurchaseModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-8 overflow-y-auto">
-          <div className="bg-white rounded-3xl p-8 md:p-10 max-w-lg w-full shadow-2xl border border-slate-200 my-auto">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 rounded-2xl bg-orange-50 border border-orange-200 flex items-center justify-center mx-auto mb-4">
-                <ShoppingCart size={32} weight="duotone" className="text-[#f97316]" />
-              </div>
-              <h2 className="font-display-serif text-2xl font-black text-slate-900 mb-2">Unlock More Essay Scoring</h2>
-              <p className="text-slate-500 text-sm leading-relaxed">
-                You have used your 2 complimentary essays. Purchase credits to keep practising.
-              </p>
-            </div>
-
-            {/* Credit packages */}
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              {([
-                { credits: 10, price: 3, label: '10 Credits', note: 'Starter', color: 'border-slate-200 hover:border-blue-300' },
-                { credits: 20, price: 5, label: '20 Credits', note: '★ Best Value', color: 'border-[#f97316] bg-orange-50', featured: true },
-                { credits: 40, price: 10, label: '40 Credits', note: 'Most Credits', color: 'border-slate-200 hover:border-emerald-300' },
-              ]).map(pkg => (
-                <div
-                  key={pkg.credits}
-                  className={`p-4 rounded-2xl border-2 text-center transition-all cursor-pointer hover:shadow-md ${pkg.color} ${pkg.featured ? 'ring-2 ring-[#f97316]/30' : ''}`}
-                >
-                  <Package size={20} weight="duotone" className={`mx-auto mb-2 ${pkg.featured ? 'text-[#f97316]' : 'text-slate-400'}`} />
-                  <div className="font-black text-slate-900 text-sm mb-0.5">{pkg.label}</div>
-                  <div className={`text-2xl font-black mb-0.5 ${pkg.featured ? 'text-[#f97316]' : 'text-slate-800'}`}>${pkg.price}</div>
-                  <div className={`text-[10px] font-black uppercase tracking-wider ${pkg.featured ? 'text-[#f97316]' : 'text-slate-400'}`}>{pkg.note}</div>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm px-0 sm:px-4 py-0 sm:py-8 overflow-y-auto">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl p-6 sm:p-8 w-full max-w-2xl shadow-2xl border border-slate-200 sm:my-auto">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-4 mb-6">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-9 h-9 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center">
+                    <CreditCard size={18} weight="duotone" className="text-[#f97316]" />
+                  </div>
+                  <h2 className="text-xl font-black text-slate-900">Buy Essay Credits</h2>
                 </div>
-              ))}
-
-              {/* Monthly unlimited */}
-              <div className="p-4 rounded-2xl border-2 border-violet-300 bg-violet-50 text-center col-span-2 hover:shadow-md transition-all cursor-pointer hover:border-violet-500">
-                <Crown size={20} weight="duotone" className="mx-auto mb-2 text-violet-600" />
-                <div className="font-black text-violet-800 text-sm mb-0.5">Unlimited Monthly Plan</div>
-                <div className="text-2xl font-black text-violet-700 mb-0.5">$50<span className="text-sm font-bold text-violet-400">/month</span></div>
-                <div className="text-[10px] font-black uppercase tracking-wider text-violet-500">No limits — practise as much as you want</div>
+                <p className="text-slate-500 text-sm ml-11">
+                  {creditsRemaining === 0
+                    ? "You've used your 2 free essay scorings. Purchase to keep practising."
+                    : "Top up your credits to practise more with AI feedback."}
+                </p>
               </div>
-            </div>
-
-            {/* CTA */}
-            <div className="bg-slate-50 rounded-2xl p-4 mb-4 text-center">
-              <p className="text-sm text-slate-600 font-medium mb-1">To purchase, contact us via:</p>
-              <div className="flex flex-col sm:flex-row justify-center gap-2">
-                <a
-                  href="https://wa.me/message/your-whatsapp-link"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-sm px-5 py-2.5 rounded-xl transition-all hover:scale-[1.02]"
-                >
-                  WhatsApp
-                </a>
-                <a
-                  href="mailto:info@smartlabs.com"
-                  className="inline-flex items-center justify-center gap-2 bg-[#2563eb] hover:bg-[#1a4fd6] text-white font-extrabold text-sm px-5 py-2.5 rounded-xl transition-all hover:scale-[1.02]"
-                >
-                  Email Us
-                </a>
-              </div>
-            </div>
-
-            <div className="flex justify-center gap-4 text-xs text-slate-400 font-bold">
-              <button onClick={() => setShowPurchaseModal(false)} className="hover:text-slate-600 transition-colors">
-                Maybe Later
+              <button
+                onClick={() => setShowPurchaseModal(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:bg-slate-100 shrink-0 mt-1"
+              >
+                <X size={16} weight="bold" />
               </button>
-              {user && (
-                <button
-                  onClick={() => { setShowPurchaseModal(false); window.location.href = '/dashboard'; }}
-                  className="hover:text-slate-600 transition-colors"
-                >
-                  Back to Dashboard
-                </button>
-              )}
+            </div>
+
+            {/* Packages grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
+              {ESSAY_PACKAGES.map(pkg => {
+                const isUnlimited = pkg.scoring === -1;
+                const isPurchasing = purchasingPkg === pkg.id;
+                return (
+                  <div
+                    key={pkg.id}
+                    className={`relative flex flex-col gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all hover:shadow-md ${
+                      pkg.popular
+                        ? 'border-[#f97316] bg-orange-50 ring-1 ring-[#f97316]/20'
+                        : isUnlimited
+                        ? 'border-violet-300 bg-violet-50'
+                        : 'border-slate-200 hover:border-slate-300'
+                    } ${isUnlimited ? 'col-span-2 sm:col-span-1' : ''}`}
+                  >
+                    {pkg.popular && (
+                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#f97316] text-white text-[9px] font-black uppercase tracking-widest px-3 py-0.5 rounded-full">
+                        Popular
+                      </span>
+                    )}
+                    <div className="flex items-center justify-between">
+                      {isUnlimited
+                        ? <Crown size={18} weight="duotone" className="text-violet-600" />
+                        : <Package size={16} weight="duotone" className={pkg.popular ? 'text-[#f97316]' : 'text-slate-400'} />}
+                      <span className={`text-[10px] font-black uppercase tracking-wider ${pkg.popular ? 'text-[#f97316]' : isUnlimited ? 'text-violet-500' : 'text-slate-400'}`}>
+                        {pkg.label}
+                      </span>
+                    </div>
+                    <div className={`text-2xl font-black ${pkg.popular ? 'text-[#f97316]' : isUnlimited ? 'text-violet-700' : 'text-slate-900'}`}>
+                      {pkg.price.toLocaleString()}
+                      <span className="text-xs font-bold text-slate-400 ml-1">LKR</span>
+                    </div>
+                    {/* Features */}
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-600 font-semibold">
+                        <Target size={11} weight="duotone" className="text-emerald-500 shrink-0" />
+                        {isUnlimited ? <span className="flex items-center gap-1"><InfinityIcon size={11} weight="bold" className="text-violet-500" /> Unlimited scoring</span> : `${pkg.scoring} scoring tests`}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs text-slate-600 font-semibold">
+                        <FileText size={11} weight="duotone" className="text-blue-500 shrink-0" />
+                        {pkg.gens} model essay gens
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handlePurchase(pkg.id)}
+                      disabled={!!purchasingPkg}
+                      className={`w-full mt-1 py-2 px-3 rounded-xl font-extrabold text-xs text-white transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5 ${
+                        pkg.popular ? 'bg-[#f97316] hover:bg-[#fb923c]'
+                        : isUnlimited ? 'bg-violet-600 hover:bg-violet-500'
+                        : 'bg-slate-800 hover:bg-slate-700'
+                      }`}
+                    >
+                      {isPurchasing
+                        ? <><svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Wait...</>
+                        : <><CreditCard size={12} weight="bold" /> Pay via PayHere</>
+                      }
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="text-center text-xs text-slate-400 font-medium">
+              🔒 Secured by PayHere · Credits added instantly after payment
+            </p>
+
+            <div className="flex justify-center mt-3">
+              <button
+                onClick={() => setShowPurchaseModal(false)}
+                className="text-xs text-slate-400 hover:text-slate-600 font-bold transition-colors"
+              >
+                Maybe later
+              </button>
             </div>
           </div>
         </div>
@@ -1985,5 +2621,26 @@ export default function AIEssayPractice() {
         ))}
       </div>
     </div>
+  );
+}
+
+/* ── Suspense wrapper required for useSearchParams() in Next.js app router ── */
+import { Suspense } from 'react';
+
+export default function AIEssayPractice() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <svg className="animate-spin h-10 w-10 text-[#f97316]" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+          <span className="text-slate-500 font-semibold text-sm">Loading AI Essay Dashboard…</span>
+        </div>
+      </div>
+    }>
+      <AIEssayPracticeInner />
+    </Suspense>
   );
 }

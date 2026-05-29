@@ -601,7 +601,7 @@ async function verifyAuthAndCredits(
   return { ok: true, uid, unlimited: false };
 }
 
-async function deductEssayCredit(uid: string): Promise<void> {
+async function deductEssayCredit(uid: string, deductGen: boolean): Promise<void> {
   if (!adminDb) return;
   try {
     const userRef  = adminDb.collection('users').doc(uid);
@@ -609,14 +609,32 @@ async function deductEssayCredit(uid: string): Promise<void> {
     const userData = userSnap.data() ?? {};
 
     const monthlyExpiry = userData.essayMonthlyExpiry?.toDate?.() ?? null;
-    if (monthlyExpiry && monthlyExpiry > new Date()) return; // monthly plan — no deduction
+    const hasMonthly    = !!(monthlyExpiry && monthlyExpiry > new Date());
 
-    const paidCredits: number = (userData.essayPaidCredits as number) ?? 0;
-    if (paidCredits > 0) {
-      await userRef.update({ essayPaidCredits: paidCredits - 1 });
-    } else {
-      const freeUsed: number = (userData.essayFreeUsed as number) ?? 0;
-      await userRef.update({ essayFreeUsed: freeUsed + 1 });
+    const updates: Record<string, number> = {};
+
+    // Deduct scoring credit
+    if (!hasMonthly) {
+      const paidCredits: number = (userData.essayPaidCredits as number) ?? 0;
+      if (paidCredits > 0) {
+        updates.essayPaidCredits = paidCredits - 1;
+      } else {
+        const freeUsed: number = (userData.essayFreeUsed as number) ?? 0;
+        updates.essayFreeUsed = freeUsed + 1;
+      }
+    }
+
+    // Deduct generation credit if model essay was requested
+    if (deductGen) {
+      const genCredits: number = (userData.essayGenCredits as number) ?? 0;
+      if (genCredits > 0) {
+        updates.essayGenCredits = genCredits - 1;
+      }
+      // If no gen credits but it's a free user — we still allow (legacy free behaviour)
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await userRef.update(updates);
     }
   } catch (e) {
     console.warn('[score-essay] Credit deduction failed:', e);
@@ -824,8 +842,12 @@ Note: Only list criteria in criteriaGaps that are actually below the required th
     }
 
     // ── Deduct credit + record device fingerprint (fire-and-forget) ──────────
+    // IMPORTANT: only deduct gen credit if the model essay was ACTUALLY produced,
+    // not just because the user requested it. Empty string = AI failed to generate.
+    const modelEssayActuallyGenerated = typeof parsed.modelEssay === 'string' && parsed.modelEssay.trim().length > 50;
+
     if (!unlimited) {
-      deductEssayCredit(uid).catch(() => {});
+      deductEssayCredit(uid, modelEssayActuallyGenerated).catch(() => {});
       if (fingerprint) recordDeviceFingerprint(uid, fingerprint).catch(() => {});
     }
 
