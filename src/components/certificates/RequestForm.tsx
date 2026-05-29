@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { payhereUrls } from '@/lib/payhere';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -186,7 +187,7 @@ export function RequestForm({ user, existingRequests, onNameChange }: RequestFor
       // Submit form to PayHere
       const form = document.createElement('form');
       form.method = 'POST';
-      form.action = 'https://sandbox.payhere.lk/pay/checkout';
+      form.action = payhereUrls.checkout;
 
       Object.entries(params).forEach(([key, value]) => {
         const input = document.createElement('input');

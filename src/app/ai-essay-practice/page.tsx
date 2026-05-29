@@ -1268,25 +1268,13 @@ function AIEssayPracticeInner() {
                       </span>
                     </div>
 
-                    {/* Price per test */}
-                    {!isUnlimited && (
-                      <div className="flex items-center gap-2.5 text-sm">
-                        <div className="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center shrink-0">
-                          <CurrencyDollar size={14} weight="duotone" className={c.icon} />
-                        </div>
-                        <span className="text-slate-300 font-semibold">
-                          <span className="font-black text-white">{Math.round(pkg.price / pkg.scoring)}</span> LKR per test
-                        </span>
-                      </div>
-                    )}
-
                     {isUnlimited && (
                       <div className="flex items-center gap-2.5 text-sm">
                         <div className="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center shrink-0">
                           <Crown size={14} weight="duotone" className="text-amber-400" />
                         </div>
                         <span className="text-slate-300 font-semibold">
-                          Valid for <span className="font-black text-white">1 year</span>
+                          Valid for <span className="font-black text-white">1 month</span>
                         </span>
                       </div>
                     )}

@@ -1,6 +1,5 @@
-
 export const payhereConfig = {
-    sandbox: true, // Force sandbox mode for now
+    sandbox: false,
     merchant_id: process.env.NEXT_PUBLIC_PAYHERE_MERCHANT_ID,
     return_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success`,
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancel`,
@@ -8,7 +7,5 @@ export const payhereConfig = {
 };
 
 export const payhereUrls = {
-    checkout: 'https://sandbox.payhere.lk/pay/checkout',
+    checkout: 'https://www.payhere.lk/pay/checkout',
 };
-
-    
