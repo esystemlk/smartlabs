@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 // ─── Model list (priority order) ─────────────────────────────────────────────
 const MODELS = [
@@ -611,33 +612,38 @@ async function deductEssayCredit(uid: string, deductGen: boolean): Promise<void>
     const monthlyExpiry = userData.essayMonthlyExpiry?.toDate?.() ?? null;
     const hasMonthly    = !!(monthlyExpiry && monthlyExpiry > new Date());
 
-    const updates: Record<string, number> = {};
+    // Use FieldValue.increment for atomic server-side updates (no read-then-write race)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updates: Record<string, any> = {};
 
-    // Deduct scoring credit
+    // ── Deduct scoring credit ─────────────────────────────────────────────
     if (!hasMonthly) {
       const paidCredits: number = (userData.essayPaidCredits as number) ?? 0;
       if (paidCredits > 0) {
-        updates.essayPaidCredits = paidCredits - 1;
+        // Paid pack: decrement paid credits atomically
+        updates.essayPaidCredits = FieldValue.increment(-1);
       } else {
-        const freeUsed: number = (userData.essayFreeUsed as number) ?? 0;
-        updates.essayFreeUsed = freeUsed + 1;
+        // Free tier: increment "used" counter atomically
+        updates.essayFreeUsed = FieldValue.increment(1);
       }
     }
 
-    // Deduct generation credit if model essay was requested
+    // ── Deduct generation credit if model essay was actually produced ─────
     if (deductGen) {
       const genCredits: number = (userData.essayGenCredits as number) ?? 0;
       if (genCredits > 0) {
-        updates.essayGenCredits = genCredits - 1;
+        updates.essayGenCredits = FieldValue.increment(-1);
       }
-      // If no gen credits but it's a free user — we still allow (legacy free behaviour)
+      // Free users with 0 gen credits: deduction skipped (legacy free behaviour)
     }
 
     if (Object.keys(updates).length > 0) {
       await userRef.update(updates);
+      console.log(`[score-essay] Credits deducted — uid=${uid} updates=`, Object.keys(updates));
     }
   } catch (e) {
     console.warn('[score-essay] Credit deduction failed:', e);
+    throw e; // re-throw so Promise.allSettled captures the failure in logs
   }
 }
 
@@ -841,14 +847,20 @@ Note: Only list criteria in criteriaGaps that are actually below the required th
       }
     }
 
-    // ── Deduct credit + record device fingerprint (fire-and-forget) ──────────
+    // ── Deduct credit ─────────────────────────────────────────────────────────
     // IMPORTANT: only deduct gen credit if the model essay was ACTUALLY produced,
     // not just because the user requested it. Empty string = AI failed to generate.
-    const modelEssayActuallyGenerated = typeof parsed.modelEssay === 'string' && parsed.modelEssay.trim().length > 50;
+    const modelEssayActuallyGenerated =
+      typeof parsed.modelEssay === 'string' && parsed.modelEssay.trim().length > 50;
 
+    // ⚠️  Must be AWAITED before returning the response.
+    // In serverless / Next.js the function is terminated as soon as the response
+    // is sent — fire-and-forget promises are killed before Firestore can write.
     if (!unlimited) {
-      deductEssayCredit(uid, modelEssayActuallyGenerated).catch(() => {});
-      if (fingerprint) recordDeviceFingerprint(uid, fingerprint).catch(() => {});
+      await Promise.allSettled([
+        deductEssayCredit(uid, modelEssayActuallyGenerated),
+        fingerprint ? recordDeviceFingerprint(uid, fingerprint) : Promise.resolve(),
+      ]);
     }
 
     return NextResponse.json({
