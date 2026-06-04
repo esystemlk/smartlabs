@@ -11,6 +11,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
 import { PerformanceOverview } from '@/components/dashboard/PerformanceOverview';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
+import { MoodPrompt } from '@/components/dashboard/MoodPrompt';
+import { MoodBadge } from '@/components/dashboard/MoodBadge';
+import { getUserMood, setUserMood, isMoodSetToday } from '@/lib/services/mood.service';
 import Link from 'next/link';
 import {
   Microphone,
@@ -19,7 +22,6 @@ import {
   Headphones,
   Lightning,
   Target,
-  Robot,
   Briefcase,
   CaretRight,
   Sparkle,
@@ -136,26 +138,6 @@ const featureCards = [
     badge: 'Most Advanced',
     badgeColor: 'bg-white/20 text-white',
   },
-  {
-    title: 'AI Score Tests',
-    subtitle: 'All 20 Question Types',
-    description: 'Practice every PTE question type with AI-powered scoring and instant feedback.',
-    href: '/dashboard/practice-tests',
-    icon: Target,
-    gradient: 'from-blue-600 via-indigo-600 to-blue-700',
-    badge: '20 Task Types',
-    badgeColor: 'bg-white/20 text-white',
-  },
-  {
-    title: 'AI Tutor',
-    subtitle: 'Personalized Guidance',
-    description: 'Chat with your AI tutor for PTE strategies, grammar help, and study plans.',
-    href: '/dashboard/ai-tutor',
-    icon: Robot,
-    gradient: 'from-emerald-600 via-teal-600 to-cyan-600',
-    badge: 'Always Available',
-    badgeColor: 'bg-white/20 text-white',
-  },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -262,6 +244,8 @@ export default function DashboardPage() {
   const { firestore } = useFirebase();
   const router = useRouter();
   const [userRole, setUserRole] = useState('');
+  const [mood, setMood] = useState<string | null>(null);
+  const [moodPromptOpen, setMoodPromptOpen] = useState(false);
 
   const enrollmentsQuery = useMemoFirebase(
     () => (firestore && user ? collection(firestore, `users/${user.uid}/enrollments`) : null),
@@ -301,6 +285,34 @@ export default function DashboardPage() {
     }
   }, [user, isUserLoading, router, firestore]);
 
+  // Load today's mood; prompt the first time they arrive on a given day.
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    getUserMood(user.uid)
+      .then(m => {
+        if (!active) return;
+        setMood(m?.value ?? null);
+        if (!isMoodSetToday(m)) {
+          setTimeout(() => { if (active) setMoodPromptOpen(true); }, 700);
+        }
+      })
+      .catch(() => { if (active) setMood(null); });
+    return () => { active = false; };
+  }, [user]);
+
+  const handlePickMood = async (m: string) => {
+    setMood(m);
+    setMoodPromptOpen(false);
+    if (user) { try { await setUserMood(user.uid, m); } catch { /* ignore */ } }
+  };
+
+  const handleDismissMood = async () => {
+    setMoodPromptOpen(false);
+    // Remember they were asked today so we don't re-prompt on every page load.
+    if (user) { try { await setUserMood(user.uid, 'skipped'); } catch { /* ignore */ } }
+  };
+
   const isLoading = isUserLoading || enrollmentsLoading || !userRole || userActivitiesLoading;
   const isAdminOrDev = userRole === 'admin' || userRole === 'developer' || userRole === 'teacher';
 
@@ -321,6 +333,9 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
+
+      {/* Daily mood prompt (first arrival of the day) */}
+      <MoodPrompt open={moodPromptOpen} onPick={handlePickMood} onDismiss={handleDismissMood} />
 
       {/* ─── Back to Home ─────────────────────────────────────────────────── */}
       <motion.div
@@ -364,6 +379,7 @@ export default function DashboardPage() {
             <p className="text-white/50 text-sm font-medium mt-2">
               Ready to improve your PTE score today? Let's practice.
             </p>
+            {mood && <div className="mt-3"><MoodBadge mood={mood} /></div>}
           </div>
 
           {/* Right — Stats */}
@@ -421,9 +437,6 @@ export default function DashboardPage() {
               All 20 PTE question types — organised by section
             </p>
           </div>
-          <Button asChild variant="outline" size="sm" className="rounded-xl font-bold text-xs hidden sm:flex">
-            <Link href="/dashboard/practice-tests">Browse All Tasks</Link>
-          </Button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">

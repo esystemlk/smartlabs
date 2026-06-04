@@ -6,6 +6,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { payhereUrls } from '@/lib/payhere';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import type { AIResponse } from '@/types/essay';
+import { saveEssaySession } from '@/lib/services/essay-session.service';
+import { WalkingLoader } from '@/components/ui/walking-loader';
 import {
   PencilLine,
   Timer,
@@ -46,8 +49,6 @@ import {
   Sparkle as SparkleIcon,
   CreditCard,
   House,
-  GraduationCap,
-  Robot,
   FilePdf,
 } from '@phosphor-icons/react';
 
@@ -75,113 +76,7 @@ interface Topic {
   category: string;
 }
 
-interface Criterion {
-  name: string;
-  score: number;
-  max: number;
-  color: string;
-  comment: string;
-}
-
-interface VocabUpgrade {
-  basic: string;
-  better: string;
-}
-
-interface StructureDetail {
-  paragraphCount: number;
-  paragraphCountCorrect: boolean;
-  introduction: string;
-  bodyParagraph1: string;
-  bodyParagraph2: string;
-  conclusion: string;
-  overallBalance: string;
-  followsIdealStrategy: boolean;
-}
-
-interface CoherenceAnalysis {
-  oneIdeaPerParagraph: boolean;
-  logicalFlow: string;
-  paragraphUnity: string;
-  sentenceConnection: string;
-  transitionQuality: string;
-  breakPoints: string[];
-}
-
-interface ThesisDevelopment {
-  clarityOfThesis: string;
-  consistencyOfArguments: string;
-  bodySupportsThesis: boolean;
-  conclusionProvesThesis: boolean;
-  overallAnalysis: string;
-}
-
-interface ArgumentativeQuality {
-  explanationDepth: string;
-  logicQuality: string;
-  exampleSupport: string;
-  relevanceOfIdeas: string;
-  criticalThinking: string;
-  weakArguments: string[];
-  howToImprove: string[];
-}
-
-interface VocabCollocations {
-  strongVocabulary: string[];
-  collocationsUsed: { collocation: string; evaluation: string }[];
-  repetitiveVocabulary: string[];
-  impreciseWords: string[];
-  awkwardPhrases: string[];
-  memorizedLanguage: string[];
-}
-
-interface GrammarDetail {
-  mistakes: { original: string; corrected: string; explanation: string }[];
-  punctuationMistakes: string[];
-  awkwardSentences: string[];
-  sentenceVariety: string;
-}
-
-interface ImprovementPlan {
-  top5Weaknesses: string[];
-  sentenceCorrections: { original: string; improved: string }[];
-  strategicTips: string[];
-}
-
-interface TargetScoreAnalysis {
-  achieved: boolean;
-  gap: number;
-  primaryReasons: string[];
-  criteriaGaps: { criterion: string; currentScore: number; targetApprox: number; whatToDo: string }[];
-  studyPriority: string;
-  realisticTimeline: string;
-}
-
-interface AIResponse {
-  overallBand: number;
-  bandLabel: string;
-  summaryTitle: string;
-  summaryText: string;
-  criteria: Criterion[];
-  strengths: string[];
-  improvements: string[];
-  structureAnalysis?: string;
-  modelEssay: string;
-  reviewedEssayHtml: string;
-  actionableFeedback?: { issue: string; howToFix: string }[];
-  vocabUpgrades: VocabUpgrade[];
-  _metadata?: { modelUsed: string };
-  contentAnalysis?: { score: number; reason: string };
-  structureDetail?: StructureDetail;
-  coherenceAnalysis?: CoherenceAnalysis;
-  thesisDevelopment?: ThesisDevelopment;
-  argumentativeQuality?: ArgumentativeQuality;
-  vocabularyCollocations?: VocabCollocations;
-  grammarAnalysis?: GrammarDetail;
-  improvementPlan?: ImprovementPlan;
-  wouldScore79Plus?: { answer: boolean; explanation: string };
-  targetScoreAnalysis?: TargetScoreAnalysis | null;
-}
+// Essay scoring types now live in src/types/essay.ts (AIResponse + sub-interfaces).
 
 const TOPICS: Topic[] = [
   { id: 1, text: "Some people believe that students learn better by watching other students. To what extent do you agree or disagree?", category: "Education" },
@@ -296,6 +191,7 @@ function AIEssayPracticeInner() {
   const [aiResult, setAiResult] = useState<AIResponse | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [animateProgress, setAnimateProgress] = useState(false);
+  const [savedSessionId, setSavedSessionId] = useState<string | null>(null);
 
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -722,7 +618,27 @@ function AIEssayPracticeInner() {
       const result: AIResponse = await response.json();
       setAiResult(result);
       setShowResults(true);
+      setSavedSessionId(null);
       showToast("Evaluation complete! View your Band Score below.", "success");
+
+      // Persist the scored session so it can be re-opened with the AI Tutor.
+      // Non-blocking: must never break the scoring UX if the write fails.
+      if (user) {
+        try {
+          const wc = essayText.trim().split(/\s+/).filter(Boolean).length;
+          const id = await saveEssaySession(user.uid, {
+            topic: selectedTopic?.text ?? '',
+            topicId: selectedTopic?.id ?? null,
+            essayText: essayText.trim(),
+            wordCount: wc,
+            targetScore: targetScore,
+            result,
+          });
+          setSavedSessionId(id);
+        } catch (saveErr) {
+          console.warn('[essay] Failed to save session for AI Tutor:', saveErr);
+        }
+      }
 
       // Refresh credit count
       if (user) {
@@ -759,6 +675,7 @@ function AIEssayPracticeInner() {
     setIsTimerRunning(true);
     setShowResults(false);
     setAiResult(null);
+    setSavedSessionId(null);
     showToast("Environment Reset. Timer restarted!", "info");
     
     setTimeout(() => {
@@ -771,6 +688,7 @@ function AIEssayPracticeInner() {
     setShowWritingArea(false);
     setShowResults(false);
     setAiResult(null);
+    setSavedSessionId(null);
     setEssayText("");
     setIsTimerRunning(false);
     setTimeLeft(1200);
@@ -792,6 +710,13 @@ function AIEssayPracticeInner() {
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sora selection:bg-[#f97316]/20 selection:text-slate-900 custom-scrollbar pb-24">
+      {/* Full-screen scoring overlay — walking animation while the AI evaluates */}
+      {isSubmitting && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-white/85 backdrop-blur-sm">
+          <WalkingLoader message="Evaluating your essay… this takes a few moments" size={200} />
+        </div>
+      )}
+
       {/* CSS Injections for custom styling */}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&display=swap');
@@ -882,7 +807,6 @@ function AIEssayPracticeInner() {
             {[
               { label: 'Home',       href: '/',               icon: <House size={15} weight="duotone" /> },
               { label: 'Dashboard',  href: '/dashboard',      icon: <ChartBar size={15} weight="duotone" /> },
-              { label: 'AI Tutor',   href: '/dashboard/ai-tutor', icon: <Robot size={15} weight="duotone" /> },
               { label: 'Essay AI',   href: '/ai-essay-practice',  icon: <PencilLine size={15} weight="duotone" />, active: true },
             ].map(item => (
               <Link
@@ -1023,8 +947,6 @@ function AIEssayPracticeInner() {
               {[
                 { label: 'Home',            href: '/',                   icon: <House size={18} weight="duotone" /> },
                 { label: 'Dashboard',       href: '/dashboard',          icon: <ChartBar size={18} weight="duotone" /> },
-                { label: 'AI Tutor',        href: '/dashboard/ai-tutor', icon: <Robot size={18} weight="duotone" /> },
-                { label: 'Practice Tests',  href: '/dashboard/practice-tests', icon: <GraduationCap size={18} weight="duotone" /> },
                 { label: 'Essay AI',        href: '/ai-essay-practice',  icon: <PencilLine size={18} weight="duotone" />, active: true },
               ].map(item => (
                 <Link
@@ -1674,27 +1596,41 @@ function AIEssayPracticeInner() {
               </span>
               <h2 className="font-display-serif text-4xl font-black text-slate-900">Your Essay Result</h2>
 
-              {/* Download PDF report — share with a teacher / lecturer */}
-              <div className="mt-6 flex flex-col items-center gap-2">
-                <button
-                  onClick={handleDownloadPdf}
-                  disabled={generatingPdf}
-                  className="inline-flex items-center gap-2.5 px-7 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm transition-all active:scale-95 disabled:opacity-60 shadow-lg shadow-slate-900/10"
-                >
-                  {generatingPdf ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                      Generating PDF…
-                    </>
-                  ) : (
-                    <>
-                      <FilePdf size={18} weight="duotone" />
-                      Download PDF Report
-                    </>
-                  )}
-                </button>
+              {/* Action buttons: live AI Tutor + downloadable report */}
+              <div className="mt-6 flex flex-col items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  {/* Primary CTA — open the real-time AI Tutor with this result */}
+                  <button
+                    onClick={() => savedSessionId && router.push(`/ai-essay-practice/tutor?session=${savedSessionId}`)}
+                    disabled={!savedSessionId}
+                    className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-[#f97316] hover:bg-[#fb923c] text-white font-extrabold text-sm transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-orange-500/20"
+                  >
+                    <Brain size={18} weight="duotone" />
+                    {savedSessionId ? 'Get Live AI Tutor Guidance' : 'Preparing AI Tutor…'}
+                    {savedSessionId && <ArrowRight size={16} weight="bold" />}
+                  </button>
+
+                  {/* Secondary — downloadable PDF report */}
+                  <button
+                    onClick={handleDownloadPdf}
+                    disabled={generatingPdf}
+                    className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm transition-all active:scale-95 disabled:opacity-60 shadow-lg shadow-slate-900/10"
+                  >
+                    {generatingPdf ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        Generating PDF…
+                      </>
+                    ) : (
+                      <>
+                        <FilePdf size={18} weight="duotone" />
+                        Download PDF Report
+                      </>
+                    )}
+                  </button>
+                </div>
                 <p className="text-xs text-slate-400 font-medium">
-                  Share this report with your teacher or lecturer
+                  Talk through your result live with the AI Tutor, or share the PDF with your teacher
                 </p>
               </div>
             </div>
@@ -2529,7 +2465,7 @@ function AIEssayPracticeInner() {
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
-                href="/register"
+                href="/signup"
                 className="flex-1 bg-[#f97316] hover:bg-[#fb923c] text-white font-extrabold px-6 py-3 rounded-xl text-sm text-center transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
                 onClick={() => setShowSignInModal(false)}
               >
@@ -2726,13 +2662,7 @@ export default function AIEssayPractice() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <svg className="animate-spin h-10 w-10 text-[#f97316]" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-          </svg>
-          <span className="text-slate-500 font-semibold text-sm">Loading AI Essay Dashboard…</span>
-        </div>
+        <WalkingLoader message="Loading AI Essay Dashboard…" size={180} />
       </div>
     }>
       <AIEssayPracticeInner />

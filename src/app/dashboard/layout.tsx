@@ -15,8 +15,6 @@ import {
   PencilSimple,
   BookOpen,
   Headphones,
-  Robot,
-  Target,
   SignOut,
   List,
   X,
@@ -35,8 +33,6 @@ const practiceNav = [
 ];
 
 const toolsNav = [
-  { title: 'All Practice Tests', href: '/dashboard/practice-tests', icon: Target, color: 'text-primary', bg: 'bg-primary/10' },
-  { title: 'AI Tutor', href: '/dashboard/ai-tutor', icon: Robot, color: 'text-accent-1', bg: 'bg-accent-1/10' },
   { title: 'Resources', href: '/resources', icon: BookmarkSimple, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
 ];
 
@@ -123,10 +119,10 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           </div>
         </div>
 
-        {/* AI Tools */}
+        {/* More */}
         <div>
           <div className="px-3 mb-2.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-            AI Tools
+            More
           </div>
           <div className="space-y-1">
             {toolsNav.map(item => (

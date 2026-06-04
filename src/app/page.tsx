@@ -217,7 +217,7 @@ const roadmapSteps = [
     id: "03",
     title: "AI-Powered Practice",
     desc: "Master every section with unlimited practice and instant AI feedback with our AI TRAINER.",
-    link: "/dashboard/ai-tutor",
+    link: "/ai-essay-practice",
     icon: Sparkles,
     color: "text-accent-3",
     bg: "bg-accent-3/10"

@@ -4,18 +4,11 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Bot, Target, CalendarDays, BookOpen, ChevronRight, Zap } from 'lucide-react';
+import { Target, CalendarDays, BookOpen, ChevronRight, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function QuickActions() {
   const actions = [
-    {
-      title: 'Start AI Tutor',
-      description: 'Personalized guidance for PTE and CELPIP',
-      href: '/dashboard/ai-tutor',
-      icon: Bot,
-      color: 'from-accent-1/30 to-accent-1/10',
-    },
     {
       title: 'AI Score Test',
       description: 'Practice with instant scoring and feedback',
