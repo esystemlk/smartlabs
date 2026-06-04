@@ -38,6 +38,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { incrementStudentCount } from '@/lib/services/stats.service';
 import { logUserActivity } from '@/lib/services/activity.service';
+import { RegisterSuccess } from '@/components/auth/RegisterSuccess';
 
 const signupSchema = z.object({
   displayName: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -53,6 +54,7 @@ export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const auth = useAuth();
   const { firestore } = useFirebase();
 
@@ -104,16 +106,13 @@ export default function SignupPage() {
         );
 
         setIsLoading(false);
-        toast({
-          title: 'Account Created!',
-          description: 'Welcome to Smart Labs!',
-        });
 
-        if (userRole === 'admin' || userRole === 'developer') {
-          router.push('/admin/dashboard');
-        } else {
-          router.push('/welcome');
-        }
+        // Show the success animation (~3s), then redirect.
+        const target = (userRole === 'admin' || userRole === 'developer')
+          ? '/admin/dashboard'
+          : '/welcome';
+        setShowSuccess(true);
+        setTimeout(() => router.push(target), 3200);
       } else {
         // User already exists — enforce correct role for admin/developer emails,
         // then redirect as normal.
@@ -185,6 +184,7 @@ export default function SignupPage() {
 
   return (
     <div className="w-full">
+      {showSuccess && <RegisterSuccess />}
       <div className="container mx-auto flex min-h-[calc(100vh-8rem)] items-center justify-center py-12">
         <div className="w-full max-w-md">
           <Card className="shadow-lg">
