@@ -95,9 +95,9 @@ export async function POST(request: NextRequest) {
       };
 
       if (packageId === 'essay_unlimited') {
-        // Unlimited scoring plan: set 1-month expiry
+        // Unlimited scoring plan: set 40-day expiry
         const expiry = new Date();
-        expiry.setMonth(expiry.getMonth() + 1);
+        expiry.setDate(expiry.getDate() + 40);
         userUpdates.essayMonthlyExpiry = expiry;
         // genCredits (300) already added above via increment
       } else {

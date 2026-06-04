@@ -48,17 +48,23 @@ import {
   House,
   GraduationCap,
   Robot,
+  FilePdf,
 } from '@phosphor-icons/react';
 
 /* ─── Essay Credit Packages ───────────────────────────────────────────────── */
 const ESSAY_PACKAGES = [
   { id: 'essay_10',        label: '10 Tests',   scoring: 10,  gens: 3,   price: 1500,  popular: false, color: 'blue'   },
   { id: 'essay_20',        label: '20 Tests',   scoring: 20,  gens: 5,   price: 2000,  popular: false, color: 'indigo' },
-  { id: 'essay_30',        label: '30 Tests',   scoring: 30,  gens: 8,   price: 2500,  popular: true,  color: 'orange' },
-  { id: 'essay_40',        label: '40 Tests',   scoring: 40,  gens: 10,  price: 3500,  popular: false, color: 'emerald'},
+  { id: 'essay_30',        label: '30 Tests',   scoring: 30,  gens: 8,   price: 2500,  popular: false, color: 'orange' },
+  { id: 'essay_40',        label: '40 Tests',   scoring: 40,  gens: 10,  price: 3500,  popular: true,  color: 'emerald'},
   { id: 'essay_100',       label: '100 Tests',  scoring: 100, gens: 25,  price: 6000,  popular: false, color: 'violet' },
   { id: 'essay_unlimited', label: 'Unlimited',  scoring: -1,  gens: 300, price: 15000, popular: false, color: 'amber'  },
 ] as const;
+
+// Packages shown up-front on the pricing grid
+const MAIN_PACKAGE_IDS: string[] = ['essay_10', 'essay_40', 'essay_100'];
+// Packages tucked away behind the "More options" toggle (e.g. Unlimited)
+const MORE_PACKAGE_IDS: string[] = ['essay_unlimited'];
 
 // Uses the central payhere.ts config — switches between sandbox and live automatically
 const PAYHERE_CHECKOUT_URL = payhereUrls.checkout;
@@ -270,6 +276,8 @@ function AIEssayPracticeInner() {
 
   // ── PayHere payment state ─────────────────────────────────────────────────
   const [purchasingPkg, setPurchasingPkg] = useState<string | null>(null);
+  const [showMorePackages, setShowMorePackages] = useState(false);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
   const payhereFormRef = useRef<HTMLFormElement>(null);
   const [payhereParams, setPayhereParams] = useState<Record<string, string> | null>(null);
 
@@ -341,6 +349,150 @@ function AIEssayPracticeInner() {
       setPurchasingPkg(null);
     }
   }, [user]);
+
+  // ── Renders a single pricing card (shared by the main grid + "More options") ──
+  const renderPackageCard = (pkg: typeof ESSAY_PACKAGES[number]) => {
+    const isUnlimited = pkg.scoring === -1;
+    const isPurchasing = purchasingPkg === pkg.id;
+    const colorMap: Record<string, { ring: string; badge: string; btn: string; icon: string }> = {
+      blue:    { ring: 'border-blue-700',    badge: 'bg-blue-800 text-blue-200',    btn: 'bg-blue-600 hover:bg-blue-500',    icon: 'text-blue-400' },
+      indigo:  { ring: 'border-indigo-700',  badge: 'bg-indigo-800 text-indigo-200',btn: 'bg-indigo-600 hover:bg-indigo-500',icon: 'text-indigo-400' },
+      orange:  { ring: 'border-[#f97316]',   badge: 'bg-orange-800 text-orange-200',btn: 'bg-[#f97316] hover:bg-[#fb923c]', icon: 'text-[#f97316]' },
+      emerald: { ring: 'border-emerald-700', badge: 'bg-emerald-800 text-emerald-200',btn:'bg-emerald-600 hover:bg-emerald-500',icon:'text-emerald-400'},
+      violet:  { ring: 'border-violet-700',  badge: 'bg-violet-800 text-violet-200',btn: 'bg-violet-600 hover:bg-violet-500',icon: 'text-violet-400' },
+      amber:   { ring: 'border-amber-600',   badge: 'bg-amber-800 text-amber-200',  btn: 'bg-amber-500 hover:bg-amber-400',  icon: 'text-amber-400' },
+    };
+    const c = colorMap[pkg.color] ?? colorMap.blue;
+
+    return (
+      <div
+        key={pkg.id}
+        className={`relative bg-slate-800 rounded-3xl border-2 p-6 flex flex-col gap-4 transition-all hover:shadow-xl hover:-translate-y-1 ${c.ring} ${pkg.popular ? 'ring-2 ring-emerald-500/50' : ''}`}
+      >
+        {pkg.popular && (
+          <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full shadow">
+            Most Popular
+          </span>
+        )}
+
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">{pkg.label}</p>
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-black text-white">
+                {(pkg.price / 1000).toFixed(pkg.price % 1000 === 0 ? 0 : 1)}k
+              </span>
+              <span className="text-slate-400 text-sm font-bold">LKR</span>
+            </div>
+          </div>
+          <div className={`w-12 h-12 rounded-2xl bg-slate-700 flex items-center justify-center ${c.icon}`}>
+            {isUnlimited ? <InfinityIcon size={24} weight="bold" /> : <Package size={22} weight="duotone" />}
+          </div>
+        </div>
+
+        {/* Features */}
+        <div className="space-y-2.5">
+          {/* Scoring */}
+          <div className="flex items-center gap-2.5 text-sm">
+            <div className="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center shrink-0">
+              <Target size={14} weight="duotone" className={c.icon} />
+            </div>
+            <span className="text-slate-300 font-semibold">
+              {isUnlimited ? (
+                <span className="flex items-center gap-1">
+                  <InfinityIcon size={14} weight="bold" className="text-amber-400" />
+                  <span className="font-black text-white"> Unlimited</span> essay scorings
+                </span>
+              ) : (
+                <><span className="font-black text-white">{pkg.scoring}</span> essay scoring tests</>
+              )}
+            </span>
+          </div>
+
+          {/* Gen credits */}
+          <div className="flex items-center gap-2.5 text-sm">
+            <div className="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center shrink-0">
+              <FileText size={14} weight="duotone" className={c.icon} />
+            </div>
+            <span className="text-slate-300 font-semibold">
+              <span className="font-black text-white">{pkg.gens}</span> model essay generations
+            </span>
+          </div>
+
+          {isUnlimited && (
+            <div className="flex items-center gap-2.5 text-sm">
+              <div className="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center shrink-0">
+                <Crown size={14} weight="duotone" className="text-amber-400" />
+              </div>
+              <span className="text-slate-300 font-semibold">
+                Valid for <span className="font-black text-white">40 days</span>
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* CTA */}
+        <button
+          onClick={() => handlePurchase(pkg.id)}
+          disabled={!!purchasingPkg}
+          className={`w-full mt-auto py-3 px-4 rounded-2xl font-extrabold text-sm text-white transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${c.btn}`}
+        >
+          {isPurchasing ? (
+            <><svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Setting up...</>
+          ) : (
+            <><CreditCard size={16} weight="bold" /> Buy — LKR {pkg.price.toLocaleString()}</>
+          )}
+        </button>
+      </div>
+    );
+  };
+
+  // ── Generate & download a PDF report of the score (to share with a teacher) ──
+  const handleDownloadPdf = useCallback(async () => {
+    if (!aiResult) return;
+    setGeneratingPdf(true);
+    try {
+      // Dynamically import to keep @react-pdf/renderer out of the initial bundle
+      const [{ pdf }, { EssayScorePDF }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/components/essay/EssayScorePDF'),
+      ]);
+
+      const wordCount = essayText.trim().split(/\s+/).filter(Boolean).length;
+      const secs = 1200 - timeLeft;
+      const timeTaken = `${Math.floor(secs / 60)} min ${secs % 60} sec`;
+
+      const meta = {
+        studentName: user?.displayName || 'Student',
+        studentEmail: user?.email || undefined,
+        date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }),
+        topic: selectedTopic?.text || '—',
+        wordCount,
+        timeTaken,
+        targetScore: targetScore,
+      };
+
+      // Pass the full AI result so every generated detail is included in the report
+      const result = { ...aiResult, essayText: essayText.trim() };
+
+      const blob = await pdf(<EssayScorePDF meta={meta} result={result} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const safeName = (user?.displayName || 'Student').replace(/[^a-z0-9]+/gi, '_');
+      a.href = url;
+      a.download = `SmartLabs_Essay_Report_${safeName}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('PDF report downloaded successfully.', 'success');
+    } catch (err) {
+      console.error('PDF generation failed:', err);
+      showToast('Could not generate PDF. Please try again.', 'error');
+    } finally {
+      setGeneratingPdf(false);
+    }
+  }, [aiResult, essayText, timeLeft, user, selectedTopic, targetScore]);
 
   // Auto-submit PayHere form when params arrive
   useEffect(() => {
@@ -1199,104 +1351,34 @@ function AIEssayPracticeInner() {
             </p>
           </div>
 
-          {/* Package grid */}
+          {/* Package grid — main packages */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
-            {ESSAY_PACKAGES.map(pkg => {
-              const isUnlimited = pkg.scoring === -1;
-              const isPurchasing = purchasingPkg === pkg.id;
-              const colorMap: Record<string, { ring: string; badge: string; btn: string; icon: string }> = {
-                blue:    { ring: 'border-blue-700',    badge: 'bg-blue-800 text-blue-200',    btn: 'bg-blue-600 hover:bg-blue-500',    icon: 'text-blue-400' },
-                indigo:  { ring: 'border-indigo-700',  badge: 'bg-indigo-800 text-indigo-200',btn: 'bg-indigo-600 hover:bg-indigo-500',icon: 'text-indigo-400' },
-                orange:  { ring: 'border-[#f97316]',   badge: 'bg-orange-800 text-orange-200',btn: 'bg-[#f97316] hover:bg-[#fb923c]', icon: 'text-[#f97316]' },
-                emerald: { ring: 'border-emerald-700', badge: 'bg-emerald-800 text-emerald-200',btn:'bg-emerald-600 hover:bg-emerald-500',icon:'text-emerald-400'},
-                violet:  { ring: 'border-violet-700',  badge: 'bg-violet-800 text-violet-200',btn: 'bg-violet-600 hover:bg-violet-500',icon: 'text-violet-400' },
-                amber:   { ring: 'border-amber-600',   badge: 'bg-amber-800 text-amber-200',  btn: 'bg-amber-500 hover:bg-amber-400',  icon: 'text-amber-400' },
-              };
-              const c = colorMap[pkg.color] ?? colorMap.blue;
-
-              return (
-                <div
-                  key={pkg.id}
-                  className={`relative bg-slate-800 rounded-3xl border-2 p-6 flex flex-col gap-4 transition-all hover:shadow-xl hover:-translate-y-1 ${c.ring} ${pkg.popular ? 'ring-2 ring-[#f97316]/50' : ''}`}
-                >
-                  {pkg.popular && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#f97316] text-white text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full shadow">
-                      Most Popular
-                    </span>
-                  )}
-
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">{pkg.label}</p>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-black text-white">
-                          {(pkg.price / 1000).toFixed(pkg.price % 1000 === 0 ? 0 : 1)}k
-                        </span>
-                        <span className="text-slate-400 text-sm font-bold">LKR</span>
-                      </div>
-                    </div>
-                    <div className={`w-12 h-12 rounded-2xl bg-slate-700 flex items-center justify-center ${c.icon}`}>
-                      {isUnlimited ? <InfinityIcon size={24} weight="bold" /> : <Package size={22} weight="duotone" />}
-                    </div>
-                  </div>
-
-                  {/* Features */}
-                  <div className="space-y-2.5">
-                    {/* Scoring */}
-                    <div className="flex items-center gap-2.5 text-sm">
-                      <div className="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center shrink-0">
-                        <Target size={14} weight="duotone" className={c.icon} />
-                      </div>
-                      <span className="text-slate-300 font-semibold">
-                        {isUnlimited ? (
-                          <span className="flex items-center gap-1">
-                            <InfinityIcon size={14} weight="bold" className="text-amber-400" />
-                            <span className="font-black text-white"> Unlimited</span> essay scorings
-                          </span>
-                        ) : (
-                          <><span className="font-black text-white">{pkg.scoring}</span> essay scoring tests</>
-                        )}
-                      </span>
-                    </div>
-
-                    {/* Gen credits */}
-                    <div className="flex items-center gap-2.5 text-sm">
-                      <div className="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center shrink-0">
-                        <FileText size={14} weight="duotone" className={c.icon} />
-                      </div>
-                      <span className="text-slate-300 font-semibold">
-                        <span className="font-black text-white">{pkg.gens}</span> model essay generations
-                      </span>
-                    </div>
-
-                    {isUnlimited && (
-                      <div className="flex items-center gap-2.5 text-sm">
-                        <div className="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center shrink-0">
-                          <Crown size={14} weight="duotone" className="text-amber-400" />
-                        </div>
-                        <span className="text-slate-300 font-semibold">
-                          Valid for <span className="font-black text-white">1 month</span>
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* CTA */}
-                  <button
-                    onClick={() => handlePurchase(pkg.id)}
-                    disabled={!!purchasingPkg}
-                    className={`w-full mt-auto py-3 px-4 rounded-2xl font-extrabold text-sm text-white transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${c.btn}`}
-                  >
-                    {isPurchasing ? (
-                      <><svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Setting up...</>
-                    ) : (
-                      <><CreditCard size={16} weight="bold" /> Buy — LKR {pkg.price.toLocaleString()}</>
-                    )}
-                  </button>
-                </div>
-              );
-            })}
+            {ESSAY_PACKAGES.filter(pkg => MAIN_PACKAGE_IDS.includes(pkg.id)).map(renderPackageCard)}
           </div>
+
+          {/* More options toggle */}
+          {ESSAY_PACKAGES.some(pkg => MORE_PACKAGE_IDS.includes(pkg.id)) && (
+            <div className="text-center mb-6">
+              <button
+                onClick={() => setShowMorePackages(v => !v)}
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-black uppercase tracking-widest transition-all"
+              >
+                {showMorePackages ? 'Hide options' : 'More options'}
+                <CaretDown
+                  size={14}
+                  weight="bold"
+                  className={`transition-transform duration-300 ${showMorePackages ? 'rotate-180' : ''}`}
+                />
+              </button>
+            </div>
+          )}
+
+          {/* Hidden packages (e.g. Unlimited) */}
+          {showMorePackages && (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
+              {ESSAY_PACKAGES.filter(pkg => MORE_PACKAGE_IDS.includes(pkg.id)).map(renderPackageCard)}
+            </div>
+          )}
 
           <p className="text-center text-xs text-slate-500 font-medium">
             🔒 Secured by PayHere · Payments processed in LKR · Credits never expire (except unlimited plan)
@@ -1591,6 +1673,30 @@ function AIEssayPracticeInner() {
                 Evaluation Summary
               </span>
               <h2 className="font-display-serif text-4xl font-black text-slate-900">Your Essay Result</h2>
+
+              {/* Download PDF report — share with a teacher / lecturer */}
+              <div className="mt-6 flex flex-col items-center gap-2">
+                <button
+                  onClick={handleDownloadPdf}
+                  disabled={generatingPdf}
+                  className="inline-flex items-center gap-2.5 px-7 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm transition-all active:scale-95 disabled:opacity-60 shadow-lg shadow-slate-900/10"
+                >
+                  {generatingPdf ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                      Generating PDF…
+                    </>
+                  ) : (
+                    <>
+                      <FilePdf size={18} weight="duotone" />
+                      Download PDF Report
+                    </>
+                  )}
+                </button>
+                <p className="text-xs text-slate-400 font-medium">
+                  Share this report with your teacher or lecturer
+                </p>
+              </div>
             </div>
 
             {/* Score Ring & Overall Summary */}
