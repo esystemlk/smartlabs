@@ -217,7 +217,8 @@ const TOPICS: Topic[] = [
   { id: 37, text: "Many people say there should be a maximum wage for high-paying jobs as some people are paid too much. Do you support that?", category: "Economy" },
   { id: 38, text: "Some people prefer to live in cities, while some people prefer to live in the countryside. Which is better for you? Give your reasons.", category: "Society" },
   { id: 39, text: "People who are famous entertainers or sportspeople should give up the right to privacy as this is the price of fame. To what extent do you agree or disagree?", category: "Media" },
-  { id: 40, text: "The world's governments and international organizations confront a multitude of global problems. Which do you think is the most pressing problem for the inhabitants of our planet and give the solution?", category: "Global" }
+  { id: 40, text: "The world's governments and international organizations confront a multitude of global problems. Which do you think is the most pressing problem for the inhabitants of our planet and give the solution?", category: "Global" },
+  { id: 41, text: "In many countries unemployment among young people is a serious problem. One suggested solution is to shorten the working week. What do you think are the advantages and disadvantages? Do you think this policy should apply to just young workers or the whole workforce？", category: "Economy" }
 ];
 
 const FILTERS = ["All", "Education", "Technology", "Society", "Health", "Environment", "Economy", "Travel", "Media", "Global"];

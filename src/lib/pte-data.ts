@@ -69,7 +69,8 @@ export const pteWritingData = {
         { id: 2, prompt: "Is online learning as effective as traditional classroom education? Give reasons.", topic: "Education" },
         { id: 3, prompt: "The rise of automation in the workplace: benefits and drawbacks.", topic: "Work" },
         { id: 4, prompt: "Should city centers be completely car-free? Discuss the implications.", topic: "Urban Planning" },
-        { id: 5, prompt: "The impact of globalization on local cultures and traditions.", topic: "Culture" }
+        { id: 5, prompt: "The impact of globalization on local cultures and traditions.", topic: "Culture" },
+        { id: 6, prompt: "In many countries unemployment among young people is a serious problem. One suggested solution is to shorten the working week. What do you think are the advantages and disadvantages? Do you think this policy should apply to just young workers or the whole workforce？", topic: "Employment" }
     ]
 };
 
