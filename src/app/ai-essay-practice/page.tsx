@@ -8,6 +8,7 @@ import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import type { AIResponse } from '@/types/essay';
 import { saveEssaySession } from '@/lib/services/essay-session.service';
+import { listQuestions } from '@/lib/services/pte-questions.service';
 import { WalkingLoader } from '@/components/ui/walking-loader';
 import {
   PencilLine,
@@ -179,6 +180,7 @@ function AIEssayPracticeInner() {
   // ── Essay practice state ──────────────────────────────────────────────────
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+  const [adminTopics, setAdminTopics] = useState<Topic[]>([]);
 
   const [showWritingArea, setShowWritingArea] = useState(false);
   const [essayText, setEssayText] = useState("");
@@ -704,9 +706,17 @@ function AIEssayPracticeInner() {
     return `${m}:${s}`;
   };
 
+  // Load admin-managed essay topics from the question bank (merged ahead of built-ins).
+  useEffect(() => {
+    listQuestions('writing', 'write-essay', true)
+      .then(qs => setAdminTopics(qs.map((q, i) => ({ id: 100000 + i, text: q.content, category: q.category || 'Custom' }))))
+      .catch(() => {});
+  }, []);
+
+  const allTopics = [...adminTopics, ...TOPICS];
   const filteredTopics = selectedFilter === "All"
-    ? (TOPICS || [])
-    : (TOPICS || []).filter(t => t.category === selectedFilter);
+    ? allTopics
+    : allTopics.filter(t => t.category === selectedFilter);
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sora selection:bg-[#f97316]/20 selection:text-slate-900 custom-scrollbar pb-24">

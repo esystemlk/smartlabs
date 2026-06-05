@@ -11,10 +11,7 @@ import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import {
   House,
-  Microphone,
   PencilSimple,
-  BookOpen,
-  Headphones,
   SignOut,
   List,
   X,
@@ -26,10 +23,7 @@ const mainNav = [
 ];
 
 const practiceNav = [
-  { title: 'Speaking', href: '/dashboard/ai-score-test/speaking', icon: Microphone, color: 'text-blue-500', bg: 'bg-blue-500/10', activeBg: 'bg-blue-600' },
   { title: 'Writing', href: '/dashboard/ai-score-test/writing', icon: PencilSimple, color: 'text-violet-500', bg: 'bg-violet-500/10', activeBg: 'bg-violet-600' },
-  { title: 'Reading', href: '/dashboard/ai-score-test/reading', icon: BookOpen, color: 'text-emerald-500', bg: 'bg-emerald-500/10', activeBg: 'bg-emerald-600' },
-  { title: 'Listening', href: '/dashboard/ai-score-test/listening', icon: Headphones, color: 'text-orange-500', bg: 'bg-orange-500/10', activeBg: 'bg-orange-600' },
 ];
 
 const toolsNav = [

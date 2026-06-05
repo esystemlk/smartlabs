@@ -10,10 +10,7 @@ import {
 import {
     ArrowLeft,
     Sparkles,
-    Mic,
     PenTool,
-    BookOpen,
-    Headphones,
     ChevronRight,
     Target,
     Clock,
@@ -27,18 +24,6 @@ import { SpotlightCard } from '@/components/ui/spotlight-card';
 
 const pteSections = [
     {
-        title: 'Speaking',
-        id: 'speaking',
-        icon: Mic,
-        description: 'Read Aloud, Repeat Sentence, Describe Image, and more.',
-        color: 'text-accent-1',
-        bg: 'bg-accent-1/10',
-        border: 'hover:border-accent-1/50',
-        gradient: 'from-accent-1/20 to-transparent',
-        tasks: 7,
-        duration: '30-35 mins'
-    },
-    {
         title: 'Writing',
         id: 'writing',
         icon: PenTool,
@@ -49,30 +34,6 @@ const pteSections = [
         gradient: 'from-accent-2/20 to-transparent',
         tasks: 2,
         duration: '40-50 mins'
-    },
-    {
-        title: 'Reading',
-        id: 'reading',
-        icon: BookOpen,
-        description: 'Fill in the blanks, Multiple choice, and Reorder paragraphs.',
-        color: 'text-accent-3',
-        bg: 'bg-accent-3/10',
-        border: 'hover:border-accent-3/50',
-        gradient: 'from-accent-3/20 to-transparent',
-        tasks: 5,
-        duration: '32-41 mins'
-    },
-    {
-        title: 'Listening',
-        id: 'listening',
-        icon: Headphones,
-        description: 'Summarize Spoken Text, Fill in the blanks, and Dictation.',
-        color: 'text-accent-4',
-        bg: 'bg-accent-4/10',
-        border: 'hover:border-accent-4/50',
-        gradient: 'from-accent-4/20 to-transparent',
-        tasks: 8,
-        duration: '45-57 mins'
     }
 ];
 

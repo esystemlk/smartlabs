@@ -9,8 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
-import { PerformanceOverview } from '@/components/dashboard/PerformanceOverview';
-import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { MoodPrompt } from '@/components/dashboard/MoodPrompt';
 import { MoodBadge } from '@/components/dashboard/MoodBadge';
 import { getUserMood, setUserMood, isMoodSetToday } from '@/lib/services/mood.service';
@@ -24,7 +22,6 @@ import {
   Target,
   Briefcase,
   CaretRight,
-  Sparkle,
   Fire,
   Star,
   ArrowRight,
@@ -41,6 +38,7 @@ import {
 const pteSections = [
   {
     id: 'speaking',
+    disabled: true,
     title: 'Speaking',
     icon: Microphone,
     description: 'Pronunciation, fluency & oral communication',
@@ -62,6 +60,7 @@ const pteSections = [
   },
   {
     id: 'writing',
+    disabled: false,
     title: 'Writing',
     icon: PencilSimple,
     description: 'Essay writing & summarization skills',
@@ -74,12 +73,13 @@ const pteSections = [
     badgeClass: 'bg-violet-500/10 text-violet-600 border-violet-500/20',
     tasks: [
       { title: 'Write Essay', href: '/ai-essay-practice', ai: true, hot: true, featured: true },
-      { title: 'Summarize Written Text', href: '/dashboard/practice-tests/pte-writing-summarize-text', ai: true, hot: true },
+      { title: 'Summarize Written Text', href: '/swt-trainer', ai: true, hot: true },
     ],
     sectionHref: '/dashboard/ai-score-test/writing',
   },
   {
     id: 'reading',
+    disabled: true,
     title: 'Reading',
     icon: BookOpen,
     description: 'Comprehension, vocabulary & analysis',
@@ -101,6 +101,7 @@ const pteSections = [
   },
   {
     id: 'listening',
+    disabled: true,
     title: 'Listening',
     icon: Headphones,
     description: 'Audio comprehension & dictation accuracy',
@@ -173,15 +174,21 @@ function calculateStudyStreak(activities: any[]) {
 
 function SectionCard({ section, index }: { section: (typeof pteSections)[0]; index: number }) {
   const Icon = section.icon;
+  const disabled = !!section.disabled;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.08, duration: 0.4 }}
-      className={`rounded-2xl border-2 ${section.border} ${section.lightBg} ${section.hoverBorder} transition-all duration-300 overflow-hidden group`}
+      className={`rounded-2xl border-2 transition-all duration-300 overflow-hidden group ${
+        disabled
+          ? 'border-slate-200 bg-slate-50/60'
+          : `${section.border} ${section.lightBg} ${section.hoverBorder}`
+      }`}
     >
       {/* Section Header */}
-      <div className={`bg-gradient-to-r ${section.gradient} p-5 flex items-center justify-between`}>
+      <div className={`p-5 flex items-center justify-between ${disabled ? 'bg-gradient-to-r from-slate-400 to-slate-300' : `bg-gradient-to-r ${section.gradient}`}`}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
             <Icon weight="bold" className="h-5 w-5 text-white" />
@@ -191,47 +198,66 @@ function SectionCard({ section, index }: { section: (typeof pteSections)[0]; ind
             <p className="text-white/70 text-[11px] font-medium">{section.tasks.length} practice tasks</p>
           </div>
         </div>
-        <Link href={section.sectionHref}>
-          <Button size="sm" variant="ghost" className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl text-xs font-bold h-8 px-3">
-            View All <CaretRight weight="bold" className="ml-1 h-3 w-3" />
-          </Button>
-        </Link>
+        {disabled ? (
+          <span className="text-[10px] font-black uppercase tracking-wider text-white bg-white/25 px-3 py-1 rounded-full">
+            Coming Soon
+          </span>
+        ) : (
+          <Link href={section.sectionHref}>
+            <Button size="sm" variant="ghost" className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl text-xs font-bold h-8 px-3">
+              View All <CaretRight weight="bold" className="ml-1 h-3 w-3" />
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* Task List */}
       <div className="p-3 space-y-1">
-        {section.tasks.map((task, i) => (
-          <Link key={i} href={task.href} className="block group/task">
-            <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/50 dark:hover:bg-white/5 transition-all duration-150">
-              <div className={`w-2 h-2 rounded-full ${task.hot ? 'bg-primary/60' : 'bg-muted-foreground/20'} shrink-0`} />
+        {section.tasks.map((task, i) => {
+          const inner = (
+            <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 ${disabled ? 'opacity-50' : 'hover:bg-white/50 dark:hover:bg-white/5'}`}>
+              <div className={`w-2 h-2 rounded-full ${task.hot && !disabled ? 'bg-primary/60' : 'bg-muted-foreground/20'} shrink-0`} />
               <span className="text-sm font-semibold flex-1 text-foreground/80 group-hover/task:text-foreground transition-colors">
                 {task.title}
               </span>
               <div className="flex items-center gap-1.5">
-                {task.featured && (
+                {task.featured && !disabled && (
                   <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-500/10 text-amber-600 border-amber-500/20 font-black">
                     🔥 Top
                   </Badge>
                 )}
                 {task.ai && (
-                  <Badge className={`text-[9px] px-1.5 py-0 h-4 ${section.badgeClass} font-black border`}>
+                  <Badge className={`text-[9px] px-1.5 py-0 h-4 ${disabled ? 'bg-slate-200 text-slate-500 border-slate-300' : section.badgeClass} font-black border`}>
                     AI
                   </Badge>
                 )}
-                <CaretRight weight="bold" className="h-3 w-3 text-muted-foreground/40 group-hover/task:text-muted-foreground transition-colors" />
+                {!disabled && (
+                  <CaretRight weight="bold" className="h-3 w-3 text-muted-foreground/40 group-hover/task:text-muted-foreground transition-colors" />
+                )}
               </div>
             </div>
-          </Link>
-        ))}
+          );
+          return disabled ? (
+            <div key={i} className="block cursor-not-allowed select-none">{inner}</div>
+          ) : (
+            <Link key={i} href={task.href} className="block group/task">{inner}</Link>
+          );
+        })}
       </div>
 
       {/* Bottom CTA */}
       <div className="px-4 pb-4">
-        <Link href={section.sectionHref} className="block">
-          <div className={`flex items-center justify-center gap-2 py-2 rounded-xl border-2 ${section.border} ${section.hoverBorder} text-xs font-black uppercase tracking-wider ${section.iconColor} transition-all hover:bg-white/50 dark:hover:bg-white/5`}>
-            Practice {section.title} <ArrowRight weight="bold" className="h-3 w-3" />
+        {disabled ? (
+          <div className="flex items-center justify-center gap-2 py-2 rounded-xl border-2 border-slate-200 text-xs font-black uppercase tracking-wider text-slate-400 cursor-not-allowed select-none">
+            Coming Soon
           </div>
-        </Link>
+        ) : (
+          <Link href={section.sectionHref} className="block">
+            <div className={`flex items-center justify-center gap-2 py-2 rounded-xl border-2 ${section.border} ${section.hoverBorder} text-xs font-black uppercase tracking-wider ${section.iconColor} transition-all hover:bg-white/50 dark:hover:bg-white/5`}>
+              Practice {section.title} <ArrowRight weight="bold" className="h-3 w-3" />
+            </div>
+          </Link>
+        )}
       </div>
     </motion.div>
   );
@@ -443,18 +469,6 @@ export default function DashboardPage() {
           {pteSections.map((section, i) => (
             <SectionCard key={section.id} section={section} index={i} />
           ))}
-        </div>
-      </div>
-
-      {/* ─── Analytics ─────────────────────────────────────────────────────── */}
-      <div>
-        <h2 className="text-xl font-black tracking-tight flex items-center gap-2 mb-5">
-          <Sparkle weight="fill" className="h-5 w-5 text-primary" />
-          Your Performance
-        </h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <PerformanceOverview />
-          <RecentActivity />
         </div>
       </div>
 
