@@ -1,5 +1,6 @@
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { logAiCall } from '@/lib/services/ai-usage.service';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -170,6 +171,16 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Your session has expired. Please sign in again.', code: 'INVALID_AUTH' }, { status: 401 });
     }
 
+    // ── Tracking metadata ─────────────────────────────────────────────────────
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+            ?? request.headers.get('x-real-ip')
+            ?? null;
+    let userEmail: string | null = null;
+    try {
+      const userRecord = await adminAuth.getUser(uid);
+      userEmail = userRecord.email ?? null;
+    } catch { /* non-fatal */ }
+
     // Credit check (before spending AI quota)
     const cred = await verifyCredits(uid);
     if (!cred.ok) {
@@ -239,8 +250,10 @@ The system has already scored FORM = ${form.form}/1 (${form.reasons.join(' ')}).
 
     if (!responseText) {
       console.error('[score-swt] all models failed:', errorLog);
+      logAiCall({ userId: uid, email: userEmail, ip, task: 'swt', keyLabel: 'FIRESTORE_KEY', keyIndex: null, success: false, isRateLimit: errorLog.some(e => e.includes('429') || e.includes('quota')), error: errorLog.join(' | '), timestamp: new Date() }).catch(() => {});
       return Response.json({ error: 'AI scoring failed. Please try again.', details: errorLog }, { status: 502 });
     }
+    logAiCall({ userId: uid, email: userEmail, ip, task: 'swt', keyLabel: 'FIRESTORE_KEY', keyIndex: null, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
 
     const parsed = JSON.parse(responseText);
     const content = Math.max(0, Math.min(4, Number(parsed?.scores?.content ?? 0)));

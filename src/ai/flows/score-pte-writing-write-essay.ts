@@ -1,6 +1,6 @@
 'use server';
 
-import { getAi } from '@/ai/genkit';
+import { callWithFallback } from '@/ai/genkit';
 import {
     PteWriteEssayInputSchema,
     PteWriteEssayOutputSchema,
@@ -9,7 +9,7 @@ import {
 } from './pte-writing.types';
 
 export const scorePteWriteEssayFlow = async (input: PteWriteEssayInput) => {
-  const ai = getAi();
+  return callWithFallback(async (ai) => {
   const pteWriteEssayScoringPrompt = ai.definePrompt({
     name: 'pteWriteEssayScoringPrompt',
     input: { schema: PteWriteEssayInputSchema },
@@ -42,6 +42,7 @@ Calculate the scores for each criterion and sum them for the 'overallScore'. Pro
     throw new Error('AI failed to generate a score for the essay.');
   }
   return output;
+  });
 };
 
 export async function scorePteWriteEssay(

@@ -1,6 +1,6 @@
 'use server';
 
-import { getAi } from '@/ai/genkit';
+import { callWithFallback } from '@/ai/genkit';
 import {
     PteSummarizeWrittenTextInputSchema,
     PteSummarizeWrittenTextOutputSchema,
@@ -9,12 +9,12 @@ import {
 } from './pte-writing.types';
 
 export const scorePteSummarizeWrittenTextFlow = async (input: PteSummarizeWrittenTextInput) => {
-  const ai = getAi();
-  const pteSummarizeWrittenTextScoringPrompt = ai.definePrompt({
-    name: 'pteSummarizeWrittenTextScoringPrompt',
-    input: { schema: PteSummarizeWrittenTextInputSchema },
-    output: { schema: PteSummarizeWrittenTextOutputSchema },
-    prompt: (input: any) => `You are an expert PTE examiner AI. Your task is to score a "Summarize Written Text" task.
+  return callWithFallback(async (ai) => {
+    const pteSummarizeWrittenTextScoringPrompt = ai.definePrompt({
+      name: 'pteSummarizeWrittenTextScoringPrompt',
+      input: { schema: PteSummarizeWrittenTextInputSchema },
+      output: { schema: PteSummarizeWrittenTextOutputSchema },
+      prompt: (input: any) => `You are an expert PTE examiner AI. Your task is to score a "Summarize Written Text" task.
 
 The user was given the following passage:
 ---
@@ -34,13 +34,14 @@ Please evaluate the summary based on the following criteria:
 
 Calculate the scores for each criterion and sum them for the 'overallScore'. Provide specific, constructive 'feedback' explaining the scores for each category.
 `,
-  });
+    });
 
-  const { output } = await pteSummarizeWrittenTextScoringPrompt(input);
-  if (!output) {
-    throw new Error('AI failed to generate a score for the summary.');
-  }
-  return output;
+    const { output } = await pteSummarizeWrittenTextScoringPrompt(input);
+    if (!output) {
+      throw new Error('AI failed to generate a score for the summary.');
+    }
+    return output;
+  });
 };
 
 export async function scorePteSummarizeWrittenText(

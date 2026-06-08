@@ -1,10 +1,9 @@
 'use server';
 
-import { getAi } from '@/ai/genkit';
+import { callWithFallback } from '@/ai/genkit';
 import { z } from "zod";
 import { LMS_URL } from "@/lib/constants";
 
-// Define schemas
 const SmartLabsChatInputSchema = z.object({
     message: z.string(),
     mode: z.enum(['general', 'pte', 'ielts', 'celpip']).optional().default('general'),
@@ -29,7 +28,6 @@ const SmartLabsChatOutputSchema = z.object({
 export type SmartLabsChatInput = z.infer<typeof SmartLabsChatInputSchema>;
 export type SmartLabsChatOutput = z.infer<typeof SmartLabsChatOutputSchema>;
 
-// Detailed Exam Knowledge Base
 const EXAM_KNOWLEDGE = `
 ## EXAM KNOWLEDGE BASE (USE THIS TO ANSWER EXPERT QUERIES)
 
@@ -71,16 +69,14 @@ const EXAM_KNOWLEDGE = `
   - **Writing**: Tone is key (Formal vs Informal email).
 `;
 
-// Export the chat function
-// Export the chat function with robust fallback
 export async function chatWithSmartLabs(input: SmartLabsChatInput): Promise<SmartLabsChatOutput> {
-    const ai = getAi();
-
-    const smartLabsChatPrompt = ai.definePrompt({
-        name: 'smartLabsChatPrompt',
-        input: { schema: SmartLabsChatInputSchema },
-        output: { schema: SmartLabsChatOutputSchema },
-        prompt: `You are a helpful AI assistant for Smart Labs, an education institute specializing in English language test preparation.
+    try {
+        return await callWithFallback(async (ai) => {
+            const smartLabsChatPrompt = ai.definePrompt({
+                name: 'smartLabsChatPrompt',
+                input: { schema: SmartLabsChatInputSchema },
+                output: { schema: SmartLabsChatOutputSchema },
+                prompt: `You are a helpful AI assistant for Smart Labs, an education institute specializing in English language test preparation.
 
 ## CURRENT MODE: {{mode}}
 Current focus: {{mode}} exam preparation. Adjust your expertise accordingly.
@@ -116,14 +112,14 @@ Return a JSON object with:
 - "response": Your helpful response. Use Markdown for formatting (bold, lists).
 - "suggestedActions": An array of 1-3 objects: { "label": string, "url"?: string, "intent"?: string }. Prefer internal links for known pages: "/courses", "/resources", "/enroll", "/apps", "/videos", "/dashboard".
 - "context": A single word describing the conversation context (e.g., "courses", "pricing", "enrollment", "support", "general", "pte", "ielts", "celpip").`,
-    });
+            });
 
-    try {
-        const { output } = await smartLabsChatPrompt(input);
-        if (!output) {
-            throw new Error('Failed to generate response');
-        }
-        return output;
+            const { output } = await smartLabsChatPrompt(input);
+            if (!output) {
+                throw new Error('Failed to generate response');
+            }
+            return output;
+        });
     } catch (error) {
         console.error('AI Service Error:', error);
 
@@ -156,14 +152,6 @@ Return a JSON object with:
                 { label: 'Schedule', url: '/schedule', intent: 'schedule' }
             ];
             context = 'enrollment';
-        } else if (lowerMessage.includes('pte')) {
-            fallbackResponse = "PTE Academic is a computer-based English test. It assesses Speaking, Writing, Reading, and Listening. We offer AI-scored mock tests and expert classes. Ask me specifically about 'PTE Speaking' or 'PTE Scoring'!";
-            actions = [
-                { label: 'PTE Speaking Tips', intent: 'pte' },
-                { label: 'PTE Essay Templates', intent: 'pte' },
-                { label: 'Book PTE Class', url: LMS_URL, intent: 'enrollment' }
-            ];
-            context = 'pte';
         } else if (lowerMessage.includes('ielts')) {
             fallbackResponse = "IELTS comes in Academic (Study) and General (Migration) modules. Key to high bands is lexical resource and coherence. How can I help with your IELTS prep?";
             actions = [

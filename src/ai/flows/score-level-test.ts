@@ -131,9 +131,7 @@ export async function scoreLevelTest(input: {
     console.log('[LevelTest] Has audio:', hasAudio);
 
     try {
-        // Dynamically import getAi to prevent module-level crash
-        const { getAi } = await import('@/ai/genkit');
-        const ai = getAi();
+        const { callWithFallback } = await import('@/ai/genkit');
         const { z } = await import('zod');
 
         const ScoringSchema = z.object({
@@ -196,26 +194,25 @@ Provide specific, level-appropriate feedback for each speaking criterion.
 Diagnostic: grammarLevel (Weak/Basic/Good/Advanced), sentenceComplexity (Simple/Compound/Complex/Academic), vocabularyLevel (Limited/Functional/Academic), pronunciation (${hasAudio ? 'Poor/Understandable/Clear/Fluent' : 'Poor since no audio'}).
 Include a transcript of what you heard (if audio was provided) and an overall summary. Incorporate specific feedback on the paragraph writing.`;
 
-        let result;
+        const output = await callWithFallback(async (ai) => {
+            const result = hasAudio
+                ? await ai.generate({
+                    output: { schema: ScoringSchema },
+                    prompt: [
+                        { media: { url: input.speaking.audioDataUri } },
+                        { text: promptText }
+                    ]
+                })
+                : await ai.generate({
+                    output: { schema: ScoringSchema },
+                    prompt: promptText
+                });
+            return result.output ?? null;
+        });
 
-        if (hasAudio) {
-            result = await ai.generate({
-                output: { schema: ScoringSchema },
-                prompt: [
-                    { media: { url: input.speaking.audioDataUri } },
-                    { text: promptText }
-                ]
-            });
-        } else {
-            result = await ai.generate({
-                output: { schema: ScoringSchema },
-                prompt: promptText
-            });
-        }
-
-        if (result.output) {
+        if (output) {
             console.log('[LevelTest] AI scoring complete!');
-            return result.output as LevelTestScoring;
+            return output as LevelTestScoring;
         }
 
         console.warn('[LevelTest] AI returned empty output, using local scoring');
