@@ -80,58 +80,17 @@ const MODELS = [
   { name: 'gemini-2.5-pro', api: 'v1beta' },
 ];
 
-// ─── API key cache (same pattern as score-essay) ────────────────────────────
-let _cachedFirestoreKey: string | null = null;
-let _cacheExpiry = 0;
-let _cacheVersion = 0;
-let _envKeyCounter = 0;
-const CACHE_TTL_MS = 2 * 60 * 1000;
+// ─── 5-key round-robin pool ───────────────────────────────────────────────────
+let _keyCounter = 0;
 
-function getEnvKeys(): { key: string; label: string; index: number }[] {
-  // Priority 1: dedicated single env key (valid AIza... REST API key)
-  const single = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || '';
-  if (single) return [{ key: single, label: 'ENV_KEY', index: 0 }];
-
-  // Priority 2: numbered pool (GOOGLE_GENAI_API_KEY_1..5)
-  const numbered = [1, 2, 3, 4, 5]
-    .map(i => ({ key: process.env[`GOOGLE_GENAI_API_KEY_${i}`] ?? '', label: `KEY_${i}`, index: i }))
+function getApiKey(): { key: string; label: string; keyIndex: number } | null {
+  const keys = [1, 2, 3, 4, 5]
+    .map(i => ({ key: process.env[`GOOGLE_GENAI_API_KEY_${i}`] ?? '', label: `KEY_${i}`, keyIndex: i }))
     .filter(k => k.key.length > 0);
-  return numbered;
-}
-
-async function getApiKey(): Promise<{ key: string; label: string; keyIndex: number | null } | null> {
-  // 1. Try Firestore-managed key first
-  try {
-    if (adminDb) {
-      const ccSnap = await adminDb.collection('system_config').doc('cache_control').get();
-      const remoteVersion: number = ccSnap.exists ? (ccSnap.data()?.keyVersion ?? 0) : 0;
-      const valid = _cachedFirestoreKey && Date.now() < _cacheExpiry && _cacheVersion === remoteVersion;
-      if (!valid) {
-        const snap = await adminDb.collection('system_config').doc('ai_settings').get();
-        const key = snap.exists ? (snap.data()?.geminiApiKey as string | undefined) : undefined;
-        if (key) {
-          _cachedFirestoreKey = key;
-          _cacheExpiry = Date.now() + CACHE_TTL_MS;
-          _cacheVersion = remoteVersion;
-          return { key, label: 'FIRESTORE_KEY', keyIndex: null };
-        }
-        _cachedFirestoreKey = null;
-        _cacheExpiry = 0;
-        _cacheVersion = remoteVersion;
-      } else if (_cachedFirestoreKey) {
-        return { key: _cachedFirestoreKey, label: 'FIRESTORE_KEY', keyIndex: null };
-      }
-    }
-  } catch (e) {
-    console.warn('[score-swt] key read failed, env pool fallback:', e);
-  }
-  // 2. Fall back to GOOGLE_GENAI_API_KEY_1..5 round-robin pool
-  const envKeys = getEnvKeys();
-  if (envKeys.length === 0) return null;
-  const chosen = envKeys[_envKeyCounter % envKeys.length];
-  _envKeyCounter = (_envKeyCounter + 1) % envKeys.length;
-  console.log(`[score-swt] Using env pool key: ${chosen.label}`);
-  return { key: chosen.key, label: chosen.label, keyIndex: chosen.index || null };
+  if (keys.length === 0) return null;
+  const chosen = keys[_keyCounter % keys.length];
+  _keyCounter = (_keyCounter + 1) % keys.length;
+  return chosen;
 }
 
 // ─── Deterministic Form scoring (official SWT rules) ────────────────────────
@@ -246,9 +205,9 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Passage and summary are required.' }, { status: 400 });
     }
 
-    const apiKeyResult = await getApiKey();
+    const apiKeyResult = getApiKey();
     if (!apiKeyResult) {
-      return Response.json({ error: 'AI key not configured on the server.' }, { status: 500 });
+      return Response.json({ error: 'No GOOGLE_GENAI_API_KEY_1..5 keys found on the server.' }, { status: 500 });
     }
     const { key: apiKey, label: apiKeyLabel, keyIndex: apiKeyIndex } = apiKeyResult;
 

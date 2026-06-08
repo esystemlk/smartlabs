@@ -58,7 +58,7 @@ interface UsageData {
 }
 
 // All expected API key labels — always shown even if no data yet
-const ALL_KEY_LABELS = ['KEY_1', 'KEY_2', 'KEY_3', 'KEY_4', 'KEY_5', 'FIRESTORE_KEY', 'ENV_KEY'];
+const ALL_KEY_LABELS = ['KEY_1', 'KEY_2', 'KEY_3', 'KEY_4', 'KEY_5'];
 const EMPTY_PERIOD: PeriodStats = { requests: 0, successes: 0, failures: 0, rateLimitHits: 0 };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -286,11 +286,8 @@ export default function AiSettingsPage() {
   const totalErrors    = usage?.errorLog.length ?? 0;
   const totalRequests  = usage?.keySummary.reduce((s, k) => s + k.monthly.requests, 0) ?? 0;
 
-  // Always show all expected key labels, filling with zero data for unused ones.
-  // ENV_KEY only shows if it has real data (it's a fallback, not expected in normal use).
-  const allKeySummary: KeySummary[] = ALL_KEY_LABELS
-    .filter(label => label !== 'ENV_KEY' || (usage?.keySummary.some(k => k.keyLabel === 'ENV_KEY')))
-    .map(label => {
+  // Always show all 5 key labels, filling with zero data for unused ones.
+  const allKeySummary: KeySummary[] = ALL_KEY_LABELS.map(label => {
       const found = usage?.keySummary.find(k => k.keyLabel === label);
       return found ?? {
         keyLabel: label,
@@ -727,9 +724,7 @@ export default function AiSettingsPage() {
                 {/* ── Key cards ── */}
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   {allKeySummary.map(k => {
-                    const isFirestore = k.keyLabel === 'FIRESTORE_KEY';
-                    const isEnvFallback = k.keyLabel === 'ENV_KEY';
-                    const keyNum      = k.keyIndex;
+                    const keyNum = k.keyIndex;
                     const hasActivity = k.monthly.requests > 0;
                     return (
                       <Card key={k.keyLabel} className={`${k.hasRateLimitAlert ? 'border-orange-300 bg-orange-50/30' : hasActivity ? 'border-emerald-200' : 'border-muted'}`}>
@@ -746,16 +741,12 @@ export default function AiSettingsPage() {
                                 </Badge>
                               )}
                               <Badge variant={hasActivity ? 'default' : 'outline'} className={`text-xs ${hasActivity ? 'bg-emerald-100 text-emerald-700 border-emerald-300 hover:bg-emerald-100' : 'text-muted-foreground'}`}>
-                                {isFirestore ? 'Firestore key (Essay/SWT)' : isEnvFallback ? '.env fallback (Essay/SWT)' : `env KEY_${keyNum} (Genkit flows)`}
+                                GOOGLE_GENAI_API_KEY_{keyNum}
                               </Badge>
                             </div>
                           </div>
                           <p className="text-[11px] text-muted-foreground mt-1">
-                            {isFirestore
-                              ? 'Used by score-essay & score-swt API routes. Tries gemini-2.5-flash → 2.5-pro → 2.0-flash → 3.1-pro in order.'
-                              : isEnvFallback
-                              ? 'GEMINI_API_KEY or GOOGLE_GENAI_API_KEY env var — used as fallback when Firestore key is not set.'
-                              : `GOOGLE_GENAI_API_KEY_${keyNum} — used by AI practice flows (gemini-2.5-flash only)`}
+                            {`KEY_${keyNum} — used by all AI scoring (essay, SWT) and practice flows with round-robin rotation`}
                           </p>
                         </CardHeader>
                         <CardContent className="space-y-2">

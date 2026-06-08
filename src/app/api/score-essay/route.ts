@@ -23,70 +23,17 @@ const MODELS = [
   { name: 'gemini-3.1-pro',   api: 'v1beta' },
 ];
 
-// ─── In-memory API key cache (refreshes every 2 min or on cache_control signal) ─
-let _cachedFirestoreKey: string | null = null;
-let _cacheExpiry  = 0;
-let _cacheVersion = 0;        // mirrors Firestore cache_control.keyVersion
-let _envKeyCounter = 0;       // round-robin counter for the 5-key pool
+// ─── 5-key round-robin pool ───────────────────────────────────────────────────
+let _keyCounter = 0;
 
-const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
-
-function getEnvKeys(): { key: string; label: string; index: number }[] {
-  // Priority 1: dedicated single env key (GEMINI_API_KEY or GOOGLE_GENAI_API_KEY without number)
-  // These are valid AIza... format keys for the REST API.
-  const single = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || '';
-  if (single) return [{ key: single, label: 'ENV_KEY', index: 0 }];
-
-  // Priority 2: numbered pool (GOOGLE_GENAI_API_KEY_1..5) — round-robin
-  const numbered = [1, 2, 3, 4, 5]
-    .map(i => ({ key: process.env[`GOOGLE_GENAI_API_KEY_${i}`] ?? '', label: `KEY_${i}`, index: i }))
+function getApiKey(): { key: string; label: string; keyIndex: number } | null {
+  const keys = [1, 2, 3, 4, 5]
+    .map(i => ({ key: process.env[`GOOGLE_GENAI_API_KEY_${i}`] ?? '', label: `KEY_${i}`, keyIndex: i }))
     .filter(k => k.key.length > 0);
-  return numbered;
-}
-
-async function getApiKey(): Promise<{ key: string; label: string; keyIndex: number | null } | null> {
-  // 1. Try Firestore-managed key first (set by admin via UI)
-  try {
-    if (adminDb) {
-      const ccSnap = await adminDb.collection('system_config').doc('cache_control').get();
-      const remoteVersion: number = ccSnap.exists ? (ccSnap.data()?.keyVersion ?? 0) : 0;
-
-      const cacheStillValid =
-        _cachedFirestoreKey &&
-        Date.now() < _cacheExpiry &&
-        _cacheVersion === remoteVersion;
-
-      if (!cacheStillValid) {
-        const snap = await adminDb.collection('system_config').doc('ai_settings').get();
-        if (snap.exists) {
-          const key = snap.data()?.geminiApiKey as string | undefined;
-          if (key) {
-            _cachedFirestoreKey = key;
-            _cacheExpiry  = Date.now() + CACHE_TTL_MS;
-            _cacheVersion = remoteVersion;
-            console.log('[score-essay] API key loaded from Firestore.');
-            return { key, label: 'FIRESTORE_KEY', keyIndex: null };
-          }
-        }
-        // Firestore doc exists but no key → clear cache so we don't serve stale
-        _cachedFirestoreKey = null;
-        _cacheExpiry = 0;
-        _cacheVersion = remoteVersion;
-      } else if (_cachedFirestoreKey) {
-        return { key: _cachedFirestoreKey, label: 'FIRESTORE_KEY', keyIndex: null };
-      }
-    }
-  } catch (e) {
-    console.warn('[score-essay] Firestore key read failed, falling back to env pool:', e);
-  }
-
-  // 2. Fall back to GOOGLE_GENAI_API_KEY_1..5 pool with round-robin
-  const envKeys = getEnvKeys();
-  if (envKeys.length === 0) return null;
-  const chosen = envKeys[_envKeyCounter % envKeys.length];
-  _envKeyCounter = (_envKeyCounter + 1) % envKeys.length;
-  console.log(`[score-essay] Using env pool key: ${chosen.label}`);
-  return { key: chosen.key, label: chosen.label, keyIndex: chosen.index || null };
+  if (keys.length === 0) return null;
+  const chosen = keys[_keyCounter % keys.length];
+  _keyCounter = (_keyCounter + 1) % keys.length;
+  return chosen;
 }
 
 // ─── Fire-and-forget usage tracking ──────────────────────────────────────────
@@ -738,11 +685,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const apiKeyResult = await getApiKey();
+    const apiKeyResult = getApiKey();
     if (!apiKeyResult) {
-      console.error('Server Configuration Error: Gemini API key is missing from both Firestore and .env.');
+      console.error('[score-essay] No GOOGLE_GENAI_API_KEY_1..5 keys found in environment.');
       return NextResponse.json(
-        { error: 'Gemini API key is not configured on the server.' },
+        { error: 'AI keys not configured on the server.' },
         { status: 500 }
       );
     }
