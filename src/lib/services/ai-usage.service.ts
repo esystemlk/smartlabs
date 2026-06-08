@@ -11,6 +11,7 @@ export interface AiCallLog {
   task:       'essay' | 'swt' | 'server-action';
   keyLabel:   string;          // e.g. 'KEY_1' … 'KEY_5' or 'FIRESTORE_KEY'
   keyIndex:   number | null;   // 1-5 for the env-key pool, null for Firestore key
+  model?:     string | null;   // e.g. 'gemini-2.5-flash'
   success:    boolean;
   isRateLimit: boolean;
   error:      string | null;
@@ -63,6 +64,14 @@ export async function logAiCall(log: AiCallLog): Promise<void> {
       rateLimitHits: increment(log.isRateLimit ? 1 : 0),
       updatedAt:  log.timestamp,
     };
+
+    // Track per-model breakdown within this key's daily stat
+    if (log.model) {
+      const mKey = log.model.replace(/[^a-z0-9-]/gi, '_'); // safe Firestore field name
+      patch[`models.${mKey}.requests`]  = increment(1);
+      patch[`models.${mKey}.successes`] = increment(log.success ? 1 : 0);
+      patch[`models.${mKey}.failures`]  = increment(log.success ? 0 : 1);
+    }
 
     try {
       await statsRef.update(patch);

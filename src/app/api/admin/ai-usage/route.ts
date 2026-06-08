@@ -91,6 +91,21 @@ export async function GET(request: Request) {
     };
   }).sort((a, b) => (a.keyIndex ?? 99) - (b.keyIndex ?? 99));
 
+  // Build per-model summary from logs
+  const modelMap = new Map<string, { requests: number; successes: number; failures: number; lastUsed: Date | null }>();
+  for (const log of logs) {
+    const modelName = (log as any).model as string | null | undefined;
+    if (!modelName) continue;
+    if (!modelMap.has(modelName)) modelMap.set(modelName, { requests: 0, successes: 0, failures: 0, lastUsed: null });
+    const m = modelMap.get(modelName)!;
+    m.requests++;
+    if (log.success) m.successes++; else m.failures++;
+    if (!m.lastUsed || log.timestamp > m.lastUsed) m.lastUsed = log.timestamp;
+  }
+  const modelSummary = Array.from(modelMap.entries())
+    .map(([name, s]) => ({ name, ...s, lastUsed: s.lastUsed }))
+    .sort((a, b) => b.requests - a.requests);
+
   // Recent error log
   const errorLog = logs
     .filter(l => !l.success)
@@ -100,6 +115,7 @@ export async function GET(request: Request) {
       ip: l.ip,
       task: l.task,
       keyLabel: l.keyLabel,
+      model: (l as any).model ?? null,
       isRateLimit: l.isRateLimit,
       error: l.error,
       timestamp: l.timestamp,
@@ -108,12 +124,14 @@ export async function GET(request: Request) {
   return NextResponse.json({
     userSummary,
     keySummary,
+    modelSummary,
     errorLog,
     recentLogs: logs.slice(0, 100).map(l => ({
       email: l.email,
       ip: l.ip,
       task: l.task,
       keyLabel: l.keyLabel,
+      model: (l as any).model ?? null,
       success: l.success,
       isRateLimit: l.isRateLimit,
       error: l.error,

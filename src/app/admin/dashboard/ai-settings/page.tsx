@@ -42,16 +42,24 @@ interface UserSummary {
   email: string; ips: string[]; essay: number; swt: number;
   serverAction: number; errors: number; lastSeen: string; total: number;
 }
+interface ModelSummaryEntry {
+  name: string; requests: number; successes: number; failures: number; lastUsed: string | null;
+}
 interface LogEntry {
   email: string | null; ip: string | null; task: string;
-  keyLabel: string; success: boolean; isRateLimit: boolean;
+  keyLabel: string; model?: string | null; success: boolean; isRateLimit: boolean;
   error: string | null; timestamp: string;
 }
 interface UsageData {
   userSummary: UserSummary[]; keySummary: KeySummary[];
+  modelSummary: ModelSummaryEntry[];
   errorLog: LogEntry[]; recentLogs: LogEntry[];
   meta: { totalLogs: number; days: number };
 }
+
+// All expected API key labels — always shown even if no data yet
+const ALL_KEY_LABELS = ['KEY_1', 'KEY_2', 'KEY_3', 'KEY_4', 'KEY_5', 'FIRESTORE_KEY'];
+const EMPTY_PERIOD: PeriodStats = { requests: 0, successes: 0, failures: 0, rateLimitHits: 0 };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const KNOWN_MODELS = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-3.1-pro'];
@@ -278,6 +286,19 @@ export default function AiSettingsPage() {
   const totalErrors    = usage?.errorLog.length ?? 0;
   const totalRequests  = usage?.keySummary.reduce((s, k) => s + k.monthly.requests, 0) ?? 0;
 
+  // Always show all 6 expected key labels, filling with zero data for unused ones
+  const allKeySummary: KeySummary[] = ALL_KEY_LABELS.map(label => {
+    const found = usage?.keySummary.find(k => k.keyLabel === label);
+    return found ?? {
+      keyLabel: label,
+      keyIndex: label.startsWith('KEY_') ? parseInt(label.split('_')[1]) : null,
+      daily:   EMPTY_PERIOD,
+      weekly:  EMPTY_PERIOD,
+      monthly: EMPTY_PERIOD,
+      hasRateLimitAlert: false,
+    };
+  });
+
   const filteredUsers  = (usage?.userSummary ?? []).filter(u =>
     !search || u.email.toLowerCase().includes(search.toLowerCase()) || u.ips.some(ip => ip.includes(search))
   );
@@ -452,48 +473,77 @@ export default function AiSettingsPage() {
                   </Card>
                 </div>
 
-                {/* Row 2: Model status grid */}
+                {/* Row 2: Model status grid — combines ai_config stats + usage log stats */}
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base flex items-center gap-2"><Bot className="h-4 w-4 text-blue-600" />Model Status</CardTitle>
-                    <CardDescription>Real-time status per Gemini model (updated per request)</CardDescription>
+                    <CardDescription>Usage per Gemini model — config stats (Essay/SWT) + log-based stats (all tasks)</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                      {KNOWN_MODELS.map(modelName => {
-                        const stat = config.modelStats[modelName];
-                        const total    = stat ? stat.successCount + stat.failureCount : 0;
-                        const succRate = total ? Math.round((stat.successCount / total) * 100) : null;
-                        const status   = stat?.lastStatus ?? 'unknown';
-                        return (
-                          <div key={modelName} className={`p-4 rounded-lg border flex flex-col gap-2 ${status === 'active' ? 'border-emerald-200 bg-emerald-50/50' : status === 'exhausted' ? 'border-red-200 bg-red-50/50' : 'border-muted bg-muted/30'}`}>
-                            <div className="flex items-center justify-between">
-                              <span className="font-mono text-xs font-bold truncate">{modelName}</span>
-                              <ModelStatusBadge status={status} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-1 text-xs">
-                              <div className="flex flex-col items-center p-1.5 rounded bg-background border">
-                                <span className="font-black text-emerald-600 text-lg leading-none">{stat?.successCount ?? 0}</span>
-                                <span className="text-muted-foreground text-[10px]">Success</span>
+                  <CardContent className="space-y-4">
+                    {/* Config-based stats (FIRESTORE_KEY path: essay + swt) */}
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Essay &amp; SWT scoring models (Firestore key)</p>
+                      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        {KNOWN_MODELS.map(modelName => {
+                          const stat     = config.modelStats[modelName];
+                          const total    = stat ? stat.successCount + stat.failureCount : 0;
+                          const succRate = total ? Math.round((stat.successCount / total) * 100) : null;
+                          const status   = stat?.lastStatus ?? 'unknown';
+                          // merge with log-based stats for richer numbers
+                          const logStat  = usage?.modelSummary?.find(m => m.name === modelName);
+                          const logTotal = logStat?.requests ?? 0;
+                          return (
+                            <div key={modelName} className={`p-3 rounded-lg border flex flex-col gap-2 ${status === 'active' ? 'border-emerald-200 bg-emerald-50/50' : status === 'exhausted' ? 'border-red-200 bg-red-50/50' : 'border-muted bg-muted/30'}`}>
+                              <div className="flex items-center justify-between gap-1 flex-wrap">
+                                <span className="font-mono text-xs font-bold truncate">{modelName}</span>
+                                <ModelStatusBadge status={logTotal > 0 ? (status === 'unknown' ? 'active' : status) : status} />
                               </div>
-                              <div className="flex flex-col items-center p-1.5 rounded bg-background border">
-                                <span className="font-black text-red-600 text-lg leading-none">{stat?.failureCount ?? 0}</span>
-                                <span className="text-muted-foreground text-[10px]">Failed</span>
+                              <div className="grid grid-cols-2 gap-1 text-xs">
+                                <div className="flex flex-col items-center p-1.5 rounded bg-background border">
+                                  <span className="font-black text-emerald-600 text-lg leading-none">{logStat?.successes ?? stat?.successCount ?? 0}</span>
+                                  <span className="text-muted-foreground text-[10px]">Success</span>
+                                </div>
+                                <div className="flex flex-col items-center p-1.5 rounded bg-background border">
+                                  <span className="font-black text-red-600 text-lg leading-none">{logStat?.failures ?? stat?.failureCount ?? 0}</span>
+                                  <span className="text-muted-foreground text-[10px]">Failed</span>
+                                </div>
+                              </div>
+                              {succRate !== null && (
+                                <div className="w-full bg-muted rounded-full h-1.5">
+                                  <div className={`h-1.5 rounded-full transition-all ${succRate >= 90 ? 'bg-emerald-500' : succRate >= 70 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${succRate}%` }} />
+                                </div>
+                              )}
+                              <div className="text-[10px] text-muted-foreground space-y-0.5">
+                                {logTotal > 0 && <p className="text-slate-500 font-medium">Total logged: {logTotal} calls</p>}
+                                <p>Last: {fmtDate(stat?.lastUsedAt ?? null)}</p>
+                                {stat?.lastError && <p className="text-red-600 truncate" title={stat.lastError}>✗ {stat.lastError}</p>}
                               </div>
                             </div>
-                            {succRate !== null && (
-                              <div className="w-full bg-muted rounded-full h-1.5">
-                                <div className={`h-1.5 rounded-full transition-all ${succRate >= 90 ? 'bg-emerald-500' : succRate >= 70 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${succRate}%` }} />
-                              </div>
-                            )}
-                            <div className="text-[10px] text-muted-foreground space-y-0.5">
-                              <p>Last: {fmtDate(stat?.lastUsedAt ?? null)}</p>
-                              {stat?.lastError && <p className="text-red-600 truncate" title={stat.lastError}>✗ {stat.lastError}</p>}
-                            </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
+
+                    {/* Genkit flows always use gemini-2.5-flash — show its log stats */}
+                    {(usage?.modelSummary?.find(m => m.name === 'gemini-2.5-flash')?.requests ?? 0) > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Genkit practice flows (KEY_1–5, always gemini-2.5-flash)</p>
+                        {(() => {
+                          const genkitStat = usage?.modelSummary?.find(m => m.name === 'gemini-2.5-flash');
+                          if (!genkitStat) return null;
+                          const rate = genkitStat.requests ? Math.round((genkitStat.successes / genkitStat.requests) * 100) : null;
+                          return (
+                            <div className="flex flex-wrap gap-3 items-center p-3 rounded-lg border bg-blue-50/30 border-blue-200">
+                              <span className="font-mono text-sm font-bold text-blue-700">gemini-2.5-flash</span>
+                              <span className="text-xs text-muted-foreground">{genkitStat.requests} total calls</span>
+                              <span className="text-xs text-emerald-600 font-semibold">{genkitStat.successes} ok</span>
+                              {genkitStat.failures > 0 && <span className="text-xs text-red-600 font-semibold">{genkitStat.failures} failed</span>}
+                              {rate !== null && <span className={`text-xs font-bold px-2 py-0.5 rounded ${rate >= 90 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{rate}%</span>}
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -666,47 +716,102 @@ export default function AiSettingsPage() {
               TAB: KEY STATS
           ════════════════════════════════════════ */}
           {activeTab === 'keys' && (
-            <div>
+            <div className="space-y-6">
               {isLoadingUsage ? (
                 <div className="py-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-              ) : (
+              ) : (<>
+
+                {/* ── Key cards ── */}
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {(usage?.keySummary ?? []).map(k => (
-                    <Card key={k.keyLabel} className={k.hasRateLimitAlert ? 'border-orange-300 bg-orange-50/30' : ''}>
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                          <CardTitle className="text-base font-mono flex items-center gap-2">
-                            <Key className="h-4 w-4 text-primary" />{k.keyLabel}
-                          </CardTitle>
-                          <div className="flex gap-1 flex-wrap">
-                            {k.hasRateLimitAlert && (
-                              <Badge className="bg-orange-100 text-orange-700 border-orange-300 text-xs gap-1">
-                                <ShieldAlert className="h-3 w-3" />Rate Limited
+                  {allKeySummary.map(k => {
+                    const isFirestore = k.keyLabel === 'FIRESTORE_KEY';
+                    const keyNum      = k.keyIndex;
+                    const hasActivity = k.monthly.requests > 0;
+                    return (
+                      <Card key={k.keyLabel} className={`${k.hasRateLimitAlert ? 'border-orange-300 bg-orange-50/30' : hasActivity ? 'border-emerald-200' : 'border-muted'}`}>
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <CardTitle className="text-base font-mono flex items-center gap-2">
+                              <Key className={`h-4 w-4 ${hasActivity ? 'text-emerald-600' : 'text-muted-foreground'}`} />
+                              {k.keyLabel}
+                            </CardTitle>
+                            <div className="flex gap-1 flex-wrap">
+                              {k.hasRateLimitAlert && (
+                                <Badge className="bg-orange-100 text-orange-700 border-orange-300 text-xs gap-1">
+                                  <ShieldAlert className="h-3 w-3" />Rate Limited
+                                </Badge>
+                              )}
+                              <Badge variant={hasActivity ? 'default' : 'outline'} className={`text-xs ${hasActivity ? 'bg-emerald-100 text-emerald-700 border-emerald-300 hover:bg-emerald-100' : 'text-muted-foreground'}`}>
+                                {isFirestore ? 'Firestore key (Essay/SWT)' : `env KEY_${keyNum} (Genkit flows)`}
                               </Badge>
-                            )}
-                            <Badge variant="outline" className="text-xs">
-                              {k.keyIndex !== null ? `env #${k.keyIndex}` : 'Firestore key'}
-                            </Badge>
+                            </div>
                           </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-2">
-                        <PeriodRow label="Today"   s={k.daily} />
-                        <PeriodRow label="7 days"  s={k.weekly} />
-                        <PeriodRow label="30 days" s={k.monthly} />
-                        {k.monthly.requests === 0 && (
-                          <p className="text-xs text-muted-foreground italic mt-2">No activity in 30 days.</p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                  {(usage?.keySummary.length ?? 0) === 0 && (
-                    <Card className="md:col-span-2 xl:col-span-3">
-                      <CardContent className="py-12 text-center text-muted-foreground">No API key data yet. Appears after the first AI call.</CardContent>
-                    </Card>
-                  )}
+                          <p className="text-[11px] text-muted-foreground mt-1">
+                            {isFirestore
+                              ? 'Used by score-essay & score-swt API routes. Tries gemini-2.5-flash → 2.5-pro → 2.0-flash → 3.1-pro in order.'
+                              : `GOOGLE_GENAI_API_KEY_${keyNum} — used by AI practice flows (gemini-2.5-flash only)`}
+                          </p>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <PeriodRow label="Today"   s={k.daily} />
+                          <PeriodRow label="7 days"  s={k.weekly} />
+                          <PeriodRow label="30 days" s={k.monthly} />
+                          {!hasActivity && (
+                            <p className="text-xs text-muted-foreground italic mt-2">No activity recorded yet.</p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
-              )}
+
+                {/* ── Per-model usage summary ── */}
+                {(usage?.modelSummary?.length ?? 0) > 0 && (
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2"><Bot className="h-4 w-4 text-blue-600" />Model Usage (from logs)</CardTitle>
+                      <CardDescription>How many calls each Gemini model handled — last 30 days</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        {(usage?.modelSummary ?? []).map(m => {
+                          const rate = m.requests ? Math.round((m.successes / m.requests) * 100) : null;
+                          return (
+                            <div key={m.name} className="p-3 rounded-lg border bg-muted/20 space-y-2">
+                              <div className="flex items-center justify-between gap-1 flex-wrap">
+                                <span className="font-mono text-xs font-bold truncate">{m.name}</span>
+                                {rate !== null && (
+                                  <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${rate >= 90 ? 'bg-emerald-100 text-emerald-700' : rate >= 70 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>{rate}%</span>
+                                )}
+                              </div>
+                              <div className="grid grid-cols-3 gap-1 text-center text-xs">
+                                <div className="rounded bg-background border p-1">
+                                  <div className="font-black text-slate-700 text-base leading-none">{m.requests}</div>
+                                  <div className="text-muted-foreground text-[10px]">total</div>
+                                </div>
+                                <div className="rounded bg-background border p-1">
+                                  <div className="font-black text-emerald-600 text-base leading-none">{m.successes}</div>
+                                  <div className="text-muted-foreground text-[10px]">ok</div>
+                                </div>
+                                <div className="rounded bg-background border p-1">
+                                  <div className={`font-black text-base leading-none ${m.failures > 0 ? 'text-red-600' : 'text-muted-foreground'}`}>{m.failures}</div>
+                                  <div className="text-muted-foreground text-[10px]">fail</div>
+                                </div>
+                              </div>
+                              {rate !== null && (
+                                <div className="w-full bg-muted rounded-full h-1">
+                                  <div className={`h-1 rounded-full ${rate >= 90 ? 'bg-emerald-500' : rate >= 70 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${rate}%` }} />
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+              </>)}
             </div>
           )}
 
@@ -732,6 +837,7 @@ export default function AiSettingsPage() {
                           <th className="pb-2 pr-3 font-semibold">IP</th>
                           <th className="pb-2 pr-3 font-semibold">Task</th>
                           <th className="pb-2 pr-3 font-semibold">Key</th>
+                          <th className="pb-2 pr-3 font-semibold">Model</th>
                           <th className="pb-2 font-semibold">Status</th>
                         </tr>
                       </thead>
@@ -745,6 +851,7 @@ export default function AiSettingsPage() {
                               <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${taskColor[l.task] ?? 'bg-slate-100 text-slate-700'}`}>{l.task}</span>
                             </td>
                             <td className="py-2 pr-3 font-mono text-muted-foreground text-[10px]">{l.keyLabel}</td>
+                            <td className="py-2 pr-3 font-mono text-[10px] text-blue-600">{l.model ? l.model.replace('gemini-', 'g-') : '—'}</td>
                             <td className="py-2">
                               {l.success
                                 ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
@@ -757,7 +864,7 @@ export default function AiSettingsPage() {
                           </tr>
                         ))}
                         {filteredLogs.length === 0 && (
-                          <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">No activity yet.</td></tr>
+                          <tr><td colSpan={7} className="py-8 text-center text-muted-foreground">No activity yet.</td></tr>
                         )}
                       </tbody>
                     </table>

@@ -856,7 +856,7 @@ Note: Only list criteria in criteriaGaps that are actually below the required th
 
     if (!responseText) {
       console.error('[score-essay] All models exhausted:', errorLog);
-      logAiCall({ userId: uid, email: userEmail, ip, task: 'essay', keyLabel: 'FIRESTORE_KEY', keyIndex: null, success: false, isRateLimit: errorLog.some(e => e.includes('429') || e.includes('QUOTA')), error: errorLog.join(' | '), timestamp: new Date() }).catch(() => {});
+      logAiCall({ userId: uid, email: userEmail, ip, task: 'essay', keyLabel: 'FIRESTORE_KEY', keyIndex: null, model: null, success: false, isRateLimit: errorLog.some(e => e.includes('429') || e.includes('QUOTA')), error: errorLog.join(' | '), timestamp: new Date() }).catch(() => {});
       return NextResponse.json(
         {
           error  : 'All AI models failed to score the essay. Please try again in a moment.',
@@ -865,7 +865,7 @@ Note: Only list criteria in criteriaGaps that are actually below the required th
         { status: 502 }
       );
     }
-    logAiCall({ userId: uid, email: userEmail, ip, task: 'essay', keyLabel: 'FIRESTORE_KEY', keyIndex: null, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
+    logAiCall({ userId: uid, email: userEmail, ip, task: 'essay', keyLabel: 'FIRESTORE_KEY', keyIndex: null, model: usedModel ?? null, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
 
     const parsed = JSON.parse(responseText);
 

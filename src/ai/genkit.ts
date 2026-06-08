@@ -80,6 +80,7 @@ async function logKeyUsage(
   ip: string | null = null,
   userId: string | null = null,
   email: string | null = null,
+  model: string | null = 'gemini-2.5-flash',
 ) {
   try {
     const { logAiCall } = await import('@/lib/services/ai-usage.service');
@@ -90,6 +91,7 @@ async function logKeyUsage(
       task,
       keyLabel: `KEY_${keyIndex}`,
       keyIndex,
+      model,
       success,
       isRateLimit,
       error,
@@ -134,7 +136,7 @@ export const callWithFallback = async <T>(
     for (let retry = 0; retry <= MAX_RETRIES_PER_KEY; retry++) {
       try {
         const result = await fn(ai);
-        logKeyUsage(keyIndex + 1, true, false, null, task, ip, userId, email);
+        logKeyUsage(keyIndex + 1, true, false, null, task, ip, userId, email, 'gemini-2.5-flash');
         return result;
       } catch (error: any) {
         lastError = error;
@@ -162,17 +164,17 @@ export const callWithFallback = async <T>(
 
     if (rateLimit && attempt < keys.length - 1) {
       console.warn(`API key [${keyIndex + 1}] hit rate limit. Falling back to next key.`);
-      logKeyUsage(keyIndex + 1, false, true, errMsg, task, ip, userId, email);
+      logKeyUsage(keyIndex + 1, false, true, errMsg, task, ip, userId, email, 'gemini-2.5-flash');
       continue;
     }
 
     if (attempt < keys.length - 1) {
       console.warn(`API key [${keyIndex + 1}] failed after retries. Trying next key.`);
-      logKeyUsage(keyIndex + 1, false, false, errMsg, task, ip, userId, email);
+      logKeyUsage(keyIndex + 1, false, false, errMsg, task, ip, userId, email, 'gemini-2.5-flash');
       continue;
     }
 
-    logKeyUsage(keyIndex + 1, false, rateLimit, errMsg, task, ip, userId, email);
+    logKeyUsage(keyIndex + 1, false, rateLimit, errMsg, task, ip, userId, email, 'gemini-2.5-flash');
     throw lastError;
   }
 

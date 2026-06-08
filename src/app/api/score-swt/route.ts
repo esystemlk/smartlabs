@@ -46,6 +46,29 @@ async function deductSwtCredit(uid: string): Promise<void> {
 
 const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
 const MAX_MODEL_RETRIES = 2;
+
+async function trackModelUsage(model: string, success: boolean, errorMsg?: string) {
+  try {
+    if (!adminDb) return;
+    const ref = adminDb.collection('system_config').doc('model_usage');
+    const snap = await ref.get();
+    const data = snap.data() ?? {};
+    const models: Record<string, Record<string, unknown>> = (data.models as Record<string, Record<string, unknown>>) ?? {};
+    const m = (models[model] ?? {}) as Record<string, unknown>;
+    const patch: Record<string, unknown> = {
+      totalRequests: ((data.totalRequests as number) ?? 0) + 1,
+      [`models.${model}.successCount`]: ((m.successCount as number) ?? 0) + (success ? 1 : 0),
+      [`models.${model}.failureCount`]: ((m.failureCount as number) ?? 0) + (success ? 0 : 1),
+      [`models.${model}.lastUsedAt`]: new Date(),
+      [`models.${model}.lastStatus`]: success ? 'active' : 'exhausted',
+    };
+    if (!success && errorMsg) patch[`models.${model}.lastError`] = errorMsg;
+    try { await ref.update(patch); } catch {
+      await ref.set({ totalRequests: 1, models: { [model]: { successCount: success ? 1 : 0, failureCount: success ? 0 : 1, lastUsedAt: new Date(), lastStatus: success ? 'active' : 'exhausted', lastError: !success && errorMsg ? errorMsg : '' } } });
+    }
+  } catch (e) { console.warn('[score-swt] model tracking failed:', e); }
+}
+
 const isTransient = (status: number, msg: string) =>
   (status === 500 || status === 502 || status === 503 || status === 504) ||
   msg.toLowerCase().includes('overload') || msg.toLowerCase().includes('high demand') ||
@@ -250,6 +273,7 @@ The system has already scored FORM = ${form.form}/1 (${form.reasons.join(' ')}).
               continue;
             }
             errorLog.push(`${name}: ${msg}`);
+            trackModelUsage(name, false, res.status === 429 ? 'QUOTA_EXCEEDED' : `HTTP_${res.status}`).catch(() => {});
             break;
           }
           const data = await res.json();
@@ -257,6 +281,7 @@ The system has already scored FORM = ${form.form}/1 (${form.reasons.join(' ')}).
           if (!text) {
             if (attempt < MAX_MODEL_RETRIES) { await sleep(1500 * (attempt + 1)); continue; }
             errorLog.push(`${name}: empty`);
+            trackModelUsage(name, false, 'EMPTY_RESPONSE').catch(() => {});
             break;
           }
           let cleaned = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
@@ -265,6 +290,7 @@ The system has already scored FORM = ${form.form}/1 (${form.reasons.join(' ')}).
           if (start !== -1 && end !== -1) cleaned = cleaned.slice(start, end + 1);
           JSON.parse(cleaned); // validate
           responseText = cleaned;
+          trackModelUsage(name, true).catch(() => {});
           modelSucceeded = true;
           break;
         } catch (e) {
@@ -275,6 +301,7 @@ The system has already scored FORM = ${form.form}/1 (${form.reasons.join(' ')}).
             continue;
           }
           errorLog.push(`${name}: ${msg}`);
+          trackModelUsage(name, false, 'EXCEPTION').catch(() => {});
           break;
         }
       }
@@ -282,12 +309,15 @@ The system has already scored FORM = ${form.form}/1 (${form.reasons.join(' ')}).
       if (modelSucceeded) break;
     }
 
+    // find which model succeeded (last model whose errorLog doesn't include it)
+    const usedModel = MODELS.find(m => !errorLog.some(e => e.startsWith(m.name + ':')))?.name ?? null;
+
     if (!responseText) {
       console.error('[score-swt] all models failed:', errorLog);
-      logAiCall({ userId: uid, email: userEmail, ip, task: 'swt', keyLabel: 'FIRESTORE_KEY', keyIndex: null, success: false, isRateLimit: errorLog.some(e => e.includes('429') || e.includes('quota')), error: errorLog.join(' | '), timestamp: new Date() }).catch(() => {});
+      logAiCall({ userId: uid, email: userEmail, ip, task: 'swt', keyLabel: 'FIRESTORE_KEY', keyIndex: null, model: null, success: false, isRateLimit: errorLog.some(e => e.includes('429') || e.includes('quota')), error: errorLog.join(' | '), timestamp: new Date() }).catch(() => {});
       return Response.json({ error: 'AI scoring failed. Please try again.', details: errorLog }, { status: 502 });
     }
-    logAiCall({ userId: uid, email: userEmail, ip, task: 'swt', keyLabel: 'FIRESTORE_KEY', keyIndex: null, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
+    logAiCall({ userId: uid, email: userEmail, ip, task: 'swt', keyLabel: 'FIRESTORE_KEY', keyIndex: null, model: usedModel, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
 
     const parsed = JSON.parse(responseText);
     const content = Math.max(0, Math.min(4, Number(parsed?.scores?.content ?? 0)));
