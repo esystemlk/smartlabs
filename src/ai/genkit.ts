@@ -54,6 +54,22 @@ export const isRateLimitError = (error: any): boolean => {
   );
 };
 
+const isTransientError = (error: any): boolean => {
+  if (isRateLimitError(error)) return false;
+  const msg: string = (error?.message || error?.toString() || '').toLowerCase();
+  const status = error?.status ?? error?.statusCode;
+  return (
+    status === 500 || status === 502 || status === 503 || status === 504 ||
+    msg.includes('overload') || msg.includes('high demand') ||
+    msg.includes('timeout') || msg.includes('internal') ||
+    msg.includes('temporarily') || msg.includes('unavailable')
+  );
+};
+
+const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
+
+const MAX_RETRIES_PER_KEY = 2;
+
 /** Fire-and-forget usage logger — never blocks the caller. */
 async function logKeyUsage(
   keyIndex: number,
@@ -113,25 +129,51 @@ export const callWithFallback = async <T>(
   for (let attempt = 0; attempt < keys.length; attempt++) {
     const keyIndex = (startIndex + attempt) % keys.length;
     const ai = getInstance(keys[keyIndex]);
-    try {
-      const result = await fn(ai);
-      // Log successful call (fire-and-forget)
-      logKeyUsage(keyIndex + 1, true, false, null, task, ip, userId, email);
-      return result;
-    } catch (error: any) {
-      const rateLimit = isRateLimitError(error);
-      const errMsg = error?.message || String(error);
 
-      if (rateLimit && attempt < keys.length - 1) {
-        console.warn(`API key [${keyIndex + 1}] hit rate limit. Falling back to next key.`);
-        logKeyUsage(keyIndex + 1, false, true, errMsg, task, ip, userId, email);
-        continue;
+    let lastError: any = null;
+    for (let retry = 0; retry <= MAX_RETRIES_PER_KEY; retry++) {
+      try {
+        const result = await fn(ai);
+        logKeyUsage(keyIndex + 1, true, false, null, task, ip, userId, email);
+        return result;
+      } catch (error: any) {
+        lastError = error;
+        const rateLimit = isRateLimitError(error);
+
+        if (rateLimit) {
+          // Rate limit → skip to next key immediately, no retries
+          break;
+        }
+
+        if (isTransientError(error) && retry < MAX_RETRIES_PER_KEY) {
+          const delay = 1000 * (retry + 1); // 1s, 2s
+          console.warn(`[genkit] Key [${keyIndex + 1}] transient error (retry ${retry + 1}/${MAX_RETRIES_PER_KEY}), waiting ${delay}ms…`);
+          await sleep(delay);
+          continue;
+        }
+
+        // Non-transient or retries exhausted → fall through to next key
+        break;
       }
-
-      // Final failure
-      logKeyUsage(keyIndex + 1, false, rateLimit, errMsg, task, ip, userId, email);
-      throw error;
     }
+
+    const errMsg = lastError?.message || String(lastError);
+    const rateLimit = isRateLimitError(lastError);
+
+    if (rateLimit && attempt < keys.length - 1) {
+      console.warn(`API key [${keyIndex + 1}] hit rate limit. Falling back to next key.`);
+      logKeyUsage(keyIndex + 1, false, true, errMsg, task, ip, userId, email);
+      continue;
+    }
+
+    if (attempt < keys.length - 1) {
+      console.warn(`API key [${keyIndex + 1}] failed after retries. Trying next key.`);
+      logKeyUsage(keyIndex + 1, false, false, errMsg, task, ip, userId, email);
+      continue;
+    }
+
+    logKeyUsage(keyIndex + 1, false, rateLimit, errMsg, task, ip, userId, email);
+    throw lastError;
   }
 
   throw new Error('All Gemini API keys exhausted or rate-limited.');

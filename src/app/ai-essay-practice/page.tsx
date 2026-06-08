@@ -10,6 +10,7 @@ import type { AIResponse } from '@/types/essay';
 import { saveEssaySession } from '@/lib/services/essay-session.service';
 import { listQuestions } from '@/lib/services/pte-questions.service';
 import { WalkingLoader } from '@/components/ui/walking-loader';
+import { AiRetryDialog } from '@/components/ui/ai-retry-dialog';
 import {
   PencilLine,
   Timer,
@@ -196,6 +197,8 @@ function AIEssayPracticeInner() {
   const [savedSessionId, setSavedSessionId] = useState<string | null>(null);
 
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [retryOpen, setRetryOpen] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
 
   const writingAreaRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -664,11 +667,17 @@ function AIEssayPracticeInner() {
     } catch (error: unknown) {
       console.error(error);
       setIsTimerRunning(true); // resume timer if error occurs
-      const msg = error instanceof Error ? error.message : "An error occurred. Please try again.";
-      showToast(msg, "error");
+      setRetryOpen(true);
     } finally {
       setIsSubmitting(false);
+      setIsRetrying(false);
     }
+  };
+
+  const handleRetry = async () => {
+    setIsRetrying(true);
+    setRetryOpen(false);
+    await submitEssayHandler();
   };
 
   const tryAgainHandler = () => {
@@ -720,6 +729,12 @@ function AIEssayPracticeInner() {
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sora selection:bg-[#f97316]/20 selection:text-slate-900 custom-scrollbar pb-24">
+      <AiRetryDialog
+        open={retryOpen}
+        onRetry={handleRetry}
+        onClose={() => setRetryOpen(false)}
+        isRetrying={isRetrying}
+      />
       {/* Full-screen scoring overlay — walking animation while the AI evaluates */}
       {isSubmitting && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-white/85 backdrop-blur-sm">

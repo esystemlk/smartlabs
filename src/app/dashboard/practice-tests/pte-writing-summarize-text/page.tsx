@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { scorePteSummarizeWrittenText } from '@/ai/flows/score-pte-writing-summarize-text';
+import { AiRetryDialog } from '@/components/ui/ai-retry-dialog';
 import type { PteSummarizeWrittenTextInput, PteSummarizeWrittenTextOutput } from '@/ai/flows/pte-writing.types';
 import { pteSummarizeWrittenTextData } from '@/lib/pte-writing-summarize-written-text-data';
 import { Progress } from '@/components/ui/progress';
@@ -18,6 +19,8 @@ export default function PteSummarizeWrittenTextPage() {
     const [summary, setSummary] = useState('');
     const [result, setResult] = useState<PteSummarizeWrittenTextOutput | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [retryOpen, setRetryOpen] = useState(false);
+    const [isRetrying, setIsRetrying] = useState(false);
 
     const currentTest = pteSummarizeWrittenTextData[currentTestIndex];
 
@@ -45,10 +48,17 @@ export default function PteSummarizeWrittenTextPage() {
             setResult(scoreResult);
         } catch (error) {
             console.error('Scoring failed:', error);
-            toast({ variant: 'destructive', title: 'Scoring Failed' });
+            setRetryOpen(true);
         } finally {
             setIsLoading(false);
+            setIsRetrying(false);
         }
+    };
+
+    const handleRetry = async () => {
+        setIsRetrying(true);
+        setRetryOpen(false);
+        await handleSubmit();
     };
 
     const handleNext = () => {
@@ -62,6 +72,12 @@ export default function PteSummarizeWrittenTextPage() {
 
     return (
         <div className="w-full">
+            <AiRetryDialog
+                open={retryOpen}
+                onRetry={handleRetry}
+                onClose={() => setRetryOpen(false)}
+                isRetrying={isRetrying}
+            />
             <div className="mx-auto max-w-4xl space-y-4">
                 <Button asChild variant="ghost">
                     <Link href="/dashboard/practice-tests"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Practice Tests</Link>

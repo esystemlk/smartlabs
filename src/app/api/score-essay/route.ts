@@ -3,6 +3,18 @@ import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { logAiCall } from '@/lib/services/ai-usage.service';
 
+// ─── Retry helpers ────────────────────────────────────────────────────────────
+const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
+const MAX_MODEL_RETRIES = 2;
+
+const isTransient = (status: number, msg: string) =>
+  (status === 500 || status === 502 || status === 503 || status === 504) ||
+  msg.toLowerCase().includes('overload') ||
+  msg.toLowerCase().includes('high demand') ||
+  msg.toLowerCase().includes('timeout') ||
+  msg.toLowerCase().includes('internal') ||
+  msg.toLowerCase().includes('unavailable');
+
 // ─── Model list (priority order) ─────────────────────────────────────────────
 const MODELS = [
   { name: 'gemini-2.5-flash', api: 'v1beta' },
@@ -766,56 +778,80 @@ Note: Only list criteria in criteriaGaps that are actually below the required th
     const errorLog: string[] = [];
 
     for (const { name: model, api } of MODELS) {
-      try {
-        console.log(`[score-essay] Trying model: ${model} (${api})`);
-        const url = `https://generativelanguage.googleapis.com/${api}/models/${model}:generateContent?key=${apiKey}`;
+      let modelSucceeded = false;
 
-        const response = await fetch(url, {
-          method : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body   : JSON.stringify({
-            contents         : [{ role: 'user', parts: [{ text: userMessage }] }],
-            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-            generationConfig : { maxOutputTokens: 65536, temperature: 0.1 },
-          }),
-        });
+      for (let attempt = 0; attempt <= MAX_MODEL_RETRIES; attempt++) {
+        const isRetry = attempt > 0;
+        if (isRetry) console.log(`[score-essay] Retrying ${model} (attempt ${attempt + 1})…`);
+        else console.log(`[score-essay] Trying model: ${model} (${api})`);
 
-        if (!response.ok) {
-          const errorBody = await response.text();
-          let msg = `HTTP ${response.status}`;
-          try { msg = JSON.parse(errorBody)?.error?.message || msg; } catch { /* ignore */ }
-          const errorCode = response.status === 429 ? 'QUOTA_EXCEEDED' : `HTTP_${response.status}`;
+        try {
+          const url = `https://generativelanguage.googleapis.com/${api}/models/${model}:generateContent?key=${apiKey}`;
+          const response = await fetch(url, {
+            method : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body   : JSON.stringify({
+              contents         : [{ role: 'user', parts: [{ text: userMessage }] }],
+              systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+              generationConfig : { maxOutputTokens: 65536, temperature: 0.1 },
+            }),
+          });
+
+          if (!response.ok) {
+            const errorBody = await response.text();
+            let msg = `HTTP ${response.status}`;
+            try { msg = JSON.parse(errorBody)?.error?.message || msg; } catch { /* ignore */ }
+            const isQuota = response.status === 429;
+            console.warn(`[score-essay] ${model} attempt ${attempt + 1}: ${msg}`);
+
+            if (!isQuota && isTransient(response.status, msg) && attempt < MAX_MODEL_RETRIES) {
+              await sleep(1500 * (attempt + 1));
+              continue;
+            }
+
+            errorLog.push(`${model}: ${msg}`);
+            trackModelUsage(model, false, isQuota ? 'QUOTA_EXCEEDED' : `HTTP_${response.status}`).catch(() => {});
+            break; // move to next model
+          }
+
+          const data = await response.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+          if (!text) {
+            const reason = data.candidates?.[0]?.finishReason || 'no text returned';
+            if (isTransient(0, reason) && attempt < MAX_MODEL_RETRIES) {
+              await sleep(1500 * (attempt + 1));
+              continue;
+            }
+            errorLog.push(`${model}: empty response (${reason})`);
+            trackModelUsage(model, false, `EMPTY_${reason}`).catch(() => {});
+            break;
+          }
+
+          const jsonStr = extractJson(text);
+          JSON.parse(jsonStr); // validate
+          responseText = jsonStr;
+          usedModel    = model;
+          console.log(`[score-essay] ✓ Success with model: ${model}${isRetry ? ` (after ${attempt} retries)` : ''}`);
+          trackModelUsage(model, true).catch(() => {});
+          modelSucceeded = true;
+          break;
+
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err);
+          if (isTransient(0, msg) && attempt < MAX_MODEL_RETRIES) {
+            console.warn(`[score-essay] ${model} transient error, retrying: ${msg}`);
+            await sleep(1500 * (attempt + 1));
+            continue;
+          }
           errorLog.push(`${model}: ${msg}`);
-          console.warn(`[score-essay] ${model}: ${msg}`);
-          trackModelUsage(model, false, errorCode).catch(() => {});
-          continue;
+          console.warn(`[score-essay] ${model} failed: ${msg}`);
+          trackModelUsage(model, false, 'EXCEPTION').catch(() => {});
+          break;
         }
-
-        const data = await response.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-        if (!text) {
-          const reason = data.candidates?.[0]?.finishReason || 'no text returned';
-          errorLog.push(`${model}: empty response (${reason})`);
-          console.warn(`[score-essay] ${model}: empty response — ${reason}`);
-          trackModelUsage(model, false, `EMPTY_${reason}`).catch(() => {});
-          continue;
-        }
-
-        const jsonStr = extractJson(text);
-        JSON.parse(jsonStr); // validate
-        responseText = jsonStr;
-        usedModel    = model;
-        console.log(`[score-essay] ✓ Success with model: ${model}`);
-        trackModelUsage(model, true).catch(() => {});
-        break;
-
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err);
-        errorLog.push(`${model}: ${msg}`);
-        console.warn(`[score-essay] ${model} threw:`, msg);
-        trackModelUsage(model, false, 'EXCEPTION').catch(() => {});
       }
+
+      if (modelSucceeded) break;
     }
 
     if (!responseText) {

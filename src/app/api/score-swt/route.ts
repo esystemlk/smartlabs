@@ -44,6 +44,14 @@ async function deductSwtCredit(uid: string): Promise<void> {
   else await userRef.update({ swtFreeUsed: FieldValue.increment(1) });
 }
 
+const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
+const MAX_MODEL_RETRIES = 2;
+const isTransient = (status: number, msg: string) =>
+  (status === 500 || status === 502 || status === 503 || status === 504) ||
+  msg.toLowerCase().includes('overload') || msg.toLowerCase().includes('high demand') ||
+  msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('internal') ||
+  msg.toLowerCase().includes('unavailable');
+
 const MODELS = [
   { name: 'gemini-2.5-flash', api: 'v1beta' },
   { name: 'gemini-2.5-pro', api: 'v1beta' },
@@ -217,35 +225,61 @@ The system has already scored FORM = ${form.form}/1 (${form.reasons.join(' ')}).
     for (const { name, api } of MODELS) {
       const generationConfig: Record<string, unknown> = { temperature: 0.2, maxOutputTokens: 8192 };
       if (name.includes('flash')) generationConfig.thinkingConfig = { thinkingBudget: 0 };
-      try {
-        const url = `https://generativelanguage.googleapis.com/${api}/models/${name}:generateContent?key=${apiKey}`;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-            generationConfig,
-          }),
-        });
-        if (!res.ok) {
-          const t = await res.text().catch(() => '');
-          errorLog.push(`${name}: HTTP ${res.status} ${t.slice(0, 200)}`);
-          continue;
+
+      let modelSucceeded = false;
+
+      for (let attempt = 0; attempt <= MAX_MODEL_RETRIES; attempt++) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/${api}/models/${name}:generateContent?key=${apiKey}`;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+              systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+              generationConfig,
+            }),
+          });
+          if (!res.ok) {
+            const t = await res.text().catch(() => '');
+            const msg = `HTTP ${res.status} ${t.slice(0, 200)}`;
+            const isQuota = res.status === 429;
+            if (!isQuota && isTransient(res.status, t) && attempt < MAX_MODEL_RETRIES) {
+              console.warn(`[score-swt] ${name} transient error, retrying (${attempt + 1})…`);
+              await sleep(1500 * (attempt + 1));
+              continue;
+            }
+            errorLog.push(`${name}: ${msg}`);
+            break;
+          }
+          const data = await res.json();
+          const text = data.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text).filter(Boolean).join('') ?? '';
+          if (!text) {
+            if (attempt < MAX_MODEL_RETRIES) { await sleep(1500 * (attempt + 1)); continue; }
+            errorLog.push(`${name}: empty`);
+            break;
+          }
+          let cleaned = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+          const start = cleaned.indexOf('{');
+          const end = cleaned.lastIndexOf('}');
+          if (start !== -1 && end !== -1) cleaned = cleaned.slice(start, end + 1);
+          JSON.parse(cleaned); // validate
+          responseText = cleaned;
+          modelSucceeded = true;
+          break;
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          if (isTransient(0, msg) && attempt < MAX_MODEL_RETRIES) {
+            console.warn(`[score-swt] ${name} exception, retrying (${attempt + 1}): ${msg}`);
+            await sleep(1500 * (attempt + 1));
+            continue;
+          }
+          errorLog.push(`${name}: ${msg}`);
+          break;
         }
-        const data = await res.json();
-        const text = data.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text).filter(Boolean).join('') ?? '';
-        if (!text) { errorLog.push(`${name}: empty`); continue; }
-        let cleaned = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
-        const start = cleaned.indexOf('{');
-        const end = cleaned.lastIndexOf('}');
-        if (start !== -1 && end !== -1) cleaned = cleaned.slice(start, end + 1);
-        JSON.parse(cleaned); // validate
-        responseText = cleaned;
-        break;
-      } catch (e) {
-        errorLog.push(`${name}: ${e instanceof Error ? e.message : String(e)}`);
       }
+
+      if (modelSucceeded) break;
     }
 
     if (!responseText) {

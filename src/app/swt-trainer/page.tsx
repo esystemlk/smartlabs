@@ -14,6 +14,7 @@ import {
   BookOpenText, Sparkles, ArrowRight, ArrowLeft, Lock, CheckCircle2, XCircle,
   Loader2, CreditCard, Infinity as InfinityIcon, X, Zap,
 } from 'lucide-react';
+import { AiRetryDialog } from '@/components/ui/ai-retry-dialog';
 
 const FREE_SWT_LIMIT = 2;
 
@@ -40,6 +41,8 @@ function SWTInner() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<SWTResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [retryOpen, setRetryOpen] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
 
   const [credit, setCredit] = useState<CreditInfo | null>(null);
   const [showPurchase, setShowPurchase] = useState(false);
@@ -123,10 +126,18 @@ function SWTInner() {
       refreshCredits();
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Something went wrong.');
+      console.error('[swt] scoring failed:', e);
+      setRetryOpen(true);
     } finally {
       setIsSubmitting(false);
+      setIsRetrying(false);
     }
+  };
+
+  const handleRetry = async () => {
+    setIsRetrying(true);
+    setRetryOpen(false);
+    await handleSubmit();
   };
 
   const handlePurchase = async (pkgId: string) => {
@@ -153,6 +164,12 @@ function SWTInner() {
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
+      <AiRetryDialog
+        open={retryOpen}
+        onRetry={handleRetry}
+        onClose={() => setRetryOpen(false)}
+        isRetrying={isRetrying}
+      />
       {/* Hidden PayHere form */}
       <form ref={payhereFormRef} method="post" action={payhereUrls.checkout} className="hidden">
         {payhereParams && Object.entries(payhereParams).map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
