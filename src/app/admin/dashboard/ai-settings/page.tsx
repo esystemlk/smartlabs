@@ -4,13 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirebase, useUser } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button }  from '@/components/ui/button';
 import { Input }   from '@/components/ui/input';
 import { Label }   from '@/components/ui/label';
@@ -18,76 +12,90 @@ import { Badge }   from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import {
-  ChevronLeft,
-  KeyRound,
-  Bot,
-  Activity,
-  History,
-  ShieldCheck,
-  Eye,
-  EyeOff,
-  CheckCircle2,
-  XCircle,
-  Loader2,
-  RefreshCw,
-  Save,
-  AlertTriangle,
-  Zap,
-  Clock,
-  Lock,
+  ChevronLeft, KeyRound, Bot, Activity, History, ShieldCheck,
+  Eye, EyeOff, CheckCircle2, XCircle, Loader2, RefreshCw, Save,
+  AlertTriangle, Zap, Clock, Lock, Users, Key, Search, ShieldAlert,
 } from 'lucide-react';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Types: AI Config ─────────────────────────────────────────────────────────
 interface ModelStat {
-  successCount : number;
-  failureCount : number;
-  lastUsedAt   : string | null;
-  lastStatus   : 'active' | 'exhausted' | 'error' | 'unknown';
-  lastError    : string;
+  successCount: number; failureCount: number;
+  lastUsedAt: string | null;
+  lastStatus: 'active' | 'exhausted' | 'error' | 'unknown';
+  lastError: string;
 }
-
-interface KeyHistoryEntry {
-  changedAt  : string;
-  changedBy  : string;
-  maskedKey  : string;
-  reason     : string;
-}
-
+interface KeyHistoryEntry { changedAt: string; changedBy: string; maskedKey: string; reason: string }
 interface AiConfig {
-  maskedKey    : string;
-  keySource    : 'firestore' | 'env';
-  activeModels : string[];
-  lastUpdatedAt: string | null;
-  lastUpdatedBy: string | null;
-  keyHistory   : KeyHistoryEntry[];
-  modelStats   : Record<string, ModelStat>;
-  totalRequests: number;
+  maskedKey: string; keySource: 'firestore' | 'env';
+  activeModels: string[]; lastUpdatedAt: string | null; lastUpdatedBy: string | null;
+  keyHistory: KeyHistoryEntry[]; modelStats: Record<string, ModelStat>; totalRequests: number;
 }
 
-const KNOWN_MODELS = [
-  'gemini-2.5-flash',
-  'gemini-2.5-pro',
-  'gemini-2.0-flash',
-  'gemini-3.1-pro',
-];
+// ─── Types: Usage Tracker ─────────────────────────────────────────────────────
+interface PeriodStats { requests: number; successes: number; failures: number; rateLimitHits: number }
+interface KeySummary {
+  keyLabel: string; keyIndex: number | null;
+  daily: PeriodStats; weekly: PeriodStats; monthly: PeriodStats;
+  hasRateLimitAlert: boolean;
+}
+interface UserSummary {
+  email: string; ips: string[]; essay: number; swt: number;
+  serverAction: number; errors: number; lastSeen: string; total: number;
+}
+interface LogEntry {
+  email: string | null; ip: string | null; task: string;
+  keyLabel: string; success: boolean; isRateLimit: boolean;
+  error: string | null; timestamp: string;
+}
+interface UsageData {
+  userSummary: UserSummary[]; keySummary: KeySummary[];
+  errorLog: LogEntry[]; recentLogs: LogEntry[];
+  meta: { totalLogs: number; days: number };
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+const KNOWN_MODELS = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-3.1-pro'];
+const DEVELOPER_EMAIL = 'thimira.vishwa2003@gmail.com';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function fmtDate(iso: string | null) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleString('en-GB', {
-    day   : '2-digit',
-    month : 'short',
-    year  : 'numeric',
-    hour  : '2-digit',
-    minute: '2-digit',
-  });
-}
+const fmtDate = (iso: string | null) => !iso ? '—' : new Date(iso).toLocaleString('en-GB', {
+  day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+});
+const fmtShort = (iso: string | null) => !iso ? '—' : new Date(iso).toLocaleString('en-GB', {
+  day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
+});
+
+const taskColor: Record<string, string> = {
+  essay: 'bg-purple-100 text-purple-700',
+  swt:   'bg-blue-100 text-blue-700',
+  'server-action': 'bg-slate-100 text-slate-700',
+};
 
 function ModelStatusBadge({ status }: { status: string }) {
   if (status === 'active')    return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-300 hover:bg-emerald-100">Active</Badge>;
-  if (status === 'exhausted') return <Badge className="bg-red-100    text-red-700    border-red-300    hover:bg-red-100">Exhausted</Badge>;
+  if (status === 'exhausted') return <Badge className="bg-red-100 text-red-700 border-red-300 hover:bg-red-100">Exhausted</Badge>;
   if (status === 'error')     return <Badge className="bg-orange-100 text-orange-700 border-orange-300 hover:bg-orange-100">Error</Badge>;
   return <Badge variant="outline" className="text-muted-foreground">Not Used</Badge>;
+}
+
+function PeriodRow({ label, s }: { label: string; s: PeriodStats }) {
+  const rate = s.requests ? Math.round((s.successes / s.requests) * 100) : null;
+  return (
+    <div className="flex items-center gap-2 text-xs">
+      <span className="w-16 text-muted-foreground shrink-0 font-medium">{label}</span>
+      <div className="flex gap-1 flex-wrap">
+        <span className="px-1.5 py-0.5 rounded bg-slate-100 font-mono">{s.requests} req</span>
+        <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-mono">{s.successes} ok</span>
+        {s.failures > 0 && <span className="px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-mono">{s.failures} fail</span>}
+        {s.rateLimitHits > 0 && <span className="px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 font-mono">{s.rateLimitHits} RL</span>}
+        {rate !== null && (
+          <span className={`px-1.5 py-0.5 rounded font-bold ${rate >= 90 ? 'bg-emerald-100 text-emerald-700' : rate >= 70 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+            {rate}%
+          </span>
+        )}
+      </div>
+    </div>
+  );
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -97,79 +105,84 @@ export default function AiSettingsPage() {
   const router                               = useRouter();
   const { toast }                            = useToast();
 
-  // ── Auth state
   const [isDeveloper, setIsDeveloper]   = useState(false);
   const [accessDenied, setAccessDenied] = useState(false);
 
-  // ── Config data
-  const [config, setConfig]   = useState<AiConfig | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // ── Main tab ──────────────────────────────────────────────────────────────
+  const [activeTab, setActiveTab] = useState<'settings' | 'users' | 'keys' | 'log' | 'errors'>('settings');
 
-  // ── Key update form
-  const [newKey, setNewKey]           = useState('');
-  const [confirmKey, setConfirmKey]   = useState('');
-  const [reason, setReason]           = useState('');
-  const [showNewKey, setShowNewKey]   = useState(false);
+  // ── Config state ──────────────────────────────────────────────────────────
+  const [config, setConfig]       = useState<AiConfig | null>(null);
+  const [isLoadingConfig, setIsLoadingConfig] = useState(true);
+
+  // ── Key update form ───────────────────────────────────────────────────────
+  const [newKey, setNewKey]             = useState('');
+  const [confirmKey, setConfirmKey]     = useState('');
+  const [reason, setReason]             = useState('');
+  const [showNewKey, setShowNewKey]     = useState(false);
   const [showConfirmKey, setShowConfirmKey] = useState(false);
-
-  // ── Verification state
   const [verifyStatus, setVerifyStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
-  const [verifyError,  setVerifyError]  = useState('');
+  const [verifyError, setVerifyError]   = useState('');
+  const [isSaving, setIsSaving]         = useState(false);
 
-  // ── Save state
-  const [isSaving, setIsSaving] = useState(false);
+  // ── Usage state ───────────────────────────────────────────────────────────
+  const [usage, setUsage]               = useState<UsageData | null>(null);
+  const [isLoadingUsage, setIsLoadingUsage] = useState(false);
+  const [search, setSearch]             = useState('');
 
-  // ─── Get ID token helper ─────────────────────────────────────────────────
+  // ─── Token helper ─────────────────────────────────────────────────────────
   const getToken = useCallback(async () => {
     if (!currentUser) throw new Error('Not authenticated');
     return currentUser.getIdToken();
   }, [currentUser]);
 
-  // ─── Load config from server ─────────────────────────────────────────────
+  // ─── Load config ──────────────────────────────────────────────────────────
   const loadConfig = useCallback(async () => {
-    setIsLoading(true);
+    setIsLoadingConfig(true);
     try {
       const token = await getToken();
-      const res   = await fetch('/api/admin/ai-config', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Failed to load config');
-      }
+      const res = await fetch('/api/admin/ai-config', { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error((await res.json()).error || 'Failed');
       setConfig(await res.json());
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      toast({ title: 'Error loading config', description: msg, variant: 'destructive' });
+      toast({ title: 'Error loading config', description: String(err instanceof Error ? err.message : err), variant: 'destructive' });
     } finally {
-      setIsLoading(false);
+      setIsLoadingConfig(false);
     }
   }, [getToken, toast]);
 
-  // ─── Auth guard ──────────────────────────────────────────────────────────
-  // Client-side: grant access if the signed-in email is the developer email
-  // OR if the Firestore role is 'developer'. The server API does its own
-  // independent verification via Firebase ID token + email check.
-  const DEVELOPER_EMAIL = 'thimira.vishwa2003@gmail.com';
+  // ─── Load usage ───────────────────────────────────────────────────────────
+  const loadUsage = useCallback(async () => {
+    setIsLoadingUsage(true);
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/admin/ai-usage?days=30&limit=300', { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error((await res.json()).error || 'Failed');
+      setUsage(await res.json());
+    } catch (err: unknown) {
+      toast({ title: 'Error loading usage', description: String(err instanceof Error ? err.message : err), variant: 'destructive' });
+    } finally {
+      setIsLoadingUsage(false);
+    }
+  }, [getToken, toast]);
 
+  // ─── Auth guard ───────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isUserLoading && currentUser) {
       const email = (currentUser.email || '').toLowerCase().trim();
-
-      // Fast path — grant by email without a Firestore round-trip
       if (email === DEVELOPER_EMAIL) {
         setIsDeveloper(true);
         loadConfig();
+        loadUsage();
         return;
       }
-
-      // Fallback — check Firestore role for other potential developer accounts
       if (firestore) {
-        const userRef = doc(firestore, 'users', currentUser.uid);
-        getDoc(userRef).then(snap => {
-          if (snap.exists() && snap.data()?.role === 'developer') {
+        getDoc(doc(firestore, 'users', currentUser.uid)).then(snap => {
+          const role = snap.data()?.role;
+          if (snap.exists() && (role === 'developer' || role === 'admin')) {
             setIsDeveloper(true);
             loadConfig();
+            loadUsage();
           } else {
             setAccessDenied(true);
           }
@@ -180,89 +193,60 @@ export default function AiSettingsPage() {
     } else if (!isUserLoading && !currentUser) {
       router.push('/login');
     }
-  }, [currentUser, isUserLoading, router, firestore, loadConfig]);
+  }, [currentUser, isUserLoading, router, firestore, loadConfig, loadUsage]);
 
-  // ─── Reset verify status when keys change ────────────────────────────────
-  useEffect(() => {
-    setVerifyStatus('idle');
-    setVerifyError('');
-  }, [newKey, confirmKey]);
+  useEffect(() => { setVerifyStatus('idle'); setVerifyError(''); }, [newKey, confirmKey]);
 
-  // ─── Verify key ──────────────────────────────────────────────────────────
+  // ─── Verify key ───────────────────────────────────────────────────────────
   const handleVerify = async () => {
-    if (!newKey.trim()) {
-      toast({ title: 'Enter a key first', variant: 'destructive' });
-      return;
-    }
-    if (newKey !== confirmKey) {
-      toast({ title: 'Keys do not match', description: 'Both fields must be identical before verification.', variant: 'destructive' });
-      return;
-    }
-    setVerifyStatus('checking');
-    setVerifyError('');
+    if (!newKey.trim()) { toast({ title: 'Enter a key first', variant: 'destructive' }); return; }
+    if (newKey !== confirmKey) { toast({ title: 'Keys do not match', variant: 'destructive' }); return; }
+    setVerifyStatus('checking'); setVerifyError('');
     try {
       const token = await getToken();
-      const res   = await fetch('/api/admin/ai-config/verify-key', {
-        method : 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body   : JSON.stringify({ apiKey: newKey }),
+      const res = await fetch('/api/admin/ai-config/verify-key', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ apiKey: newKey }),
       });
       const data = await res.json();
-      if (data.valid) {
-        setVerifyStatus('valid');
-        toast({ title: '✓ Key verified', description: data.message });
-      } else {
-        setVerifyStatus('invalid');
-        setVerifyError(data.error || 'Key test failed');
-        toast({ title: '✗ Key invalid', description: data.error, variant: 'destructive' });
-      }
+      if (data.valid) { setVerifyStatus('valid'); toast({ title: '✓ Key verified', description: data.message }); }
+      else { setVerifyStatus('invalid'); setVerifyError(data.error || 'Key test failed'); toast({ title: '✗ Key invalid', description: data.error, variant: 'destructive' }); }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      setVerifyStatus('invalid');
-      setVerifyError(msg);
+      setVerifyStatus('invalid'); setVerifyError(msg);
       toast({ title: 'Verification error', description: msg, variant: 'destructive' });
     }
   };
 
-  // ─── Save key ────────────────────────────────────────────────────────────
+  // ─── Save key ─────────────────────────────────────────────────────────────
   const handleSave = async () => {
-    if (verifyStatus !== 'valid') {
-      toast({ title: 'Verify the key first', description: 'Use the Verify button before saving.', variant: 'destructive' });
-      return;
-    }
+    if (verifyStatus !== 'valid') { toast({ title: 'Verify the key first', variant: 'destructive' }); return; }
     setIsSaving(true);
     try {
       const token = await getToken();
-      const res   = await fetch('/api/admin/ai-config', {
-        method : 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body   : JSON.stringify({ apiKey: newKey, confirmApiKey: confirmKey, reason }),
+      const res = await fetch('/api/admin/ai-config', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ apiKey: newKey, confirmApiKey: confirmKey, reason }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Save failed');
       toast({ title: '✓ API key saved', description: data.message });
-      // Reset form
-      setNewKey('');
-      setConfirmKey('');
-      setReason('');
-      setVerifyStatus('idle');
-      // Reload config to reflect new state
+      setNewKey(''); setConfirmKey(''); setReason(''); setVerifyStatus('idle');
       await loadConfig();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      toast({ title: 'Save failed', description: msg, variant: 'destructive' });
+      toast({ title: 'Save failed', description: String(err instanceof Error ? err.message : err), variant: 'destructive' });
     } finally {
       setIsSaving(false);
     }
   };
 
-  // ─── Loading / access denied screens ─────────────────────────────────────
+  // ─── Loading / access denied ──────────────────────────────────────────────
   if (isUserLoading || (!isDeveloper && !accessDenied)) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center space-y-3">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-          <p className="text-muted-foreground text-sm font-medium">Verifying developer access…</p>
+          <p className="text-muted-foreground text-sm font-medium">Verifying access…</p>
         </div>
       </div>
     );
@@ -275,394 +259,563 @@ export default function AiSettingsPage() {
           <CardHeader className="text-center">
             <Lock className="h-12 w-12 text-red-500 mx-auto mb-2" />
             <CardTitle className="text-red-700">Access Denied</CardTitle>
-            <CardDescription className="text-red-600">
-              This section is restricted to <strong>Developer</strong> accounts only.
-              Your current role does not have permission to view AI configuration settings.
-            </CardDescription>
+            <CardDescription className="text-red-600">Admin or Developer access only.</CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center">
-            <Button asChild variant="outline">
-              <Link href="/admin/dashboard"><ChevronLeft className="h-4 w-4 mr-2" />Back to Dashboard</Link>
-            </Button>
+            <Button asChild variant="outline"><Link href="/admin/dashboard"><ChevronLeft className="h-4 w-4 mr-2" />Back</Link></Button>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  // ─── Derived UI state ─────────────────────────────────────────────────────
-  const keysMismatch   = newKey && confirmKey && newKey !== confirmKey;
-  const canVerify      = newKey.length > 30 && confirmKey.length > 30 && newKey === confirmKey;
-  const canSave        = verifyStatus === 'valid' && !isSaving;
+  // ─── Derived values ───────────────────────────────────────────────────────
+  const keysMismatch = newKey && confirmKey && newKey !== confirmKey;
+  const canVerify    = newKey.length > 30 && confirmKey.length > 30 && newKey === confirmKey;
+  const canSave      = verifyStatus === 'valid' && !isSaving;
 
-  // ─── Main render ──────────────────────────────────────────────────────────
+  const rateLimitKeys  = usage?.keySummary.filter(k => k.hasRateLimitAlert) ?? [];
+  const totalErrors    = usage?.errorLog.length ?? 0;
+  const totalRequests  = usage?.keySummary.reduce((s, k) => s + k.monthly.requests, 0) ?? 0;
+
+  const filteredUsers  = (usage?.userSummary ?? []).filter(u =>
+    !search || u.email.toLowerCase().includes(search.toLowerCase()) || u.ips.some(ip => ip.includes(search))
+  );
+  const filteredLogs   = (usage?.recentLogs ?? []).filter(l =>
+    !search || (l.email ?? '').toLowerCase().includes(search.toLowerCase()) || (l.ip ?? '').includes(search)
+  );
+
+  // ─── Tab definitions ──────────────────────────────────────────────────────
+  const tabs = [
+    { key: 'settings', label: 'API Settings',    icon: KeyRound },
+    { key: 'users',    label: 'Users',            icon: Users,       badge: usage?.userSummary.length },
+    { key: 'keys',     label: 'Key Stats',         icon: Key,        badge: usage?.keySummary.length },
+    { key: 'log',      label: 'Activity',          icon: Activity,   badge: usage?.meta.totalLogs },
+    { key: 'errors',   label: 'Errors',            icon: AlertTriangle, badge: totalErrors, redBadge: totalErrors > 0 },
+  ] as const;
+
+  const isUsageTab = activeTab !== 'settings';
+
   return (
     <div className="w-full min-h-screen">
       <section className="py-8 md:py-12">
-        <div className="container mx-auto max-w-5xl">
+        <div className="container mx-auto max-w-6xl">
 
           {/* ── Header ── */}
           <div className="flex items-center justify-between mb-8 gap-4 flex-wrap">
             <div className="flex items-center gap-4">
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/admin/dashboard">
-                  <ChevronLeft className="h-4 w-4 mr-1" />Back
-                </Link>
-              </Button>
+              <Button asChild variant="ghost" size="sm"><Link href="/admin/dashboard"><ChevronLeft className="h-4 w-4 mr-1" />Back</Link></Button>
               <div>
                 <h1 className="text-3xl font-bold flex items-center gap-3">
                   <ShieldCheck className="h-7 w-7 text-primary" />
-                  AI API Settings
+                  AI Settings & Usage
                 </h1>
-                <p className="text-muted-foreground text-sm mt-1">
-                  Manage the Gemini API key used for essay scoring. Developer access only.
-                </p>
+                <p className="text-muted-foreground text-sm mt-1">Manage API keys and monitor usage. Developer / Admin access only.</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="destructive" className="text-xs uppercase tracking-wide">
-                Developer Only
-              </Badge>
-              <Button variant="outline" size="sm" onClick={loadConfig} disabled={isLoading}>
-                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                Refresh
+              <Badge variant="destructive" className="text-xs uppercase tracking-wide">Developer Only</Badge>
+              <Button variant="outline" size="sm" onClick={() => { loadConfig(); loadUsage(); }} disabled={isLoadingConfig || isLoadingUsage}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${(isLoadingConfig || isLoadingUsage) ? 'animate-spin' : ''}`} />Refresh
               </Button>
             </div>
           </div>
 
-          {isLoading ? (
-            <div className="grid gap-6 animate-pulse">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-32 rounded-lg bg-muted" />
-              ))}
+          {/* ── Rate-limit alert banner ── */}
+          {rateLimitKeys.length > 0 && (
+            <div className="flex items-start gap-3 p-4 mb-6 rounded-lg bg-orange-50 border border-orange-300 text-orange-800">
+              <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-sm">Rate limit hits detected</p>
+                <p className="text-xs mt-0.5">
+                  Keys with rate-limit errors: <span className="font-mono font-bold">{rateLimitKeys.map(k => k.keyLabel).join(', ')}</span>.
+                  Consider rotating or adding more keys.
+                </p>
+              </div>
             </div>
-          ) : config && (
+          )}
+
+          {/* ── Summary cards (always visible) ── */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <Card>
+              <CardContent className="pt-4 pb-4">
+                <div className="text-3xl font-black">{config?.totalRequests.toLocaleString() ?? '—'}</div>
+                <p className="text-xs text-muted-foreground mt-1">Total essay scorings</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-4 pb-4">
+                <div className="text-3xl font-black">{totalRequests || '—'}</div>
+                <p className="text-xs text-muted-foreground mt-1">AI calls (30 days)</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-4 pb-4">
+                <div className="text-3xl font-black">{usage?.userSummary.length ?? '—'}</div>
+                <p className="text-xs text-muted-foreground mt-1">Unique users</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-4 pb-4">
+                <div className={`text-3xl font-black ${totalErrors > 0 ? 'text-red-600' : 'text-emerald-600'}`}>{totalErrors || '0'}</div>
+                <p className="text-xs text-muted-foreground mt-1">Errors (30 days)</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* ── Tabs ── */}
+          <div className="flex gap-2 mb-6 flex-wrap">
+            {tabs.map(t => (
+              <button
+                key={t.key}
+                onClick={() => setActiveTab(t.key)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  activeTab === t.key
+                    ? 'bg-primary text-primary-foreground shadow'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                <t.icon className="h-4 w-4" />
+                {t.label}
+                {'badge' in t && t.badge !== undefined && (
+                  <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${
+                    'redBadge' in t && t.redBadge
+                      ? 'bg-red-500 text-white'
+                      : activeTab === t.key
+                        ? 'bg-primary-foreground/20 text-primary-foreground'
+                        : 'bg-background text-foreground'
+                  }`}>{t.badge}</span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* ── Search bar (usage tabs only) ── */}
+          {(activeTab === 'users' || activeTab === 'log') && (
+            <div className="relative mb-4 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search email or IP…" className="pl-9" />
+            </div>
+          )}
+
+          {/* ════════════════════════════════════════
+              TAB: API SETTINGS
+          ════════════════════════════════════════ */}
+          {activeTab === 'settings' && (
             <div className="grid gap-6">
 
-              {/* ══ Row 1: Current Key Status + Usage Stats ══ */}
-              <div className="grid md:grid-cols-2 gap-6">
+              {isLoadingConfig ? (
+                <div className="grid gap-6 animate-pulse">{[1, 2, 3].map(i => <div key={i} className="h-32 rounded-lg bg-muted" />)}</div>
+              ) : config && (<>
 
-                {/* Current API Key */}
-                <Card className="border-primary/20 bg-primary/5">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <KeyRound className="h-4 w-4 text-primary" />
-                      Current API Key
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="font-mono text-sm bg-background rounded-md px-3 py-2 border break-all select-all">
-                      {config.maskedKey}
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <span className="font-medium">Source:</span>
-                        <Badge variant="outline" className="text-[10px] uppercase h-5">
-                          {config.keySource}
-                        </Badge>
+                {/* Row 1: Key status + usage */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card className="border-primary/20 bg-primary/5">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2"><KeyRound className="h-4 w-4 text-primary" />Current API Key</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="font-mono text-sm bg-background rounded-md px-3 py-2 border break-all select-all">{config.maskedKey}</div>
+                      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium">Source:</span>
+                          <Badge variant="outline" className="text-[10px] uppercase h-5">{config.keySource}</Badge>
+                        </div>
+                        <div className="flex items-center gap-1"><Clock className="h-3 w-3" />{fmtDate(config.lastUpdatedAt)}</div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {fmtDate(config.lastUpdatedAt)}
-                      </div>
-                    </div>
-                    {config.lastUpdatedBy && (
-                      <p className="text-xs text-muted-foreground">
-                        Last changed by <span className="font-medium text-foreground">{config.lastUpdatedBy}</span>
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
+                      {config.lastUpdatedBy && (
+                        <p className="text-xs text-muted-foreground">Last changed by <span className="font-medium text-foreground">{config.lastUpdatedBy}</span></p>
+                      )}
+                    </CardContent>
+                  </Card>
 
-                {/* Usage Stats */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2"><Activity className="h-4 w-4 text-emerald-600" />Usage Statistics</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="text-4xl font-black">{config.totalRequests.toLocaleString()}</div>
+                      <p className="text-xs text-muted-foreground">Total essay scoring requests with current key</p>
+                      <div className="flex gap-2 flex-wrap">
+                        {Object.entries(config.modelStats).map(([name, stat]) => {
+                          const total = stat.successCount + stat.failureCount;
+                          const rate  = total ? Math.round((stat.successCount / total) * 100) : null;
+                          return (
+                            <Badge key={name} variant="outline" className="text-xs gap-1">
+                              {name.replace('gemini-', 'g-')}
+                              {rate !== null && <span className="text-emerald-600 font-bold">{rate}%</span>}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Row 2: Model status grid */}
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Activity className="h-4 w-4 text-emerald-600" />
-                      Usage Statistics
-                    </CardTitle>
+                    <CardTitle className="text-base flex items-center gap-2"><Bot className="h-4 w-4 text-blue-600" />Model Status</CardTitle>
+                    <CardDescription>Real-time status per Gemini model (updated per request)</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="text-4xl font-black text-foreground">
-                      {config.totalRequests.toLocaleString()}
-                    </div>
-                    <p className="text-xs text-muted-foreground">Total essay scoring requests made with current key</p>
-                    <div className="flex gap-2 flex-wrap">
-                      {Object.entries(config.modelStats).map(([name, stat]) => {
-                        const total = stat.successCount + stat.failureCount;
-                        const rate  = total ? Math.round((stat.successCount / total) * 100) : null;
+                  <CardContent>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {KNOWN_MODELS.map(modelName => {
+                        const stat = config.modelStats[modelName];
+                        const total    = stat ? stat.successCount + stat.failureCount : 0;
+                        const succRate = total ? Math.round((stat.successCount / total) * 100) : null;
+                        const status   = stat?.lastStatus ?? 'unknown';
                         return (
-                          <Badge key={name} variant="outline" className="text-xs gap-1">
-                            {name.replace('gemini-', 'g-')}
-                            {rate !== null && <span className="text-emerald-600 font-bold">{rate}%</span>}
-                          </Badge>
+                          <div key={modelName} className={`p-4 rounded-lg border flex flex-col gap-2 ${status === 'active' ? 'border-emerald-200 bg-emerald-50/50' : status === 'exhausted' ? 'border-red-200 bg-red-50/50' : 'border-muted bg-muted/30'}`}>
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono text-xs font-bold truncate">{modelName}</span>
+                              <ModelStatusBadge status={status} />
+                            </div>
+                            <div className="grid grid-cols-2 gap-1 text-xs">
+                              <div className="flex flex-col items-center p-1.5 rounded bg-background border">
+                                <span className="font-black text-emerald-600 text-lg leading-none">{stat?.successCount ?? 0}</span>
+                                <span className="text-muted-foreground text-[10px]">Success</span>
+                              </div>
+                              <div className="flex flex-col items-center p-1.5 rounded bg-background border">
+                                <span className="font-black text-red-600 text-lg leading-none">{stat?.failureCount ?? 0}</span>
+                                <span className="text-muted-foreground text-[10px]">Failed</span>
+                              </div>
+                            </div>
+                            {succRate !== null && (
+                              <div className="w-full bg-muted rounded-full h-1.5">
+                                <div className={`h-1.5 rounded-full transition-all ${succRate >= 90 ? 'bg-emerald-500' : succRate >= 70 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${succRate}%` }} />
+                              </div>
+                            )}
+                            <div className="text-[10px] text-muted-foreground space-y-0.5">
+                              <p>Last: {fmtDate(stat?.lastUsedAt ?? null)}</p>
+                              {stat?.lastError && <p className="text-red-600 truncate" title={stat.lastError}>✗ {stat.lastError}</p>}
+                            </div>
+                          </div>
                         );
                       })}
                     </div>
                   </CardContent>
                 </Card>
-              </div>
 
-              {/* ══ Row 2: Model Status Grid ══ */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Bot className="h-4 w-4 text-blue-600" />
-                    Model Status
-                  </CardTitle>
-                  <CardDescription>Real-time status of each Gemini model (updated per request)</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {KNOWN_MODELS.map(modelName => {
-                      const stat = config.modelStats[modelName];
-                      const total    = stat ? stat.successCount + stat.failureCount : 0;
-                      const succRate = total ? Math.round((stat.successCount / total) * 100) : null;
-                      const status   = stat?.lastStatus ?? 'unknown';
-
-                      return (
-                        <div
-                          key={modelName}
-                          className={`p-4 rounded-lg border flex flex-col gap-2 ${
-                            status === 'active'    ? 'border-emerald-200 bg-emerald-50/50' :
-                            status === 'exhausted' ? 'border-red-200    bg-red-50/50'    :
-                            'border-muted          bg-muted/30'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="font-mono text-xs font-bold text-foreground truncate">
-                              {modelName}
-                            </span>
-                            <ModelStatusBadge status={status} />
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-1 text-xs">
-                            <div className="flex flex-col items-center p-1.5 rounded bg-background border">
-                              <span className="font-black text-emerald-600 text-lg leading-none">
-                                {stat?.successCount ?? 0}
-                              </span>
-                              <span className="text-muted-foreground text-[10px]">Success</span>
-                            </div>
-                            <div className="flex flex-col items-center p-1.5 rounded bg-background border">
-                              <span className="font-black text-red-600 text-lg leading-none">
-                                {stat?.failureCount ?? 0}
-                              </span>
-                              <span className="text-muted-foreground text-[10px]">Failed</span>
-                            </div>
-                          </div>
-
-                          {succRate !== null && (
-                            <div className="w-full bg-muted rounded-full h-1.5">
-                              <div
-                                className={`h-1.5 rounded-full transition-all ${
-                                  succRate >= 90 ? 'bg-emerald-500' :
-                                  succRate >= 70 ? 'bg-amber-500' : 'bg-red-500'
-                                }`}
-                                style={{ width: `${succRate}%` }}
-                              />
-                            </div>
-                          )}
-
-                          <div className="text-[10px] text-muted-foreground space-y-0.5">
-                            <p>Last: {fmtDate(stat?.lastUsedAt ?? null)}</p>
-                            {stat?.lastError && (
-                              <p className="text-red-600 truncate" title={stat.lastError}>
-                                ✗ {stat.lastError}
-                              </p>
-                            )}
-                          </div>
+                {/* Row 3: Update key */}
+                <Card className="border-amber-200">
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2"><Zap className="h-4 w-4 text-amber-500" />Update API Key</CardTitle>
+                    <CardDescription>Enter key in both fields — they must match. Verify before saving.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-5">
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-800">
+                      <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                      <span>Change takes effect within <strong>2 minutes</strong>. Old key is logged in history.</span>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="new-key">New API Key <span className="text-red-500">*</span></Label>
+                        <div className="relative">
+                          <Input id="new-key" type={showNewKey ? 'text' : 'password'} value={newKey} onChange={e => setNewKey(e.target.value.trim())} placeholder="AIza…" className={`pr-10 font-mono text-sm ${keysMismatch ? 'border-red-400' : ''}`} disabled={isSaving} />
+                          <button type="button" onClick={() => setShowNewKey(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                            {showNewKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
                         </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* ══ Row 3: Update API Key ══ */}
-              <Card className="border-amber-200">
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-amber-500" />
-                    Update API Key
-                  </CardTitle>
-                  <CardDescription>
-                    Enter the new key in both fields — they must match exactly. Verify the key works before saving.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-5">
-
-                  {/* Security notice */}
-                  <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-800">
-                    <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
-                    <span>
-                      This change takes effect within <strong>2 minutes</strong>. All essay scoring
-                      requests will automatically switch to the new key. The old key is logged in
-                      history below.
-                    </span>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {/* New key field */}
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="confirm-key">Confirm API Key <span className="text-red-500">*</span></Label>
+                        <div className="relative">
+                          <Input id="confirm-key" type={showConfirmKey ? 'text' : 'password'} value={confirmKey} onChange={e => setConfirmKey(e.target.value.trim())} placeholder="Re-enter the same key" className={`pr-10 font-mono text-sm ${keysMismatch ? 'border-red-400' : ''}`} disabled={isSaving} />
+                          <button type="button" onClick={() => setShowConfirmKey(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                            {showConfirmKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                        {keysMismatch && <p className="text-xs text-red-500 flex items-center gap-1"><XCircle className="h-3 w-3" /> Keys do not match</p>}
+                      </div>
+                    </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="new-key">New API Key <span className="text-red-500">*</span></Label>
-                      <div className="relative">
-                        <Input
-                          id="new-key"
-                          type={showNewKey ? 'text' : 'password'}
-                          value={newKey}
-                          onChange={e => setNewKey(e.target.value.trim())}
-                          placeholder="AIza…"
-                          className={`pr-10 font-mono text-sm ${keysMismatch ? 'border-red-400' : ''}`}
-                          disabled={isSaving}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowNewKey(v => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                        >
-                          {showNewKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
+                      <Label htmlFor="reason">Reason <span className="text-muted-foreground text-xs">(optional)</span></Label>
+                      <Input id="reason" value={reason} onChange={e => setReason(e.target.value)} placeholder="e.g. Quota exhausted, rotating for security…" disabled={isSaving} />
+                    </div>
+                    {verifyStatus === 'valid' && (
+                      <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-700 text-sm font-medium">
+                        <CheckCircle2 className="h-5 w-5 shrink-0" />Key verified — ready to save.
                       </div>
-                    </div>
-
-                    {/* Confirm key field */}
-                    <div className="space-y-1.5">
-                      <Label htmlFor="confirm-key">Confirm API Key <span className="text-red-500">*</span></Label>
-                      <div className="relative">
-                        <Input
-                          id="confirm-key"
-                          type={showConfirmKey ? 'text' : 'password'}
-                          value={confirmKey}
-                          onChange={e => setConfirmKey(e.target.value.trim())}
-                          placeholder="Re-enter the same key"
-                          className={`pr-10 font-mono text-sm ${keysMismatch ? 'border-red-400' : ''}`}
-                          disabled={isSaving}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirmKey(v => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                        >
-                          {showConfirmKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
+                    )}
+                    {verifyStatus === 'invalid' && (
+                      <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 border border-red-300 text-red-700 text-sm">
+                        <XCircle className="h-5 w-5 shrink-0 mt-0.5" />
+                        <div><p className="font-medium">Verification failed</p><p className="text-xs mt-0.5">{verifyError}</p></div>
                       </div>
-                      {keysMismatch && (
-                        <p className="text-xs text-red-500 flex items-center gap-1">
-                          <XCircle className="h-3 w-3" /> Keys do not match
-                        </p>
-                      )}
+                    )}
+                    <div className="flex flex-wrap gap-3">
+                      <Button variant="outline" onClick={handleVerify} disabled={!canVerify || verifyStatus === 'checking' || isSaving} className="gap-2">
+                        {verifyStatus === 'checking' ? <><Loader2 className="h-4 w-4 animate-spin" />Verifying…</> : verifyStatus === 'valid' ? <><CheckCircle2 className="h-4 w-4 text-emerald-600" />Re-Verify</> : <><ShieldCheck className="h-4 w-4" />Verify Key</>}
+                      </Button>
+                      <Button onClick={handleSave} disabled={!canSave} className="gap-2 bg-primary hover:bg-primary/90">
+                        {isSaving ? <><Loader2 className="h-4 w-4 animate-spin" />Saving…</> : <><Save className="h-4 w-4" />Save New Key</>}
+                      </Button>
                     </div>
-                  </div>
+                    <p className="text-xs text-muted-foreground">① Enter key → ② Verify → ③ Save</p>
+                  </CardContent>
+                </Card>
 
-                  {/* Reason field */}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="reason">Reason for Change <span className="text-muted-foreground text-xs">(optional)</span></Label>
-                    <Input
-                      id="reason"
-                      value={reason}
-                      onChange={e => setReason(e.target.value)}
-                      placeholder="e.g. Previous key quota exhausted, rotating for security…"
-                      disabled={isSaving}
-                    />
-                  </div>
-
-                  {/* Verification result banner */}
-                  {verifyStatus === 'valid' && (
-                    <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-700 text-sm font-medium">
-                      <CheckCircle2 className="h-5 w-5 shrink-0" />
-                      Key verified and working — ready to save.
-                    </div>
-                  )}
-                  {verifyStatus === 'invalid' && (
-                    <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 border border-red-300 text-red-700 text-sm">
-                      <XCircle className="h-5 w-5 shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-medium">Key verification failed</p>
-                        <p className="text-xs mt-0.5">{verifyError}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Action buttons */}
-                  <div className="flex flex-wrap gap-3">
-                    <Button
-                      variant="outline"
-                      onClick={handleVerify}
-                      disabled={!canVerify || verifyStatus === 'checking' || isSaving}
-                      className="gap-2"
-                    >
-                      {verifyStatus === 'checking' ? (
-                        <><Loader2 className="h-4 w-4 animate-spin" /> Verifying…</>
-                      ) : verifyStatus === 'valid' ? (
-                        <><CheckCircle2 className="h-4 w-4 text-emerald-600" /> Re-Verify Key</>
-                      ) : (
-                        <><ShieldCheck className="h-4 w-4" /> Verify Key</>
-                      )}
-                    </Button>
-
-                    <Button
-                      onClick={handleSave}
-                      disabled={!canSave}
-                      className="gap-2 bg-primary hover:bg-primary/90"
-                    >
-                      {isSaving ? (
-                        <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</>
-                      ) : (
-                        <><Save className="h-4 w-4" /> Save New Key</>
-                      )}
-                    </Button>
-                  </div>
-
-                  <p className="text-xs text-muted-foreground">
-                    ① Enter key in both fields → ② Click <strong>Verify Key</strong> (live test against Gemini API) → ③ Click <strong>Save New Key</strong>
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* ══ Row 4: Key Change History ══ */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <History className="h-4 w-4 text-slate-500" />
-                    Key Change History
-                  </CardTitle>
-                  <CardDescription>Last 10 API key changes (newest first)</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {config.keyHistory.length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-4 text-center">No changes recorded yet.</p>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b text-left text-xs text-muted-foreground uppercase tracking-wider">
-                            <th className="pb-2 pr-4 font-semibold">Date & Time</th>
-                            <th className="pb-2 pr-4 font-semibold">Changed By</th>
-                            <th className="pb-2 pr-4 font-semibold">Key (masked)</th>
-                            <th className="pb-2 font-semibold">Reason</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y">
-                          {config.keyHistory.map((entry, idx) => (
-                            <tr key={idx} className={`${idx === 0 ? 'bg-primary/5' : ''} hover:bg-muted/30 transition-colors`}>
-                              <td className="py-3 pr-4 text-xs text-muted-foreground whitespace-nowrap">
-                                {idx === 0 && <Badge className="text-[9px] mr-1 py-0" variant="outline">Latest</Badge>}
-                                {fmtDate(entry.changedAt)}
-                              </td>
-                              <td className="py-3 pr-4 font-medium text-xs">{entry.changedBy}</td>
-                              <td className="py-3 pr-4 font-mono text-xs">{entry.maskedKey}</td>
-                              <td className="py-3 text-xs text-muted-foreground">{entry.reason || '—'}</td>
+                {/* Row 4: Key change history */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2"><History className="h-4 w-4 text-slate-500" />Key Change History</CardTitle>
+                    <CardDescription>Last 10 API key changes (newest first)</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {config.keyHistory.length === 0 ? (
+                      <p className="text-sm text-muted-foreground py-4 text-center">No changes recorded yet.</p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b text-left text-xs text-muted-foreground uppercase tracking-wider">
+                              <th className="pb-2 pr-4 font-semibold">Date & Time</th>
+                              <th className="pb-2 pr-4 font-semibold">Changed By</th>
+                              <th className="pb-2 pr-4 font-semibold">Key (masked)</th>
+                              <th className="pb-2 font-semibold">Reason</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                          </thead>
+                          <tbody className="divide-y">
+                            {config.keyHistory.map((entry, idx) => (
+                              <tr key={idx} className={`${idx === 0 ? 'bg-primary/5' : ''} hover:bg-muted/30 transition-colors`}>
+                                <td className="py-3 pr-4 text-xs text-muted-foreground whitespace-nowrap">
+                                  {idx === 0 && <Badge className="text-[9px] mr-1 py-0" variant="outline">Latest</Badge>}
+                                  {fmtDate(entry.changedAt)}
+                                </td>
+                                <td className="py-3 pr-4 font-medium text-xs">{entry.changedBy}</td>
+                                <td className="py-3 pr-4 font-mono text-xs">{entry.maskedKey}</td>
+                                <td className="py-3 text-xs text-muted-foreground">{entry.reason || '—'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
 
+              </>)}
             </div>
           )}
+
+          {/* ════════════════════════════════════════
+              TAB: USERS
+          ════════════════════════════════════════ */}
+          {activeTab === 'users' && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2"><Users className="h-4 w-4" />Per-User AI Usage</CardTitle>
+                <CardDescription>Sorted by total calls — last 30 days</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingUsage ? (
+                  <div className="py-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b text-left text-xs text-muted-foreground uppercase tracking-wider">
+                          <th className="pb-2 pr-4 font-semibold">Email</th>
+                          <th className="pb-2 pr-4 font-semibold">IP Address(es)</th>
+                          <th className="pb-2 pr-2 font-semibold text-center">Essay</th>
+                          <th className="pb-2 pr-2 font-semibold text-center">SWT</th>
+                          <th className="pb-2 pr-2 font-semibold text-center">Other</th>
+                          <th className="pb-2 pr-2 font-semibold text-center">Total</th>
+                          <th className="pb-2 pr-2 font-semibold text-center">Errors</th>
+                          <th className="pb-2 font-semibold">Last Seen</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {filteredUsers.map((u, i) => (
+                          <tr key={i} className="hover:bg-muted/30 transition-colors">
+                            <td className="py-2.5 pr-4 font-medium text-xs">{u.email}</td>
+                            <td className="py-2.5 pr-4 text-xs">
+                              {u.ips.length === 0 ? <span className="text-muted-foreground">—</span> : u.ips.map((ip, j) => (
+                                <span key={j} className="inline-block font-mono bg-slate-100 rounded px-1 mr-1 mb-0.5 text-[10px]">{ip}</span>
+                              ))}
+                            </td>
+                            <td className="py-2.5 pr-2 text-center">
+                              {u.essay > 0 ? <Badge className="bg-purple-100 text-purple-700 text-xs">{u.essay}</Badge> : <span className="text-muted-foreground text-xs">—</span>}
+                            </td>
+                            <td className="py-2.5 pr-2 text-center">
+                              {u.swt > 0 ? <Badge className="bg-blue-100 text-blue-700 text-xs">{u.swt}</Badge> : <span className="text-muted-foreground text-xs">—</span>}
+                            </td>
+                            <td className="py-2.5 pr-2 text-center">
+                              {u.serverAction > 0 ? <Badge variant="outline" className="text-xs">{u.serverAction}</Badge> : <span className="text-muted-foreground text-xs">—</span>}
+                            </td>
+                            <td className="py-2.5 pr-2 text-center font-bold text-sm">{u.total}</td>
+                            <td className="py-2.5 pr-2 text-center">
+                              {u.errors > 0 ? <span className="text-red-600 font-bold text-xs">{u.errors}</span> : <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 mx-auto" />}
+                            </td>
+                            <td className="py-2.5 text-xs text-muted-foreground whitespace-nowrap">{fmtShort(u.lastSeen)}</td>
+                          </tr>
+                        ))}
+                        {filteredUsers.length === 0 && (
+                          <tr><td colSpan={8} className="py-8 text-center text-muted-foreground text-sm">No users found{search ? ` matching "${search}"` : '. Data appears after first AI call.'}.</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* ════════════════════════════════════════
+              TAB: KEY STATS
+          ════════════════════════════════════════ */}
+          {activeTab === 'keys' && (
+            <div>
+              {isLoadingUsage ? (
+                <div className="py-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {(usage?.keySummary ?? []).map(k => (
+                    <Card key={k.keyLabel} className={k.hasRateLimitAlert ? 'border-orange-300 bg-orange-50/30' : ''}>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <CardTitle className="text-base font-mono flex items-center gap-2">
+                            <Key className="h-4 w-4 text-primary" />{k.keyLabel}
+                          </CardTitle>
+                          <div className="flex gap-1 flex-wrap">
+                            {k.hasRateLimitAlert && (
+                              <Badge className="bg-orange-100 text-orange-700 border-orange-300 text-xs gap-1">
+                                <ShieldAlert className="h-3 w-3" />Rate Limited
+                              </Badge>
+                            )}
+                            <Badge variant="outline" className="text-xs">
+                              {k.keyIndex !== null ? `env #${k.keyIndex}` : 'Firestore key'}
+                            </Badge>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <PeriodRow label="Today"   s={k.daily} />
+                        <PeriodRow label="7 days"  s={k.weekly} />
+                        <PeriodRow label="30 days" s={k.monthly} />
+                        {k.monthly.requests === 0 && (
+                          <p className="text-xs text-muted-foreground italic mt-2">No activity in 30 days.</p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                  {(usage?.keySummary.length ?? 0) === 0 && (
+                    <Card className="md:col-span-2 xl:col-span-3">
+                      <CardContent className="py-12 text-center text-muted-foreground">No API key data yet. Appears after the first AI call.</CardContent>
+                    </Card>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ════════════════════════════════════════
+              TAB: ACTIVITY LOG
+          ════════════════════════════════════════ */}
+          {activeTab === 'log' && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2"><Clock className="h-4 w-4" />Recent Activity</CardTitle>
+                <CardDescription>Last 100 AI calls — newest first</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingUsage ? (
+                  <div className="py-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b text-left text-[10px] text-muted-foreground uppercase tracking-wider">
+                          <th className="pb-2 pr-3 font-semibold">Time</th>
+                          <th className="pb-2 pr-3 font-semibold">Email</th>
+                          <th className="pb-2 pr-3 font-semibold">IP</th>
+                          <th className="pb-2 pr-3 font-semibold">Task</th>
+                          <th className="pb-2 pr-3 font-semibold">Key</th>
+                          <th className="pb-2 font-semibold">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {filteredLogs.map((l, i) => (
+                          <tr key={i} className={`hover:bg-muted/30 transition-colors ${!l.success ? 'bg-red-50/50' : ''}`}>
+                            <td className="py-2 pr-3 whitespace-nowrap text-muted-foreground">{fmtShort(l.timestamp)}</td>
+                            <td className="py-2 pr-3 font-medium">{l.email ?? '—'}</td>
+                            <td className="py-2 pr-3 font-mono text-muted-foreground">{l.ip ?? '—'}</td>
+                            <td className="py-2 pr-3">
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${taskColor[l.task] ?? 'bg-slate-100 text-slate-700'}`}>{l.task}</span>
+                            </td>
+                            <td className="py-2 pr-3 font-mono text-muted-foreground text-[10px]">{l.keyLabel}</td>
+                            <td className="py-2">
+                              {l.success
+                                ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                                : <span className="flex items-center gap-1">
+                                    <XCircle className="h-3.5 w-3.5 text-red-500 shrink-0" />
+                                    {l.isRateLimit && <span className="text-orange-600 text-[10px] font-bold">RL</span>}
+                                  </span>
+                              }
+                            </td>
+                          </tr>
+                        ))}
+                        {filteredLogs.length === 0 && (
+                          <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">No activity yet.</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* ════════════════════════════════════════
+              TAB: ERRORS
+          ════════════════════════════════════════ */}
+          {activeTab === 'errors' && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-red-500" />Error Log
+                </CardTitle>
+                <CardDescription>All failed AI calls — rate limits, quota exceeded, exceptions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingUsage ? (
+                  <div className="py-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+                ) : (usage?.errorLog.length ?? 0) === 0 ? (
+                  <div className="py-12 text-center">
+                    <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto mb-3" />
+                    <p className="text-muted-foreground font-medium">No errors recorded</p>
+                    <p className="text-xs text-muted-foreground mt-1">All AI calls succeeded.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {(usage?.errorLog ?? []).map((e, i) => (
+                      <div key={i} className={`p-3 rounded-lg border text-xs ${e.isRateLimit ? 'border-orange-200 bg-orange-50' : 'border-red-200 bg-red-50'}`}>
+                        <div className="flex items-start justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {e.isRateLimit
+                              ? <Badge className="bg-orange-100 text-orange-700 border-orange-300 text-[10px]">Rate Limit</Badge>
+                              : <Badge className="bg-red-100 text-red-700 border-red-300 text-[10px]">Error</Badge>}
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${taskColor[e.task] ?? 'bg-slate-100 text-slate-700'}`}>{e.task}</span>
+                            <span className="font-mono text-muted-foreground text-[10px]">{e.keyLabel}</span>
+                          </div>
+                          <span className="text-muted-foreground whitespace-nowrap">{fmtShort(e.timestamp)}</span>
+                        </div>
+                        <div className="mt-1.5 space-y-0.5">
+                          <p><span className="text-muted-foreground">User: </span><span className="font-medium">{e.email ?? '—'}</span></p>
+                          <p><span className="text-muted-foreground">IP: </span><span className="font-mono">{e.ip ?? '—'}</span></p>
+                          {e.error && (
+                            <p className={`${e.isRateLimit ? 'text-orange-700' : 'text-red-700'} truncate max-w-2xl`} title={e.error}>{e.error}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
         </div>
       </section>
     </div>
