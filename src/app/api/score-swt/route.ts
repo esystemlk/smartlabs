@@ -88,13 +88,15 @@ let _envKeyCounter = 0;
 const CACHE_TTL_MS = 2 * 60 * 1000;
 
 function getEnvKeys(): { key: string; label: string; index: number }[] {
+  // Priority 1: dedicated single env key (valid AIza... REST API key)
+  const single = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || '';
+  if (single) return [{ key: single, label: 'ENV_KEY', index: 0 }];
+
+  // Priority 2: numbered pool (GOOGLE_GENAI_API_KEY_1..5)
   const numbered = [1, 2, 3, 4, 5]
     .map(i => ({ key: process.env[`GOOGLE_GENAI_API_KEY_${i}`] ?? '', label: `KEY_${i}`, index: i }))
     .filter(k => k.key.length > 0);
-  if (numbered.length > 0) return numbered;
-  const legacy = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || '';
-  if (legacy) return [{ key: legacy, label: 'ENV_KEY', index: 0 }];
-  return [];
+  return numbered;
 }
 
 async function getApiKey(): Promise<{ key: string; label: string; keyIndex: number | null } | null> {
