@@ -25,12 +25,13 @@ const MODELS = [
 
 // ─── In-memory API key cache (refreshes every 2 min or on cache_control signal) ─
 let _cachedKey: string | null = null;
+let _cachedLabel: string = 'FIRESTORE_KEY';
 let _cacheExpiry  = 0;
 let _cacheVersion = 0;        // mirrors Firestore cache_control.keyVersion
 
 const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 
-async function getApiKey(): Promise<string | null> {
+async function getApiKey(): Promise<{ key: string; label: string } | null> {
   try {
     if (adminDb) {
       // Check if admin has invalidated the cache
@@ -49,14 +50,15 @@ async function getApiKey(): Promise<string | null> {
           const key = snap.data()?.geminiApiKey as string | undefined;
           if (key) {
             _cachedKey    = key;
+            _cachedLabel  = 'FIRESTORE_KEY';
             _cacheExpiry  = Date.now() + CACHE_TTL_MS;
             _cacheVersion = remoteVersion;
             console.log('[score-essay] API key loaded from Firestore.');
-            return key;
+            return { key, label: 'FIRESTORE_KEY' };
           }
         }
-      } else {
-        return _cachedKey;
+      } else if (_cachedKey) {
+        return { key: _cachedKey, label: _cachedLabel };
       }
     }
   } catch (e) {
@@ -64,7 +66,9 @@ async function getApiKey(): Promise<string | null> {
   }
 
   // Fall back to environment variables
-  return process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || null;
+  const envKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || null;
+  if (envKey) return { key: envKey, label: 'ENV_KEY' };
+  return null;
 }
 
 // ─── Fire-and-forget usage tracking ──────────────────────────────────────────
@@ -716,14 +720,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const apiKey = await getApiKey();
-    if (!apiKey) {
+    const apiKeyResult = await getApiKey();
+    if (!apiKeyResult) {
       console.error('Server Configuration Error: Gemini API key is missing from both Firestore and .env.');
       return NextResponse.json(
         { error: 'Gemini API key is not configured on the server.' },
         { status: 500 }
       );
     }
+    const { key: apiKey, label: apiKeyLabel } = apiKeyResult;
 
     let userMessage = `Essay Topic: ${topic}
 
@@ -856,7 +861,7 @@ Note: Only list criteria in criteriaGaps that are actually below the required th
 
     if (!responseText) {
       console.error('[score-essay] All models exhausted:', errorLog);
-      logAiCall({ userId: uid, email: userEmail, ip, task: 'essay', keyLabel: 'FIRESTORE_KEY', keyIndex: null, model: null, success: false, isRateLimit: errorLog.some(e => e.includes('429') || e.includes('QUOTA')), error: errorLog.join(' | '), timestamp: new Date() }).catch(() => {});
+      logAiCall({ userId: uid, email: userEmail, ip, task: 'essay', keyLabel: apiKeyLabel, keyIndex: null, model: null, success: false, isRateLimit: errorLog.some(e => e.includes('429') || e.includes('QUOTA')), error: errorLog.join(' | '), timestamp: new Date() }).catch(() => {});
       return NextResponse.json(
         {
           error  : 'All AI models failed to score the essay. Please try again in a moment.',
@@ -865,7 +870,7 @@ Note: Only list criteria in criteriaGaps that are actually below the required th
         { status: 502 }
       );
     }
-    logAiCall({ userId: uid, email: userEmail, ip, task: 'essay', keyLabel: 'FIRESTORE_KEY', keyIndex: null, model: usedModel ?? null, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
+    logAiCall({ userId: uid, email: userEmail, ip, task: 'essay', keyLabel: apiKeyLabel, keyIndex: null, model: usedModel ?? null, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
 
     const parsed = JSON.parse(responseText);
 

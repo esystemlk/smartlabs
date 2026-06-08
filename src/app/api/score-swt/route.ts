@@ -82,11 +82,12 @@ const MODELS = [
 
 // ─── API key cache (same pattern as score-essay) ────────────────────────────
 let _cachedKey: string | null = null;
+let _cachedLabel: string = 'FIRESTORE_KEY';
 let _cacheExpiry = 0;
 let _cacheVersion = 0;
 const CACHE_TTL_MS = 2 * 60 * 1000;
 
-async function getApiKey(): Promise<string | null> {
+async function getApiKey(): Promise<{ key: string; label: string } | null> {
   try {
     if (adminDb) {
       const ccSnap = await adminDb.collection('system_config').doc('cache_control').get();
@@ -97,18 +98,21 @@ async function getApiKey(): Promise<string | null> {
         const key = snap.exists ? (snap.data()?.geminiApiKey as string | undefined) : undefined;
         if (key) {
           _cachedKey = key;
+          _cachedLabel = 'FIRESTORE_KEY';
           _cacheExpiry = Date.now() + CACHE_TTL_MS;
           _cacheVersion = remoteVersion;
-          return key;
+          return { key, label: 'FIRESTORE_KEY' };
         }
-      } else {
-        return _cachedKey;
+      } else if (_cachedKey) {
+        return { key: _cachedKey, label: _cachedLabel };
       }
     }
   } catch (e) {
     console.warn('[score-swt] key read failed, env fallback:', e);
   }
-  return process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || null;
+  const envKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || null;
+  if (envKey) return { key: envKey, label: 'ENV_KEY' };
+  return null;
 }
 
 // ─── Deterministic Form scoring (official SWT rules) ────────────────────────
@@ -223,10 +227,11 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Passage and summary are required.' }, { status: 400 });
     }
 
-    const apiKey = await getApiKey();
-    if (!apiKey) {
+    const apiKeyResult = await getApiKey();
+    if (!apiKeyResult) {
       return Response.json({ error: 'AI key not configured on the server.' }, { status: 500 });
     }
+    const { key: apiKey, label: apiKeyLabel } = apiKeyResult;
 
     const form = scoreForm(summary);
 
@@ -314,10 +319,10 @@ The system has already scored FORM = ${form.form}/1 (${form.reasons.join(' ')}).
 
     if (!responseText) {
       console.error('[score-swt] all models failed:', errorLog);
-      logAiCall({ userId: uid, email: userEmail, ip, task: 'swt', keyLabel: 'FIRESTORE_KEY', keyIndex: null, model: null, success: false, isRateLimit: errorLog.some(e => e.includes('429') || e.includes('quota')), error: errorLog.join(' | '), timestamp: new Date() }).catch(() => {});
+      logAiCall({ userId: uid, email: userEmail, ip, task: 'swt', keyLabel: apiKeyLabel, keyIndex: null, model: null, success: false, isRateLimit: errorLog.some(e => e.includes('429') || e.includes('quota')), error: errorLog.join(' | '), timestamp: new Date() }).catch(() => {});
       return Response.json({ error: 'AI scoring failed. Please try again.', details: errorLog }, { status: 502 });
     }
-    logAiCall({ userId: uid, email: userEmail, ip, task: 'swt', keyLabel: 'FIRESTORE_KEY', keyIndex: null, model: usedModel, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
+    logAiCall({ userId: uid, email: userEmail, ip, task: 'swt', keyLabel: apiKeyLabel, keyIndex: null, model: usedModel, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
 
     const parsed = JSON.parse(responseText);
     const content = Math.max(0, Math.min(4, Number(parsed?.scores?.content ?? 0)));
