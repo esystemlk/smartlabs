@@ -81,38 +81,55 @@ const MODELS = [
 ];
 
 // ─── API key cache (same pattern as score-essay) ────────────────────────────
-let _cachedKey: string | null = null;
-let _cachedLabel: string = 'FIRESTORE_KEY';
+let _cachedFirestoreKey: string | null = null;
 let _cacheExpiry = 0;
 let _cacheVersion = 0;
+let _envKeyCounter = 0;
 const CACHE_TTL_MS = 2 * 60 * 1000;
 
-async function getApiKey(): Promise<{ key: string; label: string } | null> {
+function getEnvKeys(): { key: string; label: string; index: number }[] {
+  const numbered = [1, 2, 3, 4, 5]
+    .map(i => ({ key: process.env[`GOOGLE_GENAI_API_KEY_${i}`] ?? '', label: `KEY_${i}`, index: i }))
+    .filter(k => k.key.length > 0);
+  if (numbered.length > 0) return numbered;
+  const legacy = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || '';
+  if (legacy) return [{ key: legacy, label: 'ENV_KEY', index: 0 }];
+  return [];
+}
+
+async function getApiKey(): Promise<{ key: string; label: string; keyIndex: number | null } | null> {
+  // 1. Try Firestore-managed key first
   try {
     if (adminDb) {
       const ccSnap = await adminDb.collection('system_config').doc('cache_control').get();
       const remoteVersion: number = ccSnap.exists ? (ccSnap.data()?.keyVersion ?? 0) : 0;
-      const valid = _cachedKey && Date.now() < _cacheExpiry && _cacheVersion === remoteVersion;
+      const valid = _cachedFirestoreKey && Date.now() < _cacheExpiry && _cacheVersion === remoteVersion;
       if (!valid) {
         const snap = await adminDb.collection('system_config').doc('ai_settings').get();
         const key = snap.exists ? (snap.data()?.geminiApiKey as string | undefined) : undefined;
         if (key) {
-          _cachedKey = key;
-          _cachedLabel = 'FIRESTORE_KEY';
+          _cachedFirestoreKey = key;
           _cacheExpiry = Date.now() + CACHE_TTL_MS;
           _cacheVersion = remoteVersion;
-          return { key, label: 'FIRESTORE_KEY' };
+          return { key, label: 'FIRESTORE_KEY', keyIndex: null };
         }
-      } else if (_cachedKey) {
-        return { key: _cachedKey, label: _cachedLabel };
+        _cachedFirestoreKey = null;
+        _cacheExpiry = 0;
+        _cacheVersion = remoteVersion;
+      } else if (_cachedFirestoreKey) {
+        return { key: _cachedFirestoreKey, label: 'FIRESTORE_KEY', keyIndex: null };
       }
     }
   } catch (e) {
-    console.warn('[score-swt] key read failed, env fallback:', e);
+    console.warn('[score-swt] key read failed, env pool fallback:', e);
   }
-  const envKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || null;
-  if (envKey) return { key: envKey, label: 'ENV_KEY' };
-  return null;
+  // 2. Fall back to GOOGLE_GENAI_API_KEY_1..5 round-robin pool
+  const envKeys = getEnvKeys();
+  if (envKeys.length === 0) return null;
+  const chosen = envKeys[_envKeyCounter % envKeys.length];
+  _envKeyCounter = (_envKeyCounter + 1) % envKeys.length;
+  console.log(`[score-swt] Using env pool key: ${chosen.label}`);
+  return { key: chosen.key, label: chosen.label, keyIndex: chosen.index || null };
 }
 
 // ─── Deterministic Form scoring (official SWT rules) ────────────────────────
@@ -231,7 +248,7 @@ export async function POST(request: Request) {
     if (!apiKeyResult) {
       return Response.json({ error: 'AI key not configured on the server.' }, { status: 500 });
     }
-    const { key: apiKey, label: apiKeyLabel } = apiKeyResult;
+    const { key: apiKey, label: apiKeyLabel, keyIndex: apiKeyIndex } = apiKeyResult;
 
     const form = scoreForm(summary);
 
@@ -319,10 +336,10 @@ The system has already scored FORM = ${form.form}/1 (${form.reasons.join(' ')}).
 
     if (!responseText) {
       console.error('[score-swt] all models failed:', errorLog);
-      logAiCall({ userId: uid, email: userEmail, ip, task: 'swt', keyLabel: apiKeyLabel, keyIndex: null, model: null, success: false, isRateLimit: errorLog.some(e => e.includes('429') || e.includes('quota')), error: errorLog.join(' | '), timestamp: new Date() }).catch(() => {});
+      logAiCall({ userId: uid, email: userEmail, ip, task: 'swt', keyLabel: apiKeyLabel, keyIndex: apiKeyIndex, model: null, success: false, isRateLimit: errorLog.some(e => e.includes('429') || e.includes('quota')), error: errorLog.join(' | '), timestamp: new Date() }).catch(() => {});
       return Response.json({ error: 'AI scoring failed. Please try again.', details: errorLog }, { status: 502 });
     }
-    logAiCall({ userId: uid, email: userEmail, ip, task: 'swt', keyLabel: apiKeyLabel, keyIndex: null, model: usedModel, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
+    logAiCall({ userId: uid, email: userEmail, ip, task: 'swt', keyLabel: apiKeyLabel, keyIndex: apiKeyIndex, model: usedModel, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
 
     const parsed = JSON.parse(responseText);
     const content = Math.max(0, Math.min(4, Number(parsed?.scores?.content ?? 0)));

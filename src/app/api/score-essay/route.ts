@@ -24,51 +24,67 @@ const MODELS = [
 ];
 
 // ─── In-memory API key cache (refreshes every 2 min or on cache_control signal) ─
-let _cachedKey: string | null = null;
-let _cachedLabel: string = 'FIRESTORE_KEY';
+let _cachedFirestoreKey: string | null = null;
 let _cacheExpiry  = 0;
 let _cacheVersion = 0;        // mirrors Firestore cache_control.keyVersion
+let _envKeyCounter = 0;       // round-robin counter for the 5-key pool
 
 const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 
-async function getApiKey(): Promise<{ key: string; label: string } | null> {
+function getEnvKeys(): { key: string; label: string; index: number }[] {
+  const numbered = [1, 2, 3, 4, 5]
+    .map(i => ({ key: process.env[`GOOGLE_GENAI_API_KEY_${i}`] ?? '', label: `KEY_${i}`, index: i }))
+    .filter(k => k.key.length > 0);
+  if (numbered.length > 0) return numbered;
+  // Final fallback: legacy single env var
+  const legacy = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || '';
+  if (legacy) return [{ key: legacy, label: 'ENV_KEY', index: 0 }];
+  return [];
+}
+
+async function getApiKey(): Promise<{ key: string; label: string; keyIndex: number | null } | null> {
+  // 1. Try Firestore-managed key first (set by admin via UI)
   try {
     if (adminDb) {
-      // Check if admin has invalidated the cache
       const ccSnap = await adminDb.collection('system_config').doc('cache_control').get();
       const remoteVersion: number = ccSnap.exists ? (ccSnap.data()?.keyVersion ?? 0) : 0;
 
       const cacheStillValid =
-        _cachedKey &&
+        _cachedFirestoreKey &&
         Date.now() < _cacheExpiry &&
         _cacheVersion === remoteVersion;
 
       if (!cacheStillValid) {
-        // Fetch from Firestore
         const snap = await adminDb.collection('system_config').doc('ai_settings').get();
         if (snap.exists) {
           const key = snap.data()?.geminiApiKey as string | undefined;
           if (key) {
-            _cachedKey    = key;
-            _cachedLabel  = 'FIRESTORE_KEY';
+            _cachedFirestoreKey = key;
             _cacheExpiry  = Date.now() + CACHE_TTL_MS;
             _cacheVersion = remoteVersion;
             console.log('[score-essay] API key loaded from Firestore.');
-            return { key, label: 'FIRESTORE_KEY' };
+            return { key, label: 'FIRESTORE_KEY', keyIndex: null };
           }
         }
-      } else if (_cachedKey) {
-        return { key: _cachedKey, label: _cachedLabel };
+        // Firestore doc exists but no key → clear cache so we don't serve stale
+        _cachedFirestoreKey = null;
+        _cacheExpiry = 0;
+        _cacheVersion = remoteVersion;
+      } else if (_cachedFirestoreKey) {
+        return { key: _cachedFirestoreKey, label: 'FIRESTORE_KEY', keyIndex: null };
       }
     }
   } catch (e) {
-    console.warn('[score-essay] Firestore key read failed, falling back to .env:', e);
+    console.warn('[score-essay] Firestore key read failed, falling back to env pool:', e);
   }
 
-  // Fall back to environment variables
-  const envKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || null;
-  if (envKey) return { key: envKey, label: 'ENV_KEY' };
-  return null;
+  // 2. Fall back to GOOGLE_GENAI_API_KEY_1..5 pool with round-robin
+  const envKeys = getEnvKeys();
+  if (envKeys.length === 0) return null;
+  const chosen = envKeys[_envKeyCounter % envKeys.length];
+  _envKeyCounter = (_envKeyCounter + 1) % envKeys.length;
+  console.log(`[score-essay] Using env pool key: ${chosen.label}`);
+  return { key: chosen.key, label: chosen.label, keyIndex: chosen.index || null };
 }
 
 // ─── Fire-and-forget usage tracking ──────────────────────────────────────────
@@ -728,7 +744,7 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
-    const { key: apiKey, label: apiKeyLabel } = apiKeyResult;
+    const { key: apiKey, label: apiKeyLabel, keyIndex: apiKeyIndex } = apiKeyResult;
 
     let userMessage = `Essay Topic: ${topic}
 
@@ -861,7 +877,7 @@ Note: Only list criteria in criteriaGaps that are actually below the required th
 
     if (!responseText) {
       console.error('[score-essay] All models exhausted:', errorLog);
-      logAiCall({ userId: uid, email: userEmail, ip, task: 'essay', keyLabel: apiKeyLabel, keyIndex: null, model: null, success: false, isRateLimit: errorLog.some(e => e.includes('429') || e.includes('QUOTA')), error: errorLog.join(' | '), timestamp: new Date() }).catch(() => {});
+      logAiCall({ userId: uid, email: userEmail, ip, task: 'essay', keyLabel: apiKeyLabel, keyIndex: apiKeyIndex, model: null, success: false, isRateLimit: errorLog.some(e => e.includes('429') || e.includes('QUOTA')), error: errorLog.join(' | '), timestamp: new Date() }).catch(() => {});
       return NextResponse.json(
         {
           error  : 'All AI models failed to score the essay. Please try again in a moment.',
@@ -870,7 +886,7 @@ Note: Only list criteria in criteriaGaps that are actually below the required th
         { status: 502 }
       );
     }
-    logAiCall({ userId: uid, email: userEmail, ip, task: 'essay', keyLabel: apiKeyLabel, keyIndex: null, model: usedModel ?? null, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
+    logAiCall({ userId: uid, email: userEmail, ip, task: 'essay', keyLabel: apiKeyLabel, keyIndex: apiKeyIndex, model: usedModel ?? null, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
 
     const parsed = JSON.parse(responseText);
 
