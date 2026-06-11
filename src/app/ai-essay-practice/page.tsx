@@ -56,12 +56,10 @@ import {
 
 /* ─── Essay Credit Packages ───────────────────────────────────────────────── */
 const ESSAY_PACKAGES = [
-  { id: 'essay_10',        label: '10 Tests',   scoring: 10,  gens: 3,   price: 1500,  popular: false, color: 'blue'   },
-  { id: 'essay_20',        label: '20 Tests',   scoring: 20,  gens: 5,   price: 2000,  popular: false, color: 'indigo' },
-  { id: 'essay_30',        label: '30 Tests',   scoring: 30,  gens: 8,   price: 2500,  popular: false, color: 'orange' },
-  { id: 'essay_40',        label: '40 Tests',   scoring: 40,  gens: 10,  price: 3500,  popular: true,  color: 'emerald'},
-  { id: 'essay_100',       label: '100 Tests',  scoring: 100, gens: 25,  price: 6000,  popular: false, color: 'violet' },
-  { id: 'essay_unlimited', label: 'Unlimited',  scoring: -1,  gens: 300, price: 15000, popular: false, color: 'amber'  },
+  { id: 'essay_10', label: '10 Tests', scoring: 10, gens: 3, price: 1500, popular: false, color: 'blue' },
+  { id: 'essay_40', label: '40 Tests', scoring: 40, gens: 10, price: 3500, popular: true, color: 'emerald' },
+  { id: 'essay_100', label: '100 Tests', scoring: 100, gens: 25, price: 6000, popular: false, color: 'violet' },
+  { id: 'essay_unlimited', label: 'Unlimited', scoring: -1, gens: 300, price: 15000, popular: false, color: 'amber' },
 ] as const;
 
 // Packages shown up-front on the pricing grid
@@ -156,17 +154,17 @@ function AIEssayPracticeInner() {
   // ── Firebase auth + credits ───────────────────────────────────────────────
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
-  const router    = useRouter();
+  const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [creditInfo, setCreditInfo]       = useState<CreditInfo | null>(null);
+  const [creditInfo, setCreditInfo] = useState<CreditInfo | null>(null);
   const [creditLoading, setCreditLoading] = useState(false);
 
   // ── Modal / overlay state ──────────────────────────────────────────────────
-  const [showSignInModal, setShowSignInModal]     = useState(false);
+  const [showSignInModal, setShowSignInModal] = useState(false);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
-  const [isBlocked, setIsBlocked]                 = useState(false);
-  const [blockedMessage, setBlockedMessage]       = useState('');
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [blockedMessage, setBlockedMessage] = useState('');
 
   // ── Navbar state ──────────────────────────────────────────────────────────
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -208,7 +206,7 @@ function AIEssayPracticeInner() {
 
   const isUnlimitedRole = useMemo(() =>
     creditInfo ? UNLIMITED_ROLES.includes(creditInfo.role) : false,
-  [creditInfo]);
+    [creditInfo]);
 
   const creditsRemaining = useMemo<number | null>(() => {
     if (!creditInfo) return null;
@@ -256,12 +254,12 @@ function AIEssayPracticeInner() {
     const isUnlimited = pkg.scoring === -1;
     const isPurchasing = purchasingPkg === pkg.id;
     const colorMap: Record<string, { ring: string; badge: string; btn: string; icon: string }> = {
-      blue:    { ring: 'border-blue-700',    badge: 'bg-blue-800 text-blue-200',    btn: 'bg-blue-600 hover:bg-blue-500',    icon: 'text-blue-400' },
-      indigo:  { ring: 'border-indigo-700',  badge: 'bg-indigo-800 text-indigo-200',btn: 'bg-indigo-600 hover:bg-indigo-500',icon: 'text-indigo-400' },
-      orange:  { ring: 'border-[#f97316]',   badge: 'bg-orange-800 text-orange-200',btn: 'bg-[#f97316] hover:bg-[#fb923c]', icon: 'text-[#f97316]' },
-      emerald: { ring: 'border-emerald-700', badge: 'bg-emerald-800 text-emerald-200',btn:'bg-emerald-600 hover:bg-emerald-500',icon:'text-emerald-400'},
-      violet:  { ring: 'border-violet-700',  badge: 'bg-violet-800 text-violet-200',btn: 'bg-violet-600 hover:bg-violet-500',icon: 'text-violet-400' },
-      amber:   { ring: 'border-amber-600',   badge: 'bg-amber-800 text-amber-200',  btn: 'bg-amber-500 hover:bg-amber-400',  icon: 'text-amber-400' },
+      blue: { ring: 'border-blue-700', badge: 'bg-blue-800 text-blue-200', btn: 'bg-blue-600 hover:bg-blue-500', icon: 'text-blue-400' },
+      indigo: { ring: 'border-indigo-700', badge: 'bg-indigo-800 text-indigo-200', btn: 'bg-indigo-600 hover:bg-indigo-500', icon: 'text-indigo-400' },
+      orange: { ring: 'border-[#f97316]', badge: 'bg-orange-800 text-orange-200', btn: 'bg-[#f97316] hover:bg-[#fb923c]', icon: 'text-[#f97316]' },
+      emerald: { ring: 'border-emerald-700', badge: 'bg-emerald-800 text-emerald-200', btn: 'bg-emerald-600 hover:bg-emerald-500', icon: 'text-emerald-400' },
+      violet: { ring: 'border-violet-700', badge: 'bg-violet-800 text-violet-200', btn: 'bg-violet-600 hover:bg-violet-500', icon: 'text-violet-400' },
+      amber: { ring: 'border-amber-600', badge: 'bg-amber-800 text-amber-200', btn: 'bg-amber-500 hover:bg-amber-400', icon: 'text-amber-400' },
     };
     const c = colorMap[pkg.color] ?? colorMap.blue;
 
@@ -339,7 +337,7 @@ function AIEssayPracticeInner() {
           className={`w-full mt-auto py-3 px-4 rounded-2xl font-extrabold text-sm text-white transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${c.btn}`}
         >
           {isPurchasing ? (
-            <><svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Setting up...</>
+            <><svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg> Setting up...</>
           ) : (
             <><CreditCard size={16} weight="bold" /> Buy — LKR {pkg.price.toLocaleString()}</>
           )}
@@ -413,11 +411,11 @@ function AIEssayPracticeInner() {
           const data = snap.data() ?? {};
           const monthlyExpiry = (data.essayMonthlyExpiry as { toDate?: () => Date } | undefined)?.toDate?.() ?? null;
           setCreditInfo({
-            freeUsed:    (data.essayFreeUsed    as number) ?? 0,
+            freeUsed: (data.essayFreeUsed as number) ?? 0,
             paidCredits: (data.essayPaidCredits as number) ?? 0,
-            hasMonthly:  !!(monthlyExpiry && monthlyExpiry > new Date()),
-            genCredits:  (data.essayGenCredits  as number) ?? 0,
-            role:        (data.role             as string) ?? 'student',
+            hasMonthly: !!(monthlyExpiry && monthlyExpiry > new Date()),
+            genCredits: (data.essayGenCredits as number) ?? 0,
+            role: (data.role as string) ?? 'student',
           });
         });
       }
@@ -426,7 +424,7 @@ function AIEssayPracticeInner() {
       showToast('Payment was cancelled.', 'warning');
       router.replace('/ai-essay-practice');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   // ── Load credit info when user changes ───────────────────────────────────
@@ -441,11 +439,11 @@ function AIEssayPracticeInner() {
         const data = snap.data() ?? {};
         const monthlyExpiry = (data.essayMonthlyExpiry as { toDate?: () => Date } | undefined)?.toDate?.() ?? null;
         setCreditInfo({
-          freeUsed:   (data.essayFreeUsed    as number) ?? 0,
-          paidCredits:(data.essayPaidCredits as number) ?? 0,
+          freeUsed: (data.essayFreeUsed as number) ?? 0,
+          paidCredits: (data.essayPaidCredits as number) ?? 0,
           hasMonthly: !!(monthlyExpiry && monthlyExpiry > new Date()),
-          genCredits: (data.essayGenCredits  as number) ?? 0,
-          role:       (data.role             as string) ?? 'student',
+          genCredits: (data.essayGenCredits as number) ?? 0,
+          role: (data.role as string) ?? 'student',
         });
       } catch { /* silent — server-side check is authoritative */ }
       finally { if (!cancelled) setCreditLoading(false); }
@@ -546,7 +544,7 @@ function AIEssayPracticeInner() {
   };
 
   const wordCount = essayText && essayText.trim() !== "" ? essayText.trim().split(/\s+/).length : 0;
-  
+
   const getWordCountColor = () => {
     if (wordCount >= 180 && wordCount <= 260) return "text-emerald-600";
     if (wordCount > 260) return "text-red-600 bg-red-50 px-2 py-0.5 rounded";
@@ -651,11 +649,11 @@ function AIEssayPracticeInner() {
         const data = snap.data() ?? {};
         const monthlyExpiry = (data.essayMonthlyExpiry as { toDate?: () => Date } | undefined)?.toDate?.() ?? null;
         setCreditInfo({
-          freeUsed:    (data.essayFreeUsed    as number) ?? 0,
+          freeUsed: (data.essayFreeUsed as number) ?? 0,
           paidCredits: (data.essayPaidCredits as number) ?? 0,
-          hasMonthly:  !!(monthlyExpiry && monthlyExpiry > new Date()),
-          genCredits:  (data.essayGenCredits  as number) ?? 0,
-          role:        (data.role             as string) ?? 'student',
+          hasMonthly: !!(monthlyExpiry && monthlyExpiry > new Date()),
+          genCredits: (data.essayGenCredits as number) ?? 0,
+          role: (data.role as string) ?? 'student',
         });
       }
 
@@ -688,7 +686,7 @@ function AIEssayPracticeInner() {
     setAiResult(null);
     setSavedSessionId(null);
     showToast("Environment Reset. Timer restarted!", "info");
-    
+
     setTimeout(() => {
       writingAreaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
@@ -704,7 +702,7 @@ function AIEssayPracticeInner() {
     setIsTimerRunning(false);
     setTimeLeft(1200);
     setTargetScore(null);
-    
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
     showToast("Please choose another essay topic.", "info");
   };
@@ -719,7 +717,7 @@ function AIEssayPracticeInner() {
   useEffect(() => {
     listQuestions('writing', 'write-essay', true)
       .then(qs => setAdminTopics(qs.map((q, i) => ({ id: 100000 + i, text: q.content, category: q.category || 'Custom' }))))
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const allTopics = [...adminTopics, ...TOPICS];
@@ -830,18 +828,17 @@ function AIEssayPracticeInner() {
           {/* Center: Desktop nav links */}
           <div className="hidden md:flex items-center gap-1">
             {[
-              { label: 'Home',       href: '/',               icon: <House size={15} weight="duotone" /> },
-              { label: 'Dashboard',  href: '/dashboard',      icon: <ChartBar size={15} weight="duotone" /> },
-              { label: 'Essay AI',   href: '/ai-essay-practice',  icon: <PencilLine size={15} weight="duotone" />, active: true },
+              { label: 'Home', href: '/', icon: <House size={15} weight="duotone" /> },
+              { label: 'Dashboard', href: '/dashboard', icon: <ChartBar size={15} weight="duotone" /> },
+              { label: 'Essay AI', href: '/ai-essay-practice', icon: <PencilLine size={15} weight="duotone" />, active: true },
             ].map(item => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  item.active
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${item.active
                     ? 'bg-orange-50 text-[#f97316] border border-orange-200'
                     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 {item.icon}{item.label}
               </Link>
@@ -854,15 +851,14 @@ function AIEssayPracticeInner() {
             {user && !creditLoading && creditInfo && (
               <div className="hidden sm:flex items-center gap-2">
                 {/* Scoring credits */}
-                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-black ${
-                  isUnlimitedRole || creditInfo.hasMonthly
+                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-black ${isUnlimitedRole || creditInfo.hasMonthly
                     ? 'bg-violet-50 border-violet-200 text-violet-700'
                     : creditsRemaining === 0
-                    ? 'bg-red-50 border-red-200 text-red-700'
-                    : (creditsRemaining ?? 0) <= 2
-                    ? 'bg-amber-50 border-amber-200 text-amber-700'
-                    : 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                }`}>
+                      ? 'bg-red-50 border-red-200 text-red-700'
+                      : (creditsRemaining ?? 0) <= 2
+                        ? 'bg-amber-50 border-amber-200 text-amber-700'
+                        : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                  }`}>
                   <Target size={13} weight="duotone" />
                   {isUnlimitedRole || creditInfo.hasMonthly ? (
                     <><InfinityIcon size={13} weight="bold" /> Scoring</>
@@ -872,13 +868,12 @@ function AIEssayPracticeInner() {
                 </div>
 
                 {/* Gen credits */}
-                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-black ${
-                  isUnlimitedRole
+                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-black ${isUnlimitedRole
                     ? 'bg-violet-50 border-violet-200 text-violet-700'
                     : (genCreditsRemaining ?? 0) === 0
-                    ? 'bg-slate-50 border-slate-200 text-slate-500'
-                    : 'bg-blue-50 border-blue-200 text-blue-700'
-                }`}>
+                      ? 'bg-slate-50 border-slate-200 text-slate-500'
+                      : 'bg-blue-50 border-blue-200 text-blue-700'
+                  }`}>
                   <FileText size={13} weight="duotone" />
                   {isUnlimitedRole ? (
                     <><InfinityIcon size={13} weight="bold" /> Gen</>
@@ -948,16 +943,14 @@ function AIEssayPracticeInner() {
                 <p className="text-sm font-bold text-slate-800 truncate">{user.email}</p>
                 {creditInfo && (
                   <div className="mt-3 grid grid-cols-2 gap-2">
-                    <div className={`flex flex-col items-center py-2 px-3 rounded-xl border text-xs font-black ${
-                      isUnlimitedRole || creditInfo.hasMonthly ? 'bg-violet-50 border-violet-200 text-violet-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                    }`}>
+                    <div className={`flex flex-col items-center py-2 px-3 rounded-xl border text-xs font-black ${isUnlimitedRole || creditInfo.hasMonthly ? 'bg-violet-50 border-violet-200 text-violet-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                      }`}>
                       <Target size={16} weight="duotone" className="mb-1" />
                       {isUnlimitedRole || creditInfo.hasMonthly ? <InfinityIcon size={14} weight="bold" /> : <span className="text-lg font-black">{creditsRemaining}</span>}
                       <span className="text-[10px] mt-0.5">Scoring</span>
                     </div>
-                    <div className={`flex flex-col items-center py-2 px-3 rounded-xl border text-xs font-black ${
-                      isUnlimitedRole ? 'bg-violet-50 border-violet-200 text-violet-700' : (genCreditsRemaining ?? 0) > 0 ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-slate-50 border-slate-200 text-slate-500'
-                    }`}>
+                    <div className={`flex flex-col items-center py-2 px-3 rounded-xl border text-xs font-black ${isUnlimitedRole ? 'bg-violet-50 border-violet-200 text-violet-700' : (genCreditsRemaining ?? 0) > 0 ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-slate-50 border-slate-200 text-slate-500'
+                      }`}>
                       <FileText size={16} weight="duotone" className="mb-1" />
                       {isUnlimitedRole ? <InfinityIcon size={14} weight="bold" /> : <span className="text-lg font-black">{genCreditsRemaining}</span>}
                       <span className="text-[10px] mt-0.5">Gen</span>
@@ -970,19 +963,18 @@ function AIEssayPracticeInner() {
             {/* Nav links */}
             <nav className="flex-1 px-4 py-4 space-y-1">
               {[
-                { label: 'Home',            href: '/',                   icon: <House size={18} weight="duotone" /> },
-                { label: 'Dashboard',       href: '/dashboard',          icon: <ChartBar size={18} weight="duotone" /> },
-                { label: 'Essay AI',        href: '/ai-essay-practice',  icon: <PencilLine size={18} weight="duotone" />, active: true },
+                { label: 'Home', href: '/', icon: <House size={18} weight="duotone" /> },
+                { label: 'Dashboard', href: '/dashboard', icon: <ChartBar size={18} weight="duotone" /> },
+                { label: 'Essay AI', href: '/ai-essay-practice', icon: <PencilLine size={18} weight="duotone" />, active: true },
               ].map(item => (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileNavOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                    item.active
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${item.active
                       ? 'bg-orange-50 text-[#f97316] border border-orange-200'
                       : 'text-slate-700 hover:bg-slate-100'
-                  }`}
+                    }`}
                 >
                   {item.icon}{item.label}
                 </Link>
@@ -1067,21 +1059,19 @@ function AIEssayPracticeInner() {
               </div>
             ) : creditLoading || !creditInfo ? (
               <div className="flex gap-3">
-                {[1,2].map(i => <div key={i} className="w-36 h-16 rounded-2xl bg-slate-800 animate-pulse" />)}
+                {[1, 2].map(i => <div key={i} className="w-36 h-16 rounded-2xl bg-slate-800 animate-pulse" />)}
               </div>
             ) : (
               <div className="flex flex-wrap gap-3 flex-1">
                 {/* ── Scoring Credits Card ── */}
-                <div className={`flex items-center gap-4 px-5 py-3 rounded-2xl border flex-1 min-w-[160px] ${
-                  isUnlimitedRole || creditInfo.hasMonthly
+                <div className={`flex items-center gap-4 px-5 py-3 rounded-2xl border flex-1 min-w-[160px] ${isUnlimitedRole || creditInfo.hasMonthly
                     ? 'bg-violet-900/40 border-violet-700'
                     : creditsRemaining === 0
-                    ? 'bg-red-900/30 border-red-700'
-                    : 'bg-emerald-900/30 border-emerald-700'
-                }`}>
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    isUnlimitedRole || creditInfo.hasMonthly ? 'bg-violet-700' : creditsRemaining === 0 ? 'bg-red-700' : 'bg-emerald-700'
+                      ? 'bg-red-900/30 border-red-700'
+                      : 'bg-emerald-900/30 border-emerald-700'
                   }`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isUnlimitedRole || creditInfo.hasMonthly ? 'bg-violet-700' : creditsRemaining === 0 ? 'bg-red-700' : 'bg-emerald-700'
+                    }`}>
                     <Target size={20} weight="duotone" className="text-white" />
                   </div>
                   <div>
@@ -1104,16 +1094,14 @@ function AIEssayPracticeInner() {
                 </div>
 
                 {/* ── Generation Credits Card ── */}
-                <div className={`flex items-center gap-4 px-5 py-3 rounded-2xl border flex-1 min-w-[160px] ${
-                  isUnlimitedRole
+                <div className={`flex items-center gap-4 px-5 py-3 rounded-2xl border flex-1 min-w-[160px] ${isUnlimitedRole
                     ? 'bg-violet-900/40 border-violet-700'
                     : (genCreditsRemaining ?? 0) === 0
-                    ? 'bg-slate-800 border-slate-700'
-                    : 'bg-blue-900/30 border-blue-700'
-                }`}>
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    isUnlimitedRole ? 'bg-violet-700' : (genCreditsRemaining ?? 0) > 0 ? 'bg-blue-700' : 'bg-slate-700'
+                      ? 'bg-slate-800 border-slate-700'
+                      : 'bg-blue-900/30 border-blue-700'
                   }`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isUnlimitedRole ? 'bg-violet-700' : (genCreditsRemaining ?? 0) > 0 ? 'bg-blue-700' : 'bg-slate-700'
+                    }`}>
                     <FileText size={20} weight="duotone" className="text-white" />
                   </div>
                   <div>
@@ -1347,11 +1335,10 @@ function AIEssayPracticeInner() {
               <button
                 key={filter}
                 onClick={() => setSelectedFilter(filter)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border shrink-0 ${
-                  selectedFilter === filter
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border shrink-0 ${selectedFilter === filter
                     ? "bg-[#f97316] text-white border-[#f97316] shadow-md"
                     : "bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
-                }`}
+                  }`}
               >
                 {filter}
               </button>
@@ -1364,16 +1351,15 @@ function AIEssayPracticeInner() {
           {(filteredTopics || []).map(topic => {
             const isSelected = selectedTopic?.id === topic.id;
             const catColors = CATEGORY_COLORS[topic.category] || { bg: "bg-slate-50", text: "text-slate-600", border: "border-slate-200" };
-            
+
             return (
               <div
                 key={topic.id}
                 onClick={() => selectTopicHandler(topic)}
-                className={`relative p-6 rounded-3xl bg-white border-2 cursor-pointer transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-lg ${
-                  isSelected
+                className={`relative p-6 rounded-3xl bg-white border-2 cursor-pointer transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-lg ${isSelected
                     ? "border-[#f97316] shadow-orange-100"
                     : "border-slate-200 hover:border-blue-300"
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between mb-4">
                   <span className="font-jetbrains text-xs font-bold text-slate-400">
@@ -1458,11 +1444,10 @@ function AIEssayPracticeInner() {
                       key={score}
                       onClick={() => setTargetScore(targetScore === score ? null : score)}
                       disabled={isSubmitting}
-                      className={`px-4 py-2 rounded-xl text-sm font-extrabold transition-all border ${
-                        targetScore === score
+                      className={`px-4 py-2 rounded-xl text-sm font-extrabold transition-all border ${targetScore === score
                           ? 'bg-[#f97316] text-white border-[#f97316] shadow-md shadow-orange-100'
                           : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-[#f97316]/40 hover:bg-orange-50 hover:text-slate-800'
-                      }`}
+                        }`}
                     >
                       {score}
                       {score === 79 && (
@@ -1503,41 +1488,39 @@ function AIEssayPracticeInner() {
             {user && !creditLoading && creditInfo && (
               <div className="grid grid-cols-2 gap-3 mb-4">
                 {/* Scoring credits */}
-                <div className={`flex items-center gap-2.5 p-3.5 rounded-2xl border ${
-                  creditsRemaining === -1
+                <div className={`flex items-center gap-2.5 p-3.5 rounded-2xl border ${creditsRemaining === -1
                     ? 'bg-violet-50 border-violet-200'
                     : creditsRemaining === 0
-                    ? 'bg-red-50 border-red-200'
-                    : 'bg-slate-50 border-slate-200'
-                }`}>
+                      ? 'bg-red-50 border-red-200'
+                      : 'bg-slate-50 border-slate-200'
+                  }`}>
                   <Target size={17} weight="duotone" className={creditsRemaining === -1 ? 'text-violet-500' : creditsRemaining === 0 ? 'text-red-500' : 'text-emerald-500'} />
                   <div>
                     <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Scoring</p>
                     {creditsRemaining === -1
                       ? <span className="flex items-center gap-1 text-xs font-black text-violet-700"><InfinityIcon size={12} weight="bold" /> Unlimited</span>
                       : creditsRemaining === 0
-                      ? <button onClick={() => setShowPurchaseModal(true)} className="text-xs font-black text-red-600 hover:underline">Buy credits</button>
-                      : <span className="text-sm font-black text-slate-800">{creditsRemaining} left</span>
+                        ? <button onClick={() => setShowPurchaseModal(true)} className="text-xs font-black text-red-600 hover:underline">Buy credits</button>
+                        : <span className="text-sm font-black text-slate-800">{creditsRemaining} left</span>
                     }
                   </div>
                 </div>
 
                 {/* Generation credits */}
-                <div className={`flex items-center gap-2.5 p-3.5 rounded-2xl border ${
-                  isUnlimitedRole
+                <div className={`flex items-center gap-2.5 p-3.5 rounded-2xl border ${isUnlimitedRole
                     ? 'bg-violet-50 border-violet-200'
                     : (genCreditsRemaining ?? 0) > 0
-                    ? 'bg-blue-50 border-blue-200'
-                    : 'bg-slate-50 border-slate-200'
-                }`}>
+                      ? 'bg-blue-50 border-blue-200'
+                      : 'bg-slate-50 border-slate-200'
+                  }`}>
                   <FileText size={17} weight="duotone" className={isUnlimitedRole ? 'text-violet-500' : (genCreditsRemaining ?? 0) > 0 ? 'text-blue-500' : 'text-slate-400'} />
                   <div>
                     <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Model Essay Gen</p>
                     {isUnlimitedRole
                       ? <span className="flex items-center gap-1 text-xs font-black text-violet-700"><InfinityIcon size={12} weight="bold" /> Unlimited</span>
                       : (genCreditsRemaining ?? 0) > 0
-                      ? <span className="text-sm font-black text-slate-800">{genCreditsRemaining} left</span>
-                      : <button onClick={() => setShowPurchaseModal(true)} className="text-xs font-black text-slate-500 hover:text-[#f97316] hover:underline transition-colors">Buy package</button>
+                        ? <span className="text-sm font-black text-slate-800">{genCreditsRemaining} left</span>
+                        : <button onClick={() => setShowPurchaseModal(true)} className="text-xs font-black text-slate-500 hover:text-[#f97316] hover:underline transition-colors">Buy package</button>
                     }
                   </div>
                 </div>
@@ -1613,7 +1596,7 @@ function AIEssayPracticeInner() {
       {showResults && aiResult && (
         <section ref={resultsRef} className="py-20 border-t border-slate-200 scroll-mt-20">
           <div className="max-w-5xl mx-auto px-4">
-            
+
             <div className="text-center mb-16">
               <span className="text-[#f97316] font-black text-xs uppercase tracking-[0.3em] flex items-center justify-center gap-2 mb-2">
                 <ChartBar size={14} weight="bold" />
@@ -1643,7 +1626,7 @@ function AIEssayPracticeInner() {
                   >
                     {generatingPdf ? (
                       <>
-                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
                         Generating PDF…
                       </>
                     ) : (
@@ -1662,7 +1645,7 @@ function AIEssayPracticeInner() {
 
             {/* Score Ring & Overall Summary */}
             <div className="grid md:grid-cols-3 gap-8 items-center mb-12 bg-slate-50 p-6 md:p-10 rounded-3xl md:rounded-[32px] border border-slate-200 shadow-sm">
-              
+
               {/* Score circle */}
               <div className="flex flex-col items-center justify-center p-4">
                 <div className="relative w-40 h-40 rounded-full border-4 border-[#f59e0b] flex flex-col items-center justify-center bg-white shadow-[0_0_30px_rgba(245,158,11,0.12)] transition-transform hover:scale-105 duration-300">
@@ -1688,7 +1671,7 @@ function AIEssayPracticeInner() {
                 </p>
                 <div className="pt-4 border-t border-slate-200 flex flex-wrap gap-6 text-xs text-slate-500">
                   <span className="flex items-center gap-1"><Notebook size={14} weight="duotone" /> Essay Length: <strong className="text-slate-700">{essayText.trim().split(/\s+/).filter(Boolean).length} words</strong></span>
-                  <span className="flex items-center gap-1"><Timer size={14} weight="duotone" /> Practice Time: <strong className="text-slate-700">{Math.floor((1200 - timeLeft) / 60)} mins { (1200 - timeLeft) % 60 } secs</strong></span>
+                  <span className="flex items-center gap-1"><Timer size={14} weight="duotone" /> Practice Time: <strong className="text-slate-700">{Math.floor((1200 - timeLeft) / 60)} mins {(1200 - timeLeft) % 60} secs</strong></span>
                 </div>
               </div>
 
@@ -1696,24 +1679,21 @@ function AIEssayPracticeInner() {
 
             {/* ── Target Score Analysis ── */}
             {targetScore !== null && aiResult.targetScoreAnalysis && (
-              <div className={`p-8 rounded-3xl shadow-sm mb-12 border-2 ${
-                aiResult.targetScoreAnalysis.achieved
+              <div className={`p-8 rounded-3xl shadow-sm mb-12 border-2 ${aiResult.targetScoreAnalysis.achieved
                   ? 'bg-emerald-50 border-emerald-300'
                   : 'bg-orange-50 border-orange-200'
-              }`}>
+                }`}>
                 {/* Header row */}
                 <div className="flex flex-wrap items-start gap-5 mb-6">
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
-                    aiResult.targetScoreAnalysis.achieved ? 'bg-emerald-100' : 'bg-orange-100'
-                  }`}>
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${aiResult.targetScoreAnalysis.achieved ? 'bg-emerald-100' : 'bg-orange-100'
+                    }`}>
                     {aiResult.targetScoreAnalysis.achieved
                       ? <Trophy size={28} weight="duotone" className="text-emerald-600" />
                       : <Target size={28} weight="duotone" className="text-orange-600" />}
                   </div>
                   <div className="flex-1">
-                    <h3 className={`text-lg font-black mb-2 ${
-                      aiResult.targetScoreAnalysis.achieved ? 'text-emerald-700' : 'text-orange-700'
-                    }`}>
+                    <h3 className={`text-lg font-black mb-2 ${aiResult.targetScoreAnalysis.achieved ? 'text-emerald-700' : 'text-orange-700'
+                      }`}>
                       {aiResult.targetScoreAnalysis.achieved
                         ? `Band ${targetScore} Target Achieved!`
                         : `Band ${targetScore} Target Not Yet Reached`}
@@ -1723,11 +1703,10 @@ function AIEssayPracticeInner() {
                         Target: <span className="text-slate-900">{targetScore}</span>
                       </span>
                       <span className="text-slate-400 text-base">→</span>
-                      <span className={`px-3 py-1.5 rounded-full border ${
-                        aiResult.targetScoreAnalysis.achieved
+                      <span className={`px-3 py-1.5 rounded-full border ${aiResult.targetScoreAnalysis.achieved
                           ? 'bg-emerald-100 border-emerald-200 text-emerald-700'
                           : 'bg-red-100 border-red-200 text-red-700'
-                      }`}>
+                        }`}>
                         Your Score: <span>{aiResult.overallBand}</span>
                       </span>
                       {!aiResult.targetScoreAnalysis.achieved && (
@@ -1822,7 +1801,7 @@ function AIEssayPracticeInner() {
               <div className="grid md:grid-cols-2 gap-6">
                 {(aiResult.criteria || []).map((criterion, i) => {
                   const percent = (criterion.score / criterion.max) * 100;
-                  
+
                   return (
                     <div key={i} className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center gap-6 hover:shadow-md transition-shadow">
                       {/* Circular Progress */}
@@ -1896,18 +1875,16 @@ function AIEssayPracticeInner() {
                     <TreeStructure size={22} weight="duotone" /> Essay Structure Analysis
                   </h3>
                   <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full border ${
-                      aiResult.structureDetail.paragraphCountCorrect
+                    <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full border ${aiResult.structureDetail.paragraphCountCorrect
                         ? 'text-emerald-700 bg-emerald-100 border-emerald-200'
                         : 'text-red-700 bg-red-100 border-red-200'
-                    }`}>
+                      }`}>
                       {aiResult.structureDetail.paragraphCount} Paragraphs
                     </span>
-                    <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full border ${
-                      aiResult.structureDetail.followsIdealStrategy
+                    <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full border ${aiResult.structureDetail.followsIdealStrategy
                         ? 'text-emerald-700 bg-emerald-100 border-emerald-200'
                         : 'text-orange-700 bg-orange-100 border-orange-200'
-                    }`}>
+                      }`}>
                       {aiResult.structureDetail.followsIdealStrategy ? 'Ideal Strategy ✓' : 'Needs Improvement'}
                     </span>
                   </div>
@@ -1939,11 +1916,10 @@ function AIEssayPracticeInner() {
                   <h3 className="text-lg font-bold text-pink-700 flex items-center gap-2">
                     <ArrowRight size={22} weight="duotone" /> Coherence & Cohesion Analysis
                   </h3>
-                  <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full border ${
-                    aiResult.coherenceAnalysis.oneIdeaPerParagraph
+                  <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full border ${aiResult.coherenceAnalysis.oneIdeaPerParagraph
                       ? 'text-emerald-700 bg-emerald-100 border-emerald-200'
                       : 'text-red-700 bg-red-100 border-red-200'
-                  }`}>
+                    }`}>
                     {aiResult.coherenceAnalysis.oneIdeaPerParagraph ? 'One Idea Per Paragraph ✓' : 'Mixed Ideas Detected ✗'}
                   </span>
                 </div>
@@ -1986,11 +1962,10 @@ function AIEssayPracticeInner() {
                     { label: "Body Supports Thesis", value: aiResult.thesisDevelopment.bodySupportsThesis },
                     { label: "Conclusion Proves Thesis", value: aiResult.thesisDevelopment.conclusionProvesThesis },
                   ] as const).map((check, idx) => (
-                    <span key={idx} className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border ${
-                      check.value
+                    <span key={idx} className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border ${check.value
                         ? 'text-emerald-700 bg-emerald-100 border-emerald-200'
                         : 'text-red-700 bg-red-100 border-red-200'
-                    }`}>
+                      }`}>
                       {check.value
                         ? <CheckCircle size={14} weight="duotone" />
                         : <XCircle size={14} weight="duotone" />}
@@ -2076,13 +2051,12 @@ function AIEssayPracticeInner() {
                             <tr key={idx} className="bg-white/60 hover:bg-white transition-colors">
                               <td className="py-3 px-4 font-bold text-slate-700">{col.collocation}</td>
                               <td className="py-3 px-4">
-                                <span className={`text-xs font-black uppercase px-2.5 py-0.5 rounded-full border ${
-                                  col.evaluation.toLowerCase().includes('natural')
+                                <span className={`text-xs font-black uppercase px-2.5 py-0.5 rounded-full border ${col.evaluation.toLowerCase().includes('natural')
                                     ? 'text-emerald-700 bg-emerald-100 border-emerald-200'
                                     : col.evaluation.toLowerCase().includes('forced') || col.evaluation.toLowerCase().includes('incorrect')
-                                    ? 'text-red-700 bg-red-100 border-red-200'
-                                    : 'text-amber-700 bg-amber-100 border-amber-200'
-                                }`}>
+                                      ? 'text-red-700 bg-red-100 border-red-200'
+                                      : 'text-amber-700 bg-amber-100 border-amber-200'
+                                  }`}>
                                   {col.evaluation}
                                 </span>
                               </td>
@@ -2272,28 +2246,24 @@ function AIEssayPracticeInner() {
 
             {/* ── Would Score 79+? Verdict ── */}
             {aiResult.wouldScore79Plus && (
-              <div className={`p-8 rounded-3xl shadow-sm mb-8 border-2 ${
-                aiResult.wouldScore79Plus.answer
+              <div className={`p-8 rounded-3xl shadow-sm mb-8 border-2 ${aiResult.wouldScore79Plus.answer
                   ? 'bg-emerald-50 border-emerald-300'
                   : 'bg-red-50 border-red-300'
-              }`}>
+                }`}>
                 <div className="flex items-start gap-5">
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 text-2xl font-black ${
-                    aiResult.wouldScore79Plus.answer ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
-                  }`}>
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 text-2xl font-black ${aiResult.wouldScore79Plus.answer ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                    }`}>
                     {aiResult.wouldScore79Plus.answer ? '✓' : '✗'}
                   </div>
                   <div className="flex-1">
-                    <h3 className={`text-lg font-black mb-2 ${
-                      aiResult.wouldScore79Plus.answer ? 'text-emerald-700' : 'text-red-700'
-                    }`}>
+                    <h3 className={`text-lg font-black mb-2 ${aiResult.wouldScore79Plus.answer ? 'text-emerald-700' : 'text-red-700'
+                      }`}>
                       {aiResult.wouldScore79Plus.answer
                         ? 'Yes — this essay would realistically score 79+ in PTE Writing.'
                         : 'No — this essay would not realistically score 79+ in PTE Writing.'}
                     </h3>
-                    <p className={`text-sm leading-relaxed ${
-                      aiResult.wouldScore79Plus.answer ? 'text-emerald-800' : 'text-red-800'
-                    }`}>
+                    <p className={`text-sm leading-relaxed ${aiResult.wouldScore79Plus.answer ? 'text-emerald-800' : 'text-red-800'
+                      }`}>
                       {aiResult.wouldScore79Plus.explanation}
                     </p>
                   </div>
@@ -2303,7 +2273,7 @@ function AIEssayPracticeInner() {
 
             {/* Strengths & Weaknesses */}
             <div className="grid md:grid-cols-2 gap-8 mb-12">
-              
+
               {/* Strengths card */}
               <div className="p-8 rounded-3xl bg-emerald-50/60 border border-emerald-200 shadow-sm">
                 <h3 className="text-lg font-bold text-emerald-700 flex items-center gap-2 mb-6">
@@ -2400,7 +2370,7 @@ function AIEssayPracticeInner() {
                     Hover red lines to view corrections
                   </span>
                 </div>
-                <div 
+                <div
                   className="text-slate-700 text-sm leading-relaxed whitespace-pre-line bg-white p-6 rounded-2xl border border-slate-200 custom-scrollbar max-h-[350px] overflow-y-auto"
                   dangerouslySetInnerHTML={{ __html: aiResult.reviewedEssayHtml }}
                 />
@@ -2549,13 +2519,12 @@ function AIEssayPracticeInner() {
                 return (
                   <div
                     key={pkg.id}
-                    className={`relative flex flex-col gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all hover:shadow-md ${
-                      pkg.popular
+                    className={`relative flex flex-col gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all hover:shadow-md ${pkg.popular
                         ? 'border-[#f97316] bg-orange-50 ring-1 ring-[#f97316]/20'
                         : isUnlimited
-                        ? 'border-violet-300 bg-violet-50'
-                        : 'border-slate-200 hover:border-slate-300'
-                    } ${isUnlimited ? 'col-span-2 sm:col-span-1' : ''}`}
+                          ? 'border-violet-300 bg-violet-50'
+                          : 'border-slate-200 hover:border-slate-300'
+                      } ${isUnlimited ? 'col-span-2 sm:col-span-1' : ''}`}
                   >
                     {pkg.popular && (
                       <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#f97316] text-white text-[9px] font-black uppercase tracking-widest px-3 py-0.5 rounded-full">
@@ -2588,14 +2557,13 @@ function AIEssayPracticeInner() {
                     <button
                       onClick={() => handlePurchase(pkg.id)}
                       disabled={!!purchasingPkg}
-                      className={`w-full mt-1 py-2 px-3 rounded-xl font-extrabold text-xs text-white transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5 ${
-                        pkg.popular ? 'bg-[#f97316] hover:bg-[#fb923c]'
-                        : isUnlimited ? 'bg-violet-600 hover:bg-violet-500'
-                        : 'bg-slate-800 hover:bg-slate-700'
-                      }`}
+                      className={`w-full mt-1 py-2 px-3 rounded-xl font-extrabold text-xs text-white transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5 ${pkg.popular ? 'bg-[#f97316] hover:bg-[#fb923c]'
+                          : isUnlimited ? 'bg-violet-600 hover:bg-violet-500'
+                            : 'bg-slate-800 hover:bg-slate-700'
+                        }`}
                     >
                       {isPurchasing
-                        ? <><svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Wait...</>
+                        ? <><svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg> Wait...</>
                         : <><CreditCard size={12} weight="bold" /> Pay via PayHere</>
                       }
                     </button>
@@ -2659,12 +2627,11 @@ function AIEssayPracticeInner() {
         {(toasts || []).map(toast => (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-center gap-3 px-5 py-4 rounded-2xl border text-sm font-semibold shadow-xl animate-slide-up bg-white text-slate-800 min-w-[280px] max-w-sm ${
-              toast.type === 'success' ? 'border-emerald-300 text-emerald-700' :
-              toast.type === 'error' ? 'border-red-300 text-red-700' :
-              toast.type === 'warning' ? 'border-amber-300 text-amber-700' :
-              'border-blue-300 text-slate-700'
-            }`}
+            className={`pointer-events-auto flex items-center gap-3 px-5 py-4 rounded-2xl border text-sm font-semibold shadow-xl animate-slide-up bg-white text-slate-800 min-w-[280px] max-w-sm ${toast.type === 'success' ? 'border-emerald-300 text-emerald-700' :
+                toast.type === 'error' ? 'border-red-300 text-red-700' :
+                  toast.type === 'warning' ? 'border-amber-300 text-amber-700' :
+                    'border-blue-300 text-slate-700'
+              }`}
           >
             <span className="text-base shrink-0">
               {toast.type === 'success' && <CheckCircle size={20} weight="duotone" className="text-emerald-600" />}
