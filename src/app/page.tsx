@@ -595,6 +595,25 @@ export default function Home() {
           @keyframes accent-line  { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
           @keyframes orb-pulse    { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.08); } }
           @keyframes card-bob     { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+          @keyframes lightning-sweep {
+            0%   { background-position: -150% 0; }
+            60%  { background-position: 250% 0; }
+            100% { background-position: 250% 0; }
+          }
+          .lightning-text {
+            background-image: linear-gradient(
+              100deg,
+              #0f172a 0%, #0f172a 40%,
+              #6366f1 47%, #22d3ee 50%, #6366f1 53%,
+              #0f172a 60%, #0f172a 100%
+            );
+            background-size: 250% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            animation: lightning-sweep 3.2s ease-in-out infinite;
+          }
         `}</style>
 
         {/* Top accent gradient line */}
@@ -653,8 +672,11 @@ export default function Home() {
               style={{ originX: 0 }} className="h-px w-20 bg-slate-200 mb-5" />
 
             <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 1.05 }}
-              className="text-sm text-slate-500 mb-1.5">
-              by&nbsp;<span className="font-semibold text-slate-800 italic">Laheer Weeraratne</span>
+              className="mb-2">
+              <span className="lightning-text font-extrabold tracking-tight leading-tight"
+                style={{ fontSize: 'clamp(1.5rem, 2.4vw, 2.25rem)' }}>
+                Sri Lanka's Premium International Exam Prep Hub
+              </span>
             </motion.p>
 
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 1.2 }}
@@ -808,8 +830,11 @@ export default function Home() {
               </motion.div>
             </div>
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}
-              className="text-sm text-slate-500 mb-1">
-              by <span className="font-semibold text-slate-800 italic">Laheer Weeraratne</span>
+              className="mb-2">
+              <span className="lightning-text font-extrabold tracking-tight leading-tight"
+                style={{ fontSize: 'clamp(1.25rem, 6vw, 1.75rem)' }}>
+                Sri Lanka's Premium International Exam Prep Hub
+              </span>
             </motion.p>
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0 }}
               className="text-[10px] font-medium text-slate-400 tracking-[0.3em] uppercase mb-8">
