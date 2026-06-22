@@ -601,6 +601,8 @@ export default function Home() {
             100% { background-position: 250% 0; }
           }
           .lightning-text {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
             background-image: linear-gradient(
               100deg,
               #0f172a 0%, #0f172a 40%,
