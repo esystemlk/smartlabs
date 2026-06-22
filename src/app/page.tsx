@@ -686,11 +686,18 @@ export default function Home() {
               PTE &nbsp;·&nbsp; IELTS &nbsp;·&nbsp; KET &nbsp;·&nbsp; PET
             </motion.p>
 
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 1.4 }}>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 1.4 }}
+              className="flex flex-wrap items-center gap-4">
               <Button size="xl" className="h-14 px-10 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black text-base transition-all hover:scale-[1.04] shadow-xl shadow-slate-900/10" asChild>
                 <Link href="/level-test">
                   <Activity className="mr-2.5 h-5 w-5" />
                   Take Free Level Test
+                </Link>
+              </Button>
+              <Button size="xl" variant="outline" className="h-14 px-10 rounded-2xl border-2 border-slate-900 text-slate-900 font-black text-base transition-all hover:scale-[1.04] hover:bg-slate-900 hover:text-white" asChild>
+                <Link href="/courses">
+                  <Sparkles className="mr-2.5 h-5 w-5" />
+                  Our Packages
                 </Link>
               </Button>
             </motion.div>
