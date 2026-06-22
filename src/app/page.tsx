@@ -956,6 +956,121 @@ export default function Home() {
 
       <WebinarPoster />
 
+      {/* Power Session Recordings - Self-Paced Vault */}
+      <section className="py-16 sm:py-24 lg:py-32 relative overflow-hidden bg-background">
+        <div className="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-primary/10 blur-3xl -z-10" />
+        <div className="absolute bottom-0 -right-20 w-96 h-96 rounded-full bg-accent-3/10 blur-3xl -z-10" />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+
+            {/* Left — Headline + Description */}
+            <motion.div
+              initial={{ opacity: 0, x: -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+              className="space-y-8"
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-xs font-black uppercase tracking-widest">
+                <Video className="h-4 w-4" />
+                <span>Power Session Recordings</span>
+              </div>
+
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
+                The Ultimate <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 italic">Self-Paced Exam</span> <br />
+                Strategy Vault
+              </h2>
+
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Master your exam using our raw, high-intensity strategy sessions. This package is designed
+                specifically for highly disciplined, self-guided students who want elite templates and
+                techniques without the cost or fixed hours of a live classroom.
+              </p>
+
+              {/* Feature highlights */}
+              <div className="space-y-5">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <Play className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg leading-none mb-1">Live Class Recordings</h4>
+                    <p className="text-muted-foreground font-medium">Full access to our high-intensity recorded strategy sessions.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-accent-3/10 text-accent-3 flex items-center justify-center shrink-0">
+                    <Laptop className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg leading-none mb-1">24/7 Premium LMS Portal Access</h4>
+                    <p className="text-muted-foreground font-medium">Log in securely from your phone, laptop, or tablet. Learn anytime, anywhere, for a full <span className="font-bold text-foreground">45 days</span>.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Price + CTA */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-6 pt-2">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-1">Your Investment</p>
+                  <p className="text-4xl font-black tracking-tight">20,000 <span className="text-2xl text-muted-foreground">LKR</span></p>
+                </div>
+                <Button size="lg" className="h-14 px-8 rounded-2xl bg-slate-900 text-white font-black text-base" asChild>
+                  <Link href="/courses"><Zap className="mr-2 h-5 w-5" />Enroll via PayHere</Link>
+                </Button>
+              </div>
+            </motion.div>
+
+            {/* Right — Notice card */}
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.15 }}
+              className="relative"
+            >
+              <div className="rounded-[32px] border border-amber-500/30 bg-amber-50/60 dark:bg-amber-950/20 p-8 sm:p-10 shadow-xl">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-600 flex items-center justify-center shrink-0">
+                    <Bell className="h-6 w-6" />
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black tracking-tight">Important Notice for Independent Learners</h3>
+                </div>
+
+                <p className="text-muted-foreground leading-relaxed mb-6">
+                  This budget-friendly package is <span className="font-bold text-foreground">100% self-guided</span>.
+                  To keep this package highly affordable, it does <span className="font-bold text-foreground">NOT</span> include:
+                </p>
+
+                <ul className="space-y-4">
+                  {[
+                    "Live lecturer interaction or Q&A sessions",
+                    "Personalized writing evaluations or speech grading",
+                    "Live mock test feedback sessions",
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-red-500/15 text-red-500 flex items-center justify-center shrink-0 mt-0.5">
+                        <X className="h-4 w-4" />
+                      </div>
+                      <span className="font-medium">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-8 pt-6 border-t border-amber-500/20">
+                  <p className="text-muted-foreground">
+                    If you require active teacher feedback, please view our{" "}
+                    <Link href="/courses" className="font-bold text-primary hover:underline">Live Hybrid Cohort Plans</Link> instead.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+          </div>
+        </div>
+      </section>
+
       {/* Success Roadmap - Ultra Modern Design */}
       <section className="py-24 sm:py-32 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full bg-slate-50/50 dark:bg-slate-950/50 -z-10" />
