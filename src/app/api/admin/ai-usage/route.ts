@@ -38,13 +38,14 @@ export async function GET(request: Request) {
   ]);
 
   // Build per-user summary from logs
-  const userMap = new Map<string, { email: string; ips: Set<string>; essay: number; swt: number; serverAction: number; errors: number; lastSeen: Date }>();
+  const userMap = new Map<string, { email: string; userId: string | null; ips: Set<string>; essay: number; swt: number; serverAction: number; errors: number; lastSeen: Date }>();
   for (const log of logs) {
     const key = log.email ?? log.userId ?? 'unknown';
     if (!userMap.has(key)) {
-      userMap.set(key, { email: log.email ?? key, ips: new Set(), essay: 0, swt: 0, serverAction: 0, errors: 0, lastSeen: log.timestamp });
+      userMap.set(key, { email: log.email ?? key, userId: log.userId ?? null, ips: new Set(), essay: 0, swt: 0, serverAction: 0, errors: 0, lastSeen: log.timestamp });
     }
     const u = userMap.get(key)!;
+    if (!u.userId && log.userId) u.userId = log.userId; // backfill uid if a later log has it
     if (log.ip) u.ips.add(log.ip);
     if (log.task === 'essay') u.essay++;
     else if (log.task === 'swt') u.swt++;
@@ -53,16 +54,63 @@ export async function GET(request: Request) {
     if (log.timestamp > u.lastSeen) u.lastSeen = log.timestamp;
   }
 
-  const userSummary = Array.from(userMap.entries()).map(([, u]) => ({
-    email: u.email,
-    ips: Array.from(u.ips),
-    essay: u.essay,
-    swt: u.swt,
-    serverAction: u.serverAction,
-    errors: u.errors,
-    lastSeen: u.lastSeen,
-    total: u.essay + u.swt + u.serverAction,
-  })).sort((a, b) => b.total - a.total);
+  // ─── Enrich with name + credit balances from the users collection ───────────
+  // Free-tier limits (kept in sync with the score-essay / score-swt routes)
+  const FREE_ESSAY_LIMIT = 2;
+  const FREE_SWT_LIMIT = 2;
+  const now = new Date();
+
+  // Resolve each summary's user doc. Prefer the logged uid; fall back to an
+  // email lookup so legacy logs without a userId still get credit info.
+  const entries = Array.from(userMap.values());
+  const userDocs = await Promise.all(entries.map(async (u) => {
+    try {
+      if (u.userId) {
+        const snap = await adminDb!.collection('users').doc(u.userId).get();
+        if (snap.exists) return snap.data() ?? {};
+      }
+      const email = u.email && u.email.includes('@') ? u.email : null;
+      if (email) {
+        const q = await adminDb!.collection('users').where('email', '==', email).limit(1).get();
+        if (!q.empty) return q.docs[0].data() ?? {};
+      }
+    } catch { /* non-fatal — fall through to nulls */ }
+    return null as Record<string, any> | null;
+  }));
+
+  const toDate = (v: any): Date | null => v?.toDate?.() ?? null;
+
+  const userSummary = entries.map((u, i) => {
+    const d = userDocs[i];
+    const essayMonthly = toDate(d?.essayMonthlyExpiry);
+    const swtMonthly = toDate(d?.swtMonthlyExpiry);
+    const credits = d ? {
+      name: (d.displayName as string) ?? (d.name as string) ?? '',
+      essay: {
+        free: Math.max(0, FREE_ESSAY_LIMIT - ((d.essayFreeUsed as number) ?? 0)),
+        paid: (d.essayPaidCredits as number) ?? 0,
+        gen: (d.essayGenCredits as number) ?? 0,
+        monthlyActive: !!(essayMonthly && essayMonthly > now),
+      },
+      swt: {
+        free: Math.max(0, FREE_SWT_LIMIT - ((d.swtFreeUsed as number) ?? 0)),
+        paid: (d.swtPaidCredits as number) ?? 0,
+        monthlyActive: !!(swtMonthly && swtMonthly > now),
+      },
+    } : null;
+    return {
+      email: u.email,
+      name: credits?.name ?? '',
+      ips: Array.from(u.ips),
+      essay: u.essay,
+      swt: u.swt,
+      serverAction: u.serverAction,
+      errors: u.errors,
+      lastSeen: u.lastSeen,
+      total: u.essay + u.swt + u.serverAction,
+      credits,
+    };
+  }).sort((a, b) => b.total - a.total);
 
   // Build per-key summary (daily → weekly → monthly)
   const keyLabelSet = new Set(keyStats.map((s: any) => s.keyLabel));

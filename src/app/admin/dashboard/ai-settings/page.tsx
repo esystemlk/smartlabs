@@ -38,9 +38,15 @@ interface KeySummary {
   daily: PeriodStats; weekly: PeriodStats; monthly: PeriodStats;
   hasRateLimitAlert: boolean;
 }
+interface CreditBalance {
+  name: string;
+  essay: { free: number; paid: number; gen: number; monthlyActive: boolean };
+  swt: { free: number; paid: number; monthlyActive: boolean };
+}
 interface UserSummary {
-  email: string; ips: string[]; essay: number; swt: number;
+  email: string; name?: string; ips: string[]; essay: number; swt: number;
   serverAction: number; errors: number; lastSeen: string; total: number;
+  credits: CreditBalance | null;
 }
 interface ModelSummaryEntry {
   name: string; requests: number; successes: number; failures: number; lastUsed: string | null;
@@ -102,6 +108,39 @@ function PeriodRow({ label, s }: { label: string; s: PeriodStats }) {
           </span>
         )}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Per-user available-credit breakdown.
+ * Green  = free credits remaining (free tier, not bought)
+ * Purple = paid credits (bought from credit packs)
+ * Amber  = active monthly/unlimited subscription
+ */
+function CreditCell({ credits }: { credits: CreditBalance | null }) {
+  if (!credits) return <span className="text-muted-foreground text-[11px] italic">—</span>;
+
+  const Line = ({ label, free, paid, gen, monthly }: {
+    label: string; free: number; paid: number; gen?: number; monthly: boolean;
+  }) => (
+    <div className="flex items-center gap-1 flex-wrap">
+      <span className="w-9 shrink-0 text-[10px] font-semibold text-muted-foreground uppercase">{label}</span>
+      {monthly && (
+        <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-[10px] font-bold" title="Active monthly subscription — unlimited">∞ Monthly</span>
+      )}
+      <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-mono" title="Free credits remaining (free tier)">{free} free</span>
+      <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${paid > 0 ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-500'}`} title="Paid credits remaining (bought)">{paid} bought</span>
+      {gen !== undefined && gen > 0 && (
+        <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-mono" title="Essay generation credits">{gen} gen</span>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="space-y-1">
+      <Line label="Essay" free={credits.essay.free} paid={credits.essay.paid} gen={credits.essay.gen} monthly={credits.essay.monthlyActive} />
+      <Line label="SWT" free={credits.swt.free} paid={credits.swt.paid} monthly={credits.swt.monthlyActive} />
     </div>
   );
 }
@@ -300,7 +339,9 @@ export default function AiSettingsPage() {
     });
 
   const filteredUsers  = (usage?.userSummary ?? []).filter(u =>
-    !search || u.email.toLowerCase().includes(search.toLowerCase()) || u.ips.some(ip => ip.includes(search))
+    !search || u.email.toLowerCase().includes(search.toLowerCase()) ||
+    (u.name ?? '').toLowerCase().includes(search.toLowerCase()) ||
+    u.ips.some(ip => ip.includes(search))
   );
   const filteredLogs   = (usage?.recentLogs ?? []).filter(l =>
     !search || (l.email ?? '').toLowerCase().includes(search.toLowerCase()) || (l.ip ?? '').includes(search)
@@ -666,7 +707,8 @@ export default function AiSettingsPage() {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b text-left text-xs text-muted-foreground uppercase tracking-wider">
-                          <th className="pb-2 pr-4 font-semibold">Email</th>
+                          <th className="pb-2 pr-4 font-semibold">User</th>
+                          <th className="pb-2 pr-4 font-semibold">Available Credits</th>
                           <th className="pb-2 pr-4 font-semibold">IP Address(es)</th>
                           <th className="pb-2 pr-2 font-semibold text-center">Essay</th>
                           <th className="pb-2 pr-2 font-semibold text-center">SWT</th>
@@ -679,7 +721,13 @@ export default function AiSettingsPage() {
                       <tbody className="divide-y">
                         {filteredUsers.map((u, i) => (
                           <tr key={i} className="hover:bg-muted/30 transition-colors">
-                            <td className="py-2.5 pr-4 font-medium text-xs">{u.email}</td>
+                            <td className="py-2.5 pr-4 text-xs">
+                              <div className="font-semibold text-foreground">{u.name?.trim() || u.credits?.name?.trim() || <span className="text-muted-foreground font-normal italic">No name</span>}</div>
+                              <div className="text-muted-foreground">{u.email}</div>
+                            </td>
+                            <td className="py-2.5 pr-4 text-xs">
+                              <CreditCell credits={u.credits} />
+                            </td>
                             <td className="py-2.5 pr-4 text-xs">
                               {u.ips.length === 0 ? <span className="text-muted-foreground">—</span> : u.ips.map((ip, j) => (
                                 <span key={j} className="inline-block font-mono bg-slate-100 rounded px-1 mr-1 mb-0.5 text-[10px]">{ip}</span>
@@ -702,7 +750,7 @@ export default function AiSettingsPage() {
                           </tr>
                         ))}
                         {filteredUsers.length === 0 && (
-                          <tr><td colSpan={8} className="py-8 text-center text-muted-foreground text-sm">No users found{search ? ` matching "${search}"` : '. Data appears after first AI call.'}.</td></tr>
+                          <tr><td colSpan={10} className="py-8 text-center text-muted-foreground text-sm">No users found{search ? ` matching "${search}"` : '. Data appears after first AI call.'}.</td></tr>
                         )}
                       </tbody>
                     </table>
