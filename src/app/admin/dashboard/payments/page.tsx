@@ -35,6 +35,7 @@ export default function PaymentTransactionsPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [orders, setOrders] = useState<PaymentOrder[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<PaymentOrder[]>([]);
+  const [userMap, setUserMap] = useState<Record<string, { name: string; email: string }>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -65,6 +66,24 @@ export default function PaymentTransactionsPage() {
       const fetchedOrders = await paymentService.getPaymentOrders();
       setOrders(fetchedOrders);
       setFilteredOrders(fetchedOrders);
+
+      // Resolve user names/emails for the unique userIds in these orders
+      const uniqueUids = Array.from(new Set(fetchedOrders.map(o => o.userId).filter(Boolean)));
+      const resolved = await Promise.all(
+        uniqueUids.map(async uid => {
+          try {
+            const snap = await getDoc(doc(db, 'users', uid));
+            const d = snap.exists() ? snap.data() : {};
+            return [uid, {
+              name: (d?.displayName as string) || (d?.name as string) || '',
+              email: (d?.email as string) || '',
+            }] as const;
+          } catch {
+            return [uid, { name: '', email: '' }] as const;
+          }
+        })
+      );
+      setUserMap(Object.fromEntries(resolved));
     } catch (error) {
       console.error('Error loading data:', error);
       toast({
@@ -79,13 +98,16 @@ export default function PaymentTransactionsPage() {
 
   useEffect(() => {
     const lowercased = searchTerm.toLowerCase();
-    const filtered = orders.filter(order =>
-      order.orderId.toLowerCase().includes(lowercased) ||
-      order.userId.toLowerCase().includes(lowercased) ||
-      order.courseId.toLowerCase().includes(lowercased)
-    );
+    const filtered = orders.filter(order => {
+      const u = userMap[order.userId];
+      return order.orderId.toLowerCase().includes(lowercased) ||
+        order.userId.toLowerCase().includes(lowercased) ||
+        order.courseId.toLowerCase().includes(lowercased) ||
+        (u?.name ?? '').toLowerCase().includes(lowercased) ||
+        (u?.email ?? '').toLowerCase().includes(lowercased);
+    });
     setFilteredOrders(filtered);
-  }, [searchTerm, orders]);
+  }, [searchTerm, orders, userMap]);
 
   const formatPrice = (amount: number) => {
     return new Intl.NumberFormat('en-LK', {
@@ -137,7 +159,7 @@ export default function PaymentTransactionsPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by Order ID, User ID, or Course ID..."
+            placeholder="Search by name, email, Order ID, User ID, or Course ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 h-11 rounded-xl"
@@ -169,7 +191,7 @@ export default function PaymentTransactionsPage() {
                   <tr className="bg-muted/20 border-b border-border/10">
                     <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">#</th>
                     <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Order ID</th>
-                    <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">User ID</th>
+                    <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">User</th>
                     <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Course</th>
                     <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Amount</th>
                     <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Status</th>
@@ -182,7 +204,15 @@ export default function PaymentTransactionsPage() {
                     <tr key={order.id} className="border-b border-border/5 hover:bg-muted/10 transition-colors">
                       <td className="px-6 py-4 text-sm font-medium">{idx + 1}</td>
                       <td className="px-6 py-4 text-sm font-mono font-medium">{order.orderId}</td>
-                      <td className="px-6 py-4 text-sm text-muted-foreground truncate max-w-[150px]">{order.userId}</td>
+                      <td className="px-6 py-4 text-sm max-w-[200px]">
+                        <div className="font-semibold text-foreground truncate">
+                          {userMap[order.userId]?.name?.trim() || <span className="font-normal text-muted-foreground italic">Unknown user</span>}
+                        </div>
+                        {userMap[order.userId]?.email && (
+                          <div className="text-xs text-muted-foreground truncate">{userMap[order.userId].email}</div>
+                        )}
+                        <div className="text-[10px] text-muted-foreground/70 font-mono truncate" title={order.userId}>{order.userId}</div>
+                      </td>
                       <td className="px-6 py-4 text-sm font-semibold">{order.courseId}</td>
                       <td className="px-6 py-4 text-sm font-bold text-primary">{formatPrice(order.paymentAmount)}</td>
                       <td className="px-6 py-4">
