@@ -26,6 +26,46 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { paymentService, PaymentOrder } from '@/lib/services/payment.service';
 
+// Free-tier limits (kept in sync with the score-essay / score-swt routes)
+const FREE_ESSAY_LIMIT = 2;
+const FREE_SWT_LIMIT = 2;
+
+interface CreditBalance {
+  essay: { free: number; paid: number; gen: number; monthlyActive: boolean };
+  swt: { free: number; paid: number; monthlyActive: boolean };
+}
+
+/**
+ * Per-user available-credit breakdown — mirrors the AI Usage page.
+ * Green = free credits left · Purple = bought · Blue = essay gen · Amber = monthly subscription
+ */
+function CreditCell({ credits }: { credits: CreditBalance | null }) {
+  if (!credits) return <span className="text-muted-foreground text-[11px] italic">—</span>;
+
+  const Line = ({ label, free, paid, gen, monthly }: {
+    label: string; free: number; paid: number; gen?: number; monthly: boolean;
+  }) => (
+    <div className="flex items-center gap-1 flex-wrap">
+      <span className="w-9 shrink-0 text-[10px] font-semibold text-muted-foreground uppercase">{label}</span>
+      {monthly && (
+        <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-[10px] font-bold" title="Active monthly subscription — unlimited">∞ Monthly</span>
+      )}
+      <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-mono" title="Free credits remaining (free tier)">{free} free</span>
+      <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${paid > 0 ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-500'}`} title="Paid credits remaining (bought)">{paid} bought</span>
+      {gen !== undefined && gen > 0 && (
+        <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-mono" title="Essay generation credits">{gen} gen</span>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="space-y-1">
+      <Line label="Essay" free={credits.essay.free} paid={credits.essay.paid} gen={credits.essay.gen} monthly={credits.essay.monthlyActive} />
+      <Line label="SWT" free={credits.swt.free} paid={credits.swt.paid} monthly={credits.swt.monthlyActive} />
+    </div>
+  );
+}
+
 export default function PaymentTransactionsPage() {
   const { user: currentUser, isUserLoading } = useUser();
   const { firestore } = useFirebase();
@@ -35,7 +75,7 @@ export default function PaymentTransactionsPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [orders, setOrders] = useState<PaymentOrder[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<PaymentOrder[]>([]);
-  const [userMap, setUserMap] = useState<Record<string, { name: string; email: string }>>({});
+  const [userMap, setUserMap] = useState<Record<string, { name: string; email: string; credits: CreditBalance | null }>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -73,13 +113,30 @@ export default function PaymentTransactionsPage() {
         uniqueUids.map(async uid => {
           try {
             const snap = await getDoc(doc(db, 'users', uid));
-            const d = snap.exists() ? snap.data() : {};
+            const d: any = snap.exists() ? snap.data() : {};
+            const now = new Date();
+            const essayMonthly = d?.essayMonthlyExpiry?.toDate?.() ?? null;
+            const swtMonthly = d?.swtMonthlyExpiry?.toDate?.() ?? null;
+            const credits: CreditBalance | null = snap.exists() ? {
+              essay: {
+                free: Math.max(0, FREE_ESSAY_LIMIT - ((d?.essayFreeUsed as number) ?? 0)),
+                paid: (d?.essayPaidCredits as number) ?? 0,
+                gen: (d?.essayGenCredits as number) ?? 0,
+                monthlyActive: !!(essayMonthly && essayMonthly > now),
+              },
+              swt: {
+                free: Math.max(0, FREE_SWT_LIMIT - ((d?.swtFreeUsed as number) ?? 0)),
+                paid: (d?.swtPaidCredits as number) ?? 0,
+                monthlyActive: !!(swtMonthly && swtMonthly > now),
+              },
+            } : null;
             return [uid, {
               name: (d?.displayName as string) || (d?.name as string) || '',
               email: (d?.email as string) || '',
+              credits,
             }] as const;
           } catch {
-            return [uid, { name: '', email: '' }] as const;
+            return [uid, { name: '', email: '', credits: null }] as const;
           }
         })
       );
@@ -193,6 +250,7 @@ export default function PaymentTransactionsPage() {
                     <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Order ID</th>
                     <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">User</th>
                     <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Course</th>
+                    <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Available Credits</th>
                     <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Amount</th>
                     <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Status</th>
                     <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Date</th>
@@ -214,6 +272,7 @@ export default function PaymentTransactionsPage() {
                         <div className="text-[10px] text-muted-foreground/70 font-mono truncate" title={order.userId}>{order.userId}</div>
                       </td>
                       <td className="px-6 py-4 text-sm font-semibold">{order.courseId}</td>
+                      <td className="px-6 py-4"><CreditCell credits={userMap[order.userId]?.credits ?? null} /></td>
                       <td className="px-6 py-4 text-sm font-bold text-primary">{formatPrice(order.paymentAmount)}</td>
                       <td className="px-6 py-4">
                         <Badge variant={getStatusVariant(order.paymentStatus)} className="capitalize px-3 py-1 rounded-full text-[10px] tracking-wider">
