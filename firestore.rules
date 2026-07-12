@@ -29,7 +29,8 @@ service cloud.firestore {
       return [
         'role',
         'essayPaidCredits', 'essayGenCredits', 'essayFreeUsed', 'essayMonthlyExpiry',
-        'swtPaidCredits', 'swtFreeUsed', 'swtMonthlyExpiry'
+        'swtPaidCredits', 'swtFreeUsed', 'swtMonthlyExpiry',
+        'sstPaidCredits', 'sstFreeUsed', 'sstMonthlyExpiry'
       ];
     }
     function touchesProtected() {
@@ -87,6 +88,20 @@ service cloud.firestore {
     match /site_settings/{id}  { allow read: if true; allow write: if isStaff(); }
     match /webinarSettings/{id}{ allow read: if true; allow write: if isStaff(); }
 
+    // Homepage vanity stats — public read; the signup counter increment needs an
+    // authed write (best-effort, wrapped in try/catch on the client).
+    match /site_stats/{id} { allow read: if true; allow write: if isAuthed(); }
+
+    // AI tutor course guides — content shown to signed-in students, staff-managed.
+    match /ai_tutor_courses/{id} {
+      allow read: if isAuthed();
+      allow write: if isStaff();
+      match /{sub=**} {
+        allow read: if isAuthed();
+        allow write: if isStaff();
+      }
+    }
+
     // Events: public read; an authed user may only append themselves to `registrations`.
     match /events/{id} {
       allow read: if true;
@@ -116,6 +131,19 @@ service cloud.firestore {
     match /workshop_problems/{id} {
       allow read: if isAuthed();
       allow write: if isStaff();
+    }
+    match /test_results/{id} {
+      allow read: if isStaff() || (isAuthed() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthed() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isStaff();
+    }
+    // Free-test usage counter, keyed by uid. Owner-managed (client-enforced).
+    match /user_test_limits/{userId} {
+      allow read, write: if isOwner(userId) || isStaff();
+    }
+    // AI tutor progress, doc id = "<uid>_<courseId>". Firebase uids never contain "_".
+    match /user_ai_tutor_performance/{docId} {
+      allow read, write: if isStaff() || (isAuthed() && docId.split('_')[0] == request.auth.uid);
     }
     match /webinarRegistrations/{id} {
       allow read: if isStaff() || (isAuthed() && resource.data.userId == request.auth.uid);
