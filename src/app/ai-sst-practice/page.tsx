@@ -6,7 +6,8 @@ import { useSearchParams } from 'next/navigation';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { payhereUrls } from '@/lib/payhere';
-import { pteSummarizeSpokenTextData, type SpokenTextData } from '@/lib/pte-listening-summarize-spoken-text-data';
+import { listQuestions } from '@/lib/services/pte-questions.service';
+import type { PteQuestion } from '@/types/pte-question';
 import { SSTResultDetails, type SSTResult } from '@/components/sst/SSTResultDetails';
 import { useToast } from '@/hooks/use-toast';
 import { AiRetryDialog } from '@/components/ui/ai-retry-dialog';
@@ -41,8 +42,17 @@ function SSTInner() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
 
-  const questions = pteSummarizeSpokenTextData;
-  const [selected, setSelected] = useState<SpokenTextData | null>(null);
+  const [questions, setQuestions] = useState<PteQuestion[]>([]);
+  const [loadingQ, setLoadingQ] = useState(true);
+  const [selected, setSelected] = useState<PteQuestion | null>(null);
+
+  useEffect(() => {
+    setLoadingQ(true);
+    listQuestions('listening', 'summarize-spoken-text', true)
+      .then(qs => setQuestions(qs))
+      .catch(() => setQuestions([]))
+      .finally(() => setLoadingQ(false));
+  }, []);
 
   const [summary, setSummary] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -138,7 +148,7 @@ function SSTInner() {
       const res = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ text: selected.transcript }),
+        body: JSON.stringify({ text: selected.content }),
       });
       const data = await res.json();
       if (!res.ok || !data.audio) { toast({ variant: 'destructive', title: data.error || 'Could not load audio.' }); return null; }
@@ -174,7 +184,7 @@ function SSTInner() {
       const res = await fetch('/api/score-sst', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ transcript: selected.transcript, summary }),
+        body: JSON.stringify({ transcript: selected.content, summary }),
       });
       const data = await res.json();
       if (res.status === 402 || data.code === 'NO_CREDITS') { setShowPurchase(true); return; }
@@ -215,7 +225,7 @@ function SSTInner() {
     }
   };
 
-  const selectQuestion = (q: SpokenTextData) => {
+  const selectQuestion = (q: PteQuestion) => {
     setSelected(q); setSummary(''); setResult(null); setError(null);
     setAudioSrc(null); setIsPlaying(false); setRevealTranscript(false);
     setTimeLeft(WRITE_SECONDS); setTimerRunning(false);
@@ -388,9 +398,12 @@ function SSTInner() {
         {!selected && (
           <div>
             <h2 className="text-sm font-black uppercase tracking-wider text-slate-700 mb-4">Choose a Lecture</h2>
-            {questions.length === 0 ? (
+            {loadingQ ? (
+              <div className="flex items-center gap-2 text-slate-400 py-12 justify-center"><Loader2 className="animate-spin" size={18} /> Loading lectures…</div>
+            ) : questions.length === 0 ? (
               <div className="text-center py-16 rounded-3xl border border-dashed border-slate-300 bg-slate-50">
                 <p className="text-slate-600 font-bold">No lectures available yet.</p>
+                <p className="text-slate-400 text-sm mt-1">New SST lectures are added by the Smart Labs team — please check back soon.</p>
               </div>
             ) : (
               <div className="grid sm:grid-cols-2 gap-4">
@@ -480,7 +493,7 @@ function SSTInner() {
                   <SignpostBig size={15} className="text-emerald-600" />
                   <span className="text-[11px] font-black uppercase tracking-widest text-slate-500">Lecture Transcript</span>
                 </div>
-                <p className="text-[15px] leading-relaxed text-slate-700 whitespace-pre-wrap">{selected.transcript}</p>
+                <p className="text-[15px] leading-relaxed text-slate-700 whitespace-pre-wrap">{selected.content}</p>
               </div>
             )}
 

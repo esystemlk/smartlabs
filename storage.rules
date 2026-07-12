@@ -27,6 +27,15 @@ service firebase.storage {
       allow write: if isAuthed() && isImage() && underMB(10);
     }
 
+    // Summarize Spoken Text lecture audio — public read (played in the trainer),
+    // signed-in upload of an audio file up to 20 MB.
+    match /sst-audio/{fileName} {
+      allow read: if true;
+      allow write: if isAuthed()
+                   && request.resource.contentType.matches('audio/.*')
+                   && underMB(20);
+    }
+
     // Identity documents for certificate requests — SENSITIVE.
     // Only the owner (path segment == their uid) may read or write their own docs.
     // Admins view submitted docs via the tokenized download URL saved in Firestore.

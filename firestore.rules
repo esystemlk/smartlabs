@@ -88,6 +88,9 @@ service cloud.firestore {
     match /site_settings/{id}  { allow read: if true; allow write: if isStaff(); }
     match /webinarSettings/{id}{ allow read: if true; allow write: if isStaff(); }
 
+    // PTE question bank — practice questions load for students; staff manage them.
+    match /pte_questions/{id} { allow read: if true; allow write: if isStaff(); }
+
     // Homepage vanity stats — public read; the signup counter increment needs an
     // authed write (best-effort, wrapped in try/catch on the client).
     match /site_stats/{id} { allow read: if true; allow write: if isAuthed(); }
