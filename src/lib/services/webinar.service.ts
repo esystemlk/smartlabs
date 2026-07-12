@@ -76,7 +76,8 @@ export const DEFAULT_WEBINAR_SETTINGS: WebinarSettings = {
 
 export async function registerForWebinar(
     firestore: Firestore,
-    data: Omit<WebinarRegistration, 'registrationDate'>
+    data: Omit<WebinarRegistration, 'registrationDate'>,
+    idToken?: string
 ): Promise<{ success: boolean; message: string }> {
     try {
         // Check for duplicate registration
@@ -99,6 +100,7 @@ export async function registerForWebinar(
         // Trigger email notification
         fetch('/api/webinar/notification', {
             method: 'POST',
+            headers: idToken ? { Authorization: `Bearer ${idToken}` } : {},
             body: JSON.stringify({
                 studentName: data.fullName,
                 studentEmail: data.email,

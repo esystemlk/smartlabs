@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyStaff } from '@/lib/api-auth';
+
+// Reject anything larger than 100 MB of decoded payload.
+const MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
+  // ── Auth: only staff may upload to storage ──
+  const auth = await verifyStaff(request);
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
   const storageZoneName = process.env.BUNNY_STORAGE_ZONE_NAME;
   const storageApiKey = process.env.BUNNY_STORAGE_API_KEY;
   const storageHostname = process.env.BUNNY_STORAGE_HOSTNAME;
@@ -32,7 +42,11 @@ export async function POST(request: NextRequest) {
     }
 
     const buffer = Buffer.from(fileBase64, 'base64');
-    
+
+    if (buffer.length > MAX_UPLOAD_BYTES) {
+      return NextResponse.json({ error: 'File exceeds the 100 MB upload limit.' }, { status: 413 });
+    }
+
     // Use the storage region hostname for the API endpoint
     const bunnyPath = `${folder}/${fileName}`;
     const apiUrl = `https://${storageHostname}/${storageZoneName}/${bunnyPath}`;

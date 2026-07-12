@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server';
 import { sendMail } from '@/lib/mail';
+import { verifyAuthed } from '@/lib/api-auth';
 
 export async function POST(req: Request) {
   try {
+    // Registration requires login, so require a valid session here too.
+    const auth = await verifyAuthed(req);
+    if (!auth.ok) {
+      return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+    }
+
     const { studentName, studentEmail, studentPhone, level, registrationTime, webinarTitle, webinarDate, webinarTime } = await req.json();
 
     const title = webinarTitle || 'Free PTE Strategy Webinar';

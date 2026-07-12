@@ -49,7 +49,7 @@ const resourceFormSchema = z.object({
 type ResourceFormValues = z.infer<typeof resourceFormSchema>;
 
 export default function ResourceManagementPage() {
-  const { firestore } = useFirebase();
+  const { firestore, auth } = useFirebase();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedResource, setSelectedResource] = useState<any>(null);
@@ -115,9 +115,13 @@ export default function ResourceManagementPage() {
                 const fileBase64 = fileDataUrl.split(',')[1];
                 const folder = data.resourceType === 'video' ? 'videos' : data.resourceType === 'image' ? 'images' : 'documents';
 
+                const idToken = await auth?.currentUser?.getIdToken();
                 const response = await fetch('/api/upload', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+                    },
                     body: JSON.stringify({ fileBase64, fileName: fileToUpload.name, folder }),
                 });
 

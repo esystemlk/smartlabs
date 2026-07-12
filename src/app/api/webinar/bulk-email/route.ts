@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 import { sendMail } from '@/lib/mail';
+import { verifyStaff } from '@/lib/api-auth';
 
 export async function POST(req: Request) {
   try {
+    const auth = await verifyStaff(req);
+    if (!auth.ok) {
+      return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+    }
+
     const { students, lecturerName, zoomLink, resourcesLink, additionalMessage, webinarTitle, webinarDate, webinarTime } = await req.json();
 
     if (!students || !Array.isArray(students)) {

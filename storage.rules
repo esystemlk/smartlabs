@@ -1,0 +1,46 @@
+rules_version = '2';
+
+// Firebase Storage security rules for smart-labs-ekk8j.firebasestorage.app
+//
+// NOTE: Storage rules cannot read a user's Firestore `role`, so "staff only"
+// cannot be expressed here directly. Writes are therefore gated on being signed
+// in, plus content-type and size limits. For true staff-only uploads, either
+// (a) move role into a Firebase Auth custom claim and check request.auth.token.role,
+// or (b) route uploads through the authenticated /api/upload endpoint.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isAuthed() {
+      return request.auth != null;
+    }
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    function underMB(n) {
+      return request.resource.size < n * 1024 * 1024;
+    }
+
+    // Course timetable / batch images — shown publicly on course pages.
+    match /batches/{fileName} {
+      allow read: if true;
+      allow write: if isAuthed() && isImage() && underMB(10);
+    }
+
+    // Identity documents for certificate requests — SENSITIVE.
+    // Only the owner (path segment == their uid) may read or write their own docs.
+    // Admins view submitted docs via the tokenized download URL saved in Firestore.
+    match /identity-docs/{userId}/{fileName} {
+      allow read:  if isAuthed() && request.auth.uid == userId;
+      allow write: if isAuthed()
+                   && request.auth.uid == userId
+                   && (isImage() || request.resource.contentType == 'application/pdf')
+                   && underMB(15);
+    }
+
+    // Anything else: no public access.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

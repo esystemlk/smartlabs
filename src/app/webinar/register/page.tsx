@@ -103,6 +103,7 @@ export default function WebinarRegisterPage() {
 
         setIsSubmitting(true);
 
+        const idToken = await user.getIdToken();
         const result = await registerForWebinar(firestore, {
             userId: user.uid,
             fullName,
@@ -110,7 +111,7 @@ export default function WebinarRegisterPage() {
             phone,
             examType: examType as 'PTE',
             level: level as 'Beginner' | 'Intermediate' | 'Advanced',
-        });
+        }, idToken);
 
         setIsSubmitting(false);
 

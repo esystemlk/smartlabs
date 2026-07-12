@@ -55,7 +55,7 @@ import {
 export default function AdminWebinarsPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const { firestore } = useFirebase();
+    const { firestore, auth } = useFirebase();
     const { user: currentUser, isUserLoading } = useUser();
 
     const [isAdmin, setIsAdmin] = useState(false);
@@ -242,9 +242,13 @@ export default function AdminWebinarsPage() {
         setIsSendingEmails(true);
 
         try {
+            const idToken = await auth?.currentUser?.getIdToken();
             const response = await fetch('/api/webinar/bulk-email', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+                },
                 body: JSON.stringify({
                     students: recipients,
                     lecturerName,
@@ -312,9 +316,13 @@ export default function AdminWebinarsPage() {
         setIsSendingConfirmations(true);
 
         try {
+            const idToken = await auth?.currentUser?.getIdToken();
             const response = await fetch('/api/webinar/resend-confirmation', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+                },
                 body: JSON.stringify({
                     students: recipients,
                     webinarTitle: settings.title,

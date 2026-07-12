@@ -1,46 +1,174 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions
-    function isAuthenticated() {
+
+    // ─── Helpers ────────────────────────────────────────────────────────────
+    function isAuthed() {
       return request.auth != null;
     }
-    
+
+    function isOwner(userId) {
+      return isAuthed() && request.auth.uid == userId;
+    }
+
+    // Reads the caller's own user doc to check role. Staff = admin/developer/teacher.
+    function role() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    function isStaff() {
+      return isAuthed() && role() in ['admin', 'developer', 'teacher'];
+    }
     function isAdmin() {
-      return isAuthenticated() && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return isAuthed() && role() in ['admin', 'developer'];
     }
 
-    // Users collection
+    // Fields on a user doc that only the server (Admin SDK) may ever change.
+    // The Admin SDK bypasses these rules, so listing them here blocks CLIENTS only.
+    function protectedUserFields() {
+      return [
+        'role',
+        'essayPaidCredits', 'essayGenCredits', 'essayFreeUsed', 'essayMonthlyExpiry',
+        'swtPaidCredits', 'swtFreeUsed', 'swtMonthlyExpiry'
+      ];
+    }
+    function touchesProtected() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasAny(protectedUserFields());
+    }
+
+    // ─── Users ──────────────────────────────────────────────────────────────
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      // Only the owner or staff can read a profile (emails/phones/addresses live here).
+      allow read: if isOwner(userId) || isStaff();
+
+      // On signup the client may only create its own doc with a non-privileged role.
+      allow create: if isOwner(userId)
+                    && (!('role' in request.resource.data) || request.resource.data.role in ['student', 'user']);
+
+      // Owner may edit their own profile but NOT role or credit fields. Staff may edit anything.
+      allow update: if (isOwner(userId) && !touchesProtected()) || isStaff();
+
+      allow delete: if isAdmin();
+
+      // Owner-scoped subcollections. Writes that grant real access are server-only.
+      match /enrollments/{docId} {
+        allow read: if isOwner(userId) || isStaff();
+        allow create: if isOwner(userId)
+                      && request.resource.data.get('enrollmentStatus', 'pending') == 'pending';
+        allow update, delete: if isStaff();
+      }
+      match /active_courses/{docId} {
+        allow read: if isOwner(userId) || isStaff();
+        allow write: if isStaff(); // granted by the payment webhook (Admin SDK)
+      }
+      match /essay_sessions/{docId} {
+        allow read, write: if isOwner(userId) || isStaff();
+      }
+      match /{sub=**} {
+        allow read: if isOwner(userId) || isStaff();
+        allow write: if isStaff();
+      }
     }
 
-    // Workshops collection
-    match /workshops/{workshopId} {
-      allow read: if true; // Publicly viewable landing pages
-      allow write: if isAdmin();
+    // ─── Public content (anyone reads, staff manages) ───────────────────────
+    match /courses/{courseId} {
+      allow read: if true;
+      allow write: if isStaff();
+      match /{sub=**} {
+        allow read: if true;
+        allow write: if isStaff();
+      }
+    }
+    match /workshops/{id}      { allow read: if true; allow write: if isStaff(); }
+    match /blog_posts/{id}     { allow read: if true; allow write: if isStaff(); }
+    match /resources/{id}      { allow read: if true; allow write: if isStaff(); }
+    match /testimonials/{id}   { allow read: if true; allow write: if isStaff(); }
+    match /notifications/{id}  { allow read: if true; allow write: if isStaff(); }
+    match /site_settings/{id}  { allow read: if true; allow write: if isStaff(); }
+    match /webinarSettings/{id}{ allow read: if true; allow write: if isStaff(); }
+
+    // Events: public read; an authed user may only append themselves to `registrations`.
+    match /events/{id} {
+      allow read: if true;
+      allow create, delete: if isStaff();
+      allow update: if isStaff()
+                    || (isAuthed()
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['registrations']));
     }
 
-    // Registrations collection
-    match /registrations/{regId} {
-      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isAdmin();
+    // ─── User-owned records ─────────────────────────────────────────────────
+    // Owner creates their own; staff can review/manage all.
+    match /levelTestResults/{id} {
+      allow read: if isStaff() || (isAuthed() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthed() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isStaff();
+    }
+    match /certificate_requests/{id} {
+      allow read: if isStaff() || (isAuthed() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthed() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isStaff();
+    }
+    match /registrations/{id} {
+      allow read: if isStaff() || (isAuthed() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthed() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isStaff();
+    }
+    match /workshop_problems/{id} {
+      allow read: if isAuthed();
+      allow write: if isStaff();
+    }
+    match /webinarRegistrations/{id} {
+      allow read: if isStaff() || (isAuthed() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthed() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isStaff();
+    }
+    match /enrollments/{id} {
+      allow read: if isStaff() || (isAuthed() && resource.data.userId == request.auth.uid);
+      // Client may only initiate a PENDING manual enrollment; activation is staff/server.
+      allow create: if isAuthed()
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.get('enrollmentStatus', 'pending') == 'pending';
+      allow update, delete: if isStaff();
+    }
+    match /downloads/{id} {
+      allow read: if isStaff();
+      allow create: if isAuthed() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isStaff();
+    }
+    match /support_tickets/{id} {
+      allow read: if isStaff() || (isAuthed() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthed() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isStaff();
+    }
+    match /support_chats/{id} {
+      allow read: if isStaff() || (isAuthed() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthed() && request.resource.data.userId == request.auth.uid;
+      allow update: if isStaff() || (isAuthed() && resource.data.userId == request.auth.uid);
+      allow delete: if isStaff();
+      match /{sub=**} {
+        allow read, write: if isStaff() || (isAuthed() && get(/databases/$(database)/documents/support_chats/$(id)).data.userId == request.auth.uid);
+      }
     }
 
-    // Downloads collection
-    match /downloads/{downloadId} {
-      allow read: if isAdmin();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+    // ─── Read: staff / Write: server-only ───────────────────────────────────
+    // The payment webhook and credit granters use the Admin SDK, which ignores
+    // these rules. Denying client writes here closes the money/credit holes.
+    match /user_course_access/{id} {
+      allow read: if isStaff() || (isAuthed() && resource.data.userId == request.auth.uid);
+      allow write: if false;
     }
+    match /payment_orders/{id}   { allow read: if isStaff(); allow write: if false; }
+    match /payments/{id}         { allow read: if isStaff(); allow write: if false; }
+    match /admin_actions/{id}    { allow read: if isStaff(); allow write: if false; }
+    match /ai_usage_logs/{id}    { allow read: if isStaff(); allow write: if false; }
+    match /ai_key_stats/{id}     { allow read: if isStaff(); allow write: if false; }
+    match /system_config/{id}    { allow read: if isStaff(); allow write: if false; }
+    match /deviceFingerprints/{id} { allow read: if false; allow write: if false; }
+    match /webinarAdminEmails/{id} { allow read: if isStaff(); allow write: if isStaff(); }
 
-    // Default catch-all (expired/legacy)
+    // ─── Default: deny everything not explicitly allowed above ───────────────
     match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2026, 12, 12);
+      allow read, write: if false;
     }
   }
 }
