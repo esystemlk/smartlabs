@@ -114,7 +114,7 @@ const pteSections = [
     badgeClass: 'bg-orange-500/10 text-orange-600 border-orange-500/20',
     tasks: [
       { title: 'Write from Dictation', href: '/dashboard/practice-tests/pte-listening-write-from-dictation', ai: true, hot: true, featured: true },
-      { title: 'Summarize Spoken Text', href: '/ai-sst-practice', ai: true, hot: true, featured: true },
+      { title: 'Summarize Spoken Text', href: '/ai-sst-practice', ai: true, hot: true, featured: true, enabled: true },
       { title: 'MCQ Multiple Answer', href: '/dashboard/practice-tests/pte-listening-multiple-choice-multiple-answer', ai: false, hot: false },
       { title: 'Fill in the Blanks', href: '/dashboard/practice-tests/pte-listening-fill-in-blanks', ai: false, hot: false },
       { title: 'Highlight Correct Summary', href: '/dashboard/practice-tests/pte-listening-highlight-correct-summary', ai: false, hot: false },
@@ -214,33 +214,36 @@ function SectionCard({ section, index }: { section: (typeof pteSections)[0]; ind
       {/* Task List */}
       <div className="p-3 space-y-1">
         {section.tasks.map((task, i) => {
+          // A task can be individually enabled even inside a "Coming Soon" section.
+          const taskEnabled = !disabled || (task as { enabled?: boolean }).enabled === true;
+          const dim = !taskEnabled;
           const inner = (
-            <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 ${disabled ? 'opacity-50' : 'hover:bg-white/50 dark:hover:bg-white/5'}`}>
-              <div className={`w-2 h-2 rounded-full ${task.hot && !disabled ? 'bg-primary/60' : 'bg-muted-foreground/20'} shrink-0`} />
+            <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 ${dim ? 'opacity-50' : 'hover:bg-white/50 dark:hover:bg-white/5'}`}>
+              <div className={`w-2 h-2 rounded-full ${task.hot && !dim ? 'bg-primary/60' : 'bg-muted-foreground/20'} shrink-0`} />
               <span className="text-sm font-semibold flex-1 text-foreground/80 group-hover/task:text-foreground transition-colors">
                 {task.title}
               </span>
               <div className="flex items-center gap-1.5">
-                {task.featured && !disabled && (
+                {task.featured && !dim && (
                   <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-500/10 text-amber-600 border-amber-500/20 font-black">
                     🔥 Top
                   </Badge>
                 )}
                 {task.ai && (
-                  <Badge className={`text-[9px] px-1.5 py-0 h-4 ${disabled ? 'bg-slate-200 text-slate-500 border-slate-300' : section.badgeClass} font-black border`}>
+                  <Badge className={`text-[9px] px-1.5 py-0 h-4 ${dim ? 'bg-slate-200 text-slate-500 border-slate-300' : section.badgeClass} font-black border`}>
                     AI
                   </Badge>
                 )}
-                {!disabled && (
+                {!dim && (
                   <CaretRight weight="bold" className="h-3 w-3 text-muted-foreground/40 group-hover/task:text-muted-foreground transition-colors" />
                 )}
               </div>
             </div>
           );
-          return disabled ? (
-            <div key={i} className="block cursor-not-allowed select-none">{inner}</div>
-          ) : (
+          return taskEnabled ? (
             <Link key={i} href={task.href} className="block group/task">{inner}</Link>
+          ) : (
+            <div key={i} className="block cursor-not-allowed select-none">{inner}</div>
           );
         })}
       </div>
