@@ -620,9 +620,9 @@ export default function Header() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="lg:hidden absolute top-full left-0 right-0 bg-background shadow-lg border-t"
+            className="lg:hidden absolute top-full left-0 right-0 bg-background shadow-lg border-t max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain"
           >
-            <div className="p-4 space-y-2">
+            <div className="p-4 space-y-2 pb-[max(1rem,env(safe-area-inset-bottom))]">
               <div className="pb-2 border-b border-border">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-4">Courses</p>
                 {courses.map((course) => (
