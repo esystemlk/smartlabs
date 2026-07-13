@@ -199,7 +199,10 @@ export default function Header() {
     router.push('/login');
   };
 
-  const isSpecialLayout = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/welcome' || pathname.startsWith('/payment');
+  // Hidden on app-style pages and on pages that render their own navigation bar
+  // (AI trainers) — two stacked fixed navs block each other's taps on mobile.
+  const isSpecialLayout = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/welcome' || pathname.startsWith('/payment')
+    || pathname.startsWith('/ai-essay-practice') || pathname.startsWith('/ai-sst-practice') || pathname.startsWith('/swt-trainer');
 
   if (isSpecialLayout) {
     return null;

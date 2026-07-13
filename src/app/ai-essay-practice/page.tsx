@@ -920,11 +920,11 @@ function AIEssayPracticeInner() {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
             onClick={() => setMobileNavOpen(false)}
           />
-          {/* Drawer */}
-          <div className="fixed top-0 right-0 bottom-0 z-40 w-72 bg-white shadow-2xl flex flex-col overflow-y-auto">
+          {/* Drawer — above every fixed nav/widget so it can't be blocked */}
+          <div className="fixed top-0 right-0 bottom-0 z-[70] w-72 bg-white shadow-2xl flex flex-col overflow-y-auto">
             {/* Drawer header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
               <span className="font-extrabold text-lg text-slate-900">SMART<span className="text-[#f97316]">LABS</span></span>
