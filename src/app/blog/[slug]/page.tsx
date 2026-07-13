@@ -1,5 +1,6 @@
 
 'use client';
+import { use } from 'react';
 import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import { notFound } from 'next/navigation';
@@ -11,15 +12,16 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
+export default function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
   const { firestore } = useFirebase();
 
   const postQuery = useMemoFirebase(
     () =>
       firestore
-        ? query(collection(firestore, 'blog_posts'), where('slug', '==', params.slug))
+        ? query(collection(firestore, 'blog_posts'), where('slug', '==', slug))
         : null,
-    [firestore, params.slug]
+    [firestore, slug]
   );
   
   const { data: posts, isLoading } = useCollection(postQuery);

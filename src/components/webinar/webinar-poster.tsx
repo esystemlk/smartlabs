@@ -106,17 +106,17 @@ export function WebinarPoster() {
                             </div>
 
                             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                                <Link href="/webinar/register">
-                                    <Button className="w-full sm:w-auto h-14 px-10 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white font-black text-lg shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                                <Button asChild className="w-full sm:w-auto h-14 px-10 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white font-black text-lg shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                                    <Link href="/webinar/register">
                                         Register Now
                                         <ArrowRight weight="bold" className="ml-2 h-5 w-5" />
-                                    </Button>
-                                </Link>
-                                <Link href="/webinar">
-                                    <Button variant="outline" className="w-full sm:w-auto h-14 px-10 rounded-2xl border-2 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-black text-lg transition-all">
+                                    </Link>
+                                </Button>
+                                <Button asChild variant="outline" className="w-full sm:w-auto h-14 px-10 rounded-2xl border-2 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-black text-lg transition-all">
+                                    <Link href="/webinar">
                                         Learn More
-                                    </Button>
-                                </Link>
+                                    </Link>
+                                </Button>
                             </div>
                         </div>
 

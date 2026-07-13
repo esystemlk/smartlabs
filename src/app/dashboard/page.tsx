@@ -203,11 +203,11 @@ function SectionCard({ section, index }: { section: (typeof pteSections)[0]; ind
             Coming Soon
           </span>
         ) : (
-          <Link href={section.sectionHref}>
-            <Button size="sm" variant="ghost" className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl text-xs font-bold h-8 px-3">
+          <Button asChild size="sm" variant="ghost" className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl text-xs font-bold h-8 px-3">
+            <Link href={section.sectionHref}>
               View All <CaretRight weight="bold" className="ml-1 h-3 w-3" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         )}
       </div>
 

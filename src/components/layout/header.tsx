@@ -451,6 +451,17 @@ export default function Header() {
           {/* CTA & Actions */}
           <div className="hidden lg:flex items-center gap-4">
 
+            {/* Search */}
+            <button
+              onClick={() => window.dispatchEvent(new Event('open-command-palette'))}
+              aria-label="Search the site"
+              className="flex items-center gap-2 h-10 pl-3 pr-2 rounded-xl border border-border/60 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Search className="h-4 w-4" />
+              <span className="text-xs font-semibold">Search</span>
+              <kbd className="ml-1 hidden xl:inline-flex items-center rounded-md bg-background border border-border px-1.5 py-0.5 text-[9px] font-black text-muted-foreground">Ctrl K</kbd>
+            </button>
+
             {/* Notifications */}
             <DropdownMenu onOpenChange={setNotifsOpen}>
               <DropdownMenuTrigger asChild>
@@ -505,7 +516,7 @@ export default function Header() {
                 </div>
 
                 <div className="p-4 bg-muted/30 text-center border-t border-border/50">
-                  <Link href="/notifications" className="text-[10px] font-black text-primary hover:tracking-widest transition-all uppercase">View Matrix Logs <ArrowRight className="h-2.5 w-2.5 inline-block ml-1" /></Link>
+                  <Link href="/dashboard" className="text-[10px] font-black text-primary hover:tracking-widest transition-all uppercase">Go to Dashboard <ArrowRight className="h-2.5 w-2.5 inline-block ml-1" /></Link>
                 </div>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -603,13 +614,23 @@ export default function Header() {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+          {/* Mobile: Search + Menu Buttons */}
+          <div className="lg:hidden flex items-center gap-1">
+            <button
+              className="p-2 rounded-lg hover:bg-muted transition-colors"
+              onClick={() => window.dispatchEvent(new Event('open-command-palette'))}
+              aria-label="Search the site"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+            <button
+              className="p-2 rounded-lg hover:bg-muted transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            >
+              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
       </nav>
 

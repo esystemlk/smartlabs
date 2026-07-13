@@ -17,12 +17,6 @@ const mockTestCourses = [
     description: "A second full-length practice test to sharpen your skills.",
     href: "/mock-tests/pte/test-2",
     status: "Available"
-  },
-  {
-    title: "CELPIP Mock Tests",
-    description: "Prepare for your Canadian immigration journey with our practice tests.",
-    href: "#",
-    status: "Coming Soon"
   }
 ];
 

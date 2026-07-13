@@ -21,8 +21,9 @@ export default {
         'xs': '480px',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Poppins', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
+        display: ['var(--font-poppins)', 'Poppins', 'system-ui', 'sans-serif'],
+        'display-serif': ['var(--font-playfair)', 'Playfair Display', 'serif'],
       },
       colors: {
         border: "hsl(var(--border))",

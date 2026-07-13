@@ -91,6 +91,17 @@ service cloud.firestore {
     // PTE question bank — practice questions load for students; staff manage them.
     match /pte_questions/{id} { allow read: if true; allow write: if isStaff(); }
 
+    // Homepage CMS content — publicly displayed, staff-managed.
+    match /homepage_courses/{id}          { allow read: if true; allow write: if isStaff(); }
+    match /homepage_learning_methods/{id} { allow read: if true; allow write: if isStaff(); }
+    match /homepage_features/{id}         { allow read: if true; allow write: if isStaff(); }
+    match /homepage_faqs/{id}             { allow read: if true; allow write: if isStaff(); }
+    match /homepage_comparisons/{id}      { allow read: if true; allow write: if isStaff(); }
+
+    // Per-course payment settings (hosted PayHere links, price) — the public
+    // enroll page reads these; only staff may change them.
+    match /course_payment_settings/{id}   { allow read: if true; allow write: if isStaff(); }
+
     // Homepage vanity stats — public read; the signup counter increment needs an
     // authed write (best-effort, wrapped in try/catch on the client).
     match /site_stats/{id} { allow read: if true; allow write: if isAuthed(); }
@@ -188,7 +199,15 @@ service cloud.firestore {
       allow read: if isStaff() || (isAuthed() && resource.data.userId == request.auth.uid);
       allow write: if false;
     }
-    match /payment_orders/{id}   { allow read: if isStaff(); allow write: if false; }
+    // The enroll page creates its own PENDING order before redirecting to PayHere.
+    // Only the webhook (Admin SDK) can mark an order successful, so this is safe.
+    match /payment_orders/{id} {
+      allow read: if isStaff() || (isAuthed() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthed()
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.get('paymentStatus', 'pending') == 'pending';
+      allow update, delete: if isStaff();
+    }
     match /payments/{id}         { allow read: if isStaff(); allow write: if false; }
     match /admin_actions/{id}    { allow read: if isStaff(); allow write: if false; }
     match /ai_usage_logs/{id}    { allow read: if isStaff(); allow write: if false; }
@@ -196,6 +215,7 @@ service cloud.firestore {
     match /system_config/{id}    { allow read: if isStaff(); allow write: if false; }
     match /deviceFingerprints/{id} { allow read: if false; allow write: if false; }
     match /webinarAdminEmails/{id} { allow read: if isStaff(); allow write: if isStaff(); }
+    match /contact_messages/{id}   { allow read: if isStaff(); allow write: if false; }
 
     // ─── Default: deny everything not explicitly allowed above ───────────────
     match /{document=**} {

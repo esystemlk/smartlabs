@@ -271,8 +271,9 @@ export function AccessibilityWidget() {
                     settings.magnifier ? "top-4 right-4 w-20 h-20 bg-red-600 rounded-2xl shadow-[0_0_50px_rgba(220,38,38,0.5)] border-4 border-white" : "bottom-6 right-6 w-14 h-14 bg-gradient-to-tr from-blue-700 to-blue-500 rounded-full shadow-[0_10px_40px_rgba(37,99,235,0.4)] border-2 border-white/40"
                 )}
                 style={settings.magnifier ? { transform: 'scale(0.8)' } : {}}
+                aria-label={isOpen ? "Close accessibility options" : "Open accessibility options"}
             >
-                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                <span className="absolute inset-0 block bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                 {isOpen ? <X className="w-6 h-6 z-10 mx-auto" /> :
                     settings.magnifier ? <Search className="w-10 h-10 z-10 mx-auto animate-pulse" /> :
                         <Accessibility className="w-8 h-8 z-10 mx-auto" />

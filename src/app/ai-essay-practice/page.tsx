@@ -1188,7 +1188,7 @@ function AIEssayPracticeInner() {
               { value: "85+", label: "Target Band", icon: <Target size={22} weight="duotone" className="text-[#2563eb]" /> },
               { value: "6", label: "Marking Criteria", icon: <ChartBar size={22} weight="duotone" className="text-[#2563eb]" /> },
               { value: "20 Min", label: "Practice Timer", icon: <Timer size={22} weight="duotone" className="text-[#2563eb]" /> }
-            ] || []).map((stat, i) => (
+            ]).map((stat, i) => (
               <div key={i} className="p-4 md:p-6 rounded-2xl bg-slate-50 border border-slate-200 hover:shadow-md transition-shadow">
                 <div className="flex justify-center mb-2">{stat.icon}</div>
                 <div className="text-3xl font-black text-[#f97316] mb-1">{stat.value}</div>
@@ -1226,7 +1226,7 @@ function AIEssayPracticeInner() {
               desc: "Receive a Band score, criterion-by-criterion marks, strengths, weaknesses & a model essay.",
               icon: <Lightning size={28} weight="duotone" className="text-[#f59e0b]" />
             }
-          ] || []).map((item, i) => (
+          ]).map((item, i) => (
             <div key={i} className="p-8 rounded-3xl bg-white border border-slate-200 hover:border-[#f97316]/40 transition-all group duration-300 shadow-sm hover:shadow-lg">
               <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
                 {item.icon}
@@ -1260,7 +1260,7 @@ function AIEssayPracticeInner() {
               { name: "Vocabulary", scale: "0–2", color: "bg-pink-50 text-pink-700 border-pink-200" },
               { name: "Grammar", scale: "0–2", color: "bg-red-50 text-red-700 border-red-200" },
               { name: "Spelling", scale: "0–2", color: "bg-indigo-50 text-indigo-700 border-indigo-200" }
-            ] || []).map((pill, i) => (
+            ]).map((pill, i) => (
               <span key={i} className={`px-4 py-2 rounded-full border text-xs font-black tracking-wide ${pill.color} shadow-sm flex items-center gap-1.5`}>
                 {pill.name}
                 <span className="opacity-60 font-bold text-[10px]">{pill.scale}</span>

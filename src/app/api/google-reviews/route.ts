@@ -33,7 +33,7 @@ export async function GET(request: Request) {
         if (!(isAfter6PM && lastUpdateBeforeTarget)) {
           // If we DON'T need an auto-refresh, check if cache is generally still valid (e.g. within 24h)
           // This handles visits before 6 PM using yesterday's data.
-          if (lastUpdated && (now.getTime() - lastUpdated.getTime()) < 24 * 60 * 60 * 1000) {
+          if (data && lastUpdated && (now.getTime() - lastUpdated.getTime()) < 24 * 60 * 60 * 1000) {
             return NextResponse.json(data.result);
           }
         }

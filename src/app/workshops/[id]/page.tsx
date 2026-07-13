@@ -88,9 +88,9 @@ export default function WorkshopDetailPage({ params }: { params: Promise<{ id: s
         const result = await registerForWorkshop(firestore, {
             workshopId: id,
             userId: user.uid,
-            fullName: user.displayName || 'Student',
+            studentName: user.displayName || 'Student',
             email: user.email || '',
-            phone: '', 
+            phone: '',
         });
 
         if (result.success) {

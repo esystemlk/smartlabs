@@ -70,35 +70,35 @@ export default function PoliciesPage() {
               </CardHeader>
               <CardContent className="prose max-w-none text-muted-foreground">
                 <p>Welcome to Smart Labs. By accessing our website and enrolling in courses, you agree to the following terms:</p>
-                <h3>Course Access</h3>
+                <h2>Course Access</h2>
                 <ul>
                     <li>Course access is granted only to the individual who completed the payment.</li>
                     <li>Sharing login credentials or course materials with others is strictly prohibited.</li>
                 </ul>
-                <h3>Payments</h3>
+                <h2>Payments</h2>
                 <ul>
                     <li>All payments must be completed through the website or approved payment methods.</li>
                     <li>Once payment is made, it cannot be reversed, transferred, or reassigned.</li>
                 </ul>
-                 <h3>Course Selection</h3>
+                 <h2>Course Selection</h2>
                 <ul>
                     <li>Students are solely responsible for selecting the correct course before payment.</li>
                     <li>Smart Labs will not change or adjust enrollments due to incorrect selection.</li>
                 </ul>
-                 <h3>Usage Policy</h3>
+                 <h2>Usage Policy</h2>
                 <ul>
                     <li>Course materials, recordings, and resources are for personal educational use only.</li>
                     <li>Any reproduction, redistribution, or commercial use is not permitted.</li>
                 </ul>
-                 <h3>Platform Changes</h3>
+                 <h2>Platform Changes</h2>
                 <ul>
                     <li>Smart Labs reserves the right to modify course content, schedules, instructors, or platform features, when necessary, while maintaining educational quality.</li>
                 </ul>
-                 <h3>Termination of Access</h3>
+                 <h2>Termination of Access</h2>
                 <ul>
                     <li>Violation of these terms may result in suspension or termination of access without refund.</li>
                 </ul>
-                 <h3>Liability</h3>
+                 <h2>Liability</h2>
                 <ul>
                     <li>Smart Labs is not responsible for technical issues arising from a student’s device, internet connection, or external factors beyond our control.</li>
                 </ul>

@@ -171,13 +171,12 @@ export function EventPopup() {
                                                 {currentEvent.registrationClosed && !currentEvent.registrations?.some((reg: any) => reg.uid === user?.uid) ? 'View Details' : currentEvent.buttonText}
                                                 <ArrowRightIcon className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                             </Button>
-                                            <Link
-                                                href="/events"
+                                            <button
                                                 onClick={handleClose}
                                                 className="text-[10px] font-black text-center text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest"
                                             >
-                                                View All Events
-                                            </Link>
+                                                Maybe Later
+                                            </button>
                                         </div>
                                     </motion.div>
                                 </AnimatePresence>

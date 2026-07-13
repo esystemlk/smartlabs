@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Facebook, Instagram, Linkedin, Youtube, Mail, Phone, MapPin } from "lucide-react";
+import { Youtube, Mail, Phone, MapPin } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 const footerLinks = {
@@ -23,10 +23,8 @@ const footerLinks = {
   ],
 };
 
+// Only list profiles that actually exist — dead "#" links hurt usability (and awards judging).
 const socialLinks = [
-  { icon: Facebook, href: "#", label: "Facebook" },
-  { icon: Instagram, href: "#", label: "Instagram" },
-  { icon: Linkedin, href: "#", label: "LinkedIn" },
   { icon: Youtube, href: "https://www.youtube.com/@SmartLabs-Official", label: "YouTube" },
 ];
 

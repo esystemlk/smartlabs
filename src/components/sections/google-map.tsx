@@ -40,7 +40,7 @@ export function GoogleMap() {
                   <MapPin className="h-6 w-6" />
                 </div>
                 <div>
-                  <h4 className="font-black text-lg">Address</h4>
+                  <h3 className="font-black text-lg">Address</h3>
                   <p className="text-muted-foreground text-sm mt-1">
                     Jana Jaya City Mall, <br />
                     Rajagiriya, <br />
@@ -53,7 +53,7 @@ export function GoogleMap() {
                   <Clock className="h-6 w-6" />
                 </div>
                 <div>
-                  <h4 className="font-black text-lg">Opening Hours</h4>
+                  <h3 className="font-black text-lg">Opening Hours</h3>
                   <p className="text-muted-foreground text-sm mt-1">
                     Sat - Thu: 9:00 AM - 6:30 PM <br />
                     Friday: Closed
@@ -65,7 +65,7 @@ export function GoogleMap() {
                   <Phone className="h-6 w-6" />
                 </div>
                 <div>
-                  <h4 className="font-black text-lg">Phone</h4>
+                  <h3 className="font-black text-lg">Phone</h3>
                   <p className="text-muted-foreground text-sm mt-1">
                     077 453 3233
                   </p>
@@ -76,7 +76,7 @@ export function GoogleMap() {
                   <Globe className="h-6 w-6" />
                 </div>
                 <div>
-                  <h4 className="font-black text-lg">Website</h4>
+                  <h3 className="font-black text-lg">Website</h3>
                   <p className="text-muted-foreground text-sm mt-1">
                     smartlabsedu.com
                   </p>
@@ -95,13 +95,11 @@ export function GoogleMap() {
             <iframe
               title="Smart Labs Location"
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.835160868128!2d79.89376177582528!3d6.908518918552686!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x255d3c7aeb13728d%3A0x926352d0e6d006a7!2sSmartLabs%20PVT%20Ltd!5e0!3m2!1sen!2slk!4v1714820000000!5m2!1sen!2slk"
-              width="100%"
-              height="100%"
               style={{ border: 0 }}
               allowFullScreen
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              className="grayscale-[0.2] contrast-[1.1] brightness-[1.05] dark:invert dark:hue-rotate-180 dark:brightness-[0.8] dark:contrast-[1.2]"
+              className="w-full h-full grayscale-[0.2] contrast-[1.1] brightness-[1.05] dark:invert dark:hue-rotate-180 dark:brightness-[0.8] dark:contrast-[1.2]"
             ></iframe>
           </motion.div>
         </div>

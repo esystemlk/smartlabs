@@ -164,12 +164,12 @@ export default function EssayTopics2026Page() {
                 <div className="container mx-auto px-4 max-w-5xl">
                     {/* Header Controls */}
                     <div className="flex items-center justify-between mb-12">
-                        <Link href="/resources">
-                            <Button variant="ghost" className="rounded-2xl gap-2 font-bold group">
+                        <Button asChild variant="ghost" className="rounded-2xl gap-2 font-bold group">
+                            <Link href="/resources">
                                 <ChevronLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                                 Back to Library
-                            </Button>
-                        </Link>
+                            </Link>
+                        </Button>
                         <div className="flex gap-3">
                             <Button variant="outline" size="icon" className="rounded-xl border-slate-200 dark:border-slate-800">
                                 <Share2 className="h-4 w-4" />

@@ -170,23 +170,25 @@ export function WebinarBanner() {
                                         transition={{ delay: 0.4 }}
                                         className="flex flex-col sm:flex-row gap-3"
                                     >
-                                        <Link href="/webinar/register" className="flex-1" onClick={handleDismiss}>
-                                            <Button
-                                                className="w-full h-12 rounded-2xl bg-gradient-to-r from-blue-500 to-sky-400 hover:from-blue-600 hover:to-sky-500 text-white font-bold text-sm shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all group"
-                                            >
+                                        <Button
+                                            asChild
+                                            className="flex-1 w-full h-12 rounded-2xl bg-gradient-to-r from-blue-500 to-sky-400 hover:from-blue-600 hover:to-sky-500 text-white font-bold text-sm shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all group"
+                                        >
+                                            <Link href="/webinar/register" onClick={handleDismiss}>
                                                 Register Now
                                                 <ArrowRight weight="bold" className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                                            </Button>
-                                        </Link>
-                                        <Link href="/webinar" className="flex-1" onClick={handleDismiss}>
-                                            <Button
-                                                variant="outline"
-                                                className="w-full h-12 rounded-2xl border-2 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold text-sm transition-all group"
-                                            >
+                                            </Link>
+                                        </Button>
+                                        <Button
+                                            asChild
+                                            variant="outline"
+                                            className="flex-1 w-full h-12 rounded-2xl border-2 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold text-sm transition-all group"
+                                        >
+                                            <Link href="/webinar" onClick={handleDismiss}>
                                                 Learn More
                                                 <CaretRight weight="bold" className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                                            </Button>
-                                        </Link>
+                                            </Link>
+                                        </Button>
                                     </motion.div>
                                 </div>
 

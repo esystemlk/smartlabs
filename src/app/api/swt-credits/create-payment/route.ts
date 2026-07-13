@@ -4,7 +4,7 @@ import { adminAuth, adminDb } from '@/lib/firebase-admin';
 
 const md5 = (data: string) => createHash('md5').update(data).digest('hex').toUpperCase();
 
-export const SWT_PACKAGES = [
+const SWT_PACKAGES = [
   { id: 'swt_10',        scoring: 10,  price: 1500,  label: '10 Scorings' },
   { id: 'swt_40',        scoring: 40,  price: 3500,  label: '40 Scorings' },
   { id: 'swt_100',       scoring: 100, price: 6000,  label: '100 Scorings' },

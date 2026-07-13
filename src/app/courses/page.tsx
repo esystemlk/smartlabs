@@ -336,7 +336,7 @@ export default function CoursesPage() {
 
               <div className="pt-4">
                 <Button asChild size="xl" className="rounded-full bg-orange-600 hover:bg-orange-700 text-white font-black px-12 h-16 text-xl group shadow-2xl shadow-orange-600/40">
-                  <Link href={`https://wa.me/94766914650?text=I'm interested in the Grammar Clinic + PTE Boostify Bundle Offer`}>
+                  <Link href={`https://wa.me/94766914650?text=I'm%20interested%20in%20the%20Grammar%20Clinic%20%2B%20PTE%20Boostify%20Bundle%20Offer`}>
                     Claim Bundle Offer
                     <ArrowRight className="ml-2 h-6 w-6 transition-transform group-hover:translate-x-2" />
                   </Link>

@@ -35,7 +35,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { GraduationCap, MoreHorizontal, PlusCircle, Trash, Edit, ArrowLeft, Users, CheckCircle2, XCircle, Upload } from 'lucide-react';
+import { GraduationCap, MoreHorizontal, PlusCircle, Trash, Edit, ArrowLeft, Users, CheckCircle2, XCircle, Upload, Loader2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';

@@ -92,15 +92,13 @@ export default function AppsPage() {
                   </li>
                 ))}
               </ul>
-                <div className="flex flex-col sm:flex-row gap-4">
-                    <Button size="lg" variant="accent">
-                        <Apple className="mr-2 h-5 w-5" /> Download for macOS
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <Button size="lg" variant="accent" asChild>
+                        <Link href="/download/windows">
+                            <WindowsIcon /> Download for Windows
+                        </Link>
                     </Button>
-                    <Button size="lg" variant="outline" asChild>
-                        <a href="#" target="_blank" rel="noopener noreferrer">
-                           <Apple className="mr-2 h-5 w-5" /> Download for macOS (Coming Soon)
-                        </a>
-                    </Button>
+                    <p className="text-sm text-muted-foreground">macOS version is in development.</p>
               </div>
             </motion.div>
             <motion.div 
@@ -109,7 +107,7 @@ export default function AppsPage() {
                 viewport={{ once: true }}
                 className="relative aspect-video"
             >
-                 <Image src="https://picsum.photos/seed/desktopapp/800/600" alt="Desktop App Screenshot" fill className="rounded-xl object-cover shadow-2xl" data-ai-hint="desktop application learning" />
+                 <Image src="/images/lms-preview.png" alt="Smart Labs desktop learning platform screenshot" fill className="rounded-xl object-cover shadow-2xl" />
             </motion.div>
           </div>
         </div>
@@ -125,7 +123,7 @@ export default function AppsPage() {
                 viewport={{ once: true }}
                 className="relative aspect-[9/16] lg:aspect-video"
             >
-                 <Image src="https://picsum.photos/seed/mobileapp/600/800" alt="Mobile App Screenshot" fill className="rounded-xl object-cover shadow-2xl" data-ai-hint="mobile application learning" />
+                 <Image src="/images/lms-preview.png" alt="Smart Labs learning platform on mobile web" fill className="rounded-xl object-cover shadow-2xl" />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -151,13 +149,13 @@ export default function AppsPage() {
                   </li>
                 ))}
               </ul>
-                <div className="flex flex-col sm:flex-row gap-4">
-                     <Button size="lg" variant="hero">
-                        <Play className="mr-2 h-5 w-5" /> Get it on Google Play
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                     <Button size="lg" variant="hero" asChild>
+                        <Link href="/signup">
+                            <Smartphone className="mr-2 h-5 w-5" /> Use on Mobile Web
+                        </Link>
                     </Button>
-                    <Button size="lg" variant="outline">
-                       <Apple className="mr-2 h-5 w-5" /> Download on the App Store
-                    </Button>
+                    <p className="text-sm text-muted-foreground">Native Android & iOS apps are in development — the full platform works great in your mobile browser today.</p>
               </div>
             </motion.div>
           </div>

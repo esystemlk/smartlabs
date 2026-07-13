@@ -4,9 +4,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const staticPages = [
     '/',
-    '/pte',
-    '/ielts',
-    '/celpip',
     '/corporate-training',
     '/contact',
     '/blog',
@@ -14,6 +11,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/support',
     '/level-test',
     '/ai-essay-practice',
+    '/swt-trainer',
+    '/ai-sst-practice',
+    '/mock-tests',
+    '/videos',
+    '/resources',
+    '/workshops',
+    '/webinar',
     '/apps',
     '/policies',
     '/login',

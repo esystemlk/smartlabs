@@ -24,7 +24,7 @@ export default function PaymentCancelPage() {
                         </p>
                         <div className="mt-8 flex justify-center gap-4">
                             <Button asChild size="lg">
-                                <Link href="/enroll">Try Again</Link>
+                                <Link href="/courses">Try Again</Link>
                             </Button>
                             <Button asChild size="lg" variant="outline">
                                 <Link href="/">Back to Home</Link>

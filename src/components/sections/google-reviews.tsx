@@ -227,9 +227,9 @@ export function GoogleReviews() {
                               )}
                             </div>
                             <div>
-                              <h4 className="font-black text-lg tracking-tight line-clamp-1">
+                              <h3 className="font-black text-lg tracking-tight line-clamp-1">
                                 {review.author_name}
-                              </h4>
+                              </h3>
                               <div className="flex gap-0.5 mt-1">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                   <Star

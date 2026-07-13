@@ -168,17 +168,17 @@ export default function WebinarRegisterPage() {
                                             You are already registered for this webinar. The joining link will be sent to your email before the event.
                                         </p>
                                         <div className="pt-4 flex flex-col gap-3">
-                                            <Link href="/webinar">
-                                                <Button variant="outline" className="w-full h-12 rounded-2xl border-2 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold">
+                                            <Button asChild variant="outline" className="w-full h-12 rounded-2xl border-2 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold">
+                                                <Link href="/webinar">
                                                     <ArrowLeft weight="bold" className="mr-2 h-4 w-4" />
                                                     Back to Webinar Page
-                                                </Button>
-                                            </Link>
-                                            <Link href="/">
-                                                <Button variant="ghost" className="w-full h-10 text-gray-400 hover:text-gray-600 text-sm font-medium">
+                                                </Link>
+                                            </Button>
+                                            <Button asChild variant="ghost" className="w-full h-10 text-gray-400 hover:text-gray-600 text-sm font-medium">
+                                                <Link href="/">
                                                     Go to Homepage
-                                                </Button>
-                                            </Link>
+                                                </Link>
+                                            </Button>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -225,16 +225,16 @@ export default function WebinarRegisterPage() {
                                             </p>
                                         </div>
                                         <div className="pt-4 flex flex-col gap-3">
-                                            <Link href="/webinar">
-                                                <Button className="w-full h-12 rounded-2xl bg-gradient-to-r from-blue-500 to-sky-400 hover:from-blue-600 hover:to-sky-500 text-white font-bold shadow-lg shadow-blue-500/25">
+                                            <Button asChild className="w-full h-12 rounded-2xl bg-gradient-to-r from-blue-500 to-sky-400 hover:from-blue-600 hover:to-sky-500 text-white font-bold shadow-lg shadow-blue-500/25">
+                                                <Link href="/webinar">
                                                     View Webinar Details
-                                                </Button>
-                                            </Link>
-                                            <Link href="/">
-                                                <Button variant="ghost" className="w-full h-10 text-gray-400 hover:text-gray-600 text-sm font-medium">
+                                                </Link>
+                                            </Button>
+                                            <Button asChild variant="ghost" className="w-full h-10 text-gray-400 hover:text-gray-600 text-sm font-medium">
+                                                <Link href="/">
                                                     Return to Homepage
-                                                </Button>
-                                            </Link>
+                                                </Link>
+                                            </Button>
                                         </div>
                                     </CardContent>
                                 </Card>

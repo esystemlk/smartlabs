@@ -222,7 +222,7 @@ export default function GrammarClinicPage() {
                                 </div>
                                 <div className="pt-6">
                                     <Button asChild className="w-full bg-orange-600 hover:bg-orange-700 text-white font-black h-14 rounded-2xl text-lg group">
-                                        <Link href={`https://wa.me/94766914650?text=I'd like to register for the Grammar Clinic course`}>
+                                        <Link href={`https://wa.me/94766914650?text=I'd%20like%20to%20register%20for%20the%20Grammar%20Clinic%20course`}>
                                             Register via WhatsApp
                                             <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                         </Link>
@@ -303,7 +303,7 @@ export default function GrammarClinicPage() {
 
                         <div className="flex justify-center">
                             <Button asChild size="xl" className="rounded-full bg-blue-600 hover:bg-blue-700 text-white font-black px-12 h-16 text-xl group shadow-2xl">
-                                <Link href={`https://wa.me/94766914650?text=I'd like to register for the Grammar Clinic`}>
+                                <Link href={`https://wa.me/94766914650?text=I'd%20like%20to%20register%20for%20the%20Grammar%20Clinic`}>
                                     Secure Your Slot
                                     <ArrowRight className="ml-2 h-6 w-6 transition-transform group-hover:translate-x-1" />
                                 </Link>

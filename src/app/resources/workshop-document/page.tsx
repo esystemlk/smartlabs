@@ -40,12 +40,12 @@ export default function WorkshopDocumentPage() {
                 <div className="container mx-auto px-4 max-w-5xl">
                     {/* Header Controls */}
                     <div className="flex items-center justify-between mb-12">
-                        <Link href="/resources">
-                            <Button variant="ghost" className="rounded-2xl gap-2 font-bold group">
+                        <Button asChild variant="ghost" className="rounded-2xl gap-2 font-bold group">
+                            <Link href="/resources">
                                 <ChevronLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                                 Back to Library
-                            </Button>
-                        </Link>
+                            </Link>
+                        </Button>
                         <div className="flex gap-2">
                             <Badge variant="outline" className="border-primary/20 text-primary font-black uppercase text-[10px] px-4 py-1.5 rounded-full">
                                 WORKSHOP MANUAL

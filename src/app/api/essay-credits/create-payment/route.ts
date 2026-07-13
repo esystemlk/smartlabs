@@ -4,7 +4,7 @@ import { adminAuth, adminDb } from '@/lib/firebase-admin';
 
 const md5 = (data: string) => createHash('md5').update(data).digest('hex').toUpperCase();
 
-export const ESSAY_PACKAGES = [
+const ESSAY_PACKAGES = [
   { id: 'essay_10', scoring: 10, gens: 3, price: 1500, label: '10 Tests' },
   { id: 'essay_40', scoring: 40, gens: 10, price: 3500, label: '40 Tests' },
   { id: 'essay_100', scoring: 100, gens: 25, price: 6000, label: '100 Tests' },

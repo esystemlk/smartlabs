@@ -81,15 +81,23 @@ export function CommandPalette() {
                                 <Command.Group heading="Navigation" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/50 px-3 mb-2">
                                     <div className="grid grid-cols-2 gap-2 mt-2">
                                         <SearchItem icon={Home} label="Home Page" onSelect={() => runCommand(() => router.push("/"))} />
-                                        <SearchItem icon={LayoutDashboard} label="Admin Portal" onSelect={() => runCommand(() => router.push("/admin"))} />
-                                        <SearchItem icon={Sparkles} label="Score Master" onSelect={() => runCommand(() => router.push("/dashboard/ai-score-test"))} />
+                                        <SearchItem icon={LayoutDashboard} label="Practice Hub" desc="All PTE question types" onSelect={() => runCommand(() => router.push("/dashboard"))} />
+                                    </div>
+                                </Command.Group>
+
+                                <Command.Group heading="PTE AI Practice" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/50 px-3 mb-2">
+                                    <div className="space-y-1 mt-2">
+                                        <SearchItem icon={Sparkles} color="text-orange-500" label="Write Essay — AI Scoring" desc="Band score, analysis & model essay" onSelect={() => runCommand(() => router.push("/ai-essay-practice"))} />
+                                        <SearchItem icon={Book} color="text-violet-500" label="Summarize Written Text" desc="One-sentence summary trainer" onSelect={() => runCommand(() => router.push("/swt-trainer"))} />
+                                        <SearchItem icon={MessageSquare} color="text-emerald-500" label="Summarize Spoken Text" desc="Listen & summarize — AI scored" onSelect={() => runCommand(() => router.push("/ai-sst-practice"))} />
+                                        <SearchItem icon={Target} color="text-accent-1" label="Level Test" desc="Find your current band" onSelect={() => runCommand(() => router.push("/level-test"))} />
                                     </div>
                                 </Command.Group>
 
                                 <Command.Group heading="Core Training" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/50 px-3 mb-2">
                                     <div className="space-y-1 mt-2">
                                         <SearchItem icon={Target} color="text-accent-1" label="Academic Courses" desc="Browse programs" onSelect={() => runCommand(() => router.push("/courses"))} />
-                                        <SearchItem icon={Zap} color="text-accent-4" label="All Training Paths" desc="Discover classes" onSelect={() => runCommand(() => router.push("/courses"))} />
+                                        <SearchItem icon={Zap} color="text-accent-4" label="Corporate Training" desc="Team & business programs" onSelect={() => runCommand(() => router.push("/corporate-training"))} />
                                     </div>
                                 </Command.Group>
 
@@ -98,6 +106,7 @@ export function CommandPalette() {
                                         <SearchItem icon={Sparkles} label="AI Mock Test Lab" desc="Simulate real exams" onSelect={() => runCommand(() => router.push("/mock-tests"))} />
                                         <SearchItem icon={Video} label="Video Masterclasses" desc="Expert-led strategies" onSelect={() => runCommand(() => router.push("/videos"))} />
                                         <SearchItem icon={Book} label="The Smart Blog" desc="Latest updates & tips" onSelect={() => runCommand(() => router.push("/blog"))} />
+                                        <SearchItem icon={MessageSquare} label="Contact & Support" desc="Get in touch with our team" onSelect={() => runCommand(() => router.push("/contact"))} />
                                     </div>
                                 </Command.Group>
                             </Command.List>

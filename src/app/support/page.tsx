@@ -105,19 +105,19 @@ export default function SupportPage() {
                                     </p>
 
                                     {option.requiresAuth && !user ? (
-                                        <Link href={`/login?redirect=${encodeURIComponent(option.link)}`}>
-                                            <Button className="w-full h-12 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold border-none transition-all">
+                                        <Button asChild className="w-full h-12 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold border-none transition-all">
+                                            <Link href={`/login?redirect=${encodeURIComponent(option.link)}`}>
                                                 Log In to Chat
                                                 <CaretRight weight="bold" className="ml-2 h-4 w-4" />
-                                            </Button>
-                                        </Link>
+                                            </Link>
+                                        </Button>
                                     ) : (
-                                        <Link href={option.link} target={option.isExternal ? "_blank" : undefined}>
-                                            <Button className="w-full h-12 rounded-2xl bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 hover:border-blue-500 hover:text-blue-500 text-slate-900 dark:text-white font-bold transition-all flex items-center justify-center gap-2">
+                                        <Button asChild className="w-full h-12 rounded-2xl bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 hover:border-blue-500 hover:text-blue-500 text-slate-900 dark:text-white font-bold transition-all flex items-center justify-center gap-2">
+                                            <Link href={option.link} target={option.isExternal ? "_blank" : undefined}>
                                                 {option.buttonText}
                                                 <CaretRight weight="bold" className="h-4 w-4" />
-                                            </Button>
-                                        </Link>
+                                            </Link>
+                                        </Button>
                                     )}
                                 </div>
                             </motion.div>
@@ -135,13 +135,13 @@ export default function SupportPage() {
                         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
                             <div className="text-left">
                                 <h2 className="text-3xl font-black mb-2 tracking-tight">Need immediate answers?</h2>
-                                <p className="text-white/70 max-w-md">Check out our frequently asked questions for detailed guides on PTE and platform usage.</p>
+                                <p className="text-white/70 max-w-md">Send us a message and our team will get back to you within 24 hours.</p>
                             </div>
-                            <Link href="/help-center">
-                                <Button className="h-14 px-10 rounded-2xl bg-white text-slate-900 hover:bg-slate-100 font-black uppercase tracking-widest shadow-xl shadow-black/20">
-                                    Browse FAQ
-                                </Button>
-                            </Link>
+                            <Button asChild className="h-14 px-10 rounded-2xl bg-white text-slate-900 hover:bg-slate-100 font-black uppercase tracking-widest shadow-xl shadow-black/20">
+                                <Link href="/contact">
+                                    Contact Us
+                                </Link>
+                            </Button>
                         </div>
                     </motion.div>
                 </div>

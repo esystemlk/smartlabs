@@ -68,7 +68,7 @@ export const aiTutorService = {
             return querySnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
-            })) as AiTutorGuide[];
+            })) as unknown as AiTutorGuide[];
         } catch (error) {
             console.error(`Error fetching guides for course ${courseId}:`, error);
             return [];

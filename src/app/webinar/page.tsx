@@ -194,12 +194,12 @@ export default function WebinarPage() {
                                         </div>
 
                                         {/* CTA */}
-                                        <Link href="/webinar/register">
-                                            <Button className="w-full h-14 rounded-2xl bg-gradient-to-r from-blue-500 to-sky-400 hover:from-blue-600 hover:to-sky-500 text-white font-bold text-base shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all group">
+                                        <Button asChild className="w-full h-14 rounded-2xl bg-gradient-to-r from-blue-500 to-sky-400 hover:from-blue-600 hover:to-sky-500 text-white font-bold text-base shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all group">
+                                            <Link href="/webinar/register">
                                                 Register Now — It's Free!
                                                 <ArrowRight weight="bold" className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                                            </Button>
-                                        </Link>
+                                            </Link>
+                                        </Button>
                                     </CardContent>
                                 </Card>
                             </div>
@@ -307,12 +307,12 @@ export default function WebinarPage() {
                             viewport={{ once: true }}
                             className="text-center mt-14"
                         >
-                            <Link href="/webinar/register">
-                                <Button className="h-14 px-10 rounded-2xl bg-gradient-to-r from-blue-500 to-sky-400 hover:from-blue-600 hover:to-sky-500 text-white font-bold text-base shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all group">
-                                    Register Now — Secure Your Spot
-                                    <ArrowRight weight="bold" className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                                </Button>
-                            </Link>
+                            <Button asChild className="max-w-full h-14 px-6 sm:px-10 rounded-2xl bg-gradient-to-r from-blue-500 to-sky-400 hover:from-blue-600 hover:to-sky-500 text-white font-bold text-base shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all group">
+                                <Link href="/webinar/register">
+                                    <span className="truncate">Register Now — Secure Your Spot</span>
+                                    <ArrowRight weight="bold" className="ml-2 h-5 w-5 shrink-0 group-hover:translate-x-1 transition-transform" />
+                                </Link>
+                            </Button>
                             <p className="mt-4 text-sm text-gray-400 dark:text-gray-500">
                                 No credit card required. 100% free.
                             </p>

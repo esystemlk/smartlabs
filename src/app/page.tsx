@@ -70,13 +70,18 @@ import type { PteWriteEssayOutput } from '@/ai/flows/pte-writing.types';
 import { useToast } from "@/hooks/use-toast";
 import { useSiteStats } from "@/hooks/use-site-stats";
 import { logTestCompletion } from "@/lib/services/activity.service";
-import { EventPopup } from "@/components/events/event-popup";
+import dynamic from "next/dynamic";
+
+// Below-the-fold / non-critical widgets — loaded after hydration to cut
+// main-thread work on mobile (Lighthouse TBT/LCP).
+const EventPopup = dynamic(() => import("@/components/events/event-popup").then(m => m.EventPopup), { ssr: false });
+import { useDelayedPopups } from "@/components/layout/layout-extras";
 import { useHomepageCourses, useLearningMethods, useFeatures, useFAQs, useComparisons } from "@/hooks/use-homepage-content";
 import { useTestimonials } from "@/hooks/use-testimonials";
-import { GoogleReviews } from "@/components/sections/google-reviews";
-import { GoogleMap } from "@/components/sections/google-map";
+const GoogleReviews = dynamic(() => import("@/components/sections/google-reviews").then(m => m.GoogleReviews), { ssr: false });
+const GoogleMap = dynamic(() => import("@/components/sections/google-map").then(m => m.GoogleMap), { ssr: false });
+const WebinarPoster = dynamic(() => import("@/components/webinar/webinar-poster").then(m => m.WebinarPoster), { ssr: false });
 import { LMS_URL, testimonials } from "@/lib/constants";
-import { WebinarPoster } from "@/components/webinar/webinar-poster";
 import {
   CalendarBlank as PhCalendar,
   Clock as PhClock,
@@ -364,6 +369,7 @@ export default function Home() {
   const { faqs: realFAQs, loading: faqsLoading } = useFAQs();
   const { comparisons: realComparisons, loading: comparisonsLoading } = useComparisons();
   const { testimonials: realTestimonials, loading: testimonialsLoading } = useTestimonials();
+  const popupsReady = useDelayedPopups();
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
@@ -584,40 +590,12 @@ export default function Home() {
     }
   };
   return (
-    <main className="relative overflow-x-hidden w-full max-w-[100vw]">
-      <EventPopup />
+    <div className="relative overflow-x-hidden w-full max-w-[100vw]">
+      {popupsReady && <EventPopup />}
 
 
-      {/* Hero Section — Diagonal Split */}
+      {/* Hero Section — Diagonal Split (animations defined in globals.css) */}
       <section className="relative overflow-hidden">
-        <style>{`
-          @keyframes hero-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-          @keyframes accent-line  { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
-          @keyframes orb-pulse    { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.08); } }
-          @keyframes card-bob     { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
-          @keyframes lightning-sweep {
-            0%   { background-position: -150% 0; }
-            60%  { background-position: 250% 0; }
-            100% { background-position: 250% 0; }
-          }
-          .lightning-text {
-            font-family: 'Playfair Display', serif;
-            font-style: italic;
-            background-image: linear-gradient(
-              100deg,
-              #0f172a 0%, #0f172a 40%,
-              #6366f1 47%, #22d3ee 50%, #6366f1 53%,
-              #0f172a 60%, #0f172a 100%
-            );
-            background-size: 250% 100%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            color: transparent;
-            animation: lightning-sweep 3.2s ease-in-out infinite;
-          }
-        `}</style>
-
         {/* Top accent gradient line */}
         <div className="absolute top-0 left-0 right-0 h-[3px] origin-left z-50"
              style={{ background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent-3)), hsl(var(--accent-1)))', animation: 'accent-line 1.2s cubic-bezier(0.16,1,0.3,1) 0.1s both' }} />
@@ -818,42 +796,38 @@ export default function Home() {
 
         {/* ── MOBILE (< lg) ──────────────────────────────── */}
         <div className="lg:hidden flex flex-col">
-          {/* White top */}
+          {/* White top — pure-CSS entrance animations so the hero paints
+              before hydration (mobile LCP). */}
           <div className="bg-white pt-24 pb-12 px-6 flex flex-col items-center text-center">
-            <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-[11px] font-bold uppercase tracking-[0.5em] text-slate-400 mb-5">
+            <p className="hero-fade-in text-[11px] font-bold uppercase tracking-[0.5em] text-slate-400 mb-5" style={{ animationDelay: '0.2s' }}>
               Welcome to
-            </motion.p>
+            </p>
             <div style={{ overflow: 'hidden' }}>
-              <motion.h1 initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ duration: 0.85, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                className="font-black text-slate-900 leading-none tracking-tighter"
-                style={{ fontSize: '18vw', lineHeight: 0.88 }}>
+              <h1 className="hero-rise-in font-black text-slate-900 leading-none tracking-tighter"
+                style={{ fontSize: '18vw', lineHeight: 0.88, animationDelay: '0.05s' }}>
                 SMART
-              </motion.h1>
+              </h1>
             </div>
             <div style={{ overflow: 'hidden', marginBottom: '1rem' }}>
-              <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ duration: 0.85, delay: 0.52, ease: [0.16, 1, 0.3, 1] }}
-                className="font-black leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1"
-                style={{ fontSize: '18vw', lineHeight: 0.88 }}>
+              <div className="hero-rise-in font-black leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1"
+                style={{ fontSize: '18vw', lineHeight: 0.88, animationDelay: '0.15s' }}>
                 LABS
-              </motion.div>
+              </div>
             </div>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}
-              className="mb-2">
+            <p className="mb-2">
               <span className="lightning-text font-extrabold tracking-tight leading-tight"
                 style={{ fontSize: 'clamp(1.25rem, 6vw, 1.75rem)' }}>
                 Sri Lanka's Premium International Exam Prep Hub
               </span>
-            </motion.p>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0 }}
-              className="text-[10px] font-medium text-slate-400 tracking-[0.3em] uppercase mb-8">
+            </p>
+            <p className="hero-fade-in text-[10px] font-medium text-slate-400 tracking-[0.3em] uppercase mb-8" style={{ animationDelay: '0.35s' }}>
               PTE · IELTS · KET · PET
-            </motion.p>
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.2 }}>
+            </p>
+            <div className="hero-fade-in" style={{ animationDelay: '0.45s' }}>
               <Button size="lg" className="h-12 px-8 rounded-2xl bg-slate-900 text-white font-black" asChild>
                 <Link href="/level-test"><Activity className="mr-2 h-4 w-4" />Take Free Level Test</Link>
               </Button>
-            </motion.div>
+            </div>
           </div>
 
           {/* Navy bottom */}
@@ -1002,7 +976,7 @@ export default function Home() {
                     <Play className="h-6 w-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg leading-none mb-1">Live Class Recordings</h4>
+                    <h3 className="font-bold text-lg leading-none mb-1">Live Class Recordings</h3>
                     <p className="text-muted-foreground font-medium">Full access to our high-intensity recorded strategy sessions.</p>
                   </div>
                 </div>
@@ -1011,7 +985,7 @@ export default function Home() {
                     <Laptop className="h-6 w-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg leading-none mb-1">24/7 Premium LMS Portal Access</h4>
+                    <h3 className="font-bold text-lg leading-none mb-1">24/7 Premium LMS Portal Access</h3>
                     <p className="text-muted-foreground font-medium">Log in securely from your phone, laptop, or tablet. Learn anytime, anywhere, for a full <span className="font-bold text-foreground">45 days</span>.</p>
                   </div>
                 </div>
@@ -1765,6 +1739,6 @@ export default function Home() {
 
       {/* Map Section */}
       <GoogleMap />
-    </main>
+    </div>
   );
 }
