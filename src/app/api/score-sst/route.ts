@@ -93,87 +93,92 @@ function getApiKey(): { key: string; label: string; keyIndex: number } | null {
   return chosen;
 }
 
-// ─── Deterministic Form scoring (official SST: 50–70 words, one summary) ─────
-function scoreForm(summary: string): { form: 0 | 1 | 2; wordCount: number; reasons: string[] } {
+// ─── Deterministic Form scoring ──────────────────────────────────────────────
+// Official rule: 50–70 words = 2 marks. Anything else = 0. No partial marks.
+function scoreForm(summary: string): { form: 0 | 2; wordCount: number; reason: string } {
   const trimmed = summary.trim();
   const wordCount = trimmed ? trimmed.split(/\s+/).filter(Boolean).length : 0;
-  const reasons: string[] = [];
-
-  let form: 0 | 1 | 2;
-  if (wordCount >= 50 && wordCount <= 70) {
-    form = 2;
-    reasons.push('Within the required 50–70 word range.');
-  } else if ((wordCount >= 40 && wordCount < 50) || (wordCount > 70 && wordCount <= 100)) {
-    form = 1;
-    reasons.push(`${wordCount} words — slightly outside the ideal 50–70 word range.`);
-  } else {
-    form = 0;
-    reasons.push(wordCount < 40 ? 'Fewer than 40 words.' : 'More than 100 words.');
-  }
-  return { form, wordCount, reasons };
+  const ok = wordCount >= 50 && wordCount <= 70;
+  return {
+    form: ok ? 2 : 0,
+    wordCount,
+    reason: ok
+      ? `${wordCount} words — within the required 50–70 range.`
+      : `${wordCount} words — outside the required 50–70 range. Form is all-or-nothing, so this scores 0.`,
+  };
 }
 
-// ─── System prompt (faithful to the SST Content rubric supplied by the trainer) ──
-const SYSTEM_PROMPT = `You are an expert Pearson PTE Academic examiner specializing in Summarize Spoken Text (SST). You score the response against the official Pearson marking guide and also teach the student how to improve.
+// ─── System prompt — the official SST rubric supplied by the PTE trainer ─────
+const SYSTEM_PROMPT = `You are an expert Pearson PTE Academic trainer and examiner. Evaluate the student's Summarize Spoken Text (SST) response using the official PTE marking criteria.
 
-You are given the LECTURE TRANSCRIPT (the reference) and the STUDENT SUMMARY. Evaluate the summary strictly against the lecture.
+═══ THE TASK ═══
+The student listens to an audio of approximately 2 minutes and writes a summary of 50–70 words. The summary should include:
+- The main topic of the lecture.
+- The most important key ideas discussed.
+- Any additional important supporting information.
+- A brief conclusion or final message if present.
 
-═══════════════════════════════════════════════
-STEP 1 — UNDERSTAND THE LECTURE
-Identify: the main topic, the speaker's central message, the major supporting ideas, the essential keywords, and any technical terms or names. These become the reference for evaluation.
+The preferred structure is:
+"The lecture mainly discusses... It explains... Additionally, it highlights... Finally, it concludes that..."
+The wording does NOT have to match this template exactly, but the response should follow a logical flow.
 
-STEP 2 — COMPARE THE STUDENT'S SUMMARY
-Check whether the response: covers the main topic; includes the most important ideas; contains the essential keywords; removes unnecessary details; uses paraphrasing rather than copying; synthesizes ideas into one coherent summary; makes logical sense as a complete summary.
+═══ CONTENT (4 marks) — you score this ═══
+Evaluate whether the student has accurately summarized the lecture.
+ 4 = Main topic accurately identified; most important ideas included; information relevant; no major missing concepts.
+ 3 = Main topic identified; some important points missing; mostly relevant.
+ 2 = Only partial understanding; several important ideas omitted; some irrelevant information.
+ 1 = Very limited understanding; mostly general statements; few actual lecture ideas.
+ 0 = Completely irrelevant; random information; off-topic.
 
-═══════════════════════════════════════════════
-CONTENT (0–4) — apply strictly
- 4 = Full understanding of the lecture; nearly all major ideas included; most essential keywords appear naturally; ideas synthesized (not listed); logical and meaningful; no irrelevant information weakening it.
- 3 = Lecture understood well; most important ideas present; one or two key ideas missing; some important keywords absent; minor unnecessary information; still makes logical sense.
- 2 = Only part of the lecture understood; several important ideas missing; important keywords absent; mostly repeats isolated words/phrases; ideas not properly synthesized; only partially meaningful.
- 1 = Very little understanding; only a few random keywords; most important ideas missing; barely summarizes the lecture.
- 0 = Does not summarize the lecture / unrelated / no logical sense / essential keywords almost completely missing / mostly random words / cannot demonstrate understanding.
+★ IMPORTANT RULE FOR KEYWORDS ★
+Do NOT award high content marks simply because the student includes isolated keywords.
+A keyword must represent a meaningful CONCEPT or IDEA from the lecture.
+ Good (meaningful phrases): "protecting biodiversity", "renewable energy sources", "economic development", "environmental conservation"
+ Poor (isolated words): "biodiversity", "environment", "climate", "pollution"
+Single random words must NOT receive credit. Keywords should normally contain at least two meaningful words that clearly represent the speaker's ideas, and must be central ideas from the lecture.
+Do NOT reward: generic words, random vocabulary, repeated words, unrelated concepts.
+Content marks must reflect UNDERSTANDING of the lecture rather than keyword matching.
+List any isolated/generic/vague keywords the student leaned on in "weakKeywords".
 
-CRITICAL CONTENT RULES
- Rule 1 (Keywords): The most important keywords from the lecture MUST appear. If several major keywords are missing, reduce the Content score. Do NOT award full marks just because grammar is good.
- Rule 2 (Logical meaning): The summary must communicate the speaker's intended meaning. A grammatically correct sentence that changes or loses the lecture's meaning must lose Content marks. A summary that does not make logical sense should never receive a high Content score.
- Rule 3 (Main ideas): Focus on main topic, major supporting ideas, and final conclusion. Ignore minor examples unless central.
- Rule 4 (Paraphrasing): Reward ideas expressed naturally in the student's own words. Do not reward mere repetition of lecture phrases without understanding.
- Rule 5 (Extra info): If irrelevant information changes the meaning or distracts, reduce the score.
- Rule 6 (Spelling→keywords): If a key lecture word is misspelled so it is no longer recognizable, do NOT treat it as a captured keyword and reduce Content accordingly.
- ANTI-KEYWORD-STUFFING: Do NOT award a high Content score solely because many keywords are present. The response must demonstrate understanding by presenting the keywords in a logical, meaningful summary. A collection of unrelated keywords or phrases must receive a LOW Content score.
- KEYWORD PRECISION: If the student uses only general or vague words instead of the main ideas and essential keywords, flag it clearly and reduce Content.
+═══ VOCABULARY (2 marks) — you score the BASE, system applies the penalty ═══
+ 2 = Varied and accurate vocabulary; academic language appropriate.
+ 1 = Mostly simple vocabulary; some repetition; occasional incorrect word choice.
+ 0 = Very poor or incorrect vocabulary; many inappropriate words.
+VOCABULARY PENALTY: if frequent spelling mistakes affect word recognition, report "vocabSpellingPenalty" of 0.5 or 1 (otherwise 0), because incorrect spelling reduces lexical accuracy. The system subtracts it from your base score.
 
-GRAMMAR (0–2): Award in 0.5 increments (2, 1.5, 1, 0.5, 0) based on severity and frequency of grammatical errors. Check subject-verb agreement, tense, articles, prepositions, sentence structure, run-ons, fragments.
+═══ GRAMMAR, SPELLING and FORM — do NOT score these ═══
+The system computes them deterministically from the lists/counts you provide:
+- Grammar: 0 mistakes = 2, exactly 1 mistake = 1, 2 or more = 0. List EVERY grammar mistake in "grammarMistakes" (sentence structure, verb tense, agreement, articles, prepositions, punctuation). If grammar errors make the summary difficult to understand, list them all — the count will drive the 0.
+- Spelling: 0 mistakes = 2, 1–2 mistakes = 1, 3 or more = 0. List EVERY spelling mistake in "spellingMistakes".
+- Form: 50–70 words = 2, otherwise 0 (system counts the words).
+Be exhaustive and accurate with these lists — they directly set the marks.
 
-VOCABULARY (0–2): Award in 0.5 increments (2, 1.5, 1, 0.5, 0) based on appropriateness and range of word choice.
+═══ ADDITIONAL RULES ═══
+- If there are many spelling mistakes, also consider reducing Content if important ideas become unclear, and apply the vocabulary penalty.
+- Evaluate based on MEANING, not exact wording. Accept synonyms and paraphrases. Do not expect identical phrases from the lecture.
+- Focus on whether the student captured the main message and key supporting ideas.
+- Be fair but strict, following the PTE marking criteria consistently.
 
-SPELLING: Identify EVERY spelling mistake with the correct spelling. Report the exact count in "spellingMistakeCount". (The Spelling score is computed by the system: 0 mistakes = 2, 1 mistake = 1, 2+ mistakes = 0.)
-
-(FORM is scored automatically by the system — do not score it.)
-
-═══════════════════════════════════════════════
-Return ONLY valid JSON (no markdown, no text outside the object). Do not include "form", "spelling" or "total" (computed server-side):
+Return ONLY valid JSON (no markdown, no text outside the object). Do NOT include grammar, spelling, form or total scores — the system computes those:
 {
-  "scores": { "content": <0-4>, "grammar": <0,0.5,1,1.5,2>, "vocabulary": <0,0.5,1,1.5,2> },
-  "spellingMistakeCount": <integer count of spelling mistakes>,
+  "scores": { "content": <0-4 integer>, "vocabularyBase": <0|1|2> },
+  "vocabSpellingPenalty": <0|0.5|1>,
+  "grammarMistakes": [{"error":"<student text>","correction":"<corrected>","rule":"<which grammar rule, explained simply>"}],
+  "spellingMistakes": [{"incorrect":"<misspelled word>","correct":"<correct spelling>"}],
+  "mainTopic": "<the lecture's main topic in one line>",
   "summaryTitle": "<short honest title reflecting the result>",
   "summaryText": "<2-3 sentences of overall honest feedback>",
-  "mainTopic": "<the lecture's main topic>",
-  "essentialKeywordsPresent": ["<essential keyword the student successfully included>", "..."],
-  "essentialKeywordsMissing": ["<essential keyword from the lecture the student missed>", "..."],
-  "mainIdeasCovered": ["<important idea the student covered>", "..."],
-  "mainIdeasMissing": ["<important idea the student missed>", "..."],
-  "logicCheck": { "level": "Excellent understanding"|"Good understanding"|"Partial understanding"|"Limited understanding"|"No meaningful understanding", "explanation": "<why>" },
-  "keywordPrecisionFlag": "<empty string if fine, otherwise: 'Your summary relies on general words rather than the main points and essential keywords from the lecture. Include the key concepts discussed by the speaker to improve your Content score.'>",
-  "spellingIssues": [{"incorrect":"<misspelled word>","correct":"<correct spelling>","affectedKeyword":<true|false>,"note":"<how it affected keyword recognition>"}],
-  "grammarCorrections": [{"error":"<student text>","correction":"<corrected>","rule":"<grammar rule explained>"}],
-  "vocabNotes": ["<vocabulary observation or improvement>", "..."],
-  "strengths": ["<specific strength>", "..."],
-  "improvements": ["<specific actionable improvement>", "..."],
-  "finalJustification": "<3-5 sentences justifying the Content score per the rubric: comprehension, essential keywords, logical meaning, synthesis, spelling accuracy>",
-  "modelAnswer": "<one high-scoring 50-70 word SST summary of THIS lecture>",
-  "modelAnswerWhy": "<why this model answer would score highly>"
+  "keyIdeasCovered": ["<meaningful idea/phrase the student correctly captured>", "..."],
+  "missingKeyIdeas": ["<important lecture idea the student missed>", "..."],
+  "weakKeywords": ["<isolated or overly general word the student used that earns no credit>", "..."],
+  "vocabularyWeaknesses": ["<specific vocabulary weakness>", "..."],
+  "strengths": ["<what the student genuinely did well>", "..."],
+  "suggestedImprovements": ["<actionable improvement: identifying the topic, selecting meaningful key phrases instead of isolated words, grammar, vocabulary, spelling, word limit>", "..."],
+  "contentJustification": "<3-5 sentences justifying the Content mark per the rubric>",
+  "modelAnswer": "<a model 50-70 word summary of THIS lecture following the preferred structure>",
+  "modelAnswerWhy": "<why this model answer would score full marks>"
 }`;
+
 
 export async function POST(request: Request) {
   try {
@@ -231,7 +236,9 @@ STUDENT SUMMARY (${form.wordCount} words):
 ${summary}
 """
 
-The system has already scored FORM = ${form.form}/2 (${form.reasons.join(' ')}). Evaluate Content, Grammar, Vocabulary and count spelling mistakes, and provide full teaching feedback per the rubric. Return only valid JSON.`;
+The system has already scored FORM = ${form.form}/2 (${form.reason}).
+
+Score CONTENT (0-4) and VOCABULARY BASE (0-2), and list EVERY grammar and spelling mistake — the system converts those lists into the Grammar and Spelling marks. Return only valid JSON.`;
 
     let responseText = '';
     const errorLog: string[] = [];
@@ -311,20 +318,29 @@ The system has already scored FORM = ${form.form}/2 (${form.reasons.join(' ')}).
 
     const parsed = JSON.parse(responseText);
 
-    // ── Clamp AI-scored criteria to their allowed ranges (0.5 steps for G/V) ──
-    const halfStep = (n: number, max: number) => Math.max(0, Math.min(max, Math.round(Number(n) * 2) / 2));
+    // ── Content: AI-judged, clamped to 0-4 ──
     const content = Math.max(0, Math.min(4, Math.round(Number(parsed?.scores?.content ?? 0))));
-    let grammar = halfStep(parsed?.scores?.grammar ?? 0, 2);
-    let vocabulary = halfStep(parsed?.scores?.vocabulary ?? 0, 2);
 
-    // ── Deterministic Spelling score (per the trainer's rule) ──
-    const spellingMistakeCount = Math.max(0, Math.floor(Number(parsed?.spellingMistakeCount ?? 0)));
-    const spelling: 0 | 1 | 2 = spellingMistakeCount === 0 ? 2 : spellingMistakeCount === 1 ? 1 : 0;
+    // ── Grammar & Spelling: computed from the AI's mistake lists so the
+    //    official thresholds are applied exactly and can't drift. ──
+    const grammarMistakes = Array.isArray(parsed?.grammarMistakes) ? parsed.grammarMistakes : [];
+    const spellingMistakes = Array.isArray(parsed?.spellingMistakes) ? parsed.spellingMistakes : [];
 
-    // Form gate: a malformed response can't earn full enabling-skill marks.
-    if (form.form === 0) { grammar = Math.min(grammar, 1); vocabulary = Math.min(vocabulary, 1); }
+    const grammarMistakeCount = grammarMistakes.length;
+    const grammar: 0 | 1 | 2 =
+      grammarMistakeCount === 0 ? 2 : grammarMistakeCount === 1 ? 1 : 0;
 
-    const total = content + form.form + grammar + vocabulary + spelling;
+    const spellingMistakeCount = spellingMistakes.length;
+    const spelling: 0 | 1 | 2 =
+      spellingMistakeCount === 0 ? 2 : spellingMistakeCount <= 2 ? 1 : 0;
+
+    // ── Vocabulary: AI base (0-2) minus the spelling penalty (0 / 0.5 / 1) ──
+    const vocabBase = Math.max(0, Math.min(2, Math.round(Number(parsed?.scores?.vocabularyBase ?? 0))));
+    const rawPenalty = Number(parsed?.vocabSpellingPenalty ?? 0);
+    const vocabSpellingPenalty = [0, 0.5, 1].includes(rawPenalty) ? rawPenalty : 0;
+    const vocabulary = Math.max(0, vocabBase - vocabSpellingPenalty);
+
+    const total = content + grammar + vocabulary + spelling + form.form;
     const maxTotal = 12;
     const band = Math.round((total / maxTotal) * 90);
 
@@ -335,13 +351,18 @@ The system has already scored FORM = ${form.form}/2 (${form.reasons.join(' ')}).
 
     return Response.json({
       ...parsed,
-      scores: { content, form: form.form, grammar, vocabulary, spelling },
+      scores: { content, grammar, vocabulary, spelling, form: form.form },
+      grammarMistakes,
+      spellingMistakes,
+      grammarMistakeCount,
       spellingMistakeCount,
+      vocabBase,
+      vocabSpellingPenalty,
       total,
       maxTotal,
       band,
       wordCount: form.wordCount,
-      formReasons: form.reasons,
+      formReason: form.reason,
     });
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Unknown error';

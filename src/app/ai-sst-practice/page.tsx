@@ -122,13 +122,12 @@ function SSTInner() {
     return Math.max(0, FREE_SST_LIMIT - credit.freeUsed);
   }, [credit]);
 
-  // ── Live Form analysis (SST: 50–70 words) ──
+  // ── Live Form analysis — official SST rule: 50–70 words = 2 marks, else 0.
+  //    All-or-nothing, so there is no "close enough" band to show. ──
   const form = useMemo(() => {
     const t = summary.trim();
     const words = t ? t.split(/\s+/).filter(Boolean).length : 0;
-    const ideal = words >= 50 && words <= 70;
-    const acceptable = words >= 40 && words <= 100;
-    return { words, ideal, acceptable };
+    return { words, ideal: words >= 50 && words <= 70 };
   }, [summary]);
 
   // ── Audio controls ──
@@ -466,9 +465,12 @@ function SSTInner() {
                 className="w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-[15px] leading-relaxed focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
               />
               <div className="flex flex-wrap items-center gap-3 mt-3 text-xs font-semibold">
-                <span className={`inline-flex items-center gap-1 ${form.ideal ? 'text-emerald-600' : form.acceptable ? 'text-amber-500' : 'text-red-500'}`}>
-                  {form.ideal ? <CheckCircle2 size={14} /> : <XCircle size={14} />} {form.words} words {form.ideal ? '(ideal 50–70)' : '/ aim for 50–70'}
+                <span className={`inline-flex items-center gap-1 ${form.ideal ? 'text-emerald-600' : 'text-red-500'}`}>
+                  {form.ideal ? <CheckCircle2 size={14} /> : <XCircle size={14} />} {form.words} / 50–70 words
                 </span>
+                {!form.ideal && form.words > 0 && (
+                  <span className="text-red-500">Outside 50–70 scores 0 for Form — no partial marks.</span>
+                )}
               </div>
               {error && <p className="text-sm text-red-600 font-medium mt-3">{error}</p>}
 
