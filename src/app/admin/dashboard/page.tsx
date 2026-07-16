@@ -301,6 +301,7 @@ export default function AdminDashboardPage() {
             icon: BookOpen,
             items: [
                 { title: 'Course Management', desc: 'Add, edit, or delete courses & lessons', icon: GraduationCap, href: '/admin/dashboard/courses', accent: 'bg-purple-500/10' },
+                { title: 'Class Recordings', desc: 'Bunny video links, pricing & student access', icon: Video, href: '/admin/dashboard/recordings', badge: 'New', badgeColor: 'bg-violet-500/20 text-violet-600', accent: 'bg-violet-500/10' },
                 { title: 'Resource Library', desc: 'Upload and organise learning materials', icon: Library, href: '/admin/dashboard/resources', accent: 'bg-indigo-500/10' },
                 { title: 'Blog Management', desc: 'Publish and edit articles & announcements', icon: FileText, href: '/admin/dashboard/blog', accent: 'bg-teal-500/10' },
                 { title: 'Workshop Management', desc: 'Free monthly workshops — dates & slots', icon: Presentation, href: '/admin/dashboard/workshops', badge: 'Free', badgeColor: 'bg-green-500/20 text-green-600', accent: 'bg-green-500/10' },

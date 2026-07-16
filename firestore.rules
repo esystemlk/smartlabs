@@ -91,6 +91,22 @@ service cloud.firestore {
     // PTE question bank — practice questions load for students; staff manage them.
     match /pte_questions/{id} { allow read: if true; allow write: if isStaff(); }
 
+    // Class recordings catalogue. Signed-in students browse it; staff manage it.
+    // The Bunny video id is only useful with a valid recording_access row, and
+    // the player re-checks access before it renders.
+    match /class_recordings/{id} {
+      allow read: if isAuthed();
+      allow write: if isStaff();
+    }
+
+    // Purchased access to a recording. Students may READ their own rows only —
+    // writes are server-only (PayHere webhook / staff API via the Admin SDK),
+    // so nobody can grant themselves a recording or extend their own expiry.
+    match /recording_access/{id} {
+      allow read: if isStaff() || (isAuthed() && resource.data.userId == request.auth.uid);
+      allow write: if false;
+    }
+
     // Homepage CMS content — publicly displayed, staff-managed.
     match /homepage_courses/{id}          { allow read: if true; allow write: if isStaff(); }
     match /homepage_learning_methods/{id} { allow read: if true; allow write: if isStaff(); }
