@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import {
-  ShieldAlert, Loader2, Check, Globe, Wrench, RefreshCw, Ban, Eye, LogIn,
+  ShieldAlert, Loader2, Check, Globe, Wrench, RefreshCw, Ban, Eye, LogIn, LogOut,
 } from 'lucide-react';
-import Link from 'next/link';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, useAuth } from '@/firebase';
 import { SITE_MODES, type SiteMode } from '@/lib/site-mode';
 
 const ICONS: Record<SiteMode, React.ElementType> = {
@@ -27,6 +27,7 @@ const TONE: Record<SiteMode, { card: string; icon: string }> = {
 export default function DevConsolePage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const auth = useAuth();
 
   const [role, setRole] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
@@ -37,6 +38,26 @@ export default function DevConsolePage() {
   const [preview, setPreview] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Inline sign-in — the console must never depend on /login, which is itself
+  // blocked while a mode is active. Otherwise a signed-out developer would be
+  // locked out with no way to bring the site back.
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [signingIn, setSigningIn] = useState(false);
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSigningIn(true); setError(null);
+    try {
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+      setChecking(true);
+    } catch {
+      setError('Sign-in failed. Check your email and password.');
+    } finally {
+      setSigningIn(false);
+    }
+  };
 
   // Role check
   useEffect(() => {
@@ -99,11 +120,29 @@ export default function DevConsolePage() {
     return (
       <Shell>
         <ShieldAlert className="h-10 w-10 text-slate-300 mb-4" />
-        <h1 className="text-xl font-black text-white">Sign in required</h1>
+        <h1 className="text-xl font-black text-white">Developer sign-in</h1>
         <p className="text-slate-400 text-sm mt-1 mb-6">This console is restricted.</p>
-        <Link href="/login?redirect=/sl-console-9f3k2x" className="inline-flex items-center gap-2 bg-white text-slate-900 font-black text-sm px-5 py-3 rounded-xl">
-          <LogIn size={15} /> Sign In
-        </Link>
+        {/* Self-contained on purpose: /login is blocked while a mode is
+            active, so this must not link out to it. */}
+        <form onSubmit={handleSignIn} className="w-full max-w-xs space-y-3 text-left">
+          <input
+            type="email" required value={email} onChange={e => setEmail(e.target.value)}
+            placeholder="you@example.com" autoComplete="username"
+            className="w-full rounded-xl bg-slate-900 border border-slate-800 px-3 py-2.5 text-sm text-white outline-none focus:border-slate-600"
+          />
+          <input
+            type="password" required value={password} onChange={e => setPassword(e.target.value)}
+            placeholder="Password" autoComplete="current-password"
+            className="w-full rounded-xl bg-slate-900 border border-slate-800 px-3 py-2.5 text-sm text-white outline-none focus:border-slate-600"
+          />
+          <button
+            type="submit" disabled={signingIn}
+            className="w-full inline-flex items-center justify-center gap-2 bg-white text-slate-900 font-black text-sm px-5 py-3 rounded-xl disabled:opacity-60"
+          >
+            {signingIn ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn size={15} />} Sign In
+          </button>
+        </form>
+        {error && <p className="text-red-400 text-xs mt-4 font-semibold">{error}</p>}
       </Shell>
     );
   }
@@ -116,6 +155,12 @@ export default function DevConsolePage() {
         <h1 className="text-xl font-black text-white">Not authorised</h1>
         <p className="text-slate-400 text-sm mt-1">This console requires the developer role.</p>
         <p className="text-slate-600 text-xs mt-6">Signed in as {user.email}</p>
+        <button
+          onClick={() => signOut(auth)}
+          className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white"
+        >
+          <LogOut size={13} /> Sign out
+        </button>
       </Shell>
     );
   }
