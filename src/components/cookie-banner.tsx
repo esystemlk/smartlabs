@@ -2,12 +2,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Cookie } from 'lucide-react';
 import Link from 'next/link';
+import { SITE_STATUS_PATH, DEV_CONSOLE_PATH } from '@/lib/site-mode';
 
 export function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
+  const pathname = usePathname();
+  // Never show site chrome on the status page — while the site is switched
+  // off it must look like nothing is there.
+  const hidden = pathname === SITE_STATUS_PATH || pathname?.startsWith(DEV_CONSOLE_PATH);
 
   useEffect(() => {
     // We need to check if we are on the client side before accessing localStorage
@@ -24,7 +30,7 @@ export function CookieBanner() {
     localStorage.setItem('cookie_consent', 'true');
   };
 
-  if (!isVisible) {
+  if (!isVisible || hidden) {
     return null;
   }
 

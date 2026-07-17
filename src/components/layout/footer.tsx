@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Youtube, Mail, Phone, MapPin } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { DEV_CONSOLE_PATH } from "@/lib/site-mode";
 
 const footerLinks = {
   courses: [
@@ -30,7 +31,8 @@ const socialLinks = [
 
 export default function Footer() {
   const pathname = usePathname();
-  const isSpecialLayout = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/welcome' || pathname.startsWith('/payment');
+  const isSpecialLayout = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/welcome' || pathname.startsWith('/payment')
+    || pathname === '/site-status' || pathname.startsWith(DEV_CONSOLE_PATH);
 
   if (isSpecialLayout) {
     return null;

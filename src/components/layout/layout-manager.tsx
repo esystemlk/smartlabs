@@ -1,6 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
+import { DEV_CONSOLE_PATH } from '@/lib/site-mode'
 import { useEffect, useState } from 'react'
 
 export function LayoutManager() {
@@ -18,7 +19,8 @@ export function LayoutManager() {
   }, []);
 
   useEffect(() => {
-    const isSpecialLayout = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/welcome' || pathname.startsWith('/payment');
+    const isSpecialLayout = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/welcome' || pathname.startsWith('/payment')
+      || pathname === '/site-status' || pathname.startsWith(DEV_CONSOLE_PATH);
     
     // This component only manages the main marketing site layout.
     // Special layouts handle their own padding.

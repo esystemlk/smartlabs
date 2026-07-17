@@ -85,7 +85,13 @@ service cloud.firestore {
     match /resources/{id}      { allow read: if true; allow write: if isStaff(); }
     match /testimonials/{id}   { allow read: if true; allow write: if isStaff(); }
     match /notifications/{id}  { allow read: if true; allow write: if isStaff(); }
-    match /site_settings/{id}  { allow read: if true; allow write: if isStaff(); }
+    // Public read (middleware reads site_mode from the edge via REST).
+    // site_mode is written ONLY by /api/admin/site-mode (Admin SDK, developer
+    // role) — never from a client, so nobody can switch the site off.
+    match /site_settings/{id} {
+      allow read: if true;
+      allow write: if id != 'site_mode' && isStaff();
+    }
     match /webinarSettings/{id}{ allow read: if true; allow write: if isStaff(); }
 
     // PTE question bank — practice questions load for students; staff manage them.

@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { SITE_STATUS_PATH, DEV_CONSOLE_PATH } from '@/lib/site-mode';
 
 // Non-critical global widgets, split into their own chunks and mounted only
 // after the browser goes idle — keeps them out of first-load hydration
@@ -39,6 +41,7 @@ export function useDelayedPopups(delayMs = 12000) {
 export function LayoutExtras() {
   const [ready, setReady] = useState(false);
   const popupsReady = useDelayedPopups();
+  const pathname = usePathname();
 
   useEffect(() => {
     const start = () => setReady(true);
@@ -50,6 +53,8 @@ export function LayoutExtras() {
     return () => clearTimeout(t);
   }, []);
 
+  // No site chrome while the site is switched off, or in the dev console.
+  if (pathname === SITE_STATUS_PATH || pathname?.startsWith(DEV_CONSOLE_PATH)) return null;
   if (!ready) return null;
 
   return (
