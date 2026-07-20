@@ -30,7 +30,9 @@ service cloud.firestore {
         'role',
         'essayPaidCredits', 'essayGenCredits', 'essayFreeUsed', 'essayMonthlyExpiry',
         'swtPaidCredits', 'swtFreeUsed', 'swtMonthlyExpiry',
-        'sstPaidCredits', 'sstFreeUsed', 'sstMonthlyExpiry'
+        'sstPaidCredits', 'sstFreeUsed', 'sstMonthlyExpiry',
+        'mockPaidCredits', 'mockFreeUsed', 'mockMonthlyExpiry',
+        'bundleExpiry'
       ];
     }
     function touchesProtected() {
@@ -96,6 +98,19 @@ service cloud.firestore {
 
     // PTE question bank — practice questions load for students; staff manage them.
     match /pte_questions/{id} { allow read: if true; allow write: if isStaff(); }
+
+    // Mock exam definitions — signed-in students list them; staff author them.
+    match /mock_tests/{id} {
+      allow read: if isAuthed();
+      allow write: if isStaff();
+    }
+
+    // Mock attempts hold answers, deadlines and scores. Server-only writes
+    // (Admin SDK) so a student cannot extend their own deadline or edit a score.
+    match /mock_attempts/{id} {
+      allow read: if isStaff() || (isAuthed() && resource.data.userId == request.auth.uid);
+      allow write: if false;
+    }
 
     // Class recordings catalogue. Signed-in students browse it; staff manage it.
     // The Bunny video id is only useful with a valid recording_access row, and

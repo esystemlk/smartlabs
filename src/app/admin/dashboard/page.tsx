@@ -317,6 +317,7 @@ export default function AdminDashboardPage() {
                 { title: 'Payment History', desc: 'Browse and export all transactions', icon: CreditCard, href: '/admin/dashboard/payments', accent: 'bg-green-500/10' },
                 { title: 'Essay Credit Manager', desc: 'Give or adjust essay scoring & gen credits', icon: Gift, href: '/admin/dashboard/essay-credits', badge: 'AI', badgeColor: 'bg-orange-500/20 text-orange-600', accent: 'bg-orange-500/10' },
                 { title: 'Question Bank', desc: 'Manage PTE practice questions (Writing active)', icon: FileText, href: '/admin/dashboard/question-bank', badge: 'New', badgeColor: 'bg-violet-500/20 text-violet-600', accent: 'bg-violet-500/10' },
+                { title: 'Mock Tests', desc: 'Build timed writing mocks from the question bank', icon: FileText, href: '/admin/dashboard/mock-tests', badge: 'New', badgeColor: 'bg-violet-500/20 text-violet-600', accent: 'bg-violet-500/10' },
             ],
         },
         {

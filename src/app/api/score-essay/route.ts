@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { logAiCall } from '@/lib/services/ai-usage.service';
+import { isInternalRequest } from '@/lib/internal-auth';
 
 // ─── Retry helpers ────────────────────────────────────────────────────────────
 const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
@@ -489,7 +490,9 @@ const FREE_ESSAY_LIMIT = 2;
 
 async function verifyAuthAndCredits(
   authHeader:  string | null,
-  fingerprint: string | null
+  fingerprint: string | null,
+  /** Internal server call (mock exam) — identity still verified, credits skipped. */
+  internal = false
 ): Promise<AuthCreditResult> {
   if (!adminDb || !adminAuth) {
     return { ok: false, status: 500, code: 'SERVER_ERROR', message: 'Server configuration error.' };
@@ -564,6 +567,9 @@ async function verifyAuthAndCredits(
       console.warn('[score-essay] Fingerprint check failed (non-blocking):', e);
     }
   }
+
+  // Mock exams pay with their own credit — skip the essay balance entirely.
+  if (internal) return { ok: true, uid, unlimited: true };
 
   // 6. Check current user credit balance
   const freeUsed: number   = (userData.essayFreeUsed    as number) ?? 0;
@@ -656,14 +662,16 @@ export async function POST(request: Request) {
     const authHeader  = request.headers.get('Authorization');
     const fingerprint = request.headers.get('x-device-fingerprint') ?? '';
 
-    const authResult = await verifyAuthAndCredits(authHeader, fingerprint);
+    const authResult = await verifyAuthAndCredits(authHeader, fingerprint, isInternalRequest(request));
     if (!authResult.ok) {
       return NextResponse.json(
         { error: authResult.message, code: authResult.code, ...(authResult.extra ?? {}) },
         { status: authResult.status }
       );
     }
-    const { uid, unlimited } = authResult;
+    // Mock exams charge their own credit, so an internal call skips the essay pool.
+    const { uid } = authResult;
+    const unlimited = authResult.unlimited || isInternalRequest(request);
 
     // ── Tracking metadata ─────────────────────────────────────────────────────
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()

@@ -218,7 +218,10 @@ export function scoreWfd(officialTranscript: string, studentAnswer: string): Wfd
   });
 
   const accuracy = totalWords === 0 ? 0 : Math.round((correctWords / totalWords) * 10000) / 100;
-  const pteScore = Math.round((accuracy / 100) * 90);
+  // Multiply before dividing: (35/100)*90 evaluates to 31.4999… because 0.35
+  // is inexact in binary, which would cost a mark at exact .5 boundaries
+  // (e.g. 7/20 correct).
+  const pteScore = Math.round((accuracy * 90) / 100);
 
   return {
     officialTranscript,

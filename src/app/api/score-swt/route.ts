@@ -1,6 +1,7 @@
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { logAiCall } from '@/lib/services/ai-usage.service';
+import { isInternalRequest } from '@/lib/internal-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -194,8 +195,13 @@ export async function POST(request: Request) {
       userEmail = userRecord.email ?? null;
     } catch { /* non-fatal */ }
 
+    // Mock exams charge their own credit, so an internal call skips the SWT pool.
+    const internal = isInternalRequest(request);
+
     // Credit check (before spending AI quota)
-    const cred = await verifyCredits(uid);
+    const cred = internal
+      ? ({ ok: true, unlimited: true } as CreditResult)
+      : await verifyCredits(uid);
     if (!cred.ok) {
       return Response.json({ error: cred.message, code: cred.code, ...(cred.extra ?? {}) }, { status: cred.status });
     }
