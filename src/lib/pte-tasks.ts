@@ -59,7 +59,7 @@ export const PTE_TASK_TREE: PteSectionDef[] = [
     enabled: true,
     tasks: [
       { taskType: 'summarize-spoken-text', label: 'Summarize Spoken Text', enabled: true },
-      { taskType: 'write-from-dictation', label: 'Write from Dictation', enabled: false },
+      { taskType: 'write-from-dictation', label: 'Write from Dictation', enabled: true },
       { taskType: 'mcq-multiple', label: 'MCQ Multiple Answer', enabled: false },
       { taskType: 'fill-blanks', label: 'Fill in the Blanks', enabled: false },
       { taskType: 'highlight-correct-summary', label: 'Highlight Correct Summary', enabled: false },

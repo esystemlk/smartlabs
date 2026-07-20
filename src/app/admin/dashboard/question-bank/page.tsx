@@ -30,7 +30,12 @@ export default function QuestionBankPage() {
   const currentTask = currentSection.tasks.find(t => t.taskType === taskType);
   const isSwt = taskType === 'swt';
   const isSst = taskType === 'summarize-spoken-text';
-  const contentLabel = isSst ? 'Lecture Transcript' : isSwt ? 'Source Passage' : 'Essay Topic / Prompt';
+  const isWfd = taskType === 'write-from-dictation';
+  /** Any task where the student listens to audio and the text is the answer key. */
+  const hasAudio = isSst || isWfd;
+  const contentLabel = isWfd
+    ? 'Official Transcript (the exact sentence)'
+    : isSst ? 'Lecture Transcript' : isSwt ? 'Source Passage' : 'Essay Topic / Prompt';
 
   const load = async () => {
     setLoading(true);
@@ -54,7 +59,7 @@ export default function QuestionBankPage() {
     setUploadingAudio(true);
     try {
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const sRef = ref(storage, `sst-audio/${Date.now()}-${safeName}`);
+      const sRef = ref(storage, `sst-audio/${Date.now()}-${taskType}-${safeName}`);
       await uploadBytes(sRef, file);
       const url = await getDownloadURL(sRef);
       setAudioUrl(url);
@@ -70,7 +75,7 @@ export default function QuestionBankPage() {
     if (!content.trim()) { toast({ variant: 'destructive', title: contentLabel + ' is required' }); return; }
     setSaving(true);
     try {
-      const extra = isSst ? { audioUrl: audioUrl.trim() } : {};
+      const extra = hasAudio ? { audioUrl: audioUrl.trim() } : {};
       if (editingId) {
         await updateQuestion(editingId, { title: title.trim() || untitled(), content: content.trim(), ...extra });
         toast({ title: 'Question updated' });
@@ -198,9 +203,10 @@ export default function QuestionBankPage() {
         <textarea
           value={content}
           onChange={e => setContent(e.target.value)}
-          rows={isSwt || isSst ? 7 : 3}
+          rows={isWfd ? 3 : (isSwt || isSst) ? 7 : 3}
           placeholder={
-            isSst ? 'Paste the lecture transcript (used as the reference for AI scoring; students only hear the audio)…'
+            isWfd ? 'Type the sentence exactly as spoken in the audio — this is the answer key every word is scored against…'
+            : isSst ? 'Paste the lecture transcript (used as the reference for AI scoring; students only hear the audio)…'
             : isSwt ? 'Paste the full source passage students will summarise…'
             : 'Enter the essay topic / prompt…'
           }
@@ -208,7 +214,7 @@ export default function QuestionBankPage() {
         />
 
         {/* ── SST: lecture audio upload ── */}
-        {isSst && (
+        {hasAudio && (
           <div className="mt-4">
             <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1.5 block">Lecture Audio (MP3)</label>
             <input
@@ -276,7 +282,7 @@ export default function QuestionBankPage() {
                     <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${q.active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
                       {q.active ? 'Active' : 'Hidden'}
                     </span>
-                    {isSst && (
+                    {hasAudio && (
                       q.audioUrl
                         ? <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase px-2 py-0.5 rounded-full border bg-violet-50 text-violet-700 border-violet-200"><Music size={10} /> Audio</span>
                         : <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase px-2 py-0.5 rounded-full border bg-amber-50 text-amber-700 border-amber-200">AI Voice</span>

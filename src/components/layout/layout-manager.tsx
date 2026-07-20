@@ -20,7 +20,7 @@ export function LayoutManager() {
 
   useEffect(() => {
     const isSpecialLayout = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/welcome' || pathname.startsWith('/payment')
-      || pathname === '/site-status' || pathname.startsWith(DEV_CONSOLE_PATH);
+      || pathname.startsWith('/ai-wfd-practice') || pathname === '/site-status' || pathname.startsWith(DEV_CONSOLE_PATH);
     
     // This component only manages the main marketing site layout.
     // Special layouts handle their own padding.

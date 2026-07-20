@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, LayoutDashboard, LogOut, Target, Globe, Zap, Sparkles, Book, Video, Phone, ArrowRight, Search, Bot, PenLine, FileText, Headphones } from "lucide-react";
+import { Menu, X, ChevronDown, LayoutDashboard, LogOut, Target, Globe, Zap, Sparkles, Book, Video, Phone, ArrowRight, Search, Bot, PenLine, FileText, Headphones, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth } from "@/firebase";
@@ -132,6 +132,16 @@ const pteAiTools = [
     hoverBorder: "hover:border-emerald-500/50",
     tag: "New",
   },
+  {
+    name: "Write From Dictation",
+    href: "/ai-wfd-practice",
+    description: "Type what you hear — instant word-by-word scoring.",
+    icon: Volume2,
+    color: "text-blue-500",
+    bgColor: "bg-blue-500/10",
+    hoverBorder: "hover:border-blue-500/50",
+    tag: "New",
+  },
 ];
 
 const pteAiQuickLinks = [
@@ -204,6 +214,7 @@ export default function Header() {
   // (AI trainers) — two stacked fixed navs block each other's taps on mobile.
   const isSpecialLayout = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/welcome' || pathname.startsWith('/payment')
     || pathname.startsWith('/ai-essay-practice') || pathname.startsWith('/ai-sst-practice') || pathname.startsWith('/swt-trainer')
+    || pathname.startsWith('/ai-wfd-practice')
     || pathname === '/site-status' || pathname.startsWith(DEV_CONSOLE_PATH);
 
   if (isSpecialLayout) {

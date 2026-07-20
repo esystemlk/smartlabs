@@ -113,7 +113,7 @@ const pteSections = [
     iconBg: 'bg-orange-500/10',
     badgeClass: 'bg-orange-500/10 text-orange-600 border-orange-500/20',
     tasks: [
-      { title: 'Write from Dictation', href: '/dashboard/practice-tests/pte-listening-write-from-dictation', ai: true, hot: true, featured: true },
+      { title: 'Write from Dictation', href: '/ai-wfd-practice', ai: true, hot: true, featured: true, enabled: true },
       { title: 'Summarize Spoken Text', href: '/ai-sst-practice', ai: true, hot: true, featured: true, enabled: true },
       { title: 'MCQ Multiple Answer', href: '/dashboard/practice-tests/pte-listening-multiple-choice-multiple-answer', ai: false, hot: false },
       { title: 'Fill in the Blanks', href: '/dashboard/practice-tests/pte-listening-fill-in-blanks', ai: false, hot: false },
