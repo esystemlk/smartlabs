@@ -90,24 +90,32 @@ export async function POST(request: Request) {
 
     // ── Build the question list in blueprint order with absolute deadlines
     const now = Date.now();
-    let cursor = now;
     const questions: MockAttemptQuestion[] = [];
     let order = 0;
+    let totalSeconds = 0;
 
+    // Each question carries its OWN budget. Deadlines are stamped when the
+    // student actually reaches the question (see lib/mock-runtime), so
+    // finishing early never adds the spare time onto the next question.
     for (const spec of MOCK_BLUEPRINT) {
       const section = mock.sections.find(s => s.taskType === spec.taskType)!;
       const perQuestion = section.secondsPerQuestion || spec.secondsPerQuestion;
       for (const questionId of section.questionIds) {
-        cursor += perQuestion * 1000;
+        totalSeconds += perQuestion;
         questions.push({
           questionId,
           taskType: spec.taskType as MockTaskType,
           order: order++,
-          deadlineAt: cursor,
+          secondsAllowed: perQuestion,
+          deadlineAt: 0, // 0 = not reached yet
           answer: '',
         });
       }
     }
+
+    // Only the first question's clock starts now.
+    questions[0].startedAt = now;
+    questions[0].deadlineAt = now + questions[0].secondsAllowed * 1000;
 
     const attempt: MockAttempt = {
       mockId,
@@ -117,7 +125,8 @@ export async function POST(request: Request) {
       userName: name,
       status: 'in_progress',
       startedAt: now,
-      expiresAt: cursor,
+      // Generous safety bound only — real enforcement is per question.
+      expiresAt: now + totalSeconds * 1000 * 3,
       currentIndex: 0,
       questions,
     };

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { MOCK_BLUEPRINT, type MockAttempt } from '@/types/mock-test';
+import { syncProgress } from '@/lib/mock-runtime';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -35,6 +36,17 @@ export async function GET(
 
     const attempt = snap.data() as MockAttempt;
     if (attempt.userId !== uid) return NextResponse.json({ error: 'Not your attempt.' }, { status: 403 });
+
+    // Bring the attempt up to date with the clock before rendering: skips any
+    // question whose time expired while the tab was closed, and starts the
+    // timer on the question now in front of the student.
+    const nowTs = Date.now();
+    if (attempt.status === 'in_progress' && syncProgress(attempt, nowTs)) {
+      await snap.ref.update({
+        questions: attempt.questions,
+        currentIndex: attempt.currentIndex,
+      });
+    }
 
     const finished = attempt.status !== 'in_progress';
     const idx = attempt.currentIndex;

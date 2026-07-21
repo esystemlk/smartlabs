@@ -101,8 +101,17 @@ export interface MockAttemptQuestion {
   questionId: string;
   taskType: MockTaskType;
   order: number;
-  /** Absolute server timestamp (ms) when this question closes. */
+  /** This question's own time budget, in seconds. */
+  secondsAllowed: number;
+  /**
+   * Absolute server timestamp (ms) when this question closes.
+   * 0 = not reached yet. Each question's clock starts when the student
+   * actually arrives at it, so finishing early never donates the leftover
+   * time to the next question.
+   */
   deadlineAt: number;
+  /** When the student arrived at this question. */
+  startedAt?: number;
   answer: string;
   answeredAt?: number;
   lateSubmission?: boolean;

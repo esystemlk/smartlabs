@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { DEADLINE_GRACE_SECONDS, type MockAttempt } from '@/types/mock-test';
+import { syncProgress, isFinished } from '@/lib/mock-runtime';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -76,16 +77,15 @@ export async function POST(request: Request) {
       q.lateSubmission = true;
     }
 
-    // Where should the exam be right now, according to the server clock?
-    let serverIndex = attempt.questions.findIndex(x => now <= x.deadlineAt + graceMs);
-    if (serverIndex === -1) serverIndex = attempt.questions.length; // all time used
+    // Manual "Next" moves on by one; it can never go backwards.
+    if (advance && index >= attempt.currentIndex) {
+      attempt.currentIndex = Math.min(index + 1, attempt.questions.length);
+    }
 
-    // Manual "Next" can only move forward, never past what the clock allows.
-    const requestedIndex = advance ? index + 1 : attempt.currentIndex;
-    const nextIndex = Math.max(attempt.currentIndex, requestedIndex, serverIndex);
-
-    attempt.currentIndex = Math.min(nextIndex, attempt.questions.length);
-    const finished = attempt.currentIndex >= attempt.questions.length;
+    // Then let the clock take over: skip anything whose own time has expired
+    // and start the timer on the question the student is now looking at.
+    syncProgress(attempt, now);
+    const finished = isFinished(attempt);
 
     await ref.update({
       questions: attempt.questions,
