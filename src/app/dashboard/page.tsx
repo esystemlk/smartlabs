@@ -31,6 +31,7 @@ import {
   GraduationCap,
   Globe,
   CalendarBlank,
+  Timer,
 } from '@phosphor-icons/react';
 
 // ─── PTE Section Data ────────────────────────────────────────────────────────
@@ -138,6 +139,18 @@ const featureCards = [
     gradient: 'from-violet-600 via-purple-600 to-fuchsia-600',
     badge: 'Most Advanced',
     badgeColor: 'bg-white/20 text-white',
+    cta: 'Start Practicing',
+  },
+  {
+    title: 'Writing Mock Test',
+    subtitle: 'Full Exam · Timed & AI Scored',
+    description: '8 questions under real exam timing — SWT, Essay, Spoken Text and Dictation, marked automatically.',
+    href: '/mock-tests',
+    icon: Timer,
+    gradient: 'from-blue-600 via-indigo-600 to-violet-600',
+    badge: 'New',
+    badgeColor: 'bg-white/20 text-white',
+    cta: 'Take Mock Test',
   },
 ];
 
@@ -512,7 +525,7 @@ export default function DashboardPage() {
                     <div className="relative z-10 mt-4">
                       <p className="text-white/70 text-xs font-medium leading-relaxed mb-3">{card.description}</p>
                       <div className="flex items-center gap-1.5 text-white text-xs font-black group-hover:gap-2.5 transition-all">
-                        Start Practicing <ArrowRight weight="bold" className="h-3.5 w-3.5" />
+                        {card.cta ?? 'Start Practicing'} <ArrowRight weight="bold" className="h-3.5 w-3.5" />
                       </div>
                     </div>
                   </div>
