@@ -76,6 +76,10 @@ export default function MockExamPage() {
     setMockTitle(d.attempt.mockTitle ?? '');
 
     if (d.attempt.status === 'scored') {
+      // Clear exam state so no countdown or autosave can keep running.
+      setCurrent(null);
+      setSecondsLeft(0);
+      advancingRef.current = true;
       setTaskScores(d.attempt.taskScores);
       setOverall(d.attempt.overall);
       setPhase('results');
@@ -207,7 +211,35 @@ export default function MockExamPage() {
     if (!isUserLoading && !user) router.replace(`/login?redirect=/mock/${mockId}`);
   }, [user, isUserLoading, mockId, router]);
 
-  useEffect(() => { if (user && phase === 'loading' && !attemptId) setPhase('intro'); }, [user, phase, attemptId]);
+  // Decide what to show: resume, results, or the intro. Without this a
+  // finished mock showed the exam intro again and starting it would spend a
+  // second credit.
+  const resolvedRef = useRef(false);
+  useEffect(() => {
+    if (!user || resolvedRef.current) return;
+    resolvedRef.current = true;
+    (async () => {
+      try {
+        const res = await authedFetch(`/api/mock/resolve?mockId=${encodeURIComponent(mockId)}`);
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error);
+
+        if (d.state === 'in_progress' || d.state === 'scored') {
+          setAttemptId(d.attemptId);
+          await loadAttempt(d.attemptId); // scored → results, in_progress → resume
+          return;
+        }
+        if (d.state === 'submitted') {
+          setAttemptId(d.attemptId);
+          await submitExam(d.attemptId); // finish scoring that was interrupted
+          return;
+        }
+        setPhase('intro');
+      } catch {
+        setPhase('intro');
+      }
+    })();
+  }, [user, mockId, authedFetch, loadAttempt, submitExam]);
 
   // ── Render ──
   if (isUserLoading || phase === 'loading') {
@@ -270,7 +302,21 @@ export default function MockExamPage() {
   }
 
   if (phase === 'results' && taskScores && overall) {
-    return <MockResults title={mockTitle} taskScores={taskScores} overall={overall} />;
+    return (
+      <MockResults
+        title={mockTitle}
+        taskScores={taskScores}
+        overall={overall}
+        onRetake={() => {
+          if (!window.confirm('Start a new attempt? This uses one mock credit.')) return;
+          setTaskScores(null);
+          setOverall(null);
+          setAttemptId(null);
+          advancingRef.current = false;
+          void beginExam();
+        }}
+      />
+    );
   }
 
   if (!current) return <Center><Loader2 className="h-7 w-7 animate-spin text-slate-400" /></Center>;

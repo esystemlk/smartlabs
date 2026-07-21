@@ -27,8 +27,14 @@ function bandTone(band: number) {
 }
 
 export function MockResults({
-  title, taskScores, overall,
-}: { title?: string; taskScores: MockTaskScore[]; overall: MockOverall }) {
+  title, taskScores, overall, onRetake,
+}: {
+  title?: string;
+  taskScores: MockTaskScore[];
+  overall: MockOverall;
+  /** Starts a fresh attempt. Costs a credit, so it is always explicit. */
+  onRetake?: () => void;
+}) {
   const [open, setOpen] = useState<number | null>(null);
   const tone = bandTone(overall.band);
 
@@ -134,8 +140,13 @@ export function MockResults({
         </div>
 
         <div className="mt-10 flex flex-wrap gap-3 justify-center">
+          {onRetake && (
+            <button onClick={onRetake} className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-black text-sm">
+              <RotateCcw size={15} /> Retake · uses 1 credit
+            </button>
+          )}
           <Link href="/mock-tests" className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-900 text-white font-black text-sm">
-            <RotateCcw size={15} /> More Mock Tests
+            More Mock Tests
           </Link>
           <Link href="/dashboard" className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-white border border-slate-200 text-slate-700 font-black text-sm">
             <Home size={15} /> Dashboard
