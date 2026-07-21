@@ -1,5 +1,8 @@
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { FREE_MOCK_LIMIT } from '@/lib/mock-packages';
+
+export { MOCK_PRICE, FREE_MOCK_LIMIT, MOCK_PACKAGES } from '@/lib/mock-packages';
 
 /**
  * Mock-exam credits — a pool of its own, separate from the essay/SWT/SST
@@ -10,16 +13,9 @@ import { FieldValue } from 'firebase-admin/firestore';
  * lines added to the trainer scorers) will honour it everywhere.
  */
 
-export const MOCK_PRICE = 6500; // LKR, one full mock test
-export const FREE_MOCK_LIMIT = 0; // no free mocks — every attempt is paid
 
 const UNLIMITED_ROLES = new Set(['admin', 'developer', 'teacher']);
 
-export const MOCK_PACKAGES = [
-  { id: 'mock_1', label: '1 Mock Test', credits: 1, price: 6500, popular: false },
-  { id: 'mock_3', label: '3 Mock Tests', credits: 3, price: 17500, popular: true },
-  { id: 'mock_5', label: '5 Mock Tests', credits: 5, price: 27500, popular: false },
-] as const;
 
 export type MockCreditCheck =
   | { ok: true; unlimited: boolean; remaining: number }
