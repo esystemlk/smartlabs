@@ -164,6 +164,18 @@ export async function POST(request: Request) {
       taskScores.push(await scoreOne(q));
     }
 
+    // If every task the student actually attempted failed to score, the AI
+    // side is down — do NOT freeze that in as a real result. `scored` is
+    // final and idempotent, so persisting it here would cost the student a
+    // paid attempt for an outage. Leave it `submitted` (retryable) instead.
+    const attempted = taskScores.filter(s => !s.detail || !(s.detail as { skipped?: boolean }).skipped);
+    if (attempted.length > 0 && attempted.every(s => s.scoreFailed)) {
+      return NextResponse.json(
+        { error: 'Marking is temporarily unavailable. Your answers are saved — try again shortly.', retryable: true },
+        { status: 503 }
+      );
+    }
+
     const overall = aggregateScores(taskScores);
     const scoredAt = Date.now();
 

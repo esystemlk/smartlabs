@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { DEADLINE_GRACE_SECONDS, type MockAttempt } from '@/types/mock-test';
-import { syncProgress, isFinished } from '@/lib/mock-runtime';
+import { syncProgress, isFinished, TIMING_VERSION } from '@/lib/mock-runtime';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -64,10 +64,15 @@ export async function POST(request: Request) {
     const q = attempt.questions[index];
     const graceMs = DEADLINE_GRACE_SECONDS * 1000;
 
+    // Bring the record up to date FIRST. On an attempt written before
+    // per-question timing existed the stored deadline is NaN, and `now > NaN`
+    // is false — so without this every stale answer looked savable.
+    syncProgress(attempt, now);
+
     // Writes are refused once a question's own deadline has passed (plus a
     // small grace for network lag) — a student cannot go back and edit an
     // earlier answer after moving on.
-    const expired = now > q.deadlineAt + graceMs;
+    const expired = !Number.isFinite(q.deadlineAt) || now > q.deadlineAt + graceMs;
     if (!expired) {
       q.answer = answer;
       q.answeredAt = now;
@@ -82,14 +87,15 @@ export async function POST(request: Request) {
       attempt.currentIndex = Math.min(index + 1, attempt.questions.length);
     }
 
-    // Then let the clock take over: skip anything whose own time has expired
-    // and start the timer on the question the student is now looking at.
+    // Then let the clock take over: start the timer on the question the
+    // student has just been moved to.
     syncProgress(attempt, now);
     const finished = isFinished(attempt);
 
     await ref.update({
       questions: attempt.questions,
       currentIndex: attempt.currentIndex,
+      timingVersion: attempt.timingVersion ?? TIMING_VERSION,
     });
 
     return NextResponse.json({

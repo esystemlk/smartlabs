@@ -104,6 +104,7 @@ export function CommandPalette() {
                                 <Command.Group heading="Tools & Discovery" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/50 px-3 mb-2">
                                     <div className="space-y-1 mt-2">
                                         <SearchItem icon={Sparkles} label="AI Mock Test Lab" desc="Simulate real exams" onSelect={() => runCommand(() => router.push("/mock-tests"))} />
+                                        <SearchItem icon={Video} label="Class Recordings" desc="Recorded class packages" onSelect={() => runCommand(() => router.push("/dashboard/recordings"))} />
                                         <SearchItem icon={Video} label="Video Masterclasses" desc="Expert-led strategies" onSelect={() => runCommand(() => router.push("/videos"))} />
                                         <SearchItem icon={Book} label="The Smart Blog" desc="Latest updates & tips" onSelect={() => runCommand(() => router.push("/blog"))} />
                                         <SearchItem icon={MessageSquare} label="Contact & Support" desc="Get in touch with our team" onSelect={() => runCommand(() => router.push("/contact"))} />

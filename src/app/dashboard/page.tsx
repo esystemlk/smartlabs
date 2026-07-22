@@ -32,6 +32,7 @@ import {
   Globe,
   CalendarBlank,
   Timer,
+  VideoCamera,
 } from '@phosphor-icons/react';
 
 // ─── PTE Section Data ────────────────────────────────────────────────────────
@@ -539,6 +540,7 @@ export default function DashboardPage() {
       {/* ─── More Tools Row ────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pb-4">
         {[
+          { title: 'Class Recordings', href: '/dashboard/recordings', icon: VideoCamera, color: 'text-violet-500', bg: 'bg-violet-500/10' },
           { title: 'My Certificate', href: '/dashboard/certificate-request', icon: Star, color: 'text-amber-500', bg: 'bg-amber-500/10' },
           { title: 'Live Workshops', href: '/workshops', icon: CalendarBlank, color: 'text-orange-500', bg: 'bg-orange-500/10' },
           { title: 'Support Chat', href: '/dashboard/support', icon: ChatCircleDots, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },

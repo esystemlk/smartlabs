@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
-import { BYPASS_COOKIE, SITE_MODE_DOC, SITE_MODES, type SiteMode } from '@/lib/site-mode';
+import { FieldValue } from 'firebase-admin/firestore';
+import {
+  BYPASS_COOKIE, SITE_MODE_DOC, SITE_MODES, hashBypassToken, type SiteMode,
+} from '@/lib/site-mode';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -72,7 +75,11 @@ export async function POST(request: Request) {
     {
       mode,
       message: (message ?? '').slice(0, 300),
-      bypassToken,
+      // Only the hash is stored: this doc is world-readable, so the plain
+      // token would be a public skeleton key past the kill switch.
+      bypassTokenHash: await hashBypassToken(bypassToken),
+      // Scrub the plaintext token written by earlier versions.
+      bypassToken: FieldValue.delete(),
       updatedBy: auth.email ?? auth.uid,
       updatedAt: new Date(),
     },

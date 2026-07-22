@@ -3,6 +3,10 @@ import { createHash } from 'crypto';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 
+// Pinned explicitly: this route needs node crypto (MD5 signature check) and
+// firebase-admin, neither of which exist on the edge runtime.
+export const runtime = 'nodejs';
+
 const md5 = (data: string) => createHash('md5').update(data).digest('hex').toUpperCase();
 
 export async function POST(request: NextRequest) {
@@ -37,6 +41,23 @@ export async function POST(request: NextRequest) {
 
     const { userId, mockCredits } = orderData as { userId: string; mockCredits: number };
     const sc = String(status_code);
+
+    // Defence in depth: PayHere already rejects a tampered amount because the
+    // checkout hash is generated server-side, but never grant credits for an
+    // underpayment if that ever changes. Tolerance covers rounding only.
+    const expected = Number(orderData.paymentAmount);
+    const paid = Number(payhere_amount);
+    if (sc === '2' && Number.isFinite(expected) && Number.isFinite(paid) && paid < expected - 0.5) {
+      console.error(
+        `[mock-notify] UNDERPAYMENT order=${order_id} expected=${expected} paid=${paid} — not granting credits.`
+      );
+      await orderDoc.ref.update({
+        paymentStatus: 'amount_mismatch',
+        amountPaid: paid,
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+      return new Response('OK', { status: 200 });
+    }
 
     if (sc === '2') {
       const userRef = adminDb.collection('users').doc(userId);

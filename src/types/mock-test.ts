@@ -117,6 +117,12 @@ export interface MockAttemptQuestion {
   lateSubmission?: boolean;
   blurCount?: number;
   pasteCount?: number;
+  /**
+   * Audio plays consumed on this question, counted on the SERVER.
+   * Kept here rather than in React state so refreshing the tab cannot reset
+   * the "plays once" rule on a listening task.
+   */
+  audioPlays?: number;
 }
 
 export interface MockTaskScore {
@@ -146,6 +152,12 @@ export interface MockOverall {
 
 export interface MockAttempt {
   id?: string;
+  /**
+   * 2 = per-question timing (clock starts on arrival).
+   * Missing/1 = legacy attempts built on one cumulative schedule; they are
+   * healed on next read so their timers behave.
+   */
+  timingVersion?: number;
   mockId: string;
   mockTitle?: string;
   userId: string;

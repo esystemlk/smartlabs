@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { MOCK_BLUEPRINT, type MockAttempt } from '@/types/mock-test';
-import { syncProgress } from '@/lib/mock-runtime';
+import { syncProgress, TIMING_VERSION } from '@/lib/mock-runtime';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -45,6 +45,10 @@ export async function GET(
       await snap.ref.update({
         questions: attempt.questions,
         currentIndex: attempt.currentIndex,
+        // Must be persisted, or the legacy migration re-runs on every load and
+        // keeps handing the current question a fresh clock — the timer would
+        // never actually count down.
+        timingVersion: attempt.timingVersion ?? TIMING_VERSION,
       });
     }
 
@@ -74,6 +78,8 @@ export async function GET(
         // withheld until scoring.
         content: isDictation || isSpoken ? '' : String(data.content ?? ''),
         audioUrl: isDictation || isSpoken ? String(data.audioUrl ?? '') : '',
+        // Server-side play count, so a refresh cannot reset the play limit.
+        playsUsed: q.audioPlays ?? 0,
       };
     }
 

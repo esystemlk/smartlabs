@@ -24,6 +24,8 @@ interface CurrentQuestion {
   title: string;
   content: string;
   audioUrl: string;
+  /** Plays already consumed, counted on the server. */
+  playsUsed: number;
 }
 
 type Phase = 'loading' | 'intro' | 'exam' | 'scoring' | 'results' | 'error';
@@ -36,6 +38,9 @@ export default function MockExamPage() {
   const [phase, setPhase] = useState<Phase>('loading');
   const [error, setError] = useState<string | null>(null);
   const [needCredit, setNeedCredit] = useState(false);
+  // What "Try again" should do. Retrying a failed *scoring* run must never
+  // call /api/mock/start — that would spend a second mock credit.
+  const [retryKind, setRetryKind] = useState<'start' | 'score'>('start');
 
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [mockTitle, setMockTitle] = useState('');
@@ -44,6 +49,8 @@ export default function MockExamPage() {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [advancing, setAdvancing] = useState(false);
   const [plays, setPlays] = useState(0);
+  const [claimingPlay, setClaimingPlay] = useState(false);
+  const [playError, setPlayError] = useState<string | null>(null);
 
   const [taskScores, setTaskScores] = useState<MockTaskScore[] | null>(null);
   const [overall, setOverall] = useState<MockOverall | null>(null);
@@ -90,7 +97,11 @@ export default function MockExamPage() {
     setCurrent(d.current);
     setAnswer(d.current.answer ?? '');
     answerRef.current = d.current.answer ?? '';
-    setPlays(0);
+    // Restore from the server, not 0 — otherwise refreshing the tab hands the
+    // student another play on a listening question.
+    setPlays(d.current.playsUsed ?? 0);
+    setPlayError(null);
+    setClaimingPlay(false);
     setPhase('exam');
     advancingRef.current = false;
     setAdvancing(false);
@@ -99,7 +110,7 @@ export default function MockExamPage() {
 
   // ── Start / resume ──
   const beginExam = useCallback(async () => {
-    setPhase('loading'); setError(null); setNeedCredit(false);
+    setPhase('loading'); setError(null); setNeedCredit(false); setRetryKind('start');
     try {
       const res = await authedFetch('/api/mock/start', {
         method: 'POST',
@@ -121,6 +132,8 @@ export default function MockExamPage() {
   // ── Submit for scoring ──
   const submitExam = useCallback(async (id: string) => {
     setPhase('scoring');
+    setAttemptId(id);
+    setRetryKind('score');
     try {
       const res = await authedFetch('/api/mock/submit', {
         method: 'POST',
@@ -250,18 +263,36 @@ export default function MockExamPage() {
     return (
       <Center>
         <ShieldAlert className="h-10 w-10 text-red-400 mb-4" />
-        <h1 className="text-xl font-black text-slate-900">Can&apos;t start the exam</h1>
+        <h1 className="text-xl font-black text-slate-900">
+          {retryKind === 'score' ? 'Couldn’t mark your exam' : 'Can’t start the exam'}
+        </h1>
         <p className="text-slate-500 text-sm mt-2 max-w-md">{error}</p>
+        {retryKind === 'score' && (
+          <p className="text-slate-400 text-xs mt-2 max-w-md">
+            Your answers are saved and your credit has not been used up — retrying costs nothing.
+          </p>
+        )}
         <div className="flex gap-3 mt-6">
           {needCredit ? (
             <button onClick={() => router.push('/mock-tests')} className="px-6 py-3 rounded-2xl bg-slate-900 text-white font-black text-sm">
               Get a mock credit
             </button>
           ) : (
-            <button onClick={beginExam} className="px-6 py-3 rounded-2xl bg-slate-900 text-white font-black text-sm">
+            <button
+              onClick={() => {
+                // Retrying a scoring failure must resubmit the SAME attempt,
+                // not start (and charge for) a new one.
+                if (retryKind === 'score' && attemptId) void submitExam(attemptId);
+                else void beginExam();
+              }}
+              className="px-6 py-3 rounded-2xl bg-slate-900 text-white font-black text-sm"
+            >
               Try again
             </button>
           )}
+          <button onClick={() => router.push('/mock-tests')} className="px-6 py-3 rounded-2xl border border-slate-300 text-slate-700 font-black text-sm">
+            Back to mocks
+          </button>
         </div>
       </Center>
     );
@@ -319,6 +350,34 @@ export default function MockExamPage() {
     );
   }
 
+  // Scored, but the scores did not come back — never leave the student staring
+  // at a spinner that will never resolve.
+  if (phase === 'results') {
+    return (
+      <Center>
+        <ShieldAlert className="h-10 w-10 text-amber-400 mb-4" />
+        <h1 className="text-xl font-black text-slate-900">Your result isn&apos;t ready yet</h1>
+        <p className="text-slate-500 text-sm mt-2 max-w-md">
+          The exam was submitted but the marks haven&apos;t come through. Your answers are saved — try again in a moment.
+        </p>
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={() => attemptId && void submitExam(attemptId)}
+            className="px-6 py-3 rounded-2xl bg-slate-900 text-white font-black text-sm"
+          >
+            Get my result
+          </button>
+          <button
+            onClick={() => router.push('/mock-tests')}
+            className="px-6 py-3 rounded-2xl border border-slate-300 text-slate-700 font-black text-sm"
+          >
+            Back to mocks
+          </button>
+        </div>
+      </Center>
+    );
+  }
+
   if (!current) return <Center><Loader2 className="h-7 w-7 animate-spin text-slate-400" /></Center>;
 
   const danger = secondsLeft <= DANGER_AT_SECONDS;
@@ -343,6 +402,31 @@ export default function MockExamPage() {
             }`}>
               {formatClock(secondsLeft)}
             </span>
+            {/* An escape hatch. The exam is server-timed, so leaving does not
+                pause anything — say so plainly rather than trapping the
+                student on the page with no way out. */}
+            <button
+              onClick={async () => {
+                if (!window.confirm(
+                  'Leave the exam?\n\nThe timer keeps running while you are away, and you cannot return to this question. Your current answer will be saved.'
+                )) return;
+                if (attemptId && current && !advancingRef.current) {
+                  try {
+                    await authedFetch('/api/mock/save', {
+                      method: 'POST',
+                      body: JSON.stringify({
+                        attemptId, index: current.index, answer: answerRef.current,
+                      }),
+                    });
+                  } catch { /* leaving anyway — don't block on the save */ }
+                }
+                advancingRef.current = true;   // stop the countdown auto-advancing
+                router.push('/mock-tests');
+              }}
+              className="text-xs font-bold text-slate-400 hover:text-slate-700 underline underline-offset-2"
+            >
+              Exit
+            </button>
           </div>
         </div>
       </header>
@@ -354,13 +438,38 @@ export default function MockExamPage() {
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 mb-6 flex items-center gap-4">
             <button
               onClick={async () => {
-                if (plays >= MOCK_AUDIO_PLAYS || !audioRef.current) return;
-                try { audioRef.current.currentTime = 0; await audioRef.current.play(); setPlays(p => p + 1); } catch { /* ignore */ }
+                if (plays >= MOCK_AUDIO_PLAYS || !audioRef.current || claimingPlay) return;
+                // Spend the play on the SERVER first. Failing closed is
+                // deliberate: allowing the audio when the claim fails would
+                // restore the very loophole this replaces.
+                setClaimingPlay(true);
+                try {
+                  const res = await authedFetch('/api/mock/play', {
+                    method: 'POST',
+                    body: JSON.stringify({ attemptId, index: current.index }),
+                  });
+                  const d = await res.json();
+                  if (!res.ok) {
+                    setPlays(d.playsUsed ?? MOCK_AUDIO_PLAYS);
+                    setPlayError(d.error ?? 'Could not start the audio.');
+                    return;
+                  }
+                  setPlays(d.playsUsed ?? plays + 1);
+                  setPlayError(null);
+                  audioRef.current.currentTime = 0;
+                  await audioRef.current.play();
+                } catch {
+                  setPlayError('Connection problem — could not start the audio. Try again.');
+                } finally {
+                  setClaimingPlay(false);
+                }
               }}
-              disabled={plays >= MOCK_AUDIO_PLAYS || !current.audioUrl}
+              disabled={plays >= MOCK_AUDIO_PLAYS || !current.audioUrl || claimingPlay}
               className="w-14 h-14 rounded-full bg-slate-900 text-white flex items-center justify-center shrink-0 disabled:opacity-40"
             >
-              <Play size={22} className="ml-0.5" />
+              {claimingPlay
+                ? <Loader2 size={20} className="animate-spin" />
+                : <Play size={22} className="ml-0.5" />}
             </button>
             <div className="flex-1">
               <p className="text-sm font-black text-slate-800">
@@ -369,6 +478,9 @@ export default function MockExamPage() {
               <p className="text-xs text-slate-500 mt-0.5">
                 {current.audioUrl ? `Plays ${MOCK_AUDIO_PLAYS === 1 ? 'once' : `${MOCK_AUDIO_PLAYS} times`} — ${plays}/${MOCK_AUDIO_PLAYS} used.` : 'Audio unavailable for this question.'}
               </p>
+              {playError && (
+                <p className="text-xs font-bold text-red-600 mt-1">{playError}</p>
+              )}
             </div>
             <Volume2 size={20} className="text-slate-300" />
             <audio ref={audioRef} src={current.audioUrl || undefined} className="hidden" />

@@ -4,6 +4,10 @@ import { createHash } from 'crypto';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 
+// Pinned explicitly: this route needs node crypto (MD5 signature check) and
+// firebase-admin, neither of which exist on the edge runtime.
+export const runtime = 'nodejs';
+
 const md5 = (data: string) => createHash('md5').update(data).digest('hex').toUpperCase();
 
 export async function POST(request: NextRequest) {

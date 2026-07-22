@@ -55,9 +55,15 @@ export async function GET(request: Request) {
     }, { status: 200 });
   }
 
-  // If force refresh is requested with secret, or we just need new data
-  if (forceRefresh && CRON_SECRET && secret !== CRON_SECRET) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // A forced refresh calls the paid Google Places API, so it always needs the
+  // secret. Previously a missing CRON_SECRET disabled the check and let anyone
+  // force refreshes — burning the API quota. Only the FORCED path is gated;
+  // ordinary cached reads stay public exactly as before.
+  if (forceRefresh) {
+    const provided = request.headers.get('x-cron-secret') ?? secret ?? '';
+    if (!CRON_SECRET || provided !== CRON_SECRET) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
   }
 
   try {

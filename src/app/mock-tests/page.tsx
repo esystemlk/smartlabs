@@ -43,6 +43,7 @@ function MockTestsInner() {
 
   const [mocks, setMocks] = useState<MockSummary[]>([]);
   const [inProgress, setInProgress] = useState<Record<string, string>>({});
+  const [needsScoring, setNeedsScoring] = useState<Record<string, string>>({});
   const [lastResults, setLastResults] = useState<Record<string, { attemptId: string; band: number }>>({});
   const [credits, setCredits] = useState<{ unlimited: boolean; remaining: number } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,6 +65,9 @@ function MockTestsInner() {
         const ip: Record<string, string> = {};
         (d.inProgress ?? []).forEach((x: { mockId: string; attemptId: string }) => { ip[x.mockId] = x.attemptId; });
         setInProgress(ip);
+        const ns: Record<string, string> = {};
+        (d.needsScoring ?? []).forEach((x: { mockId: string; attemptId: string }) => { ns[x.mockId] = x.attemptId; });
+        setNeedsScoring(ns);
         setLastResults(d.lastResults ?? {});
       }
     } catch { /* leave empty */ } finally {
@@ -173,6 +177,7 @@ function MockTestsInner() {
               <div className="grid md:grid-cols-2 gap-5">
                 {mocks.map(m => {
                   const resumeId = inProgress[m.id];
+                  const scoringId = needsScoring[m.id];
                   const last = lastResults[m.id];
                   return (
                     <div key={m.id} className="rounded-3xl border border-slate-200 bg-white p-6 flex flex-col shadow-sm">
@@ -192,18 +197,21 @@ function MockTestsInner() {
                       </div>
 
                       <div className="mt-auto flex flex-wrap gap-2">
-                        {resumeId ? (
+                        {scoringId ? (
+                          <Link href={`/mock/${m.id}`} className="flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm">
+                            <Award size={16} /> Get My Result
+                          </Link>
+                        ) : resumeId ? (
                           <Link href={`/mock/${m.id}`} className="flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-black text-sm">
                             <PlayCircle size={16} /> Resume Exam
+                          </Link>
+                        ) : last ? (
+                          <Link href={`/mock/${m.id}`} className="flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black text-sm">
+                            <Award size={16} /> View Result
                           </Link>
                         ) : (
                           <Link href={`/mock/${m.id}`} className="flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-black text-sm">
                             Start Exam <ArrowRight size={16} />
-                          </Link>
-                        )}
-                        {last && (
-                          <Link href={`/mock/${m.id}`} className="inline-flex items-center justify-center px-4 py-3 rounded-2xl border border-slate-200 text-slate-600 font-black text-sm">
-                            Result
                           </Link>
                         )}
                       </div>

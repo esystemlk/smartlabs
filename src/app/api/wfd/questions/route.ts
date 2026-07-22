@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
+import { verifyAuthed } from '@/lib/api-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -11,8 +12,14 @@ export const dynamic = 'force-dynamic';
  * student submits — otherwise it's readable in devtools. Scoring happens
  * server-side in /api/score-wfd, which looks the transcript up by id.
  */
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    // Sign-in required. The transcripts are withheld either way, but without
+    // this any anonymous visitor could enumerate the whole dictation audio
+    // library — every other question-bank route is already authenticated.
+    const auth = await verifyAuthed(request);
+    if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
     if (!adminDb) {
       return NextResponse.json({ error: 'Server not configured.' }, { status: 500 });
     }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { verifyMockCredit, deductMockCredit, refundMockCredit } from '@/lib/mock-credits';
+import { TIMING_VERSION } from '@/lib/mock-runtime';
 import {
   MOCK_BLUEPRINT,
   type MockTest,
@@ -118,6 +119,7 @@ export async function POST(request: Request) {
     questions[0].deadlineAt = now + questions[0].secondsAllowed * 1000;
 
     const attempt: MockAttempt = {
+      timingVersion: TIMING_VERSION,
       mockId,
       mockTitle: mock.title,
       userId: uid,

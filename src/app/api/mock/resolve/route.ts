@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
+import { syncProgress, isFinished, TIMING_VERSION } from '@/lib/mock-runtime';
+import type { MockAttempt } from '@/types/mock-test';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -43,7 +45,30 @@ export async function GET(request: Request) {
       .get();
 
     if (!running.empty) {
-      return NextResponse.json({ state: 'in_progress', attemptId: running.docs[0].id });
+      const doc = running.docs[0];
+      const a = { id: doc.id, ...(doc.data() as MockAttempt) };
+      const now = Date.now();
+      const changed = syncProgress(a, now);
+
+      // Its time is fully gone — finish it rather than offering a dead resume.
+      if (isFinished(a)) {
+        await doc.ref.update({
+          status: 'submitted',
+          questions: a.questions,
+          currentIndex: a.currentIndex,
+          timingVersion: a.timingVersion ?? TIMING_VERSION,
+        });
+        return NextResponse.json({ state: 'submitted', attemptId: doc.id });
+      }
+
+      if (changed) {
+        await doc.ref.update({
+          questions: a.questions,
+          currentIndex: a.currentIndex,
+          timingVersion: a.timingVersion ?? TIMING_VERSION,
+        });
+      }
+      return NextResponse.json({ state: 'in_progress', attemptId: doc.id });
     }
 
     // Otherwise the most recent scored attempt, if any.

@@ -6,6 +6,8 @@ import {
   BYPASS_COOKIE,
   SITE_STATUS_PATH,
   SITE_MODE_DOC,
+  hashBypassToken,
+  safeEqual,
   type SiteMode,
 } from '@/lib/site-mode';
 
@@ -25,12 +27,12 @@ const FIRESTORE_URL =
 // Short-lived cache: avoids hitting Firestore on every request while still
 // letting a mode change take effect within seconds.
 const CACHE_TTL_MS = 10_000;
-let cache: { at: number; state: { mode: SiteMode; bypassToken?: string } } | null = null;
+let cache: { at: number; state: { mode: SiteMode; bypassTokenHash?: string } } | null = null;
 
-async function readMode(): Promise<{ mode: SiteMode; bypassToken?: string }> {
+async function readMode(): Promise<{ mode: SiteMode; bypassTokenHash?: string }> {
   if (cache && Date.now() - cache.at < CACHE_TTL_MS) return cache.state;
 
-  let state: { mode: SiteMode; bypassToken?: string } = { mode: 'live' };
+  let state: { mode: SiteMode; bypassTokenHash?: string } = { mode: 'live' };
   try {
     const res = await fetch(FIRESTORE_URL, { cache: 'no-store' });
     if (res.ok) {
@@ -38,7 +40,8 @@ async function readMode(): Promise<{ mode: SiteMode; bypassToken?: string }> {
       const f = json?.fields ?? {};
       state = {
         mode: (f.mode?.stringValue as SiteMode) ?? 'live',
-        bypassToken: f.bypassToken?.stringValue,
+        // Only the hash is published — see hashBypassToken in lib/site-mode.
+        bypassTokenHash: f.bypassTokenHash?.stringValue,
       };
     }
     // A 404 (doc never created) correctly falls through to 'live'.
@@ -58,12 +61,13 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const { mode, bypassToken } = await readMode();
+  const { mode, bypassTokenHash } = await readMode();
   if (mode === 'live') return NextResponse.next();
 
-  // Developer preview: a matching bypass cookie sees the real site.
+  // Developer preview: the cookie holds the raw token, Firestore holds only
+  // its hash, so a visitor reading the public doc still cannot forge one.
   const cookie = req.cookies.get(BYPASS_COOKIE)?.value;
-  if (bypassToken && cookie && cookie === bypassToken) {
+  if (bypassTokenHash && cookie && safeEqual(await hashBypassToken(cookie), bypassTokenHash)) {
     return NextResponse.next();
   }
 

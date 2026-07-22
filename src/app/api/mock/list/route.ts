@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { getMockCredits } from '@/lib/mock-credits';
-import { MOCK_BLUEPRINT, MOCK_TOTAL_QUESTIONS, MOCK_TOTAL_SECONDS, type MockTest } from '@/types/mock-test';
+import { MOCK_BLUEPRINT, MOCK_TOTAL_QUESTIONS, MOCK_TOTAL_SECONDS, type MockTest, type MockAttempt } from '@/types/mock-test';
+import { syncProgress, isFinished, TIMING_VERSION } from '@/lib/mock-runtime';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -51,15 +52,42 @@ export async function GET(request: Request) {
       })
       .filter(m => m.active && m.complete);
 
-    // Any attempt already in progress, so the UI can offer "Resume".
+    // Attempts still running. An attempt whose time has fully run out must NOT
+    // be offered as "Resume" — it is finished, so flip it to `submitted` and
+    // let the student open it to get scored.
     const attemptsSnap = await adminDb
       .collection('mock_attempts')
       .where('userId', '==', uid)
       .where('status', '==', 'in_progress')
       .get();
-    const inProgress = attemptsSnap.docs.map(d => ({
-      attemptId: d.id,
-      mockId: d.data().mockId as string,
+
+    const now = Date.now();
+    const inProgress: { attemptId: string; mockId: string }[] = [];
+    const needsScoring: { attemptId: string; mockId: string }[] = [];
+
+    await Promise.all(attemptsSnap.docs.map(async d => {
+      const a = { id: d.id, ...(d.data() as MockAttempt) };
+      const changed = syncProgress(a, now);
+
+      if (isFinished(a)) {
+        await d.ref.update({
+          status: 'submitted',
+          questions: a.questions,
+          currentIndex: a.currentIndex,
+          timingVersion: a.timingVersion ?? TIMING_VERSION,
+        });
+        needsScoring.push({ attemptId: d.id, mockId: a.mockId });
+        return;
+      }
+
+      if (changed) {
+        await d.ref.update({
+          questions: a.questions,
+          currentIndex: a.currentIndex,
+          timingVersion: a.timingVersion ?? TIMING_VERSION,
+        });
+      }
+      inProgress.push({ attemptId: d.id, mockId: a.mockId });
     }));
 
     // Most recent scored attempt per mock, for a "last result" badge.
@@ -84,6 +112,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       mocks,
       inProgress,
+      needsScoring,
       lastResults: bestByMock,
       credits: { unlimited: credits.unlimited, remaining: credits.remaining },
     });

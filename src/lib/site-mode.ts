@@ -42,8 +42,35 @@ export const SITE_MODE_DOC = { collection: 'site_settings', doc: 'site_mode' };
 export interface SiteModeState {
   mode: SiteMode;
   message?: string;
-  /** Random token; the matching cookie value bypasses the block. */
-  bypassToken?: string;
+  /**
+   * SHA-256 of the bypass token — never the token itself.
+   *
+   * site_settings is world-readable (middleware reads it unauthenticated, from
+   * the edge, using the public web API key), so anything stored here is public.
+   * Publishing the plain token let any visitor lift it and walk straight past
+   * a 404/maintenance mode. The raw token only ever exists in the httpOnly
+   * cookie handed to the developer.
+   */
+  bypassTokenHash?: string;
   updatedBy?: string;
   updatedAt?: unknown;
+}
+
+/**
+ * SHA-256 → lowercase hex, via Web Crypto so the exact same function works in
+ * the edge middleware and in the Node route handler.
+ */
+export async function hashBypassToken(token: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
+  return Array.from(new Uint8Array(digest))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+/** Length-safe, non-short-circuiting comparison for the hash check. */
+export function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
 }

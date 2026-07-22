@@ -38,14 +38,30 @@ export default function WfdPracticePage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
+  // The questions endpoint now requires a signed-in user, so wait for auth to
+  // settle and send the token — firing on mount would 401 before `user` exists.
   useEffect(() => {
+    if (isUserLoading) return;
+    if (!user) { setQuestions([]); setLoadingQ(false); return; }
+
+    let cancelled = false;
     setLoadingQ(true);
-    fetch('/api/wfd/questions')
-      .then(r => r.json())
-      .then(d => setQuestions(d.questions ?? []))
-      .catch(() => setQuestions([]))
-      .finally(() => setLoadingQ(false));
-  }, []);
+    (async () => {
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch('/api/wfd/questions', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const d = await res.json();
+        if (!cancelled) setQuestions(res.ok ? (d.questions ?? []) : []);
+      } catch {
+        if (!cancelled) setQuestions([]);
+      } finally {
+        if (!cancelled) setLoadingQ(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user, isUserLoading]);
 
   const wordCount = useMemo(
     () => answer.trim().split(/\s+/).filter(Boolean).length,
@@ -183,6 +199,20 @@ export default function WfdPracticePage() {
             {loadingQ ? (
               <div className="flex items-center gap-2 text-slate-400 py-12 justify-center">
                 <Loader2 className="animate-spin" size={18} /> Loading dictations…
+              </div>
+            ) : !user ? (
+              /* The dictation library is behind sign-in, so say so plainly
+                 rather than showing an empty "no dictations" state. */
+              <div className="text-center py-16 rounded-3xl border border-dashed border-slate-300 bg-slate-50">
+                <Lock size={22} className="mx-auto text-slate-400 mb-3" />
+                <p className="text-slate-600 font-bold">Sign in to practise dictations.</p>
+                <p className="text-slate-400 text-sm mt-1">Your free account unlocks the full Write From Dictation library.</p>
+                <Link
+                  href="/login?redirect=/ai-wfd-practice"
+                  className="inline-block mt-5 px-6 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-sm"
+                >
+                  Sign In
+                </Link>
               </div>
             ) : questions.length === 0 ? (
               <div className="text-center py-16 rounded-3xl border border-dashed border-slate-300 bg-slate-50">
