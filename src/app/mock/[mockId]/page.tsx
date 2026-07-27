@@ -51,6 +51,7 @@ export default function MockExamPage() {
   const [plays, setPlays] = useState(0);
   const [claimingPlay, setClaimingPlay] = useState(false);
   const [playError, setPlayError] = useState<string | null>(null);
+  const [pasteBlocked, setPasteBlocked] = useState(false);
 
   const [taskScores, setTaskScores] = useState<MockTaskScore[] | null>(null);
   const [overall, setOverall] = useState<MockOverall | null>(null);
@@ -62,8 +63,18 @@ export default function MockExamPage() {
   const blurCount = useRef(0);
   const pasteCount = useRef(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const pasteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => { answerRef.current = answer; }, [answer]);
+
+  // Briefly show the "pasting is disabled" notice, then clear it.
+  const flashPasteBlocked = useCallback(() => {
+    setPasteBlocked(true);
+    if (pasteTimer.current) clearTimeout(pasteTimer.current);
+    pasteTimer.current = setTimeout(() => setPasteBlocked(false), 2500);
+  }, []);
+
+  useEffect(() => () => { if (pasteTimer.current) clearTimeout(pasteTimer.current); }, []);
 
   const authedFetch = useCallback(async (url: string, init?: RequestInit) => {
     const token = await user!.getIdToken();
@@ -497,12 +508,25 @@ export default function MockExamPage() {
         <textarea
           value={answer}
           onChange={e => setAnswer(e.target.value)}
-          onPaste={() => { pasteCount.current += 1; }}
+          // Pasting is disabled, exactly like the real PTE writing interface —
+          // every answer must be typed. We block paste, cut, copy, drop and the
+          // right-click menu, and flag the attempt on the attempt record.
+          onPaste={e => { e.preventDefault(); pasteCount.current += 1; flashPasteBlocked(); }}
+          onDrop={e => { e.preventDefault(); pasteCount.current += 1; flashPasteBlocked(); }}
+          onCopy={e => e.preventDefault()}
+          onCut={e => e.preventDefault()}
+          onContextMenu={e => e.preventDefault()}
           autoFocus
           rows={current.taskType === 'write-essay' ? 14 : current.taskType === 'write-from-dictation' ? 3 : 6}
           placeholder="Type your answer here…"
           className="w-full resize-none rounded-2xl border border-slate-300 px-4 py-3 text-[15px] leading-relaxed focus:outline-none focus:ring-2 focus:ring-slate-400/30"
         />
+
+        {pasteBlocked && (
+          <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-red-600">
+            <ShieldAlert size={13} /> Pasting is disabled — please type your answer.
+          </p>
+        )}
 
         <div className="flex items-center justify-between mt-3">
           <span className="text-xs font-semibold text-slate-500">{words} words</span>

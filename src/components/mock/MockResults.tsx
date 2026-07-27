@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, AlertTriangle, Home, RotateCcw } from 'lucide-react';
-import { TASK_WEIGHT, type MockTaskScore, type MockOverall, type MockTaskType } from '@/types/mock-test';
+import { ChevronDown, AlertTriangle, Home, RotateCcw, ArrowRight, Sparkles } from 'lucide-react';
+import { TASK_WEIGHT, bandLabel, type MockTaskScore, type MockOverall, type MockTaskType } from '@/types/mock-test';
 
 const TASK_LABEL: Record<MockTaskType, string> = {
   swt: 'Summarize Written Text',
@@ -12,18 +12,75 @@ const TASK_LABEL: Record<MockTaskType, string> = {
   'write-from-dictation': 'Write From Dictation',
 };
 
-const TASK_COLOR: Record<MockTaskType, string> = {
-  swt: '#8b5cf6',
-  'write-essay': '#f97316',
-  'summarize-spoken-text': '#10b981',
-  'write-from-dictation': '#2563eb',
+const TASK_SHORT: Record<MockTaskType, string> = {
+  swt: 'SWT',
+  'write-essay': 'Essay',
+  'summarize-spoken-text': 'SST',
+  'write-from-dictation': 'WFD',
 };
 
+const TASK_COLOR: Record<MockTaskType, string> = {
+  'write-essay': '#6366f1',            // indigo
+  swt: '#8b5cf6',                      // violet
+  'write-from-dictation': '#2563eb',   // blue
+  'summarize-spoken-text': '#10b981',  // emerald
+};
+
+// PTE Writing runs 10–90; convert a score to a 0–1 fill of that range.
+const fillOf = (band: number) => Math.max(0, Math.min(1, (band - 10) / 80));
+
 function bandTone(band: number) {
-  if (band >= 79) return { ring: 'border-emerald-500', text: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' };
-  if (band >= 65) return { ring: 'border-blue-500', text: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' };
-  if (band >= 50) return { ring: 'border-amber-500', text: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' };
-  return { ring: 'border-red-500', text: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' };
+  if (band >= 79) return { text: 'text-emerald-600', soft: 'text-emerald-700', from: '#10b981', to: '#059669' };
+  if (band >= 65) return { text: 'text-blue-600', soft: 'text-blue-700', from: '#3b82f6', to: '#2563eb' };
+  if (band >= 50) return { text: 'text-amber-600', soft: 'text-amber-700', from: '#f59e0b', to: '#d97706' };
+  return { text: 'text-rose-600', soft: 'text-rose-700', from: '#f43f5e', to: '#e11d48' };
+}
+
+/** Semicircular 10 → 90 gauge. Distinctive centrepiece of the report. */
+function ScoreGauge({ band, from, to }: { band: number; from: string; to: string }) {
+  const R = 92;
+  const CX = 120;
+  const CY = 120;
+  const STROKE = 16;
+  const frac = fillOf(band);
+  // Semicircle: 180° sweep from left (180°) to right (360°/0°).
+  const semi = Math.PI * R;                  // arc length of a semicircle
+  const dash = `${semi} ${semi}`;
+  const offset = semi * (1 - frac);
+  // Marker position along the arc.
+  const angle = Math.PI - frac * Math.PI;    // 180° → 0°
+  const mx = CX + R * Math.cos(angle);
+  const my = CY - R * Math.sin(angle);
+
+  return (
+    <svg viewBox="0 0 240 150" className="w-full max-w-[300px]" role="img" aria-label={`Writing score ${band} out of 90`}>
+      <defs>
+        <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor={from} />
+          <stop offset="100%" stopColor={to} />
+        </linearGradient>
+      </defs>
+      {/* track */}
+      <path
+        d={`M ${CX - R} ${CY} A ${R} ${R} 0 0 1 ${CX + R} ${CY}`}
+        fill="none" stroke="#e2e8f0" strokeWidth={STROKE} strokeLinecap="round"
+      />
+      {/* progress */}
+      <path
+        d={`M ${CX - R} ${CY} A ${R} ${R} 0 0 1 ${CX + R} ${CY}`}
+        fill="none" stroke="url(#gaugeGrad)" strokeWidth={STROKE} strokeLinecap="round"
+        strokeDasharray={dash} strokeDashoffset={offset}
+      />
+      {/* marker dot */}
+      <circle cx={mx} cy={my} r={7} fill="#fff" stroke={to} strokeWidth={4} />
+      {/* endpoints */}
+      <text x={CX - R} y={CY + 22} textAnchor="middle" className="fill-slate-400" fontSize="11" fontWeight="700">10</text>
+      <text x={CX + R} y={CY + 22} textAnchor="middle" className="fill-slate-400" fontSize="11" fontWeight="700">90</text>
+      {/* value */}
+      <text x={CX} y={CY - 18} textAnchor="middle" className="fill-slate-900" fontSize="46" fontWeight="900">{band}</text>
+      <text x={CX} y={CY + 4} textAnchor="middle" className="fill-slate-400" fontSize="12" fontWeight="700" letterSpacing="2">/ 90</text>
+    </svg>
+  );
 }
 
 export function MockResults({
@@ -44,41 +101,91 @@ export function MockResults({
     return acc;
   }, {});
 
+  // Ordered by contribution weight, so the report reads high-impact first.
+  const orderedTypes = (Object.keys(groups) as MockTaskType[])
+    .sort((a, b) => (TASK_WEIGHT[b] ?? 0) - (TASK_WEIGHT[a] ?? 0));
+
+  const avgOf = (list: MockTaskScore[]) =>
+    Math.round(list.filter(s => !s.scoreFailed).reduce((s, x) => s + x.percent, 0) / Math.max(1, list.filter(s => !s.scoreFailed).length));
+
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-5">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-12 px-5">
       <div className="max-w-3xl mx-auto">
-        <p className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400 text-center">Mock Test Result</p>
+        <p className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 text-center">Score Report</p>
         <h1 className="text-3xl font-black tracking-tight text-slate-900 text-center mt-1">{title || 'Writing Mock Test'}</h1>
 
-        {/* Overall */}
-        <div className={`mt-8 rounded-3xl border p-6 flex flex-col sm:flex-row items-center gap-6 ${tone.bg} ${tone.border}`}>
-          <div className={`w-32 h-32 rounded-full border-4 bg-white flex flex-col items-center justify-center shrink-0 ${tone.ring}`}>
-            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Overall</span>
-            <span className={`text-4xl font-black my-0.5 ${tone.text}`}>{overall.band}</span>
-            <span className="text-slate-400 text-[10px] font-bold">/ 90</span>
-          </div>
-          <div className="flex-1 text-center sm:text-left">
-            <p className={`text-xl font-black ${tone.text}`}>{overall.label}</p>
-            <p className="text-sm text-slate-600 mt-1">
-              Scored {overall.scoredTasks} of {overall.totalTasks} tasks.
-            </p>
-            {overall.partial && (
-              <p className="mt-3 inline-flex items-start gap-2 text-xs text-amber-800 bg-amber-100 border border-amber-200 rounded-xl px-3 py-2 text-left">
-                <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-                Some tasks could not be marked automatically. Your band is based on the tasks that scored.
+        {/* ── Hero: gauge + two-stage breakdown ───────────────────────────── */}
+        <div className="mt-8 rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div className="grid sm:grid-cols-2 gap-6 p-7 items-center">
+            <div className="flex flex-col items-center">
+              <ScoreGauge band={overall.band} from={tone.from} to={tone.to} />
+              <p className={`-mt-1 text-lg font-black ${tone.text}`}>{overall.label}</p>
+              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Writing Score</p>
+            </div>
+
+            <div>
+              <p className="text-xs font-black uppercase tracking-wider text-slate-400 mb-3">How this was calculated</p>
+              {/* Stage 1 → Stage 2, made explicit and unique to us. */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 rounded-2xl bg-slate-50 border border-slate-200 px-4 py-3 text-center">
+                  <p className="text-2xl font-black text-slate-800 tabular-nums">
+                    {overall.percentage != null ? `${overall.percentage}%` : '—'}
+                  </p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mt-0.5">Weighted %</p>
+                </div>
+                <ArrowRight size={18} className="text-slate-300 shrink-0" />
+                <div className="flex-1 rounded-2xl px-4 py-3 text-center text-white" style={{ background: `linear-gradient(135deg, ${tone.from}, ${tone.to})` }}>
+                  <p className="text-2xl font-black tabular-nums">{overall.band}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/80 mt-0.5">/ 90 Score</p>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-3 leading-relaxed">
+                Score = 10 + (Weighted % × 0.8), on the PTE 10–90 scale.
+                Scored {overall.scoredTasks} of {overall.totalTasks} tasks.
               </p>
-            )}
-            <p className="text-[11px] text-slate-400 mt-3">
-              Estimated score for practice. Not an official Pearson result.
-            </p>
+            </div>
+          </div>
+
+          {overall.partial && (
+            <div className="px-7 pb-5 -mt-1">
+              <p className="inline-flex items-start gap-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+                Some tasks could not be marked automatically. Your score is based on the tasks that scored, with their weight redistributed.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* ── Contribution breakdown ──────────────────────────────────────── */}
+        <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles size={15} className="text-slate-400" />
+            <h2 className="text-sm font-black uppercase tracking-wider text-slate-700">Contribution to Writing</h2>
+          </div>
+          <div className="space-y-3">
+            {orderedTypes.map(t => {
+              const avg = avgOf(groups[t]);
+              const weight = TASK_WEIGHT[t] ?? 0;
+              return (
+                <div key={t} className="flex items-center gap-3">
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: TASK_COLOR[t] }} />
+                  <span className="text-xs font-black text-slate-600 w-14 shrink-0">{TASK_SHORT[t]}</span>
+                  <div className="flex-1 h-2.5 rounded-full bg-slate-100 overflow-hidden">
+                    <div className="h-full rounded-full transition-all" style={{ width: `${avg}%`, backgroundColor: TASK_COLOR[t] }} />
+                  </div>
+                  <span className="text-xs font-black text-slate-700 tabular-nums w-10 text-right">{avg}%</span>
+                  <span className="text-[10px] font-bold text-slate-400 tabular-nums w-16 text-right">weight {weight}%</span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Per-task */}
-        <div className="mt-8 space-y-6">
-          {Object.entries(groups).map(([type, list]) => {
+        {/* ── Per-task detail ─────────────────────────────────────────────── */}
+        <div className="mt-6 space-y-6">
+          {orderedTypes.map(type => {
             const t = type as MockTaskType;
-            const avg = Math.round(list.reduce((s, x) => s + x.percent, 0) / list.length);
+            const list = groups[type];
             return (
               <div key={type}>
                 <div className="flex items-center justify-between mb-3">
@@ -86,9 +193,7 @@ export function MockResults({
                     <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: TASK_COLOR[t] }} />
                     <h2 className="text-sm font-black uppercase tracking-wider text-slate-700">{TASK_LABEL[t]}</h2>
                   </div>
-                  <span className="text-xs font-black text-slate-500">
-                    {avg}% · weight {Math.round(TASK_WEIGHT[t] * 100)}%
-                  </span>
+                  <span className="text-xs font-black text-slate-500">{avgOf(list)}% · weight {TASK_WEIGHT[t]}%</span>
                 </div>
 
                 <div className="space-y-2">
@@ -139,7 +244,11 @@ export function MockResults({
           })}
         </div>
 
-        <div className="mt-10 flex flex-wrap gap-3 justify-center">
+        <p className="text-[11px] text-slate-400 text-center mt-8">
+          Estimated score for practice. Not an official Pearson result.
+        </p>
+
+        <div className="mt-6 flex flex-wrap gap-3 justify-center">
           {onRetake && (
             <button onClick={onRetake} className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-black text-sm">
               <RotateCcw size={15} /> Retake · uses 1 credit
@@ -182,3 +291,6 @@ function summarise(s: MockTaskScore): string {
 
   return lines.length ? lines.join('\n') : 'Scored — open the trainer for full feedback.';
 }
+
+// Kept exported-friendly for any caller that wants the label without the component.
+export { bandLabel };

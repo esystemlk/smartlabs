@@ -142,12 +142,15 @@ export interface MockTaskScore {
 }
 
 export interface MockOverall {
+  /** Final Writing score on the PTE 10–90 scale. */
   band: number;
   label: string;
   /** True when one or more tasks failed to score. */
   partial: boolean;
   scoredTasks: number;
   totalTasks: number;
+  /** Weighted Writing percentage (0–100) before the 10–90 conversion. */
+  percentage?: number;
 }
 
 export interface MockAttempt {
@@ -184,14 +187,18 @@ export const TASK_MAX: Record<MockTaskType, number> = {
 };
 
 /**
- * Weight of each TASK TYPE in the overall band (must total 100).
+ * Weight of each TASK TYPE in the overall Writing score (must total 100).
  * Split evenly across that type's questions.
+ *
+ * These are the official contribution weights for the Writing part:
+ *   Write Essay 31 · Summarize Written Text 28 ·
+ *   Write From Dictation 23 · Summarize Spoken Text 18.
  */
 export const TASK_WEIGHT: Record<MockTaskType, number> = {
-  'write-essay': 35,
-  swt: 30,
-  'summarize-spoken-text': 20,
-  'write-from-dictation': 15,
+  'write-essay': 31,
+  swt: 28,
+  'write-from-dictation': 23,
+  'summarize-spoken-text': 18,
 };
 
 export function bandLabel(band: number): string {
@@ -204,11 +211,16 @@ export function bandLabel(band: number): string {
 }
 
 /**
- * Combine per-task scores into one 0–90 band.
+ * Combine per-task scores into one Writing score on the PTE 10–90 scale.
+ *
+ * Two stages, matching the official model:
+ *   1. Weighted Writing percentage (0–100): each task's percent × its weight.
+ *   2. Convert to 10–90:  score = 10 + (percentage × 0.8)
+ *      because 0% maps to 10 and 100% maps to 90, not 0.
  *
  * Each task type carries a fixed weight, shared evenly between its questions.
  * Tasks that failed to score are excluded and their weight is redistributed
- * proportionally, so one AI failure can't drag the band to zero.
+ * proportionally, so one AI failure can't drag the score down.
  */
 export function aggregateScores(scores: MockTaskScore[]): MockOverall {
   const usable = scores.filter(s => !s.scoreFailed);
@@ -234,11 +246,14 @@ export function aggregateScores(scores: MockTaskScore[]): MockOverall {
     weightUsed += perQuestion;
   }
 
-  // Redistribute across the weight actually present (handles partial failures).
-  const normalised = weightUsed > 0 ? weightedSum / weightUsed : 0;
-  // Multiply BEFORE dividing: (35/100)*90 evaluates to 31.4999… because 0.35
-  // is inexact in binary, which silently costs a band point at .5 boundaries.
-  const band = Math.round((normalised * 90) / 100);
+  // Stage 1 — weighted Writing percentage (0–100). Redistributes across the
+  // weight actually present, so a failed task doesn't count as a zero.
+  const percentage = weightUsed > 0 ? weightedSum / weightUsed : 0;
+
+  // Stage 2 — convert to the PTE 10–90 scale: 10 + (percentage × 0.8).
+  // Multiply as integers before dividing (× 8 / 10) to avoid 0.8 being
+  // inexact in binary and costing a point at .5 boundaries.
+  const band = Math.max(10, Math.min(90, Math.round(10 + (percentage * 8) / 10)));
 
   return {
     band,
@@ -246,6 +261,7 @@ export function aggregateScores(scores: MockTaskScore[]): MockOverall {
     partial: usable.length < totalTasks,
     scoredTasks: usable.length,
     totalTasks,
+    percentage: Math.round(percentage * 10) / 10,
   };
 }
 
