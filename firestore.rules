@@ -32,6 +32,7 @@ service cloud.firestore {
         'swtPaidCredits', 'swtFreeUsed', 'swtMonthlyExpiry',
         'sstPaidCredits', 'sstFreeUsed', 'sstMonthlyExpiry',
         'mockPaidCredits', 'mockFreeUsed', 'mockMonthlyExpiry',
+        'ieltsEssayPaidCredits', 'ieltsEssayFreeUsed', 'ieltsEssayMonthlyExpiry',
         'bundleExpiry'
       ];
     }
@@ -65,6 +66,9 @@ service cloud.firestore {
         allow write: if isStaff(); // granted by the payment webhook (Admin SDK)
       }
       match /essay_sessions/{docId} {
+        allow read, write: if isOwner(userId) || isStaff();
+      }
+      match /ielts_essay_sessions/{docId} {
         allow read, write: if isOwner(userId) || isStaff();
       }
       match /{sub=**} {

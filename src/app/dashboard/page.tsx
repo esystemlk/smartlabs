@@ -153,6 +153,17 @@ const featureCards = [
     badgeColor: 'bg-white/20 text-white',
     cta: 'Take Mock Test',
   },
+  {
+    title: 'IELTS Essay Scorer',
+    subtitle: 'Writing Task 2 · Band 0–9',
+    description: 'Examiner-style band scoring on all four IELTS criteria, with evidence, error lists and Band 9 advice.',
+    href: '/ai-ielts-essay-practice',
+    icon: PencilSimple,
+    gradient: 'from-red-600 via-rose-600 to-red-700',
+    badge: 'New · IELTS',
+    badgeColor: 'bg-white/20 text-white',
+    cta: 'Start Writing',
+  },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

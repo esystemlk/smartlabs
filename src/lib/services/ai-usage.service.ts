@@ -8,7 +8,7 @@ export interface AiCallLog {
   userId:     string | null;
   email:      string | null;
   ip:         string | null;
-  task:       'essay' | 'swt' | 'sst' | 'server-action';
+  task:       'essay' | 'swt' | 'sst' | 'ielts-essay' | 'server-action';
   keyLabel:   string;          // e.g. 'KEY_1' … 'KEY_5' or 'FIRESTORE_KEY'
   keyIndex:   number | null;   // 1-5 for the env-key pool, null for Firestore key
   model?:     string | null;   // e.g. 'gemini-2.5-flash'
