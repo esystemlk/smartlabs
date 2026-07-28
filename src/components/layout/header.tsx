@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, LayoutDashboard, LogOut, Target, Globe, Zap, Sparkles, Book, Video, Phone, ArrowRight, Search, Bot, PenLine, FileText, Headphones, Volume2 } from "lucide-react";
+import { Menu, X, ChevronDown, LayoutDashboard, LogOut, Target, Globe, Zap, Sparkles, Book, Video, Phone, ArrowRight, Search, Bot, PenLine, FileText, Headphones, Volume2, Mic, BookOpen, Clock, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth } from "@/firebase";
@@ -149,6 +149,82 @@ const pteAiQuickLinks = [
   { name: "Level Test", href: "/level-test", icon: Target, description: "Find your current band." },
 ];
 
+// IELTS trainers. Only Writing Task 2 (Essay) is live; the rest are shown but
+// disabled until each part is built, so students can see what's coming.
+const ieltsTools = [
+  {
+    name: "Writing Task 2 · Essay",
+    href: "/ai-ielts-essay-practice",
+    description: "Examiner band scoring on all four criteria.",
+    icon: PenLine,
+    color: "text-red-500",
+    bgColor: "bg-red-500/10",
+    hoverBorder: "hover:border-red-500/50",
+    tag: "Live",
+    active: true,
+  },
+  {
+    name: "Writing Task 1",
+    href: "#",
+    description: "Academic charts & General letters.",
+    icon: FileText,
+    color: "text-red-500",
+    bgColor: "bg-red-500/10",
+    hoverBorder: "",
+    tag: "Soon",
+    active: false,
+  },
+  {
+    name: "Speaking",
+    href: "#",
+    description: "Fluency, pronunciation & coherence.",
+    icon: Mic,
+    color: "text-red-500",
+    bgColor: "bg-red-500/10",
+    hoverBorder: "",
+    tag: "Soon",
+    active: false,
+  },
+  {
+    name: "Reading",
+    href: "#",
+    description: "Skimming, scanning & comprehension.",
+    icon: BookOpen,
+    color: "text-red-500",
+    bgColor: "bg-red-500/10",
+    hoverBorder: "",
+    tag: "Soon",
+    active: false,
+  },
+  {
+    name: "Listening",
+    href: "#",
+    description: "All four listening sections.",
+    icon: Headphones,
+    color: "text-red-500",
+    bgColor: "bg-red-500/10",
+    hoverBorder: "",
+    tag: "Soon",
+    active: false,
+  },
+  {
+    name: "IELTS Mock Test",
+    href: "#",
+    description: "Full timed mock, AI scored.",
+    icon: Clock,
+    color: "text-red-500",
+    bgColor: "bg-red-500/10",
+    hoverBorder: "",
+    tag: "Soon",
+    active: false,
+  },
+];
+
+const ieltsQuickLinks = [
+  { name: "IELTS Essay Trainer", href: "/ai-ielts-essay-practice", icon: PenLine, description: "Score your Task 2 essay now." },
+  { name: "Level Test", href: "/level-test", icon: Target, description: "Find your current band." },
+];
+
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "Courses", href: "/courses" },
@@ -165,6 +241,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [coursesOpen, setCoursesOpen] = useState(false);
   const [pteAiOpen, setPteAiOpen] = useState(false);
+  const [ieltsOpen, setIeltsOpen] = useState(false);
   const [notifsOpen, setNotifsOpen] = useState(false);
   const { notifications, loading: notifsLoading } = useNotifications();
 
@@ -351,7 +428,7 @@ export default function Header() {
                 pteAiOpen ? "text-primary bg-primary/5" : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}>
                 <Bot className="h-4 w-4" />
-                PTE AI
+                PTE
                 <ChevronDown className={cn("h-4 w-4 transition-transform duration-300", pteAiOpen && "rotate-180")} />
               </button>
 
@@ -402,6 +479,98 @@ export default function Header() {
                             <Link key={item.name} href={item.href} className="group block p-3 rounded-2xl hover:bg-muted/50 transition-colors">
                               <div className="flex items-center gap-3">
                                 <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                                  <item.icon className="h-4 w-4" />
+                                </div>
+                                <div>
+                                  <div className="font-bold text-xs">{item.name}</div>
+                                  <div className="text-[10px] text-muted-foreground">{item.description}</div>
+                                </div>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Mega Menu — IELTS */}
+            <div
+              className="relative"
+              onMouseEnter={() => setIeltsOpen(true)}
+              onMouseLeave={() => setIeltsOpen(false)}
+            >
+              <button className={cn(
+                "flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all group",
+                ieltsOpen ? "text-red-600 bg-red-500/5" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              )}>
+                <GraduationCap className="h-4 w-4" />
+                IELTS
+                <ChevronDown className={cn("h-4 w-4 transition-transform duration-300", ieltsOpen && "rotate-180")} />
+              </button>
+
+              <AnimatePresence>
+                {ieltsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute top-full left-0 mt-3 w-[680px] bg-card/95 backdrop-blur-3xl border border-border/50 rounded-[28px] p-6 shadow-[0_20px_70px_rgba(0,0,0,0.15)]"
+                  >
+                    <div className="grid grid-cols-3 gap-6">
+                      <div className="col-span-2 space-y-3">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">AI Practice & Scoring</h3>
+                        <div className="grid grid-cols-1 gap-2">
+                          {ieltsTools.map((tool) => {
+                            const inner = (
+                              <div className="flex items-center gap-3">
+                                <div className={cn("p-2 rounded-xl shrink-0 transition-transform", tool.bgColor, tool.color, tool.active && "group-hover:scale-110")}>
+                                  <tool.icon className="h-4 w-4" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                                    {tool.name}
+                                    <span className={cn(
+                                      "text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full",
+                                      tool.active ? "bg-red-500/10 text-red-500" : "bg-muted text-muted-foreground"
+                                    )}>{tool.tag}</span>
+                                    {tool.active && <ArrowRight className="h-3 w-3 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" />}
+                                  </div>
+                                  <div className="text-[10px] text-muted-foreground font-medium leading-tight mt-0.5">{tool.description}</div>
+                                </div>
+                              </div>
+                            );
+                            return tool.active ? (
+                              <Link
+                                key={tool.name}
+                                href={tool.href}
+                                className={cn("group block p-3 rounded-2xl border border-transparent transition-all hover:bg-muted/50", tool.hoverBorder)}
+                              >
+                                {inner}
+                              </Link>
+                            ) : (
+                              <div
+                                key={tool.name}
+                                aria-disabled="true"
+                                title="Coming soon"
+                                className="group block p-3 rounded-2xl border border-transparent opacity-50 cursor-not-allowed select-none"
+                              >
+                                {inner}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="space-y-3 border-l pl-6 border-border/50">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Quick Links</h3>
+                        <div className="space-y-2">
+                          {ieltsQuickLinks.map((item) => (
+                            <Link key={item.name} href={item.href} className="group block p-3 rounded-2xl hover:bg-muted/50 transition-colors">
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 bg-red-500/10 rounded-lg text-red-500">
                                   <item.icon className="h-4 w-4" />
                                 </div>
                                 <div>
@@ -675,7 +844,7 @@ export default function Header() {
               </div>
 
               <div className="pb-2 border-b border-border">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-4">PTE AI Practice</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-4">PTE Practice</p>
                 {pteAiTools.map((tool) => (
                   <Link
                     key={tool.href}
@@ -688,6 +857,34 @@ export default function Header() {
                     <span className={cn("text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full ml-auto", tool.bgColor, tool.color)}>{tool.tag}</span>
                   </Link>
                 ))}
+              </div>
+
+              <div className="pb-2 border-b border-border">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-4">IELTS Practice</p>
+                {ieltsTools.map((tool) =>
+                  tool.active ? (
+                    <Link
+                      key={tool.name}
+                      href={tool.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2 rounded-lg text-foreground hover:bg-muted transition-colors"
+                    >
+                      <span className={cn("p-1.5 rounded-lg", tool.bgColor, tool.color)}><tool.icon className="h-3.5 w-3.5" /></span>
+                      {tool.name}
+                      <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full ml-auto bg-red-500/10 text-red-500">{tool.tag}</span>
+                    </Link>
+                  ) : (
+                    <div
+                      key={tool.name}
+                      aria-disabled="true"
+                      className="flex items-center gap-3 px-4 py-2 rounded-lg text-foreground opacity-50 cursor-not-allowed select-none"
+                    >
+                      <span className={cn("p-1.5 rounded-lg", tool.bgColor, tool.color)}><tool.icon className="h-3.5 w-3.5" /></span>
+                      {tool.name}
+                      <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full ml-auto bg-muted text-muted-foreground">{tool.tag}</span>
+                    </div>
+                  )
+                )}
               </div>
 
               {navLinks.map((link: any) => (

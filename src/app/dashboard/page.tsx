@@ -128,6 +128,91 @@ const pteSections = [
   },
 ];
 
+// IELTS practice sections. Crimson-themed to match the IELTS parts. Only the
+// Writing essay is live; every other component is shown but disabled until it
+// is built, so students can see what's coming.
+const ieltsSections = [
+  {
+    id: 'ielts-writing',
+    disabled: false,
+    title: 'Writing',
+    icon: PencilSimple,
+    description: 'Task 1 & Task 2 — examiner band scoring',
+    gradient: 'from-red-600 to-rose-400',
+    lightBg: 'bg-red-500/5',
+    border: 'border-red-500/20',
+    hoverBorder: 'hover:border-red-500/40',
+    iconColor: 'text-red-500',
+    iconBg: 'bg-red-500/10',
+    badgeClass: 'bg-red-500/10 text-red-600 border-red-500/20',
+    tasks: [
+      { title: 'Writing Task 2 · Essay', href: '/ai-ielts-essay-practice', ai: true, hot: true, featured: true },
+      { title: 'Writing Task 1', href: '#', ai: true, hot: false, enabled: false },
+    ],
+    sectionHref: '/ai-ielts-essay-practice',
+  },
+  {
+    id: 'ielts-speaking',
+    disabled: true,
+    title: 'Speaking',
+    icon: Microphone,
+    description: 'Interview, cue card & discussion',
+    gradient: 'from-red-600 to-rose-400',
+    lightBg: 'bg-red-500/5',
+    border: 'border-red-500/20',
+    hoverBorder: 'hover:border-red-500/40',
+    iconColor: 'text-red-500',
+    iconBg: 'bg-red-500/10',
+    badgeClass: 'bg-red-500/10 text-red-600 border-red-500/20',
+    tasks: [
+      { title: 'Part 1 · Interview', href: '#', ai: true, hot: false },
+      { title: 'Part 2 · Cue Card', href: '#', ai: true, hot: false },
+      { title: 'Part 3 · Discussion', href: '#', ai: true, hot: false },
+    ],
+    sectionHref: '#',
+  },
+  {
+    id: 'ielts-reading',
+    disabled: true,
+    title: 'Reading',
+    icon: BookOpen,
+    description: 'Academic passages & question types',
+    gradient: 'from-red-600 to-rose-400',
+    lightBg: 'bg-red-500/5',
+    border: 'border-red-500/20',
+    hoverBorder: 'hover:border-red-500/40',
+    iconColor: 'text-red-500',
+    iconBg: 'bg-red-500/10',
+    badgeClass: 'bg-red-500/10 text-red-600 border-red-500/20',
+    tasks: [
+      { title: 'True / False / Not Given', href: '#', ai: false, hot: false },
+      { title: 'Matching Headings', href: '#', ai: false, hot: false },
+      { title: 'Sentence Completion', href: '#', ai: false, hot: false },
+    ],
+    sectionHref: '#',
+  },
+  {
+    id: 'ielts-listening',
+    disabled: true,
+    title: 'Listening',
+    icon: Headphones,
+    description: 'All four listening sections',
+    gradient: 'from-red-600 to-rose-400',
+    lightBg: 'bg-red-500/5',
+    border: 'border-red-500/20',
+    hoverBorder: 'hover:border-red-500/40',
+    iconColor: 'text-red-500',
+    iconBg: 'bg-red-500/10',
+    badgeClass: 'bg-red-500/10 text-red-600 border-red-500/20',
+    tasks: [
+      { title: 'Form Completion', href: '#', ai: false, hot: false },
+      { title: 'Multiple Choice', href: '#', ai: false, hot: false },
+      { title: 'Map / Plan Labelling', href: '#', ai: false, hot: false },
+    ],
+    sectionHref: '#',
+  },
+];
+
 // ─── Feature Spotlight Cards ──────────────────────────────────────────────────
 
 const featureCards = [
@@ -197,7 +282,7 @@ function calculateStudyStreak(activities: any[]) {
 
 // ─── Section Card ─────────────────────────────────────────────────────────────
 
-function SectionCard({ section, index }: { section: (typeof pteSections)[0]; index: number }) {
+function SectionCard({ section, index }: { section: (typeof pteSections)[number] | (typeof ieltsSections)[number]; index: number }) {
   const Icon = section.icon;
   const disabled = !!section.disabled;
 
@@ -239,8 +324,10 @@ function SectionCard({ section, index }: { section: (typeof pteSections)[0]; ind
       {/* Task List */}
       <div className="p-3 space-y-1">
         {section.tasks.map((task, i) => {
-          // A task can be individually enabled even inside a "Coming Soon" section.
-          const taskEnabled = !disabled || (task as { enabled?: boolean }).enabled === true;
+          // A task can be individually enabled even inside a "Coming Soon"
+          // section, or explicitly disabled inside a live one (enabled: false).
+          const tEnabled = (task as { enabled?: boolean }).enabled;
+          const taskEnabled = tEnabled === false ? false : (!disabled || tEnabled === true);
           const dim = !taskEnabled;
           const inner = (
             <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 ${dim ? 'opacity-50' : 'hover:bg-white/50 dark:hover:bg-white/5'}`}>
@@ -249,7 +336,7 @@ function SectionCard({ section, index }: { section: (typeof pteSections)[0]; ind
                 {task.title}
               </span>
               <div className="flex items-center gap-1.5">
-                {task.featured && !dim && (
+                {(task as { featured?: boolean }).featured && !dim && (
                   <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-500/10 text-amber-600 border-amber-500/20 font-black">
                     🔥 Top
                   </Badge>
@@ -495,6 +582,27 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {pteSections.map((section, i) => (
+            <SectionCard key={section.id} section={section} index={i} />
+          ))}
+        </div>
+      </div>
+
+      {/* ─── IELTS Practice Hub ────────────────────────────────────────────── */}
+      <div>
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
+              <GraduationCap weight="bold" className="h-5 w-5 text-red-500" />
+              IELTS Practice Hub
+            </h2>
+            <p className="text-xs text-muted-foreground font-medium mt-0.5">
+              Academic IELTS — Writing live now, more parts coming soon
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {ieltsSections.map((section, i) => (
             <SectionCard key={section.id} section={section} index={i} />
           ))}
         </div>

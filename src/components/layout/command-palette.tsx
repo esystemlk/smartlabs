@@ -85,12 +85,18 @@ export function CommandPalette() {
                                     </div>
                                 </Command.Group>
 
-                                <Command.Group heading="PTE AI Practice" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/50 px-3 mb-2">
+                                <Command.Group heading="PTE Practice" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/50 px-3 mb-2">
                                     <div className="space-y-1 mt-2">
                                         <SearchItem icon={Sparkles} color="text-orange-500" label="Write Essay — AI Scoring" desc="Band score, analysis & model essay" onSelect={() => runCommand(() => router.push("/ai-essay-practice"))} />
                                         <SearchItem icon={Book} color="text-violet-500" label="Summarize Written Text" desc="One-sentence summary trainer" onSelect={() => runCommand(() => router.push("/swt-trainer"))} />
                                         <SearchItem icon={MessageSquare} color="text-emerald-500" label="Summarize Spoken Text" desc="Listen & summarize — AI scored" onSelect={() => runCommand(() => router.push("/ai-sst-practice"))} />
                                         <SearchItem icon={Target} color="text-accent-1" label="Level Test" desc="Find your current band" onSelect={() => runCommand(() => router.push("/level-test"))} />
+                                    </div>
+                                </Command.Group>
+
+                                <Command.Group heading="IELTS Practice" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/50 px-3 mb-2">
+                                    <div className="space-y-1 mt-2">
+                                        <SearchItem icon={Sparkles} color="text-red-500" label="IELTS Essay — Task 2 Scoring" desc="Examiner band scoring on all 4 criteria" onSelect={() => runCommand(() => router.push("/ai-ielts-essay-practice"))} />
                                     </div>
                                 </Command.Group>
 
