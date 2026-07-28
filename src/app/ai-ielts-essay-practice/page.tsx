@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useUser } from '@/firebase';
@@ -9,9 +9,12 @@ import {
   IELTS_ESSAY_TOPICS, IELTS_ESSAY_CATEGORIES, IELTS_PREDICTION_THEMES,
   type IeltsEssayTopic,
 } from '@/lib/ielts-essay-data';
+import { IELTS_ESSAY_PACKAGES } from '@/lib/ielts-essay-packages';
+import { payhereUrls } from '@/lib/payhere';
 import type { IeltsEssayResult } from '@/types/ielts-essay';
 import {
   Loader2, PenLine, Sparkles, Target, ArrowLeft, Lightbulb, ShieldAlert, RotateCcw,
+  CreditCard, X, Check,
 } from 'lucide-react';
 
 const CRIMSON = '#dc2626';
@@ -34,6 +37,36 @@ export default function IeltsEssayPractice() {
   const [result, setResult] = useState<IeltsEssayResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [needCredits, setNeedCredits] = useState(false);
+
+  // Purchase flow
+  const [showBuy, setShowBuy] = useState(false);
+  const [buyingId, setBuyingId] = useState<string | null>(null);
+  const [payhereParams, setPayhereParams] = useState<Record<string, string> | null>(null);
+  const payhereFormRef = useRef<HTMLFormElement>(null);
+
+  // Auto-submit the PayHere form once the signed params arrive.
+  useEffect(() => {
+    if (payhereParams && payhereFormRef.current) payhereFormRef.current.submit();
+  }, [payhereParams]);
+
+  async function buy(packageId: string) {
+    if (!user) { router.push('/login?redirect=/ai-ielts-essay-practice'); return; }
+    setBuyingId(packageId);
+    try {
+      const idToken = await user.getIdToken();
+      const res = await fetch('/api/ielts-essay-credits/create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ packageId }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.params) throw new Error(data.error || 'Could not start checkout.');
+      setPayhereParams(data.params); // effect submits to PayHere
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not start checkout.');
+      setBuyingId(null);
+    }
+  }
 
   const topics = useMemo(
     () => IELTS_ESSAY_TOPICS
@@ -98,10 +131,18 @@ export default function IeltsEssayPractice() {
             <h1 className="text-2xl font-black tracking-tight text-slate-900">Essay Trainer</h1>
           </div>
         </div>
-        <p className="text-sm text-slate-500 mb-8">
+        <p className="text-sm text-slate-500 mb-4">
           Instant band scoring on all four official criteria — Task Response, Coherence &amp; Cohesion,
           Lexical Resource, and Grammatical Range &amp; Accuracy.
         </p>
+        <div className="mb-8">
+          <button
+            onClick={() => setShowBuy(true)}
+            className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border border-red-200 text-red-600 hover:bg-red-50"
+          >
+            <CreditCard size={13} /> Buy credits
+          </button>
+        </div>
 
         {/* ── SETUP: pick a question ─────────────────────────────────────── */}
         {phase === 'setup' && (
@@ -229,9 +270,9 @@ export default function IeltsEssayPractice() {
               </p>
             )}
             {needCredits && (
-              <Link href="/dashboard" className="block text-sm font-bold underline" style={{ color: CRIMSON }}>
-                Get more IELTS essay credits →
-              </Link>
+              <button onClick={() => setShowBuy(true)} className="inline-flex items-center gap-1.5 text-sm font-bold underline" style={{ color: CRIMSON }}>
+                <CreditCard size={15} /> Buy IELTS essay credits →
+              </button>
             )}
 
             <button
@@ -268,6 +309,53 @@ export default function IeltsEssayPractice() {
           </div>
         )}
       </div>
+
+      {/* ── Purchase modal ─────────────────────────────────────────────── */}
+      {showBuy && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4" onClick={() => !buyingId && setShowBuy(false)}>
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 max-h-[90vh] overflow-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-lg font-black text-slate-900">IELTS Essay Credits</h2>
+              <button onClick={() => !buyingId && setShowBuy(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
+            </div>
+            <p className="text-sm text-slate-500 mb-5">Each credit scores one essay on all four IELTS criteria.</p>
+            <div className="space-y-3">
+              {IELTS_ESSAY_PACKAGES.map(p => (
+                <div key={p.id} className={`rounded-2xl border p-4 flex items-center justify-between gap-3 ${p.popular ? 'border-red-300 bg-red-50/40' : 'border-slate-200'}`}>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-black text-slate-900">{p.label}</p>
+                      {p.popular && <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: CRIMSON }}>Popular</span>}
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {p.scoring === -1 ? `Unlimited scoring for ${p.monthlyDays} days` : `${p.scoring} essay scorings`}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => buy(p.id)}
+                    disabled={!!buyingId}
+                    className="px-4 py-2.5 rounded-xl text-white font-black text-sm whitespace-nowrap inline-flex items-center gap-1.5 disabled:opacity-50"
+                    style={{ backgroundColor: CRIMSON }}
+                  >
+                    {buyingId === p.id ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
+                    LKR {p.price.toLocaleString()}
+                  </button>
+                </div>
+              ))}
+            </div>
+            <p className="text-[11px] text-slate-400 text-center mt-4">Secure payment via PayHere. You&apos;ll be redirected to complete checkout.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden PayHere auto-submit form */}
+      {payhereParams && (
+        <form ref={payhereFormRef} method="post" action={payhereUrls.checkout} style={{ display: 'none' }}>
+          {Object.entries(payhereParams).map(([k, v]) => (
+            <input key={k} type="hidden" name={k} value={v} />
+          ))}
+        </form>
+      )}
     </div>
   );
 }
