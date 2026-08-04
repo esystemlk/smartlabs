@@ -147,8 +147,12 @@ function RegistrationInner() {
               return (
                 <div
                   key={pkg.id}
-                  className={`relative rounded-2xl border bg-card p-6 flex flex-col transition-all ${
-                    active ? 'border-primary ring-2 ring-primary/30 shadow-lg' : 'border-border hover:border-primary/40'
+                  className={`relative rounded-2xl border-2 bg-card p-6 flex flex-col transition-all ${
+                    active
+                      ? 'border-primary ring-2 ring-primary/30 shadow-lg'
+                      : pkg.popular
+                        ? 'border-accent-3/60 ring-2 ring-accent-3/20 shadow-lg'
+                        : 'border-border hover:border-primary/40'
                   }`}
                 >
                   {pkg.popular && (
