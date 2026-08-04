@@ -115,17 +115,21 @@ function RegistrationInner() {
       </form>
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0D1B35] via-[#132347] to-[#0D1B35] text-white">
-        <div className="container mx-auto px-4 py-16 md:py-20 text-center">
-          <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium tracking-wide">
-            <Sparkles className="h-3.5 w-3.5 text-[#F5D978]" /> PTE ACADEMIC PREPARATION PROGRAMMES
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary/5 via-background to-background">
+        <div className="pointer-events-none absolute top-[-10%] left-[-10%] h-[40%] w-[40%] rounded-full bg-primary/10 blur-[120px]" />
+        <div className="pointer-events-none absolute bottom-[-10%] right-[-10%] h-[40%] w-[40%] rounded-full bg-accent-1/10 blur-[120px]" />
+        <div className="container relative mx-auto px-4 py-16 md:py-20 text-center">
+          <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
+            <Sparkles className="h-3.5 w-3.5" /> PTE Academic Preparation Programmes
           </span>
-          <h1 className="mt-5 text-3xl md:text-5xl font-headline font-bold">More Than a Course. A Mentorship.</h1>
-          <p className="mx-auto mt-4 max-w-2xl text-sm md:text-base text-white/70">
+          <h1 className="mt-5 text-3xl md:text-5xl font-headline font-bold">
+            More Than a Course. <span className="gradient-text">A Mentorship.</span>
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-sm md:text-base text-muted-foreground">
             Empowering students with strategy, language development, and continuous mentorship to achieve
             their target PTE score — from your first class until exam day.
           </p>
-          <p className="mt-5 text-xs tracking-[0.3em] text-[#F5D978]">LEARN · PRACTISE · SUCCEED</p>
+          <p className="mt-5 text-xs font-semibold tracking-[0.3em] text-primary">LEARN · PRACTISE · SUCCEED</p>
         </div>
       </section>
 
@@ -148,7 +152,7 @@ function RegistrationInner() {
                   }`}
                 >
                   {pkg.popular && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full bg-[#F5D978] px-3 py-1 text-xs font-bold text-[#0D1B35]">
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-primary to-accent-3 px-3 py-1 text-xs font-bold text-primary-foreground shadow-sm">
                       <Star className="h-3 w-3" /> Most Popular
                     </span>
                   )}
@@ -264,7 +268,7 @@ function RegistrationInner() {
                         className={`w-full rounded-xl border p-4 text-left transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${chosen ? 'border-primary ring-2 ring-primary/30 bg-primary/5' : 'hover:border-primary/40'}`}>
                         <div className="flex items-center justify-between gap-3">
                           <span className="font-semibold text-sm">{b.name}</span>
-                          <span className={`text-xs rounded-full px-2 py-0.5 capitalize ${b.mode === 'hybrid' ? 'bg-amber-500/15 text-amber-600' : 'bg-blue-500/15 text-blue-600'}`}>{b.mode}</span>
+                          <span className={`text-xs rounded-full px-2 py-0.5 capitalize ${b.mode === 'hybrid' ? 'bg-accent-4/15 text-accent-4' : 'bg-primary/10 text-primary'}`}>{b.mode}</span>
                         </div>
                         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                           {b.startDate && <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" /> Starts {b.startDate}</span>}
@@ -293,10 +297,10 @@ function RegistrationInner() {
             </div>
 
             {/* Non-refundable notice */}
-            <label className="flex items-start gap-3 rounded-xl border-2 border-red-300 bg-red-50 p-4 cursor-pointer">
+            <label className="flex items-start gap-3 rounded-xl border-2 border-red-300 bg-red-50 p-4 cursor-pointer dark:border-red-800 dark:bg-red-950/30">
               <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="mt-0.5 h-4 w-4 accent-red-600" />
-              <span className="text-sm text-red-700">
-                <span className="flex items-center gap-1.5 font-bold"><AlertTriangle className="h-4 w-4" /> Non-refundable payment</span>
+              <span className="text-sm text-red-700 dark:text-red-300">
+                <span className="flex items-center gap-1.5 font-bold text-red-600 dark:text-red-400"><AlertTriangle className="h-4 w-4" /> Non-refundable payment</span>
                 I understand this programme fee is <b>strictly non-refundable under any circumstances</b> once paid. No refunds will be issued for any reason.
               </span>
             </label>
