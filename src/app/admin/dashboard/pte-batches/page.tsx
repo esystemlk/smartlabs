@@ -3,15 +3,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { collection, query, orderBy, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, getDoc, where } from 'firebase/firestore';
+import { collection, query, orderBy, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, getDoc, getDocs, where } from 'firebase/firestore';
 import { useUser, useFirebase, useCollection, useMemoFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PTE_PACKAGES, formatLkr } from '@/lib/pte-packages';
+import { phoneKey } from '@/lib/utils';
 import {
   ArrowLeft, Plus, Pencil, Trash2, Users, CalendarDays, MapPin, Clock,
-  Loader2, X, GraduationCap, Eye,
+  Loader2, X, GraduationCap, Eye, MessageCircle, CheckCircle2, XCircle, Search,
 } from 'lucide-react';
 
 interface Batch {
@@ -26,6 +27,7 @@ interface Batch {
   packageIds?: string[];
   status: 'open' | 'closed';
   note?: string;
+  whatsappLink?: string;
 }
 
 interface Enrollment {
@@ -35,12 +37,13 @@ interface Enrollment {
   phone?: string;
   packageName?: string;
   batchId?: string;
+  batchName?: string;
   amountPaid?: number;
 }
 
 const emptyForm = (): Omit<Batch, 'id'> => ({
   name: '', mode: 'online', location: '', startDate: '', schedule: '',
-  seats: 30, seatsFilled: 0, packageIds: PTE_PACKAGES.map(p => p.id), status: 'open', note: '',
+  seats: 30, seatsFilled: 0, packageIds: PTE_PACKAGES.map(p => p.id), status: 'open', note: '', whatsappLink: '',
 });
 
 export default function AdminPteBatchesPage() {
@@ -56,6 +59,11 @@ export default function AdminPteBatchesPage() {
   const [form, setForm] = useState<Omit<Batch, 'id'>>(emptyForm());
   const [saving, setSaving] = useState(false);
   const [viewEnrollBatch, setViewEnrollBatch] = useState<Batch | null>(null);
+
+  // WhatsApp join-request verifier
+  const [verifyInput, setVerifyInput] = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const [verifyResult, setVerifyResult] = useState<Enrollment[] | null>(null);
 
   // ── Access guard ──
   useEffect(() => {
@@ -111,6 +119,7 @@ export default function AdminPteBatchesPage() {
         packageIds: form.packageIds,
         status: form.status,
         note: form.note?.trim() ?? '',
+        whatsappLink: form.whatsappLink?.trim() ?? '',
       };
       if (editingId) {
         await updateDoc(doc(firestore, 'pte_batches', editingId), { ...payload, updatedAt: serverTimestamp() });
@@ -131,6 +140,20 @@ export default function AdminPteBatchesPage() {
     if (!confirm(`Delete batch "${b.name}"? This cannot be undone. (Existing enrollments are kept.)`)) return;
     try { await deleteDoc(doc(firestore, 'pte_batches', b.id)); toast({ title: 'Batch deleted' }); }
     catch { toast({ variant: 'destructive', title: 'Delete failed' }); }
+  };
+
+  const verify = async () => {
+    if (!firestore) return;
+    const key = phoneKey(verifyInput);
+    if (key.length < 9) { toast({ variant: 'destructive', title: 'Enter a valid phone number.' }); return; }
+    setVerifying(true); setVerifyResult(null);
+    try {
+      const snap = await getDocs(query(collection(firestore, 'pte_course_enrollments'), where('phoneKey', '==', key)));
+      setVerifyResult(snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<Enrollment, 'id'>) })));
+    } catch (e) {
+      console.error(e);
+      toast({ variant: 'destructive', title: 'Lookup failed' });
+    } finally { setVerifying(false); }
   };
 
   if (checking || isUserLoading) {
@@ -159,6 +182,46 @@ export default function AdminPteBatchesPage() {
           <Link href="/pte-registration" className="text-primary underline">PTE registration page</Link>.
           Only <b>open</b> batches appear to students; seats fill automatically as students pay.
         </p>
+
+        {/* ── WhatsApp join-request verifier ── */}
+        <div className="rounded-xl border bg-card p-5 mb-8 max-w-2xl">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-green-500/10"><MessageCircle className="h-4 w-4 text-green-600" /></div>
+            <div>
+              <h2 className="text-sm font-semibold">Verify a WhatsApp join request</h2>
+              <p className="text-xs text-muted-foreground">Set your group to “require admin approval to join”, then check each requester’s number here before approving.</p>
+            </div>
+          </div>
+          <div className="mt-4 flex gap-2">
+            <input
+              value={verifyInput}
+              onChange={e => setVerifyInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') verify(); }}
+              placeholder="Paste the number, e.g. +94 77 123 4567"
+              className="input flex-1"
+            />
+            <Button onClick={verify} disabled={verifying} className="gap-1.5">
+              {verifying ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />} Check
+            </Button>
+          </div>
+          {verifyResult !== null && (
+            verifyResult.length === 0 ? (
+              <div className="mt-3 flex items-start gap-2 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">
+                <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span><b>No paid enrollment found</b> for this number — decline the join request.</span>
+              </div>
+            ) : (
+              <div className="mt-3 rounded-lg border border-green-300 bg-green-50 p-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950/30 dark:text-green-300">
+                <div className="flex items-center gap-2 font-semibold"><CheckCircle2 className="h-4 w-4" /> Paid — safe to approve</div>
+                {verifyResult.map(r => (
+                  <div key={r.id} className="mt-1.5 text-xs text-foreground/80">
+                    {r.fullName || '—'} · {r.packageName || '—'} · {r.batchName || '—'} · {r.amountPaid ? formatLkr(r.amountPaid) : '—'}
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+        </div>
 
         {isLoading ? (
           <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading batches…</div>
@@ -250,6 +313,7 @@ export default function AdminPteBatchesPage() {
                   ))}
                 </div>
               </Field>
+              <Field label="WhatsApp group invite link (optional)"><input value={form.whatsappLink} onChange={e => setForm(f => ({ ...f, whatsappLink: e.target.value }))} placeholder="https://chat.whatsapp.com/…" className="input" /></Field>
               <Field label="Note (optional)"><input value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} placeholder="Shown to students under the batch" className="input" /></Field>
             </div>
             <div className="mt-6 flex gap-2">

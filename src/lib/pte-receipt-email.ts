@@ -16,6 +16,8 @@ export interface PteReceiptData {
   fullName: string;
   batchName: string;
   phone: string;
+  /** Optional batch WhatsApp group invite link. */
+  whatsappLink?: string;
 }
 
 export function renderPteReceiptEmail(o: PteReceiptData): string {
@@ -27,6 +29,14 @@ export function renderPteReceiptEmail(o: PteReceiptData): string {
   const accessRows = pkg.accessSteps
     .map((s, i) => `<tr><td style="padding:6px 10px 6px 0;color:#4f46e5;font-weight:bold;vertical-align:top;">${i + 1}.</td><td style="padding:6px 0;color:#374151;font-size:13px;">${s}</td></tr>`)
     .join('');
+
+  const whatsappBlock = o.whatsappLink
+    ? `<div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:16px;margin-bottom:20px;">
+        <h3 style="margin:0 0 8px;color:#065f46;font-size:15px;">Join your batch WhatsApp group</h3>
+        <p style="margin:0 0 12px;color:#374151;font-size:13px;">Tap the button below and request to join. <b>Approval is granted only after we confirm your payment</b>, so please request using the same phone number you registered with (${o.phone}). Do not share this link — join requests from unpaid numbers are declined.</p>
+        <a href="${o.whatsappLink}" style="display:inline-block;background:#25D366;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:14px;">Request to Join Group →</a>
+      </div>`
+    : '';
 
   return `
   <div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:0 auto;background:#f4f5f7;padding:24px;">
@@ -55,6 +65,8 @@ export function renderPteReceiptEmail(o: PteReceiptData): string {
         <h3 style="margin:0 0 10px;color:#3730a3;font-size:15px;">How to get your access</h3>
         <table style="width:100%;border-collapse:collapse;">${accessRows}</table>
       </div>
+
+      ${whatsappBlock}
 
       <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px;margin-bottom:8px;">
         <p style="margin:0;color:#b91c1c;font-size:13px;"><b>Non-refundable payment:</b> This programme fee is strictly non-refundable under any circumstances.</p>

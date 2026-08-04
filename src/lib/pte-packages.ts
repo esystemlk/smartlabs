@@ -62,7 +62,7 @@ export const PTE_PACKAGES: PtePackage[] = [
       { title: '2 Months Recording Access', detail: 'Revisit every session at your own pace.' },
     ],
     accessSteps: [
-      'Our team will add you to your batch WhatsApp group within 24 hours using the phone number you provided.',
+      'Request to join your batch WhatsApp group (link in this email) using your registered number — you are approved once we confirm your payment. Please do not share the link.',
       'Your live online class link (Zoom) will be shared in the group before the first session.',
       'Class recordings unlock inside your Smart Labs dashboard and stay available for 2 months.',
     ],
@@ -86,7 +86,7 @@ export const PTE_PACKAGES: PtePackage[] = [
       { title: '2 Months Recording Access', detail: 'Revisit every session at your own pace.' },
     ],
     accessSteps: [
-      'Our team will add you to your batch WhatsApp group within 24 hours using the phone number you provided.',
+      'Request to join your batch WhatsApp group (link in this email) using your registered number — you are approved once we confirm your payment. Please do not share the link.',
       'Live online class + grammar-clinic links (Zoom) will be shared in the group before each session.',
       'Class recordings unlock inside your Smart Labs dashboard and stay available for 2 months.',
     ],
@@ -112,7 +112,7 @@ export const PTE_PACKAGES: PtePackage[] = [
       { title: 'Personalised Feedback Throughout', detail: 'Ongoing, individual feedback on your progress.' },
     ],
     accessSteps: [
-      'Our team will add you to your batch WhatsApp group within 24 hours using the phone number you provided.',
+      'Request to join your batch WhatsApp group (link in this email) using your registered number — you are approved once we confirm your payment. Please do not share the link.',
       'Your face-to-face class venue (Rajagiriya / Wattala), dates and times are confirmed in the group.',
       'Online session + grammar-clinic links are shared in the same group.',
       'Class recordings unlock inside your Smart Labs dashboard and stay available for 2 months.',

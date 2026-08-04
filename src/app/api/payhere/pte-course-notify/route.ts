@@ -5,6 +5,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { sendMail } from '@/lib/mail';
 import { getPtePackage, formatLkr } from '@/lib/pte-packages';
 import { renderPteReceiptEmail } from '@/lib/pte-receipt-email';
+import { phoneKey } from '@/lib/utils';
 
 // Needs node crypto (MD5 signature) + firebase-admin — not available on edge.
 export const runtime = 'nodejs';
@@ -58,6 +59,13 @@ export async function POST(request: NextRequest) {
       const enrollmentRef = adminDb.collection('pte_course_enrollments').doc(String(order_id));
       const batchRef = orderData.batchId ? adminDb.collection('pte_batches').doc(String(orderData.batchId)) : null;
 
+      // Batch's WhatsApp group link (put in the receipt so the student can
+      // request to join — admin approves against the paid list).
+      let whatsappLink = '';
+      if (batchRef) {
+        try { whatsappLink = String((await batchRef.get()).data()?.whatsappLink ?? ''); } catch { /* non-critical */ }
+      }
+
       // Atomic: mark order paid, create the enrollment, take a seat — once.
       await adminDb.runTransaction(async (tx) => {
         const fresh = await tx.get(orderDoc.ref);
@@ -78,6 +86,7 @@ export async function POST(request: NextRequest) {
           batchName: orderData.batchName ?? '',
           fullName: orderData.fullName ?? '',
           phone: orderData.phone ?? '',
+          phoneKey: phoneKey(orderData.phone),
           email: orderData.email ?? '',
           amountPaid: paid,
           payherePaymentId: String(payment_id),
@@ -104,6 +113,7 @@ export async function POST(request: NextRequest) {
               fullName: String(orderData.fullName ?? 'Student'),
               batchName: String(orderData.batchName ?? ''),
               phone: String(orderData.phone ?? ''),
+              whatsappLink,
             }),
           });
         }
