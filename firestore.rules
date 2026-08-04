@@ -132,6 +132,25 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // ── Recorded SESSION PACKAGES (monthly bundles of Bunny class videos) ──
+    // Packages are public so a marketing page can list them; only staff edit.
+    match /recorded_packages/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+    // The class list (Bunny ids). Signed-in students read; the player re-checks
+    // the enrollment before it renders, and a bunny id alone is useless.
+    match /recorded_classes/{id} {
+      allow read: if isAuthed();
+      allow write: if isStaff();
+    }
+    // A student's purchased package access. Read own rows only; writes are
+    // server-only (PayHere webhook via the Admin SDK).
+    match /recorded_enrollments/{id} {
+      allow read: if isStaff() || (isAuthed() && resource.data.userId == request.auth.uid);
+      allow write: if false;
+    }
+
     // Homepage CMS content — publicly displayed, staff-managed.
     match /homepage_courses/{id}          { allow read: if true; allow write: if isStaff(); }
     match /homepage_learning_methods/{id} { allow read: if true; allow write: if isStaff(); }

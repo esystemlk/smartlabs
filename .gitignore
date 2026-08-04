@@ -43,3 +43,7 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+
+# LMS app — separate project, kept locally only for reference
+/lms-smartlabs
+/lms

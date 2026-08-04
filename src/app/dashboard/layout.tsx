@@ -16,6 +16,7 @@ import {
   List,
   X,
   BookmarkSimple,
+  FilmSlate,
 } from '@phosphor-icons/react';
 
 const mainNav = [
@@ -27,6 +28,7 @@ const practiceNav = [
 ];
 
 const toolsNav = [
+  { title: 'Recorded Sessions', href: '/dashboard/recorded-sessions', icon: FilmSlate, color: 'text-rose-500', bg: 'bg-rose-500/10' },
   { title: 'Resources', href: '/resources', icon: BookmarkSimple, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
 ];
 
