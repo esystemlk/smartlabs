@@ -32,6 +32,32 @@ function seatsLeft(b: Batch): number | null {
   return Math.max(0, b.seats - (b.seatsFilled ?? 0));
 }
 
+/** A distinct theme-palette colour per package: blue · green · purple. */
+const PKG_THEME: Record<string, {
+  borderSoft: string; borderStrong: string; ring: string; softBg: string;
+  check: string; price: string; btnIdle: string; btnActive: string; header: string;
+}> = {
+  boostify: {
+    borderSoft: 'border-primary/30 hover:border-primary/60', borderStrong: 'border-primary',
+    ring: 'ring-primary/30', softBg: 'bg-primary/5', check: 'text-primary', price: 'text-primary',
+    btnIdle: 'bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground',
+    btnActive: 'bg-primary text-primary-foreground', header: 'text-primary',
+  },
+  boostify_plus: {
+    borderSoft: 'border-accent-2/40 hover:border-accent-2/70', borderStrong: 'border-accent-2',
+    ring: 'ring-accent-2/30', softBg: 'bg-accent-2/5', check: 'text-accent-2', price: 'text-accent-2',
+    btnIdle: 'bg-accent-2/10 text-accent-2 hover:bg-accent-2 hover:text-white',
+    btnActive: 'bg-accent-2 text-white', header: 'text-accent-2',
+  },
+  hybrid_boostify_pro: {
+    borderSoft: 'border-accent-3/50 hover:border-accent-3/80', borderStrong: 'border-accent-3',
+    ring: 'ring-accent-3/30', softBg: 'bg-accent-3/5', check: 'text-accent-3', price: 'text-accent-3',
+    btnIdle: 'bg-accent-3/10 text-accent-3 hover:bg-accent-3 hover:text-white',
+    btnActive: 'bg-accent-3 text-white', header: 'text-accent-3',
+  },
+};
+const pkgTheme = (id: string) => PKG_THEME[id] ?? PKG_THEME.boostify;
+
 function RegistrationInner() {
   const { user, isUserLoading } = useUser();
   const { firestore } = useFirebase();
@@ -144,15 +170,14 @@ function RegistrationInner() {
           <div className="grid gap-6 lg:grid-cols-3 max-w-6xl mx-auto items-start">
             {PTE_PACKAGES.map(pkg => {
               const active = selectedPkg === pkg.id;
+              const t = pkgTheme(pkg.id);
               return (
                 <div
                   key={pkg.id}
                   className={`relative rounded-2xl border-2 bg-card p-6 flex flex-col transition-all ${
                     active
-                      ? 'border-primary ring-2 ring-primary/30 shadow-lg'
-                      : pkg.popular
-                        ? 'border-accent-3/60 ring-2 ring-accent-3/20 shadow-lg'
-                        : 'border-border hover:border-primary/40'
+                      ? `${t.borderStrong} ring-2 ${t.ring} shadow-lg`
+                      : `${t.borderSoft} shadow-sm hover:shadow-md`
                   }`}
                 >
                   {pkg.popular && (
@@ -160,17 +185,17 @@ function RegistrationInner() {
                       <Star className="h-3 w-3" /> Most Popular
                     </span>
                   )}
-                  <h3 className="text-xl font-bold">{pkg.name}</h3>
+                  <h3 className={`text-xl font-bold ${t.header}`}>{pkg.name}</h3>
                   <p className="mt-1 text-xs text-muted-foreground">{pkg.hoursLabel}</p>
                   <div className="mt-4 flex items-baseline gap-1">
-                    <span className="text-3xl font-extrabold">{formatLkr(pkg.price)}</span>
+                    <span className={`text-3xl font-extrabold ${t.price}`}>{formatLkr(pkg.price)}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">one-time programme fee</p>
 
                   <ul className="mt-5 space-y-3 flex-1">
                     {pkg.features.map((f, i) => (
                       <li key={i} className="flex gap-2.5">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                        <Check className={`mt-0.5 h-4 w-4 shrink-0 ${t.check}`} />
                         <span>
                           <span className="text-sm font-medium">{f.title}</span>
                           <span className="block text-xs text-muted-foreground">{f.detail}</span>
@@ -187,7 +212,7 @@ function RegistrationInner() {
                   <button
                     onClick={() => { setSelectedPkg(pkg.id); document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' }); }}
                     className={`mt-5 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-                      active ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground'
+                      active ? t.btnActive : t.btnIdle
                     }`}
                   >
                     {active ? <><CheckCircle2 className="h-4 w-4" /> Selected</> : <>Select {pkg.name} <ArrowRight className="h-4 w-4" /></>}
@@ -207,7 +232,9 @@ function RegistrationInner() {
               <thead>
                 <tr className="bg-muted/50 text-left">
                   <th className="p-3 font-semibold">What you get</th>
-                  {PTE_PACKAGES.map(p => <th key={p.id} className="p-3 font-semibold text-center">{p.name}</th>)}
+                  {PTE_PACKAGES.map(p => (
+                    <th key={p.id} className={`p-3 font-bold text-center border-b-2 ${pkgTheme(p.id).borderStrong} ${pkgTheme(p.id).softBg} ${pkgTheme(p.id).header}`}>{p.name}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -217,11 +244,11 @@ function RegistrationInner() {
                 </tr>
                 <tr>
                   <td className="p-3 text-muted-foreground">Total coaching & mentorship</td>
-                  {PTE_PACKAGES.map(p => <td key={p.id} className="p-3 text-center font-medium">{p.totalHours} hrs</td>)}
+                  {PTE_PACKAGES.map(p => <td key={p.id} className={`p-3 text-center font-semibold ${pkgTheme(p.id).header}`}>{p.totalHours} hrs</td>)}
                 </tr>
                 <tr>
                   <td className="p-3 text-muted-foreground">Programme fee</td>
-                  {PTE_PACKAGES.map(p => <td key={p.id} className="p-3 text-center font-bold">{formatLkr(p.price)}</td>)}
+                  {PTE_PACKAGES.map(p => <td key={p.id} className={`p-3 text-center font-bold ${pkgTheme(p.id).header}`}>{formatLkr(p.price)}</td>)}
                 </tr>
               </tbody>
             </table>
@@ -242,13 +269,16 @@ function RegistrationInner() {
             <div>
               <p className="text-sm font-semibold flex items-center gap-2 mb-3"><GraduationCap className="h-4 w-4 text-primary" /> 1. Selected package</p>
               <div className="grid gap-2 sm:grid-cols-3">
-                {PTE_PACKAGES.map(p => (
-                  <button key={p.id} onClick={() => setSelectedPkg(p.id)}
-                    className={`rounded-xl border p-3 text-left transition-colors ${selectedPkg === p.id ? 'border-primary bg-primary/5' : 'hover:border-primary/40'}`}>
-                    <span className="text-sm font-semibold">{p.name}</span>
-                    <span className="block text-xs text-muted-foreground">{formatLkr(p.price)}</span>
-                  </button>
-                ))}
+                {PTE_PACKAGES.map(p => {
+                  const pt = pkgTheme(p.id);
+                  return (
+                    <button key={p.id} onClick={() => setSelectedPkg(p.id)}
+                      className={`rounded-xl border-2 p-3 text-left transition-colors ${selectedPkg === p.id ? `${pt.borderStrong} ${pt.softBg}` : 'border-border hover:border-muted-foreground/30'}`}>
+                      <span className={`text-sm font-semibold ${selectedPkg === p.id ? pt.header : ''}`}>{p.name}</span>
+                      <span className="block text-xs text-muted-foreground">{formatLkr(p.price)}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

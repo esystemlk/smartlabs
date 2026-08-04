@@ -97,7 +97,7 @@ export const PTE_PACKAGES: PtePackage[] = [
     price: 50000,
     tagline:
       'The Smart Labs Mentorship Programme — learn, practise, succeed with mentors by your side.',
-    hoursLabel: '21 hrs face-to-face coaching',
+    hoursLabel: 'Everything in Plus + 21 hrs face-to-face',
     totalHours: 57,
     popular: true,
     bestFor:
