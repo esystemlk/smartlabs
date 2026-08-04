@@ -145,6 +145,7 @@ const pteAiTools = [
 ];
 
 const pteAiQuickLinks = [
+  { name: "Register for a Course", href: "/pte-registration", icon: GraduationCap, description: "Join a PTE batch — Boostify, Plus or Pro." },
   { name: "Practice Hub", href: "/dashboard", icon: LayoutDashboard, description: "All 20 PTE question types." },
   { name: "Level Test", href: "/level-test", icon: Target, description: "Find your current band." },
 ];

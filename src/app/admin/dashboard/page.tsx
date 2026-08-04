@@ -301,6 +301,7 @@ export default function AdminDashboardPage() {
             icon: BookOpen,
             items: [
                 { title: 'Course Management', desc: 'Add, edit, or delete courses & lessons', icon: GraduationCap, href: '/admin/dashboard/courses', accent: 'bg-purple-500/10' },
+                { title: 'PTE Batch Manager', desc: 'Open batches students register & pay to join', icon: GraduationCap, href: '/admin/dashboard/pte-batches', badge: 'New', badgeColor: 'bg-violet-500/20 text-violet-600', accent: 'bg-violet-500/10' },
                 { title: 'Class Recordings', desc: 'Bunny video links, pricing & student access', icon: Video, href: '/admin/dashboard/recordings', badge: 'New', badgeColor: 'bg-violet-500/20 text-violet-600', accent: 'bg-violet-500/10' },
                 { title: 'Resource Library', desc: 'Upload and organise learning materials', icon: Library, href: '/admin/dashboard/resources', accent: 'bg-indigo-500/10' },
                 { title: 'Blog Management', desc: 'Publish and edit articles & announcements', icon: FileText, href: '/admin/dashboard/blog', accent: 'bg-teal-500/10' },
@@ -539,6 +540,7 @@ export default function AdminDashboardPage() {
                             <div className="p-4 grid grid-cols-2 gap-2">
                                 {[
                                     { label: 'Add Course', icon: GraduationCap, href: '/admin/dashboard/courses', color: 'text-purple-500', bg: 'bg-purple-500/10' },
+                                    { label: 'PTE Batches', icon: GraduationCap, href: '/admin/dashboard/pte-batches', color: 'text-violet-500', bg: 'bg-violet-500/10' },
                                     { label: 'Give Credits', icon: Gift, href: '/admin/dashboard/essay-credits', color: 'text-orange-500', bg: 'bg-orange-500/10' },
                                     { label: 'Enrollments', icon: UserCheck, href: '/admin/dashboard/enrollments', color: 'text-amber-500', bg: 'bg-amber-500/10' },
                                     { label: 'Certificates', icon: Award, href: '/admin/dashboard/certificates', color: 'text-teal-500', bg: 'bg-teal-500/10' },

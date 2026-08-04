@@ -249,6 +249,18 @@ service cloud.firestore {
                     && request.resource.data.get('paymentStatus', 'pending') == 'pending';
       allow update, delete: if isStaff();
     }
+    // PTE course batches (cohorts). Anyone may read the list to register;
+    // only staff create/edit. Seat counts are bumped by the webhook (Admin SDK).
+    match /pte_batches/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+    // PTE course enrollments are created by the payment webhook (Admin SDK,
+    // which bypasses these rules). Students may read their own; staff read all.
+    match /pte_course_enrollments/{id} {
+      allow read: if isStaff() || (isAuthed() && resource.data.userId == request.auth.uid);
+      allow write: if false;
+    }
     match /payments/{id}         { allow read: if isStaff(); allow write: if false; }
     match /admin_actions/{id}    { allow read: if isStaff(); allow write: if false; }
     match /ai_usage_logs/{id}    { allow read: if isStaff(); allow write: if false; }
