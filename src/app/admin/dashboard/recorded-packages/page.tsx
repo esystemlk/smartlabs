@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { doc, getDoc } from 'firebase/firestore';
@@ -16,8 +16,42 @@ import {
 import { type RecordedPackage, type RecordedClass, formatLkr } from '@/types/recorded-package';
 import {
   ArrowLeft, Plus, Pencil, Trash2, Loader2, X, Film, PlayCircle,
-  Eye, EyeOff, ListVideo, GripVertical,
+  Eye, EyeOff, ListVideo, GripVertical, Upload,
 } from 'lucide-react';
+
+/** Parse one CSV line, honouring quoted fields and "" escaping. */
+function parseCsvRow(line: string): string[] {
+  const out: string[] = [];
+  let cur = '';
+  let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQ) {
+      if (ch === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else inQ = false; }
+      else cur += ch;
+    } else if (ch === '"') inQ = true;
+    else if (ch === ',') { out.push(cur); cur = ''; }
+    else cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
+
+/** Parse the LMS "Export Links" CSV: header Title,URL,Course,Batch. */
+function parseLmsCsv(text: string): { title: string; url: string; course: string; batch: string }[] {
+  const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+  const rows: { title: string; url: string; course: string; batch: string }[] = [];
+  lines.forEach((line, idx) => {
+    const f = parseCsvRow(line);
+    const title = (f[0] ?? '').trim();
+    const url = (f[1] ?? '').trim();
+    // Skip the header row.
+    if (idx === 0 && /^title$/i.test(title) && /^url$/i.test(url)) return;
+    if (!title || !url) return;
+    rows.push({ title, url, course: (f[2] ?? '').trim(), batch: (f[3] ?? '').trim() });
+  });
+  return rows;
+}
 
 const emptyPkg = (): Omit<RecordedPackage, 'id'> => ({
   title: '', periodLabel: '', description: '', features: [], price: 5000, accessMonths: 2,
@@ -230,6 +264,8 @@ function ClassManager({ pkg, onClose }: { pkg: RecordedPackage; onClose: () => v
   const [adding, setAdding] = useState(false);
   const [bulk, setBulk] = useState('');
   const [showBulk, setShowBulk] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -269,6 +305,30 @@ function ClassManager({ pkg, onClose }: { pkg: RecordedPackage; onClose: () => v
     toast({ title: `Imported ${ok} class${ok === 1 ? '' : 'es'}`, description: bad ? `${bad} line(s) skipped` : undefined });
   };
 
+  const importCsv = async (file: File) => {
+    setImporting(true);
+    try {
+      const rows = parseLmsCsv(await file.text());
+      if (rows.length === 0) { toast({ variant: 'destructive', title: 'No rows found', description: 'Expected the LMS export CSV (Title, URL, …).' }); return; }
+      let ok = 0, bad = 0;
+      for (const [i, r] of rows.entries()) {
+        const ref = parseBunnyRef(r.url);
+        if (!ref) { bad++; continue; }
+        // eslint-disable-next-line no-await-in-loop
+        await addClass({ packageId: pkg.id!, title: r.title, bunnyLibraryId: ref.libraryId, bunnyVideoId: ref.videoId, duration: '', order: classes.length + i, published: true });
+        ok++;
+      }
+      await load();
+      toast({ title: `Imported ${ok} class${ok === 1 ? '' : 'es'}`, description: bad ? `${bad} row(s) skipped (no Bunny link)` : undefined });
+    } catch (e) {
+      console.error(e);
+      toast({ variant: 'destructive', title: 'Import failed', description: 'Could not read that CSV file.' });
+    } finally {
+      setImporting(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+
   const togglePub = async (c: RecordedClass) => { await updateClass(c.id!, { published: !c.published }); await load(); };
   const remove = async (c: RecordedClass) => { if (!confirm(`Delete "${c.title}"?`)) return; await deleteClass(c.id!); await load(); };
 
@@ -290,8 +350,15 @@ function ClassManager({ pkg, onClose }: { pkg: RecordedPackage; onClose: () => v
             <input value={duration} onChange={e => setDuration(e.target.value)} placeholder="1h 45m" className="rp-input" />
           </div>
           <input value={link} onChange={e => setLink(e.target.value)} placeholder="Bunny link or 12345/video-guid" className="rp-input" />
-          <div className="flex items-center justify-between gap-2">
-            <button onClick={() => setShowBulk(v => !v)} className="text-xs text-primary underline">{showBulk ? 'Hide bulk import' : 'Bulk import'}</button>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-3">
+              <button onClick={() => setShowBulk(v => !v)} className="text-xs text-primary underline">{showBulk ? 'Hide bulk paste' : 'Bulk paste'}</button>
+              <button onClick={() => fileRef.current?.click()} disabled={importing} className="inline-flex items-center gap-1 text-xs text-primary underline disabled:opacity-60">
+                {importing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />} Import CSV (from LMS export)
+              </button>
+              <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden"
+                onChange={e => { const f = e.target.files?.[0]; if (f) importCsv(f); }} />
+            </div>
             <Button size="sm" onClick={addOne} disabled={adding} className="gap-1.5">{adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Add class</Button>
           </div>
           {showBulk && (
