@@ -59,10 +59,12 @@ export async function POST(request: NextRequest) {
 
       let userEmail: string | null = null;
       let userName: string | null = null;
+      let userPhone: string | null = null;
       try {
         const u = await adminDb.collection('users').doc(userId).get();
         userEmail = (u.data()?.email as string) ?? null;
         userName = (u.data()?.displayName as string) ?? null;
+        userPhone = (u.data()?.phone as string) ?? null;
       } catch { /* non-fatal */ }
 
       // Deterministic id => re-purchasing after expiry refreshes the same row.
@@ -80,6 +82,7 @@ export async function POST(request: NextRequest) {
           userId,
           userEmail,
           userName,
+          userPhone,
           packageId,
           packageTitle: packageTitle ?? 'Recorded Package',
           purchasedAt,

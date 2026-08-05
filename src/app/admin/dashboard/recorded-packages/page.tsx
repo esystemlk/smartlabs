@@ -16,7 +16,7 @@ import {
 import { type RecordedPackage, type RecordedClass, formatLkr } from '@/types/recorded-package';
 import {
   ArrowLeft, Plus, Pencil, Trash2, Loader2, X, Film, PlayCircle,
-  Eye, EyeOff, ListVideo, GripVertical, Upload,
+  Eye, EyeOff, ListVideo, GripVertical, Upload, Wallet,
 } from 'lucide-react';
 
 /** Parse one CSV line, honouring quoted fields and "" escaping. */
@@ -152,7 +152,12 @@ export default function AdminRecordedPackagesPage() {
               <h1 className="text-base font-semibold truncate">Recorded Packages</h1>
             </div>
           </div>
-          <Button size="sm" onClick={openAdd} className="gap-1.5"><Plus className="h-4 w-4" /> <span className="hidden sm:inline">New Package</span></Button>
+          <div className="flex items-center gap-2">
+            <Link href="/admin/dashboard/recorded-packages/purchases">
+              <Button size="sm" variant="outline" className="gap-1.5"><Wallet className="h-4 w-4" /> <span className="hidden sm:inline">Purchases &amp; Earnings</span></Button>
+            </Link>
+            <Button size="sm" onClick={openAdd} className="gap-1.5"><Plus className="h-4 w-4" /> <span className="hidden sm:inline">New Package</span></Button>
+          </div>
         </div>
       </div>
 

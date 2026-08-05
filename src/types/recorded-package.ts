@@ -54,6 +54,7 @@ export interface RecordedEnrollment {
   userId: string;
   userEmail?: string;
   userName?: string;
+  userPhone?: string;
   packageId: string;
   packageTitle: string;
   purchasedAt: unknown;
