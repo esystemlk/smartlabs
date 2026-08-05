@@ -40,6 +40,11 @@ import { Progress } from "@/components/ui/progress";
 import { useNotifications } from "@/hooks/use-notifications";
 import { LMS_URL } from "@/lib/constants";
 import { DEV_CONSOLE_PATH } from "@/lib/site-mode";
+import { PTE_CATALOG } from "@/lib/pte-catalog";
+
+/** Resolve a catalogue task's destination: live trainer if built, else its practice route. */
+const taskHref = (t: { built?: boolean; builtHref?: string; slug: string }) =>
+  t.built && t.builtHref ? t.builtHref : `/dashboard/practice/${t.slug}`;
 
 
 const courses = [
@@ -439,58 +444,35 @@ export default function Header() {
                     initial={{ opacity: 0, y: 15, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute top-full left-0 mt-3 w-[680px] bg-card/95 backdrop-blur-3xl border border-border/50 rounded-[28px] p-6 shadow-[0_20px_70px_rgba(0,0,0,0.15)]"
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[900px] max-w-[94vw] bg-card/95 backdrop-blur-3xl border border-border/50 rounded-[28px] p-6 shadow-[0_20px_70px_rgba(0,0,0,0.15)]"
                   >
-                    <div className="grid grid-cols-3 gap-6">
-                      <div className="col-span-2 space-y-3">
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">AI Practice & Scoring</h3>
-                        <div className="grid grid-cols-1 gap-2">
-                          {pteAiTools.map((tool) => (
-                            <Link
-                              key={tool.name}
-                              href={tool.href}
-                              className={cn(
-                                "group block p-3 rounded-2xl border border-transparent transition-all",
-                                tool.hoverBorder,
-                                "hover:bg-muted/50"
-                              )}
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className={cn("p-2 rounded-xl shrink-0 transition-transform group-hover:scale-110", tool.bgColor, tool.color)}>
-                                  <tool.icon className="h-4 w-4" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
-                                    {tool.name}
-                                    <span className={cn("text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full", tool.bgColor, tool.color)}>{tool.tag}</span>
-                                    <ArrowRight className="h-3 w-3 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
-                                  </div>
-                                  <div className="text-[10px] text-muted-foreground font-medium leading-tight mt-0.5">{tool.description}</div>
-                                </div>
-                              </div>
-                            </Link>
-                          ))}
-                        </div>
+                    <div className="mb-4 flex items-center justify-between">
+                      <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">PTE Academic / UKVI</span>
+                      <div className="flex items-center gap-3 text-[11px] font-semibold text-muted-foreground">
+                        <span className="flex items-center gap-1"><span className="font-black uppercase text-rose-500">AI</span> = AI-scored</span>
+                        <Link href="/pte-registration" className="text-primary hover:underline">Course plans →</Link>
                       </div>
-
-                      <div className="space-y-3 border-l pl-6 border-border/50">
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Quick Links</h3>
-                        <div className="space-y-2">
-                          {pteAiQuickLinks.map((item) => (
-                            <Link key={item.name} href={item.href} className="group block p-3 rounded-2xl hover:bg-muted/50 transition-colors">
-                              <div className="flex items-center gap-3">
-                                <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                                  <item.icon className="h-4 w-4" />
-                                </div>
-                                <div>
-                                  <div className="font-bold text-xs">{item.name}</div>
-                                  <div className="text-[10px] text-muted-foreground">{item.description}</div>
-                                </div>
-                              </div>
-                            </Link>
-                          ))}
+                    </div>
+                    <div className="grid grid-cols-4 gap-x-5 gap-y-1">
+                      {PTE_CATALOG.map((section) => (
+                        <div key={section.id}>
+                          <h3 className="mb-2 border-b border-border/60 pb-1.5 text-sm font-black">{section.label}</h3>
+                          <ul className="space-y-0.5">
+                            {section.tasks.map((t) => (
+                              <li key={t.taskType}>
+                                <Link href={taskHref(t)} className="group flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/60">
+                                  <span className="flex min-w-0 items-center gap-1.5">
+                                    {t.isNew && <span className="rounded-full bg-rose-500 px-1.5 py-[1px] text-[8px] font-bold uppercase text-white shrink-0">New</span>}
+                                    <span className="truncate text-[13px] leading-tight text-foreground/85 group-hover:text-foreground">{t.label}</span>
+                                    {t.scoring === 'ai' && <span className="text-[8px] font-black uppercase text-rose-500 shrink-0">AI</span>}
+                                  </span>
+                                  <span className="shrink-0 text-[11px] font-semibold text-rose-400">{t.weight}</span>
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                      </div>
+                      ))}
                     </div>
                   </motion.div>
                 )}
@@ -846,17 +828,30 @@ export default function Header() {
 
               <div className="pb-2 border-b border-border">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-4">PTE Practice</p>
-                {pteAiTools.map((tool) => (
-                  <Link
-                    key={tool.href}
-                    href={tool.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2 rounded-lg text-foreground hover:bg-muted transition-colors"
-                  >
-                    <span className={cn("p-1.5 rounded-lg", tool.bgColor, tool.color)}><tool.icon className="h-3.5 w-3.5" /></span>
-                    {tool.name}
-                    <span className={cn("text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full ml-auto", tool.bgColor, tool.color)}>{tool.tag}</span>
-                  </Link>
+                {PTE_CATALOG.map((section) => (
+                  <details key={section.id} className="group px-2">
+                    <summary className="flex cursor-pointer list-none items-center justify-between rounded-lg px-2 py-2 hover:bg-muted">
+                      <span className="text-sm font-bold">{section.label}</span>
+                      <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+                    </summary>
+                    <div className="pb-1">
+                      {section.tasks.map((t) => (
+                        <Link
+                          key={t.taskType}
+                          href={taskHref(t)}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="flex items-center justify-between gap-2 rounded-lg py-2 pl-6 pr-3 text-foreground hover:bg-muted"
+                        >
+                          <span className="flex items-center gap-1.5 text-sm">
+                            {t.isNew && <span className="rounded-full bg-rose-500 px-1.5 py-[1px] text-[8px] font-bold uppercase text-white">New</span>}
+                            {t.label}
+                            {t.scoring === 'ai' && <span className="text-[8px] font-black uppercase text-rose-500">AI</span>}
+                          </span>
+                          <span className="text-[11px] font-semibold text-rose-400">{t.weight}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </details>
                 ))}
               </div>
 
