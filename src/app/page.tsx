@@ -53,9 +53,48 @@ import {
   Check,
   X,
   HelpCircle,
-  ChevronRight
+  ChevronRight,
+  ChevronDown
 } from "lucide-react";
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
+
+/** Where each exam's "Find Our Courses" entry points. PTE → the new
+ * registration page; IELTS/KET/PET → /courses (has the IELTS plans + packages). */
+const COURSE_LINKS: { name: string; href: string; blurb: string }[] = [
+  { name: 'PTE Academic', href: '/pte-registration', blurb: 'Boostify course plans & batches' },
+  { name: 'IELTS', href: '/courses', blurb: 'IELTS plans & packages' },
+  { name: 'KET', href: '/courses', blurb: 'Cambridge A2 Key' },
+  { name: 'PET', href: '/courses', blurb: 'Cambridge B1 Preliminary' },
+];
+
+function FindCoursesButton({ className, size = 'xl' as const }: { className?: string; size?: 'xl' | 'lg' }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button size={size} variant="outline" className={className}>
+          <Sparkles className="mr-2.5 h-5 w-5" />
+          Find Our Courses
+          <ChevronDown className="ml-2 h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-64">
+        {COURSE_LINKS.map(c => (
+          <DropdownMenuItem key={c.name} asChild className="cursor-pointer py-2.5">
+            <Link href={c.href}>
+              <div>
+                <div className="font-semibold">{c.name}</div>
+                <div className="text-xs text-muted-foreground">{c.blurb}</div>
+              </div>
+            </Link>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 import { AnimatedNumber } from "@/components/ui/animated-number";
 import { AnimatedCheckmark } from "@/components/ui/animated-checkmark";
 import { Progress } from "@/components/ui/progress";
@@ -672,12 +711,7 @@ export default function Home() {
                   Take Free Level Test
                 </Link>
               </Button>
-              <Button size="xl" variant="outline" className="h-14 px-10 rounded-2xl border-2 border-slate-900 text-slate-900 font-black text-base transition-all hover:scale-[1.04] hover:bg-slate-900 hover:text-white" asChild>
-                <Link href="/courses">
-                  <Sparkles className="mr-2.5 h-5 w-5" />
-                  Our Packages
-                </Link>
-              </Button>
+              <FindCoursesButton className="h-14 px-10 rounded-2xl border-2 border-slate-900 text-slate-900 font-black text-base transition-all hover:scale-[1.04] hover:bg-slate-900 hover:text-white" />
             </motion.div>
           </div>
 
@@ -823,10 +857,11 @@ export default function Home() {
             <p className="hero-fade-in text-[10px] font-medium text-slate-400 tracking-[0.3em] uppercase mb-8" style={{ animationDelay: '0.35s' }}>
               PTE · IELTS · KET · PET
             </p>
-            <div className="hero-fade-in" style={{ animationDelay: '0.45s' }}>
+            <div className="hero-fade-in flex flex-wrap gap-3" style={{ animationDelay: '0.45s' }}>
               <Button size="lg" className="h-12 px-8 rounded-2xl bg-slate-900 text-white font-black" asChild>
                 <Link href="/level-test"><Activity className="mr-2 h-4 w-4" />Take Free Level Test</Link>
               </Button>
+              <FindCoursesButton size="lg" className="h-12 px-8 rounded-2xl border-2 border-slate-900 text-slate-900 font-black" />
             </div>
           </div>
 

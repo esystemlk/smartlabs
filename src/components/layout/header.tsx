@@ -54,8 +54,8 @@ const courses = [
   },
   {
     name: "PTE Academic",
-    href: "/courses",
-    description: "Pearson Test of English — AI-powered prep.",
+    href: "/pte-registration",
+    description: "Pearson Test of English — course plans & batches.",
     icon: Target,
     color: "text-blue-500",
     bgColor: "bg-blue-500/10",
