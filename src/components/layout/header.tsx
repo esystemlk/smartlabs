@@ -464,6 +464,12 @@ export default function Header() {
                                   <span className="flex min-w-0 items-center gap-1.5">
                                     {t.isNew && <span className="rounded-full bg-rose-500 px-1.5 py-[1px] text-[8px] font-bold uppercase text-white shrink-0">New</span>}
                                     <span className="truncate text-[13px] leading-tight text-foreground/85 group-hover:text-foreground">{t.label}</span>
+                                    {!t.built && (
+                                      <span className="relative flex h-1.5 w-1.5 shrink-0" title="Coming soon">
+                                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-500 opacity-75" />
+                                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-rose-500" />
+                                      </span>
+                                    )}
                                     {t.scoring === 'ai' && <span className="text-[8px] font-black uppercase text-rose-500 shrink-0">AI</span>}
                                   </span>
                                   <span className="shrink-0 text-[11px] font-semibold text-rose-400">{t.weight}</span>
@@ -845,6 +851,12 @@ export default function Header() {
                           <span className="flex items-center gap-1.5 text-sm">
                             {t.isNew && <span className="rounded-full bg-rose-500 px-1.5 py-[1px] text-[8px] font-bold uppercase text-white">New</span>}
                             {t.label}
+                            {!t.built && (
+                              <span className="relative flex h-1.5 w-1.5" title="Coming soon">
+                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-500 opacity-75" />
+                                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-rose-500" />
+                              </span>
+                            )}
                             {t.scoring === 'ai' && <span className="text-[8px] font-black uppercase text-rose-500">AI</span>}
                           </span>
                           <span className="text-[11px] font-semibold text-rose-400">{t.weight}</span>

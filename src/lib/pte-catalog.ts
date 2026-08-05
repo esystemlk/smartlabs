@@ -48,11 +48,11 @@ export const PTE_CATALOG: PteSectionDef[] = [
   {
     id: 'speaking', label: 'Speaking', color: 'blue',
     tasks: [
-      { taskType: 'read-aloud',           label: 'Read Aloud',              slug: 'read-aloud',           scoring: 'ai', weight: '4%',  input: 'mic',  color: 'orange' },
-      { taskType: 'repeat-sentence',      label: 'Repeat Sentence',         slug: 'repeat-sentence',      scoring: 'ai', weight: '7%',  input: 'mic',  color: 'violet' },
-      { taskType: 'describe-image',       label: 'Describe Image',          slug: 'describe-image',       scoring: 'ai', weight: '15%', input: 'mic',  color: 'blue' },
-      { taskType: 'retell-lecture',       label: 'Retell Lecture',          slug: 'retell-lecture',       scoring: 'ai', weight: '6%',  input: 'mic',  color: 'emerald' },
-      { taskType: 'answer-short-question',label: 'Answer Short Question',   slug: 'answer-short-question',scoring: 'ai', weight: '2%',  input: 'mic',  color: 'rose' },
+      { taskType: 'read-aloud',           label: 'Read Aloud',              slug: 'read-aloud',           scoring: 'ai', weight: '4%',  built: true, input: 'mic',  color: 'orange' },
+      { taskType: 'repeat-sentence',      label: 'Repeat Sentence',         slug: 'repeat-sentence',      scoring: 'ai', weight: '7%',  built: true, input: 'mic',  color: 'violet' },
+      { taskType: 'describe-image',       label: 'Describe Image',          slug: 'describe-image',       scoring: 'ai', weight: '15%', built: true, input: 'mic',  color: 'blue' },
+      { taskType: 'retell-lecture',       label: 'Retell Lecture',          slug: 'retell-lecture',       scoring: 'ai', weight: '6%',  built: true, input: 'mic',  color: 'emerald' },
+      { taskType: 'answer-short-question',label: 'Answer Short Question',   slug: 'answer-short-question',scoring: 'ai', weight: '2%',  built: true, input: 'mic',  color: 'rose' },
       { taskType: 'summarize-group-discussion', label: 'Summarize Group Discussion', slug: 'summarize-group-discussion', scoring: 'ai', weight: '9%', isNew: true, input: 'mic', color: 'amber' },
       { taskType: 'respond-to-situation', label: 'Respond to a Situation',  slug: 'respond-to-situation', scoring: 'ai', weight: '6%',  isNew: true, input: 'mic', color: 'cyan' },
     ],
