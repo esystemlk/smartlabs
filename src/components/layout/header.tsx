@@ -444,25 +444,25 @@ export default function Header() {
                     initial={{ opacity: 0, y: 15, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[900px] max-w-[94vw] bg-card/95 backdrop-blur-3xl border border-border/50 rounded-[28px] p-6 shadow-[0_20px_70px_rgba(0,0,0,0.15)]"
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[900px] max-w-[94vw] font-display-serif bg-card/95 backdrop-blur-3xl border border-border/50 rounded-[28px] p-6 shadow-[0_20px_70px_rgba(0,0,0,0.15)]"
                   >
                     <div className="mb-4 flex items-center justify-between">
                       <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">PTE Academic / UKVI</span>
                       <div className="flex items-center gap-3 text-[11px] font-semibold text-muted-foreground">
-                        <span className="flex items-center gap-1"><span className="font-black uppercase text-rose-500">AI</span> = AI-scored</span>
+                        <span className="flex items-center gap-1"><span className="font-black uppercase text-primary">AI</span> = AI-scored</span>
                         <Link href="/pte-registration" className="text-primary hover:underline">Course plans →</Link>
                       </div>
                     </div>
                     <div className="grid grid-cols-4 gap-x-5 gap-y-1">
                       {PTE_CATALOG.map((section) => (
                         <div key={section.id}>
-                          <h3 className="mb-2 border-b border-border/60 pb-1.5 text-sm font-black">{section.label}</h3>
+                          <h3 className="mb-2 border-b border-border/60 pb-1.5 font-display-serif text-base font-black">{section.label}</h3>
                           <ul className="space-y-0.5">
                             {section.tasks.map((t) => (
                               <li key={t.taskType}>
                                 <Link href={taskHref(t)} className="group flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/60">
                                   <span className="flex min-w-0 items-center gap-1.5">
-                                    {t.isNew && <span className="rounded-full bg-rose-500 px-1.5 py-[1px] text-[8px] font-bold uppercase text-white shrink-0">New</span>}
+                                    {t.isNew && <span className="rounded-full bg-primary px-1.5 py-[1px] text-[8px] font-bold uppercase text-primary-foreground shrink-0">New</span>}
                                     <span className="truncate text-[13px] leading-tight text-foreground/85 group-hover:text-foreground">{t.label}</span>
                                     {!t.built && (
                                       <span className="relative flex h-1.5 w-1.5 shrink-0" title="Coming soon">
@@ -470,9 +470,9 @@ export default function Header() {
                                         <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-rose-500" />
                                       </span>
                                     )}
-                                    {t.scoring === 'ai' && <span className="text-[8px] font-black uppercase text-rose-500 shrink-0">AI</span>}
+                                    {t.scoring === 'ai' && <span className="text-[8px] font-black uppercase text-primary shrink-0">AI</span>}
                                   </span>
-                                  <span className="shrink-0 text-[11px] font-semibold text-rose-400">{t.weight}</span>
+                                  <span className="shrink-0 text-[11px] font-semibold text-primary/80">{t.weight}</span>
                                 </Link>
                               </li>
                             ))}
@@ -849,7 +849,7 @@ export default function Header() {
                           className="flex items-center justify-between gap-2 rounded-lg py-2 pl-6 pr-3 text-foreground hover:bg-muted"
                         >
                           <span className="flex items-center gap-1.5 text-sm">
-                            {t.isNew && <span className="rounded-full bg-rose-500 px-1.5 py-[1px] text-[8px] font-bold uppercase text-white">New</span>}
+                            {t.isNew && <span className="rounded-full bg-primary px-1.5 py-[1px] text-[8px] font-bold uppercase text-primary-foreground">New</span>}
                             {t.label}
                             {!t.built && (
                               <span className="relative flex h-1.5 w-1.5" title="Coming soon">
@@ -857,9 +857,9 @@ export default function Header() {
                                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-rose-500" />
                               </span>
                             )}
-                            {t.scoring === 'ai' && <span className="text-[8px] font-black uppercase text-rose-500">AI</span>}
+                            {t.scoring === 'ai' && <span className="text-[8px] font-black uppercase text-primary">AI</span>}
                           </span>
-                          <span className="text-[11px] font-semibold text-rose-400">{t.weight}</span>
+                          <span className="text-[11px] font-semibold text-primary/80">{t.weight}</span>
                         </Link>
                       ))}
                     </div>
