@@ -1503,6 +1503,28 @@ export default function Home() {
               </motion.div>
             ))}
           </div>
+
+          {/* Feedback Club promo — keep improving after the course ends */}
+          <div className="mt-8 lg:mt-10">
+            <Link href="/feedback-club" className="group block">
+              <div className="relative overflow-hidden rounded-[48px] bg-gradient-to-br from-primary via-primary to-purple-600 p-8 sm:p-12 text-white">
+                <div className="pointer-events-none absolute -right-10 -top-10 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
+                <div className="relative flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
+                  <div className="flex items-start gap-5">
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl bg-white/15"><MessageSquare className="h-8 w-8" /></div>
+                    <div>
+                      <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[10px] font-black uppercase tracking-[0.25em]">Continue after your course</div>
+                      <h3 className="text-2xl sm:text-3xl font-black tracking-tight">Smart Labs Feedback Club</h3>
+                      <p className="mt-1.5 max-w-xl text-sm text-white/80 leading-relaxed">Weekly live sessions where our Academic Mentors review your PTE responses and give expert feedback. Every Saturday · LKR 5,000 per session.</p>
+                    </div>
+                  </div>
+                  <span className="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-white px-6 py-3.5 text-sm font-black text-primary transition-transform group-hover:scale-105">
+                    Explore the Club <ArrowRight className="h-4 w-4" />
+                  </span>
+                </div>
+              </div>
+            </Link>
+          </div>
         </div>
       </section>
 
