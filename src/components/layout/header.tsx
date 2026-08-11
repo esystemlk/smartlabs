@@ -96,6 +96,13 @@ const courses = [
 
 const featured = [
   {
+    name: "Feedback Club",
+    href: "/feedback-club",
+    icon: MessageCircle,
+    description: "Weekly live expert feedback sessions.",
+    external: false
+  },
+  {
     name: "LMS Portal",
     href: LMS_URL,
     icon: LayoutDashboard,

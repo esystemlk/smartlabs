@@ -11,6 +11,7 @@ import { LMS_URL } from "@/lib/constants";
 const footerLinks = {
   courses: [
     { name: "All Courses", href: "/courses" },
+    { name: "Feedback Club", href: "/feedback-club" },
     { name: "Level Test", href: "/level-test" },
     { name: "Corporate Training", href: "/corporate-training" },
     { name: "LMS Portal", href: LMS_URL },
