@@ -38,24 +38,25 @@ export default function FeedbackClubPage() {
   return (
     <div className="w-full">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0D1B35] via-[#132347] to-[#0D1B35] text-white">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-72 w-72 rounded-full bg-primary/20 blur-[120px]" />
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary/5 via-background to-background">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-72 w-72 rounded-full bg-primary/10 blur-[120px]" />
+        <div className="pointer-events-none absolute -left-16 bottom-0 h-72 w-72 rounded-full bg-accent-1/10 blur-[120px]" />
         <div className="container relative mx-auto px-4 py-16 md:py-20">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest">
-            <Sparkles className="h-3.5 w-3.5 text-[#F5D978]" /> Smart Labs Feedback Club
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
+            <Sparkles className="h-3.5 w-3.5" /> Smart Labs Feedback Club
           </span>
           <h1 className="mt-5 max-w-3xl text-3xl font-black leading-tight md:text-5xl">
-            Practise with confidence. Improve with feedback. <span className="text-[#F5D978]">Achieve your target score.</span>
+            Practise with confidence. Improve with feedback. <span className="gradient-text">Achieve your target score.</span>
           </h1>
-          <p className="mt-4 max-w-2xl text-sm text-white/70 md:text-base">
+          <p className="mt-4 max-w-2xl text-sm text-muted-foreground md:text-base">
             A dedicated weekly session for PTE learners to get expert feedback, ask questions, and learn from real
             examples — so you keep improving right up until exam day.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <Link href="/contact" className="inline-flex items-center gap-2 rounded-xl bg-[#F5D978] px-6 py-3 text-sm font-bold text-[#0D1B35] hover:brightness-95">
+            <Link href="/contact" className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90">
               Reserve Your Seat <ArrowRight className="h-4 w-4" />
             </Link>
-            <a href="tel:0774533233" className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10">
+            <a href="tel:0774533233" className="inline-flex items-center gap-2 rounded-xl border border-border px-6 py-3 text-sm font-semibold text-foreground hover:bg-muted">
               <Phone className="h-4 w-4" /> 077 453 3233
             </a>
           </div>
