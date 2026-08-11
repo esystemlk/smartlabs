@@ -120,7 +120,7 @@ import { useTestimonials } from "@/hooks/use-testimonials";
 const GoogleReviews = dynamic(() => import("@/components/sections/google-reviews").then(m => m.GoogleReviews), { ssr: false });
 const GoogleMap = dynamic(() => import("@/components/sections/google-map").then(m => m.GoogleMap), { ssr: false });
 const WebinarPoster = dynamic(() => import("@/components/webinar/webinar-poster").then(m => m.WebinarPoster), { ssr: false });
-import { LMS_URL, testimonials } from "@/lib/constants";
+import { testimonials } from "@/lib/constants";
 import {
   CalendarBlank as PhCalendar,
   Clock as PhClock,
@@ -1565,9 +1565,9 @@ export default function Home() {
                       className="w-full h-20 rounded-[32px] bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-[1.02] transition-transform"
                       asChild
                     >
-                      <a href={LMS_URL} target="_blank" rel="noopener noreferrer">
+                      <Link href="/dashboard/recorded-sessions">
                         Secure Access <ArrowRight className="ml-4 h-6 w-6" />
-                      </a>
+                      </Link>
                     </Button>
                   </div>
                 </div>
