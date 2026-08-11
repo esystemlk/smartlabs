@@ -6,11 +6,14 @@ import Image from "next/image";
 import { Youtube, Mail, Phone, MapPin } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { DEV_CONSOLE_PATH } from "@/lib/site-mode";
+import { LMS_URL } from "@/lib/constants";
 
 const footerLinks = {
   courses: [
     { name: "All Courses", href: "/courses" },
+    { name: "Level Test", href: "/level-test" },
     { name: "Corporate Training", href: "/corporate-training" },
+    { name: "LMS Portal", href: LMS_URL },
   ],
   company: [
     { name: "Blog", href: "/blog" },
@@ -18,6 +21,8 @@ const footerLinks = {
     { name: "Contact", href: "/contact" },
   ],
   support: [
+    { name: "Help Center", href: "/support" },
+    { name: "Certificate", href: "/dashboard/certificate-request" },
     { name: "Contact Us", href: "/contact" },
     { name: "Privacy Policy", href: "/policies" },
     { name: "Terms of Service", href: "/policies" },

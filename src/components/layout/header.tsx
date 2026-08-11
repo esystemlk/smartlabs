@@ -26,7 +26,6 @@ import {
 import {
   Bell,
   Settings,
-  HelpCircle,
   Trophy,
   TrendingUp,
   Calendar,
@@ -231,13 +230,11 @@ const ieltsQuickLinks = [
   { name: "Level Test", href: "/level-test", icon: Target, description: "Find your current band." },
 ];
 
+// Slimmed nav: Courses/Certificate/LMS Portal/Level Test/Help moved out of the
+// bar to reduce clutter. They remain reachable from the homepage hero, the
+// Courses mega-menu, and the footer (which shows on every public page).
 const navLinks = [
   { name: "Home", href: "/" },
-  { name: "Courses", href: "/courses" },
-  { name: "Certificate", href: "/dashboard/certificate-request", highlight: false, icon: null },
-  { name: "LMS Portal", href: LMS_URL, external: true },
-  { name: "Level Test", href: "/level-test", highlight: true },
-  { name: "Help", href: "/support", icon: HelpCircle },
 ];
 
 // Mock notifications moved to Firebase service
