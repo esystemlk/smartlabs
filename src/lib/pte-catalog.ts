@@ -10,7 +10,10 @@
  *              dictation word-match) — no LLM needed.
  *
  * `built` = a real trainer page exists today (do NOT change those flows).
- * `weight` mirrors the official contribution each task makes to the score.
+ * `weight` = the task's contribution to ITS OWN skill score, per Pearson's
+ * official Question Weighting table (Table 1) — e.g. Describe Image is 31%
+ * of the Speaking score. (Answer Short Question has no Speaking weight, so it
+ * shows its 2% overall figure.)
  */
 
 export type PteSectionId = 'speaking' | 'writing' | 'reading' | 'listening';
@@ -48,43 +51,43 @@ export const PTE_CATALOG: PteSectionDef[] = [
   {
     id: 'speaking', label: 'Speaking', color: 'blue',
     tasks: [
-      { taskType: 'read-aloud',           label: 'Read Aloud',              slug: 'read-aloud',           scoring: 'ai', weight: '4%',  built: true, input: 'mic',  color: 'orange' },
-      { taskType: 'repeat-sentence',      label: 'Repeat Sentence',         slug: 'repeat-sentence',      scoring: 'ai', weight: '7%',  built: true, input: 'mic',  color: 'violet' },
-      { taskType: 'describe-image',       label: 'Describe Image',          slug: 'describe-image',       scoring: 'ai', weight: '15%', built: true, input: 'mic',  color: 'blue' },
-      { taskType: 'retell-lecture',       label: 'Retell Lecture',          slug: 'retell-lecture',       scoring: 'ai', weight: '6%',  built: true, input: 'mic',  color: 'emerald' },
+      { taskType: 'read-aloud',           label: 'Read Aloud',              slug: 'read-aloud',           scoring: 'ai', weight: '9%',  built: true, input: 'mic',  color: 'orange' },
+      { taskType: 'repeat-sentence',      label: 'Repeat Sentence',         slug: 'repeat-sentence',      scoring: 'ai', weight: '16%',  built: true, input: 'mic',  color: 'violet' },
+      { taskType: 'describe-image',       label: 'Describe Image',          slug: 'describe-image',       scoring: 'ai', weight: '31%', built: true, input: 'mic',  color: 'blue' },
+      { taskType: 'retell-lecture',       label: 'Retell Lecture',          slug: 'retell-lecture',       scoring: 'ai', weight: '13%',  built: true, input: 'mic',  color: 'emerald' },
       { taskType: 'answer-short-question',label: 'Answer Short Question',   slug: 'answer-short-question',scoring: 'ai', weight: '2%',  built: true, input: 'mic',  color: 'rose' },
-      { taskType: 'summarize-group-discussion', label: 'Summarize Group Discussion', slug: 'summarize-group-discussion', scoring: 'ai', weight: '9%', isNew: true, input: 'mic', color: 'amber' },
-      { taskType: 'respond-to-situation', label: 'Respond to a Situation',  slug: 'respond-to-situation', scoring: 'ai', weight: '6%',  isNew: true, input: 'mic', color: 'cyan' },
+      { taskType: 'summarize-group-discussion', label: 'Summarize Group Discussion', slug: 'summarize-group-discussion', scoring: 'ai', weight: '19%', isNew: true, input: 'mic', color: 'amber' },
+      { taskType: 'respond-to-situation', label: 'Respond to a Situation',  slug: 'respond-to-situation', scoring: 'ai', weight: '13%',  isNew: true, input: 'mic', color: 'cyan' },
     ],
   },
   {
     id: 'writing', label: 'Writing', color: 'violet',
     tasks: [
-      { taskType: 'swt',         label: 'Summarize Written Text', slug: 'summarize-written-text', scoring: 'ai', weight: '7%', built: true, builtHref: '/swt-trainer',       input: 'text', color: 'violet' },
-      { taskType: 'write-essay', label: 'Write Essay',            slug: 'write-essay',            scoring: 'ai', weight: '7%', built: true, builtHref: '/ai-essay-practice', input: 'text', color: 'orange' },
+      { taskType: 'swt',         label: 'Summarize Written Text', slug: 'summarize-written-text', scoring: 'ai', weight: '28%', built: true, builtHref: '/swt-trainer',       input: 'text', color: 'violet' },
+      { taskType: 'write-essay', label: 'Write Essay',            slug: 'write-essay',            scoring: 'ai', weight: '31%', built: true, builtHref: '/ai-essay-practice', input: 'text', color: 'orange' },
     ],
   },
   {
     id: 'reading', label: 'Reading', color: 'emerald',
     tasks: [
-      { taskType: 'rw-fill-blanks',      label: 'Fill in the Blanks (R&W)',       slug: 'rw-fill-in-the-blanks',   scoring: 'auto', weight: '7%',   input: 'blank',  color: 'emerald' },
-      { taskType: 'mcq-multiple',        label: 'Multiple Choice (Multiple)',     slug: 'reading-mcq-multiple',    scoring: 'auto', weight: '1%',   input: 'choice', color: 'teal' },
-      { taskType: 'reorder-paragraphs',  label: 'Re-order Paragraphs',            slug: 'reorder-paragraphs',      scoring: 'auto', weight: '3%',   input: 'order',  color: 'lime' },
-      { taskType: 'fill-blanks',         label: 'Fill in the Blanks (Drag & Drop)', slug: 'fill-in-the-blanks',    scoring: 'auto', weight: '6%',   input: 'blank',  color: 'green' },
-      { taskType: 'reading-mcq-single',  label: 'Multiple Choice (Single)',       slug: 'reading-mcq-single',      scoring: 'auto', weight: '<1%',  input: 'choice', color: 'sky' },
+      { taskType: 'rw-fill-blanks',      label: 'Fill in the Blanks (R&W)',       slug: 'rw-fill-in-the-blanks',   scoring: 'auto', weight: '25%',   input: 'blank',  color: 'emerald' },
+      { taskType: 'mcq-multiple',        label: 'Multiple Choice (Multiple)',     slug: 'reading-mcq-multiple',    scoring: 'auto', weight: '5%',   input: 'choice', color: 'teal' },
+      { taskType: 'reorder-paragraphs',  label: 'Re-order Paragraphs',            slug: 'reorder-paragraphs',      scoring: 'auto', weight: '9%',   input: 'order',  color: 'lime' },
+      { taskType: 'fill-blanks',         label: 'Fill in the Blanks (Drag & Drop)', slug: 'fill-in-the-blanks',    scoring: 'auto', weight: '20%',   input: 'blank',  color: 'green' },
+      { taskType: 'reading-mcq-single',  label: 'Multiple Choice (Single)',       slug: 'reading-mcq-single',      scoring: 'auto', weight: '3%',  input: 'choice', color: 'sky' },
     ],
   },
   {
     id: 'listening', label: 'Listening', color: 'orange',
     tasks: [
-      { taskType: 'sst',                     label: 'Summarize Spoken Text',       slug: 'summarize-spoken-text', scoring: 'ai',   weight: '4%',  built: true, builtHref: '/ai-sst-practice', input: 'text',   color: 'orange' },
-      { taskType: 'wfd',                     label: 'Write from Dictation',        slug: 'write-from-dictation',  scoring: 'auto', weight: '5%',  built: true, builtHref: '/ai-wfd-practice', input: 'text',   color: 'amber' },
-      { taskType: 'listening-mcq-multiple',  label: 'Multiple Choice (Multiple)',  slug: 'listening-mcq-multiple',scoring: 'auto', weight: '1%',  input: 'choice', color: 'rose' },
-      { taskType: 'listening-fill-blanks',   label: 'Fill in the Blanks',          slug: 'listening-fill-in-the-blanks', scoring: 'auto', weight: '3%', input: 'blank', color: 'indigo' },
-      { taskType: 'highlight-correct-summary', label: 'Highlight Correct Summary', slug: 'highlight-correct-summary', scoring: 'auto', weight: '<1%', input: 'choice', color: 'cyan' },
-      { taskType: 'listening-mcq-single',    label: 'Multiple Choice (Single)',    slug: 'listening-mcq-single',  scoring: 'auto', weight: '<1%', input: 'choice', color: 'fuchsia' },
+      { taskType: 'sst',                     label: 'Summarize Spoken Text',       slug: 'summarize-spoken-text', scoring: 'ai',   weight: '10%',  built: true, builtHref: '/ai-sst-practice', input: 'text',   color: 'orange' },
+      { taskType: 'wfd',                     label: 'Write from Dictation',        slug: 'write-from-dictation',  scoring: 'auto', weight: '13%',  built: true, builtHref: '/ai-wfd-practice', input: 'text',   color: 'amber' },
+      { taskType: 'listening-mcq-multiple',  label: 'Multiple Choice (Multiple)',  slug: 'listening-mcq-multiple',scoring: 'auto', weight: '3%',  input: 'choice', color: 'rose' },
+      { taskType: 'listening-fill-blanks',   label: 'Fill in the Blanks',          slug: 'listening-fill-in-the-blanks', scoring: 'auto', weight: '8%', input: 'blank', color: 'indigo' },
+      { taskType: 'highlight-correct-summary', label: 'Highlight Correct Summary', slug: 'highlight-correct-summary', scoring: 'auto', weight: '2%', input: 'choice', color: 'cyan' },
+      { taskType: 'listening-mcq-single',    label: 'Multiple Choice (Single)',    slug: 'listening-mcq-single',  scoring: 'auto', weight: '2%', input: 'choice', color: 'fuchsia' },
       { taskType: 'select-missing-word',     label: 'Select Missing Word',         slug: 'select-missing-word',   scoring: 'auto', weight: '1%',  input: 'choice', color: 'sky' },
-      { taskType: 'highlight-incorrect-words',label: 'Highlight Incorrect Words',  slug: 'highlight-incorrect-words', scoring: 'auto', weight: '4%', input: 'choice', color: 'violet' },
+      { taskType: 'highlight-incorrect-words',label: 'Highlight Incorrect Words',  slug: 'highlight-incorrect-words', scoring: 'auto', weight: '8%', input: 'choice', color: 'violet' },
     ],
   },
 ];
