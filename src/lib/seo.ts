@@ -16,11 +16,13 @@ export const SITE = {
   email: 'info@smartlabs.lk',
   logo: '/logo.png',
   areaServed: 'Sri Lanka',
+  mapUrl: 'https://maps.app.goo.gl/sK4iE7wum7nFo66M7',
   sameAs: [
     'https://www.youtube.com/@SmartLabs-Official',
     'https://www.facebook.com/smartlabs.lk',
     'https://www.instagram.com/smartlabs.lk',
     'https://www.tiktok.com/@smartlabs.lk',
+    'https://maps.app.goo.gl/sK4iE7wum7nFo66M7',
   ],
   address: {
     street: '19/3 Poorwarama Rd',
@@ -28,8 +30,8 @@ export const SITE = {
     region: 'Western Province',
     postalCode: '10250',
     country: 'LK',
-    lat: 6.872634734676785,
-    lng: 79.88924722793453,
+    lat: 6.8726434,
+    lng: 79.8892733,
     full: '19/3 Poorwarama Rd, Nugegoda 10250, Sri Lanka',
   },
 };
@@ -104,7 +106,7 @@ export function orgJsonLd() {
       addressCountry: SITE.address.country,
     },
     geo: { '@type': 'GeoCoordinates', latitude: SITE.address.lat, longitude: SITE.address.lng },
-    hasMap: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(SITE.address.full)}`,
+    hasMap: SITE.mapUrl,
     aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.9', reviewCount: '250' },
   };
 }
