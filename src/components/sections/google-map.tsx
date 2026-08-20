@@ -94,7 +94,7 @@ export function GoogleMap() {
           >
             <iframe
               title="Smart Labs Location"
-              src="https://www.google.com/maps?q=SmartLabs+PVT+Ltd,+19/3+Poorwarama+Rd,+Nugegoda+10250&z=17&output=embed"
+              src="https://maps.google.com/maps?q=6.872634734676785,79.88924722793453&z=17&output=embed"
               style={{ border: 0 }}
               allowFullScreen
               loading="lazy"
