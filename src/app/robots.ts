@@ -1,13 +1,20 @@
-import { MetadataRoute } from 'next'
- 
+import type { MetadataRoute } from 'next';
+import { SITE } from '@/lib/seo';
+
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-      disallow: ['/admin/', '/dashboard/', '/welcome/', '/payment/'],
-    },
-    sitemap: `${baseUrl}/sitemap.xml`,
-  }
+    rules: [
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: [
+          '/admin', '/api/', '/dashboard', '/login', '/signup', '/forgot-password',
+          '/payment', '/payment-success', '/payment-cancel', '/smreg', '/welcome',
+          '/site-status', '/sl-console-9f3k2x', '/my-purchases', '/enroll',
+        ],
+      },
+    ],
+    sitemap: `${SITE.url}/sitemap.xml`,
+    host: SITE.url,
+  };
 }

@@ -17,31 +17,39 @@ import { LayoutManager } from '@/components/layout/layout-manager';
 import { WindowControls } from '@/components/layout/window-controls';
 import { LayoutExtras } from '@/components/layout/layout-extras';
 import { CookieBanner } from '@/components/cookie-banner';
+import { BASE_KEYWORDS, orgJsonLd, websiteJsonLd, faqJsonLd, HOME_FAQS } from '@/lib/seo';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://smartlabs.lk';
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
-    default: 'Smart Labs — AI-Powered PTE & English Exam Training in Sri Lanka',
+    default: 'Smart Labs — Best PTE Academic Classes & Training in Sri Lanka',
     template: '%s | Smart Labs',
   },
   description:
-    'Prepare for PTE Academic, IELTS, KET & PET with Smart Labs. AI-scored essay, summarize written text and summarize spoken text practice, mock tests, expert-led courses and instant feedback.',
-  keywords: ['PTE', 'PTE Academic', 'IELTS', 'English exam', 'Sri Lanka', 'AI scoring', 'mock tests', 'Smart Labs'],
+    'Smart Labs is Sri Lanka’s AI-powered PTE Academic institute — expert PTE trainers, AI-scored practice, full mock tests and PTE Boostify courses online and in Rajagiriya & Wattala. Also IELTS, KET & PET.',
+  keywords: BASE_KEYWORDS,
+  alternates: { canonical: '/' },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
+  },
   openGraph: {
     type: 'website',
     url: APP_URL,
     siteName: 'Smart Labs',
-    title: 'Smart Labs — AI-Powered PTE & English Exam Training',
+    locale: 'en_LK',
+    title: 'Smart Labs — Best PTE Academic Classes & Training in Sri Lanka',
     description:
-      'AI-scored PTE practice: essays, summaries and mock tests with instant feedback and expert-led courses.',
+      'AI-scored PTE practice, mock tests and expert PTE Boostify courses — online and in Rajagiriya & Wattala. Sri Lanka’s smart way to your target PTE score.',
     images: [{ url: '/logo.png' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Smart Labs — AI-Powered PTE & English Exam Training',
-    description: 'AI-scored PTE practice with instant feedback and expert-led courses.',
+    title: 'Smart Labs — Best PTE Academic Classes in Sri Lanka',
+    description: 'AI-scored PTE practice, mock tests and expert-led courses in Sri Lanka.',
   },
   icons: { icon: '/favicon.ico' },
   manifest: '/manifest.json',
@@ -66,6 +74,11 @@ export default function RootLayout({
           'flex flex-col overflow-x-hidden max-w-[100vw]'
         )}
       >
+        {/* Structured data — Organization + LocalBusiness, WebSite, FAQ.
+            Drives Google rich results and GEO/AEO answer engines. */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd()) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd()) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(HOME_FAQS)) }} />
         <FirebaseClientProvider>
           <WindowControls />
           <LayoutManager />
