@@ -20,68 +20,54 @@ export default function CoursesPage() {
   const catalog = [
     {
       id: 'pte-boostify',
-      name: 'PTE Boostify Package',
-      subtitle: 'Exam-focused strategies with AI practice',
+      name: 'PTE Boostify',
+      subtitle: 'Complete PTE preparation + PTE-focused grammar',
       themeColor: 'accent-3',
-      duration: '13 Days | 20 Hours',
-      days: 'Monday – Friday',
-      startTime: '2.30 PM – 4.30 PM',
+      duration: '28 Hours | Up to 4 Weeks',
+      days: 'Intensive: Mon – Fri | Grammar: Saturdays',
+      startTime: 'Intake: 2.30 PM or 8.00 PM',
       features: [
-        'All live class recordings',
-        'Exam focused strategies',
-        'Smart practice methods',
-        'Individual feedback for difficult questions',
-        '8.00 PM batch available',
-        'Next Intake: 16 March (8.00 PM), 23 March (2.30 PM)'
-      ].join(', '),
-      price: 30000
-    },
-    {
-      id: 'pte-boostify-grammar',
-      name: 'PTE Boostify + Grammar Clinic Program',
-      subtitle: 'Full strategy + grammar foundation',
-      themeColor: 'primary',
-      duration: '21 Days | 42 Hours',
-      days: 'Monday – Friday',
-      startTime: '2.30 PM – 4.30 PM',
-      features: [
-        'All live class recordings available',
-        'Grammar Clinic: Saturday & Sunday',
-        'Grammar Clinic Time: 4.00 PM – 6.00 PM',
-        'Grammar Clinic Duration: 1 Month'
+        '20 Hours PTE Intensive Course (2 weeks, 2 hrs/day)',
+        '8 Hours PTE-Focused Grammar (Sat 2.30 – 4.30 PM, 4 weeks)',
+        'All question types, techniques & marking system',
+        'High-weightage strategies & time management',
+        '2 intakes per month: 2.30 PM or 8.00 PM'
       ].join(', '),
       price: 35000
     },
     {
-      id: 'pte-hybrid',
-      name: 'PTE Hybrid (Online + Physical)',
-      subtitle: 'Zoom + Rajagiriya campus weekend',
-      themeColor: 'accent-2',
-      duration: 'Online 20 Hours + Physical 16 Hours/month',
-      days: 'Online: Mon–Fri | Physical: Sat & Sun',
-      startTime: 'Online: 8.00–10.00 PM or 2.30–4.30 PM',
+      id: 'pte-boostify-plus',
+      name: 'PTE Boostify Plus',
+      subtitle: 'Boostify + post-course feedback support',
+      themeColor: 'primary',
+      duration: '28 Hours + 2 Feedback Sessions',
+      days: 'Intensive: Mon – Fri | Grammar: Saturdays',
+      startTime: 'Intake: 2.30 PM or 8.00 PM',
       features: [
-        'Online via Zoom',
-        'Grammar Clinic: Sat & Sun 4.00 – 6.00 PM (1 Month)',
-        'Physical: Sat & Sun 8.30 – 10.30 AM',
-        'Starting Date: 14th March',
-        'Location: Rajagiriya – Janajaya Building'
-      ].join(', '),
-      price: 50000
-    },
-    {
-      id: 'pte-physical',
-      name: 'PTE Physical Classes',
-      subtitle: 'Face-to-face coaching at Rajagiriya',
-      themeColor: 'accent',
-      duration: '16 Hours per month',
-      days: 'Saturday & Sunday',
-      startTime: '8.30 AM – 10.30 AM',
-      features: [
-        'Location: Rajagiriya – Janajaya Building',
-        'Bonus: Complimentary Grammar Online Sessions'
+        'Everything in PTE Boostify (20 hrs + 8 hrs grammar)',
+        '2 Group Feedback & Improvement Sessions',
+        'Once a week for 2 weeks after training (~1 – 1.5 hrs each)',
+        'Practise, spot mistakes & get trainer guidance',
+        'Group feedback format (not one-to-one)'
       ].join(', '),
       price: 40000
+    },
+    {
+      id: 'pte-boostify-pro',
+      name: 'PTE Boostify Pro',
+      subtitle: 'Highest support + 30-day personal correction',
+      themeColor: 'accent-2',
+      duration: '28 Hours + 2 Sessions + 30-Day Support',
+      days: 'Intensive: Mon – Fri | Grammar: Saturdays',
+      startTime: 'Intake: 2.30 PM or 8.00 PM',
+      features: [
+        'Everything in PTE Boostify Plus',
+        '30 Days Individual WhatsApp Correction Support',
+        'Submit practice responses/links for personal correction',
+        'Voice-note & message feedback on your responses',
+        'Support from your registration date (PTE practice correction)'
+      ].join(', '),
+      price: 50000
     },
     {
       id: 'pte-recorded',
