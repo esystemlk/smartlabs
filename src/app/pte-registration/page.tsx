@@ -35,28 +35,62 @@ function seatsLeft(b: Batch): number | null {
 /** A distinct theme-palette colour per package: blue · green · purple. */
 const PKG_THEME: Record<string, {
   borderSoft: string; borderStrong: string; ring: string; softBg: string;
-  check: string; price: string; btnIdle: string; btnActive: string; header: string;
+  check: string; price: string; btnIdle: string; btnActive: string; header: string; band: string;
 }> = {
   boostify: {
     borderSoft: 'border-primary/30 hover:border-primary/60', borderStrong: 'border-primary',
     ring: 'ring-primary/30', softBg: 'bg-primary/5', check: 'text-primary', price: 'text-primary',
     btnIdle: 'bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground',
     btnActive: 'bg-primary text-primary-foreground', header: 'text-primary',
+    band: 'from-blue-600 to-cyan-500',
   },
   boostify_plus: {
     borderSoft: 'border-accent-2/40 hover:border-accent-2/70', borderStrong: 'border-accent-2',
     ring: 'ring-accent-2/30', softBg: 'bg-accent-2/5', check: 'text-accent-2', price: 'text-accent-2',
     btnIdle: 'bg-accent-2/10 text-accent-2 hover:bg-accent-2 hover:text-white',
     btnActive: 'bg-accent-2 text-white', header: 'text-accent-2',
+    band: 'from-emerald-600 to-green-500',
   },
   hybrid_boostify_pro: {
     borderSoft: 'border-accent-3/50 hover:border-accent-3/80', borderStrong: 'border-accent-3',
     ring: 'ring-accent-3/30', softBg: 'bg-accent-3/5', check: 'text-accent-3', price: 'text-accent-3',
     btnIdle: 'bg-accent-3/10 text-accent-3 hover:bg-accent-3 hover:text-white',
     btnActive: 'bg-accent-3 text-white', header: 'text-accent-3',
+    band: 'from-violet-600 to-purple-600',
   },
 };
 const pkgTheme = (id: string) => PKG_THEME[id] ?? PKG_THEME.boostify;
+
+/** Coloured hour/feature breakdown shown as an "equation" on each card. */
+const PKG_EXTRAS: Record<string, { feeTag: string; breakdown: { value: string; unit: string; label: string }[] }> = {
+  boostify: {
+    feeTag: 'Great Value',
+    breakdown: [
+      { value: '20', unit: 'Hours', label: 'PTE Intensive' },
+      { value: '8', unit: 'Hours', label: 'PTE Grammar' },
+    ],
+  },
+  boostify_plus: {
+    feeTag: 'Great Value',
+    breakdown: [
+      { value: '20', unit: 'Hours', label: 'PTE Intensive' },
+      { value: '8', unit: 'Hours', label: 'PTE Grammar' },
+      { value: '2', unit: 'Sessions', label: 'Group Feedback' },
+    ],
+  },
+  hybrid_boostify_pro: {
+    feeTag: 'Best Value',
+    breakdown: [
+      { value: '20', unit: 'Hours', label: 'PTE Intensive' },
+      { value: '8', unit: 'Hours', label: 'PTE Grammar' },
+      { value: '2', unit: 'Sessions', label: 'Group Feedback' },
+      { value: '30', unit: 'Days', label: 'WhatsApp Fix' },
+    ],
+  },
+};
+const pkgExtras = (id: string) => PKG_EXTRAS[id] ?? PKG_EXTRAS.boostify;
+/** Cycled colours for the equation boxes. */
+const BOX_COLORS = ['bg-blue-600', 'bg-emerald-600', 'bg-orange-500', 'bg-violet-600'];
 
 function RegistrationInner() {
   const { user, isUserLoading } = useUser();
@@ -171,52 +205,85 @@ function RegistrationInner() {
             {PTE_PACKAGES.map(pkg => {
               const active = selectedPkg === pkg.id;
               const t = pkgTheme(pkg.id);
+              const x = pkgExtras(pkg.id);
               return (
                 <div
                   key={pkg.id}
-                  className={`relative rounded-2xl border-2 bg-card p-6 flex flex-col transition-all ${
+                  className={`relative flex flex-col overflow-hidden rounded-3xl border-2 bg-card transition-all ${
                     active
-                      ? `${t.borderStrong} ring-2 ${t.ring} shadow-lg`
-                      : `${t.borderSoft} shadow-sm hover:shadow-md`
+                      ? `${t.borderStrong} ring-2 ${t.ring} shadow-xl`
+                      : `${t.borderSoft} shadow-sm hover:-translate-y-1 hover:shadow-xl`
                   }`}
                 >
                   {pkg.popular && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-primary to-accent-3 px-3 py-1 text-xs font-bold text-primary-foreground shadow-sm">
-                      <Star className="h-3 w-3" /> Most Popular
+                    <span className="absolute right-4 top-4 z-10 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-violet-600 shadow">
+                      <Star className="h-3 w-3 fill-violet-500 text-violet-500" /> Most Popular
                     </span>
                   )}
-                  <h3 className={`text-xl font-bold ${t.header}`}>{pkg.name}</h3>
-                  <p className="mt-1 text-xs text-muted-foreground">{pkg.hoursLabel}</p>
-                  <div className="mt-4 flex items-baseline gap-1">
-                    <span className={`text-3xl font-extrabold ${t.price}`}>{formatLkr(pkg.price)}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">one-time programme fee</p>
 
-                  <ul className="mt-5 space-y-3 flex-1">
-                    {pkg.features.map((f, i) => (
-                      <li key={i} className="flex gap-2.5">
-                        <Check className={`mt-0.5 h-4 w-4 shrink-0 ${t.check}`} />
-                        <span>
-                          <span className="text-sm font-medium">{f.title}</span>
-                          <span className="block text-xs text-muted-foreground">{f.detail}</span>
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div className="mt-5 rounded-lg bg-muted/50 p-3">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Best for</p>
-                    <p className="mt-1 text-xs">{pkg.bestFor}</p>
+                  {/* Coloured header band */}
+                  <div className={`relative bg-gradient-to-br ${t.band} px-6 pb-5 pt-6 text-white`}>
+                    <div className="pointer-events-none absolute -right-6 -top-8 h-28 w-28 rounded-full bg-white/10 blur-2xl" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-white/70">Course Fee</p>
+                    <h3 className="mt-0.5 text-2xl font-black leading-tight">{pkg.name}</h3>
+                    <div className="mt-3 flex items-end gap-2">
+                      <span className="text-4xl font-black leading-none">{formatLkr(pkg.price)}</span>
+                      <span className="mb-1 rounded-md bg-white/20 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide">{x.feeTag}</span>
+                    </div>
+                    <p className="mt-2 text-xs text-white/85">{pkg.tagline}</p>
                   </div>
 
-                  <button
-                    onClick={() => { setSelectedPkg(pkg.id); document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' }); }}
-                    className={`mt-5 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-                      active ? t.btnActive : t.btnIdle
-                    }`}
-                  >
-                    {active ? <><CheckCircle2 className="h-4 w-4" /> Selected</> : <>Select {pkg.name} <ArrowRight className="h-4 w-4" /></>}
-                  </button>
+                  <div className="flex flex-1 flex-col p-6">
+                    {/* Hours equation */}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {x.breakdown.map((b, i) => (
+                        <React.Fragment key={i}>
+                          {i > 0 && <span className="text-base font-black text-muted-foreground">+</span>}
+                          <div className={`min-w-[46px] rounded-xl ${BOX_COLORS[i % BOX_COLORS.length]} px-2.5 py-1.5 text-center text-white`}>
+                            <div className="text-base font-black leading-none">{b.value}</div>
+                            <div className="text-[8px] font-bold uppercase tracking-wide">{b.unit}</div>
+                          </div>
+                        </React.Fragment>
+                      ))}
+                      <span className="text-base font-black text-muted-foreground">=</span>
+                      <div className="min-w-[46px] rounded-xl bg-slate-900 px-2.5 py-1.5 text-center text-white">
+                        <div className="text-base font-black leading-none">{pkg.totalHours}</div>
+                        <div className="text-[8px] font-bold uppercase tracking-wide">Guided</div>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] font-medium text-muted-foreground">
+                      {x.breakdown.map((b, i) => <span key={i}>{b.value} {b.unit} · {b.label}</span>)}
+                    </div>
+
+                    {/* Features */}
+                    <ul className="mt-5 space-y-2.5 flex-1">
+                      {pkg.features.map((f, i) => (
+                        <li key={i} className="flex gap-2.5">
+                          <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${t.softBg}`}>
+                            <Check className={`h-3 w-3 ${t.check}`} />
+                          </span>
+                          <span>
+                            <span className="text-sm font-semibold">{f.title}</span>
+                            <span className="block text-xs text-muted-foreground">{f.detail}</span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className={`mt-5 rounded-xl ${t.softBg} p-3`}>
+                      <p className="text-[10px] font-black uppercase tracking-wide text-muted-foreground">Best for</p>
+                      <p className="mt-1 text-xs">{pkg.bestFor}</p>
+                    </div>
+
+                    <button
+                      onClick={() => { setSelectedPkg(pkg.id); document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' }); }}
+                      className={`mt-5 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition-colors ${
+                        active ? t.btnActive : t.btnIdle
+                      }`}
+                    >
+                      {active ? <><CheckCircle2 className="h-4 w-4" /> Selected</> : <>Register Now <ArrowRight className="h-4 w-4" /></>}
+                    </button>
+                  </div>
                 </div>
               );
             })}
