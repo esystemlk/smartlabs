@@ -28,8 +28,8 @@ export const SITE = {
     region: 'Western Province',
     postalCode: '10250',
     country: 'LK',
-    lat: 6.8688,
-    lng: 79.8898,
+    lat: 6.872634734676785,
+    lng: 79.88924722793453,
     full: '19/3 Poorwarama Rd, Nugegoda 10250, Sri Lanka',
   },
 };

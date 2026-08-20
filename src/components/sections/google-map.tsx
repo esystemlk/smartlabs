@@ -94,7 +94,7 @@ export function GoogleMap() {
           >
             <iframe
               title="Smart Labs Location"
-              src="https://www.google.com/maps?q=19%2F3%20Poorwarama%20Rd%2C%20Nugegoda%2010250%2C%20Sri%20Lanka&output=embed"
+              src="https://www.google.com/maps?q=6.872634734676785,79.88924722793453&z=17&output=embed"
               style={{ border: 0 }}
               allowFullScreen
               loading="lazy"
