@@ -425,7 +425,7 @@ function RegistrationInner() {
           </div>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            Prefer to talk first? Call <b>077 453 3233</b> or visit us in Rajagiriya &amp; Wattala.{' '}
+            Prefer to talk first? Call <b>077 453 3233</b> or visit us at 19/3 Poorwarama Rd, Nugegoda.{' '}
             <Link href="/contact" className="text-primary underline">Contact us</Link>
           </p>
         </div>

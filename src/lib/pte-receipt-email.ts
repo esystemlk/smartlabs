@@ -74,7 +74,7 @@ export function renderPteReceiptEmail(o: PteReceiptData): string {
     </div>
 
     <div style="background:#0D1B35;padding:18px 24px;border-radius:0 0 12px 12px;text-align:center;">
-      <p style="color:rgba(255,255,255,0.75);margin:0;font-size:12px;">Need help? Call 077 453 3233 · smartlabs.lk · Rajagiriya &amp; Wattala</p>
+      <p style="color:rgba(255,255,255,0.75);margin:0;font-size:12px;">Need help? Call 077 453 3233 · smartlabs.lk · 19/3 Poorwarama Rd, Nugegoda</p>
     </div>
   </div>`;
 }

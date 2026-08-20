@@ -5,7 +5,7 @@ import { PTE_PACKAGES } from '@/lib/pte-packages';
 export const metadata: Metadata = pageMeta({
   title: 'PTE Academic Courses & Registration in Sri Lanka',
   description:
-    'Register for Smart Labs PTE Boostify courses — from LKR 35,000, 28+ hours of guided learning with expert trainers, AI practice and mock tests. Online plus Rajagiriya & Wattala centres.',
+    'Register for Smart Labs PTE Boostify courses — from LKR 35,000, 28+ hours of guided learning with expert trainers, AI practice and mock tests. Online plus our Nugegoda centre.',
   path: '/pte-registration',
   keywords: [
     'PTE course registration', 'PTE Boostify', 'PTE Boostify Plus', 'PTE Boostify Pro',

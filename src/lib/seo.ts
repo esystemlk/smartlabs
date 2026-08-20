@@ -22,10 +22,16 @@ export const SITE = {
     'https://www.instagram.com/smartlabs.lk',
     'https://www.tiktok.com/@smartlabs.lk',
   ],
-  centres: [
-    { name: 'Smart Labs — Rajagiriya', locality: 'Rajagiriya', region: 'Western Province', lat: 6.9106, lng: 79.8958 },
-    { name: 'Smart Labs — Wattala', locality: 'Wattala', region: 'Western Province', lat: 6.9897, lng: 79.892 },
-  ],
+  address: {
+    street: '19/3 Poorwarama Rd',
+    locality: 'Nugegoda',
+    region: 'Western Province',
+    postalCode: '10250',
+    country: 'LK',
+    lat: 6.8688,
+    lng: 79.8898,
+    full: '19/3 Poorwarama Rd, Nugegoda 10250, Sri Lanka',
+  },
 };
 
 /** Base keyword set — local + long-tail intent that we want to rank for. */
@@ -33,7 +39,7 @@ export const BASE_KEYWORDS = [
   'PTE', 'PTE Academic', 'PTE Sri Lanka', 'PTE classes Sri Lanka', 'PTE coaching Sri Lanka',
   'best PTE class in Sri Lanka', 'best PTE classes in Sri Lanka', 'best PTE trainer',
   'best PTE trainer in Sri Lanka', 'best PTE institute in Sri Lanka', 'best PTE academy Sri Lanka',
-  'PTE training Rajagiriya', 'PTE classes Wattala', 'PTE classes Colombo', 'PTE online classes Sri Lanka',
+  'PTE classes Nugegoda', 'PTE class Nugegoda', 'PTE institute Nugegoda', 'PTE classes Colombo', 'PTE online classes Sri Lanka',
   'PTE Academic preparation Sri Lanka', 'PTE Boostify', 'PTE mock test', 'PTE mock test Sri Lanka',
   'AI PTE practice', 'PTE speaking practice', 'PTE writing AI feedback', 'PTE tutor Sri Lanka',
   'PTE score improvement', 'IELTS Sri Lanka', 'IELTS classes Colombo', 'KET', 'PET',
@@ -85,22 +91,20 @@ export function orgJsonLd() {
     telephone: SITE.phone,
     email: SITE.email,
     description:
-      'Smart Labs is a leading PTE Academic, IELTS, KET and PET training institute in Sri Lanka, offering AI-scored practice, mock tests and expert-led courses in Rajagiriya, Wattala and online.',
+      'Smart Labs is a leading PTE Academic, IELTS, KET and PET training institute in Sri Lanka, offering AI-scored practice, mock tests and expert-led courses at our Nugegoda centre and online.',
     areaServed: { '@type': 'Country', name: SITE.areaServed },
     knowsAbout: ['PTE Academic', 'IELTS', 'KET', 'PET', 'English language testing', 'AI exam scoring'],
     sameAs: SITE.sameAs,
-    location: SITE.centres.map(c => ({
-      '@type': 'Place',
-      name: c.name,
-      address: { '@type': 'PostalAddress', addressLocality: c.locality, addressRegion: c.region, addressCountry: 'LK' },
-      geo: { '@type': 'GeoCoordinates', latitude: c.lat, longitude: c.lng },
-    })),
     address: {
       '@type': 'PostalAddress',
-      addressLocality: SITE.centres[0].locality,
-      addressRegion: SITE.centres[0].region,
-      addressCountry: 'LK',
+      streetAddress: SITE.address.street,
+      addressLocality: SITE.address.locality,
+      addressRegion: SITE.address.region,
+      postalCode: SITE.address.postalCode,
+      addressCountry: SITE.address.country,
     },
+    geo: { '@type': 'GeoCoordinates', latitude: SITE.address.lat, longitude: SITE.address.lng },
+    hasMap: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(SITE.address.full)}`,
     aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.9', reviewCount: '250' },
   };
 }
@@ -147,7 +151,7 @@ export function courseJsonLd(courses: { name: string; description: string; price
           '@type': 'CourseInstance',
           courseMode: 'Blended',
           courseWorkload: 'PT4W',
-          location: { '@type': 'Place', name: 'Smart Labs, Sri Lanka (Online + Rajagiriya / Wattala)' },
+          location: { '@type': 'Place', name: 'Smart Labs, Nugegoda, Sri Lanka (Online + on-site)' },
         },
       },
     })),
@@ -185,7 +189,7 @@ export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
 export const HOME_FAQS = [
   {
     q: 'Which is the best PTE class in Sri Lanka?',
-    a: 'Smart Labs is one of the most trusted PTE Academic training institutes in Sri Lanka, offering AI-scored practice, full mock tests and expert-led PTE Boostify courses online and at our Rajagiriya and Wattala centres.',
+    a: 'Smart Labs is one of the most trusted PTE Academic training institutes in Sri Lanka, offering AI-scored practice, full mock tests and expert-led PTE Boostify courses online and at our Nugegoda centre (19/3 Poorwarama Rd, Nugegoda).',
   },
   {
     q: 'Who is the best PTE trainer in Sri Lanka?',

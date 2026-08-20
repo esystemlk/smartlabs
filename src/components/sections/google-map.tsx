@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { MapPin, Phone, Mail, Clock, Globe } from "lucide-react";
 
 export function GoogleMap() {
-  const address = "Smart Labs, 123/A, Rajagiriya Road, Rajagiriya, Sri Lanka"; // Update with actual address
+  const address = "Smart Labs, 19/3 Poorwarama Rd, Nugegoda 10250, Sri Lanka"; // Update with actual address
   const mapEmbedUrl = `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.78544431718!2d79.888!3d6.915!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNsKwNTQnNTQuMCJOIDc5wrA1MycyNC4wIkU!5e0!3m2!1sen!2slk!4v1700000000000!5m2!1sen!2slk`; 
   // Note: The above URL is a placeholder. For a free embed, we use the standard iframe method.
 
@@ -30,7 +30,7 @@ export function GoogleMap() {
                 <span className="text-primary italic">In Person</span>
               </h2>
               <p className="text-xl text-muted-foreground font-medium leading-relaxed">
-                Experience our high-tech learning environment and meet our expert instructors at our Rajagiriya campus.
+                Experience our high-tech learning environment and meet our expert instructors at our Nugegoda centre.
               </p>
             </div>
 
@@ -42,9 +42,9 @@ export function GoogleMap() {
                 <div>
                   <h3 className="font-black text-lg">Address</h3>
                   <p className="text-muted-foreground text-sm mt-1">
-                    Jana Jaya City Mall, <br />
-                    Rajagiriya, <br />
-                    Sri Jayawardenepura Kotte 10100
+                    19/3 Poorwarama Rd, <br />
+ Nugegoda 10250, <br />
+                    Sri Lanka
                   </p>
                 </div>
               </div>
@@ -94,7 +94,7 @@ export function GoogleMap() {
           >
             <iframe
               title="Smart Labs Location"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.835160868128!2d79.89376177582528!3d6.908518918552686!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x255d3c7aeb13728d%3A0x926352d0e6d006a7!2sSmartLabs%20PVT%20Ltd!5e0!3m2!1sen!2slk!4v1714820000000!5m2!1sen!2slk"
+              src="https://www.google.com/maps?q=19%2F3%20Poorwarama%20Rd%2C%20Nugegoda%2010250%2C%20Sri%20Lanka&output=embed"
               style={{ border: 0 }}
               allowFullScreen
               loading="lazy"

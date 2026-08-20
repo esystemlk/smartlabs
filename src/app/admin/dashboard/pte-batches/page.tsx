@@ -301,7 +301,7 @@ export default function AdminPteBatchesPage() {
                 <Field label="Total seats (0 = unlimited)"><input type="number" value={form.seats} onChange={e => setForm(f => ({ ...f, seats: parseInt(e.target.value) || 0 }))} className="input" /></Field>
               </div>
               <Field label="Schedule"><input value={form.schedule} onChange={e => setForm(f => ({ ...f, schedule: e.target.value }))} placeholder="e.g. Mon/Wed/Fri · 6–8 PM" className="input" /></Field>
-              <Field label="Location (for hybrid)"><input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="e.g. Rajagiriya centre" className="input" /></Field>
+              <Field label="Location (for hybrid)"><input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="e.g. Nugegoda centre" className="input" /></Field>
               <Field label="Packages offered in this batch">
                 <div className="grid gap-2">
                   {PTE_PACKAGES.map(p => (

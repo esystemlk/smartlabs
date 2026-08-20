@@ -19,7 +19,7 @@ const contactInfo = [
   {
     icon: MapPin,
     title: "Visit Us",
-    details: ["3rd Floor, No. 326", "Jana Jaya Building, Rajagiriya", "Colombo 05"],
+    details: ["19/3 Poorwarama Rd", "Nugegoda 10250", "Sri Lanka"],
   },
   {
     icon: Phone,
@@ -274,7 +274,7 @@ export default function Contact() {
                   <div className="text-center">
                     <MapPin className="h-12 w-12 text-primary mx-auto mb-2" />
                     <p className="text-muted-foreground">
-                      Rajagiriya, Colombo
+                      Nugegoda 10250
                     </p>
                   </div>
                 </div>

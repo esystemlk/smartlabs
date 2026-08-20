@@ -61,7 +61,7 @@ export default function Footer() {
             <div className="space-y-3 mb-6">
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4 text-primary" />
-                <span>3rd Floor, No. 326, Jana Jaya Building, Rajagiriya</span>
+                <span>19/3 Poorwarama Rd, Nugegoda 10250</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4 text-primary" />

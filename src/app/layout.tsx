@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     template: '%s | Smart Labs',
   },
   description:
-    'Smart Labs is Sri Lanka’s AI-powered PTE Academic institute — expert PTE trainers, AI-scored practice, full mock tests and PTE Boostify courses online and in Rajagiriya & Wattala. Also IELTS, KET & PET.',
+    'Smart Labs is Sri Lanka’s AI-powered PTE Academic institute — expert PTE trainers, AI-scored practice, full mock tests and PTE Boostify courses online and in Nugegoda. Also IELTS, KET & PET.',
   keywords: BASE_KEYWORDS,
   alternates: { canonical: '/' },
   robots: {
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     locale: 'en_LK',
     title: 'Smart Labs — Best PTE Academic Classes & Training in Sri Lanka',
     description:
-      'AI-scored PTE practice, mock tests and expert PTE Boostify courses — online and in Rajagiriya & Wattala. Sri Lanka’s smart way to your target PTE score.',
+      'AI-scored PTE practice, mock tests and expert PTE Boostify courses — online and in Nugegoda. Sri Lanka’s smart way to your target PTE score.',
     images: [{ url: '/logo.png' }],
   },
   twitter: {
