@@ -48,15 +48,6 @@ const taskHref = (t: { built?: boolean; builtHref?: string; slug: string }) =>
 
 const courses = [
   {
-    name: "All Courses",
-    href: "/courses",
-    description: "Browse all training programs.",
-    icon: Book,
-    color: "text-primary",
-    bgColor: "bg-primary/10",
-    hoverBorder: "hover:border-primary/50"
-  },
-  {
     name: "PTE Academic",
     href: "/pte-registration",
     description: "Pearson Test of English — course plans & batches.",
@@ -68,29 +59,32 @@ const courses = [
   {
     name: "KET Exam",
     href: "/courses",
-    description: "Cambridge A2 Key — core English skills foundation.",
+    description: "Cambridge A2 Key — coming soon.",
     icon: Globe,
     color: "text-emerald-500",
     bgColor: "bg-emerald-500/10",
-    hoverBorder: "hover:border-emerald-500/50"
+    hoverBorder: "hover:border-emerald-500/50",
+    disabled: true,
   },
   {
     name: "IELTS",
     href: "/courses",
-    description: "International English Language Testing System.",
+    description: "International English Language Testing System — coming soon.",
     icon: Zap,
     color: "text-violet-500",
     bgColor: "bg-violet-500/10",
-    hoverBorder: "hover:border-violet-500/50"
+    hoverBorder: "hover:border-violet-500/50",
+    disabled: true,
   },
   {
     name: "PET Exam",
     href: "/courses",
-    description: "Cambridge B1 Preliminary — everyday English proficiency.",
+    description: "Cambridge B1 Preliminary — coming soon.",
     icon: Sparkles,
     color: "text-amber-500",
     bgColor: "bg-amber-500/10",
-    hoverBorder: "hover:border-amber-500/50"
+    hoverBorder: "hover:border-amber-500/50",
+    disabled: true,
   },
 ];
 
@@ -252,6 +246,9 @@ export default function Header() {
   const [coursesOpen, setCoursesOpen] = useState(false);
   const [pteAiOpen, setPteAiOpen] = useState(false);
   const [ieltsOpen, setIeltsOpen] = useState(false);
+  // "Under development" popup for the new PTE practice trainers.
+  const [devNotice, setDevNotice] = useState(false);
+  const openDevNotice = () => { setPteAiOpen(false); setMobileMenuOpen(false); setDevNotice(true); };
   const [notifsOpen, setNotifsOpen] = useState(false);
   const { notifications, loading: notifsLoading } = useNotifications();
 
@@ -365,7 +362,24 @@ export default function Header() {
                       <div className="col-span-2 space-y-3">
                         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Available Programs</h3>
                         <div className="grid grid-cols-2 gap-2">
-                          {courses.slice(1).map((course) => (
+                          {courses.map((course) => (
+                            (course as any).disabled ? (
+                              <div key={course.name} aria-disabled="true"
+                                className="group block p-3 rounded-2xl border border-transparent opacity-60 cursor-not-allowed select-none">
+                                <div className="flex items-center gap-3">
+                                  <div className={cn("p-2 rounded-xl shrink-0", course.bgColor, course.color)}>
+                                    <course.icon className="h-4 w-4" />
+                                  </div>
+                                  <div>
+                                    <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                                      {course.name}
+                                      <span className="rounded-full bg-muted px-1.5 py-0.5 text-[8px] font-black uppercase text-muted-foreground">Soon</span>
+                                    </div>
+                                    <div className="text-[10px] text-muted-foreground font-medium leading-tight mt-0.5">{course.description}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
                             <Link
                               key={course.name}
                               href={course.href}
@@ -388,6 +402,7 @@ export default function Header() {
                                 </div>
                               </div>
                             </Link>
+                            )
                           ))}
                         </div>
                       </div>
@@ -462,9 +477,10 @@ export default function Header() {
                         <div key={section.id}>
                           <h3 className="mb-2 border-b border-border/60 pb-1.5 font-display-serif text-base font-black">{section.label}</h3>
                           <ul className="space-y-0.5">
-                            {section.tasks.map((t) => (
-                              <li key={t.taskType}>
-                                <Link href={taskHref(t)} className="group flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/60">
+                            {section.tasks.map((t) => {
+                              const rowCls = "group flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-muted/60";
+                              const inner = (
+                                <>
                                   <span className="flex min-w-0 items-center gap-1.5">
                                     {t.isNew && <span className="rounded-full bg-primary px-1.5 py-[1px] text-[8px] font-bold uppercase text-primary-foreground shrink-0">New</span>}
                                     <span className="truncate text-[13px] leading-tight text-foreground/85 group-hover:text-foreground">{t.label}</span>
@@ -477,9 +493,16 @@ export default function Header() {
                                     {t.scoring === 'ai' && <span className="text-[8px] font-black uppercase text-primary shrink-0">AI</span>}
                                   </span>
                                   <span className="shrink-0 text-[11px] font-semibold text-primary/80">{t.weight}</span>
-                                </Link>
-                              </li>
-                            ))}
+                                </>
+                              );
+                              return (
+                                <li key={t.taskType}>
+                                  {t.builtHref
+                                    ? <Link href={t.builtHref} className={rowCls}>{inner}</Link>
+                                    : <button type="button" onClick={openDevNotice} className={rowCls}>{inner}</button>}
+                                </li>
+                              );
+                            })}
                           </ul>
                         </div>
                       ))}
@@ -825,14 +848,22 @@ export default function Header() {
               <div className="pb-2 border-b border-border">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-4">Courses</p>
                 {courses.map((course) => (
-                  <Link
-                    key={course.href}
-                    href={course.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block px-4 py-2 rounded-lg text-foreground hover:bg-muted transition-colors"
-                  >
-                    {course.name}
-                  </Link>
+                  (course as any).disabled ? (
+                    <div key={course.name} aria-disabled="true"
+                      className="flex items-center justify-between px-4 py-2 rounded-lg text-muted-foreground opacity-60 cursor-not-allowed select-none">
+                      {course.name}
+                      <span className="rounded-full bg-muted px-1.5 py-0.5 text-[8px] font-black uppercase">Soon</span>
+                    </div>
+                  ) : (
+                    <Link
+                      key={course.name}
+                      href={course.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block px-4 py-2 rounded-lg text-foreground hover:bg-muted transition-colors"
+                    >
+                      {course.name}
+                    </Link>
+                  )
                 ))}
               </div>
 
@@ -845,27 +876,30 @@ export default function Header() {
                       <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
                     </summary>
                     <div className="pb-1">
-                      {section.tasks.map((t) => (
-                        <Link
-                          key={t.taskType}
-                          href={taskHref(t)}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="flex items-center justify-between gap-2 rounded-lg py-2 pl-6 pr-3 text-foreground hover:bg-muted"
-                        >
-                          <span className="flex items-center gap-1.5 text-sm">
-                            {t.isNew && <span className="rounded-full bg-primary px-1.5 py-[1px] text-[8px] font-bold uppercase text-primary-foreground">New</span>}
-                            {t.label}
-                            {!t.built && (
-                              <span className="relative flex h-1.5 w-1.5" title="Coming soon">
-                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-500 opacity-75" />
-                                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-rose-500" />
-                              </span>
-                            )}
-                            {t.scoring === 'ai' && <span className="text-[8px] font-black uppercase text-primary">AI</span>}
-                          </span>
-                          <span className="text-[11px] font-semibold text-primary/80">{t.weight}</span>
-                        </Link>
-                      ))}
+                      {section.tasks.map((t) => {
+                        const rowCls = "flex w-full items-center justify-between gap-2 rounded-lg py-2 pl-6 pr-3 text-left text-foreground hover:bg-muted";
+                        const inner = (
+                          <>
+                            <span className="flex items-center gap-1.5 text-sm">
+                              {t.isNew && <span className="rounded-full bg-primary px-1.5 py-[1px] text-[8px] font-bold uppercase text-primary-foreground">New</span>}
+                              {t.label}
+                              {!t.built && (
+                                <span className="relative flex h-1.5 w-1.5" title="Coming soon">
+                                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-500 opacity-75" />
+                                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-rose-500" />
+                                </span>
+                              )}
+                              {t.scoring === 'ai' && <span className="text-[8px] font-black uppercase text-primary">AI</span>}
+                            </span>
+                            <span className="text-[11px] font-semibold text-primary/80">{t.weight}</span>
+                          </>
+                        );
+                        return t.builtHref ? (
+                          <Link key={t.taskType} href={t.builtHref} onClick={() => setMobileMenuOpen(false)} className={rowCls}>{inner}</Link>
+                        ) : (
+                          <button key={t.taskType} type="button" onClick={openDevNotice} className={rowCls}>{inner}</button>
+                        );
+                      })}
                     </div>
                   </details>
                 ))}
@@ -945,6 +979,28 @@ export default function Header() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* "Under development" notice for the new PTE practice trainers */}
+      {devNotice && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={() => setDevNotice(false)}>
+          <div className="w-full max-w-sm rounded-2xl bg-card p-6 text-center shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Sparkles className="h-7 w-7" />
+            </div>
+            <h3 className="text-lg font-bold">We&rsquo;re polishing this feature</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              This practice section is currently being developed for better accuracy and a better experience.
+              Keep in touch with us for more — it&rsquo;s coming soon!
+            </p>
+            <button
+              onClick={() => setDevNotice(false)}
+              className="mt-5 w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
