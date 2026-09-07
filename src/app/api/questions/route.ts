@@ -67,6 +67,15 @@ function toMillis(v: any): number {
   return v?.toMillis?.() ?? 0;
 }
 
+/** The prompt string of a question (DB-normalized or seed), for de-duping. */
+function promptTextOf(q: Record<string, unknown>): string {
+  for (const k of ['passage', 'topic', 'transcript', 'text', 'question', 'situation', 'describe']) {
+    const v = q[k];
+    if (typeof v === 'string' && v.trim()) return v.trim().toLowerCase();
+  }
+  return '';
+}
+
 async function fetchFromDb(taskType: string): Promise<Record<string, unknown>[] | null> {
   if (!adminDb) return null;
   const section = SECTION_BY_TASK[taskType];
@@ -116,30 +125,34 @@ export async function GET(request: Request) {
     return Response.json({ types: QUESTION_BANK_TYPES });
   }
 
-  // 1) Live admin-managed bank (Firestore).
-  let questions: readonly unknown[] | null = null;
-  let source: 'db' | 'seed' = 'seed';
+  // Merge the live admin bank (Firestore) with the built-in seed samples — the
+  // same idea as the website essay page ([...adminTopics, ...TOPICS]). DB items
+  // come first; seed items fill in so the app is never empty even if the DB is
+  // sparse or a read hiccups. Deduped on the prompt text.
+  let dbQuestions: Record<string, unknown>[] = [];
   try {
-    const dbQuestions = await fetchFromDb(type);
-    if (dbQuestions && dbQuestions.length) {
-      questions = dbQuestions;
-      source = 'db';
-    }
+    dbQuestions = (await fetchFromDb(type)) ?? [];
   } catch (e) {
-    console.warn('[questions] DB read failed, falling back to seed:', e);
+    console.warn('[questions] DB read failed, using seed only:', e);
   }
 
-  // 2) Seed bank fallback (built-in samples) when the DB has none yet.
-  if (!questions) {
-    const bank = getQuestionBank(type);
-    if (!bank) {
-      return Response.json(
-        { error: `No question bank for task type "${type}".`, availableTypes: QUESTION_BANK_TYPES },
-        { status: 404 },
-      );
-    }
-    questions = bank;
+  const seed = (getQuestionBank(type) ?? []) as Record<string, unknown>[];
+  if (dbQuestions.length === 0 && seed.length === 0) {
+    return Response.json(
+      { error: `No question bank for task type "${type}".`, availableTypes: QUESTION_BANK_TYPES },
+      { status: 404 },
+    );
   }
 
-  return Response.json({ type, source, count: questions.length, questions });
+  const seen = new Set<string>();
+  const merged: unknown[] = [];
+  for (const q of [...dbQuestions, ...seed]) {
+    const key = promptTextOf(q);
+    if (key && seen.has(key)) continue;
+    if (key) seen.add(key);
+    merged.push(q);
+  }
+
+  const source = dbQuestions.length ? (seed.length ? 'db+seed' : 'db') : 'seed';
+  return Response.json({ type, source, count: merged.length, questions: merged });
 }
