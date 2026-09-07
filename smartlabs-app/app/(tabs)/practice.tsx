@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { fetchCatalog, type PteSection, type PteTask } from '@/api/questions';
 import { Pill } from '@/ui/components';
+import { isImplemented } from '@/trainers';
 import { theme, hueFor } from '@/theme';
 
 export default function Practice() {
@@ -38,7 +40,12 @@ export default function Practice() {
           <Text style={styles.sectionTitle}>{section.label}</Text>
           <View style={{ gap: 10 }}>
             {section.tasks.map((task) => (
-              <TaskRow key={task.taskType} task={task} onPress={() => router.push(`/practice/${task.taskType}`)} />
+              <TaskRow
+                key={task.taskType}
+                task={task}
+                enabled={isImplemented(task.taskType)}
+                onPress={() => router.push(`/practice/${task.taskType}`)}
+              />
             ))}
           </View>
         </View>
@@ -48,24 +55,38 @@ export default function Practice() {
   );
 }
 
-function TaskRow({ task, onPress }: { task: PteTask; onPress: () => void }) {
+function TaskRow({ task, enabled, onPress }: { task: PteTask; enabled: boolean; onPress: () => void }) {
   const hue = hueFor(task.color);
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.row, { opacity: pressed ? 0.85 : 1, borderLeftColor: hue }]}
+      disabled={!enabled}
+      style={({ pressed }) => [
+        styles.row,
+        { borderLeftColor: enabled ? hue : theme.colors.border },
+        !enabled && styles.rowDisabled,
+        enabled && pressed && { opacity: 0.85 },
+      ]}
     >
       <View style={{ flex: 1, gap: 4 }}>
         <View style={styles.rowTop}>
-          <Text style={styles.taskLabel}>{task.label}</Text>
+          <Text style={[styles.taskLabel, !enabled && styles.textDim]}>{task.label}</Text>
           {task.isNew ? <Pill text="New" color={theme.colors.amber} /> : null}
+          {!enabled ? <Pill text="Soon" color={theme.colors.textFaint} /> : null}
         </View>
         <View style={styles.rowTags}>
-          <Pill text={task.scoring === 'ai' ? 'AI scored' : 'Auto'} color={task.scoring === 'ai' ? hue : theme.colors.textFaint} />
+          <Pill
+            text={task.scoring === 'ai' ? 'AI scored' : 'Auto'}
+            color={!enabled ? theme.colors.textFaint : task.scoring === 'ai' ? hue : theme.colors.textFaint}
+          />
           <Text style={styles.weight}>{task.weight}</Text>
         </View>
       </View>
-      <Text style={[styles.chev, { color: hue }]}>›</Text>
+      {enabled ? (
+        <Text style={[styles.chev, { color: hue }]}>›</Text>
+      ) : (
+        <Ionicons name="lock-closed" size={16} color={theme.colors.textFaint} style={{ marginLeft: 8 }} />
+      )}
     </Pressable>
   );
 }
@@ -85,6 +106,8 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     padding: 16,
   },
+  rowDisabled: { opacity: 0.55 },
+  textDim: { color: theme.colors.textMuted },
   rowTop: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   rowTags: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   taskLabel: { color: theme.colors.text, fontSize: theme.font.h3, fontWeight: '700' },

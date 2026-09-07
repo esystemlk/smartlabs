@@ -29,3 +29,8 @@ export const TRAINERS: Record<string, ComponentType<TrainerProps>> = {
 export function trainerFor(taskType: string): ComponentType<TrainerProps> | null {
   return TRAINERS[taskType] ?? null;
 }
+
+/** True when a task has a working trainer (otherwise it's shown but disabled). */
+export function isImplemented(taskType: string): boolean {
+  return taskType in TRAINERS;
+}
