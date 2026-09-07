@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { Text, View } from 'react-native';
 import { scoreWfd, performanceSummary, type WfdResult } from '@/scoring/wfd';
-import { Button, Card } from '@/ui/components';
-import { AudioButton, ScoreHeader, WordChips, Answerbox } from '@/ui/trainer';
-import { theme } from '@/theme';
+import {
+  BackLink, Textarea, PrimaryButton, DarkButton, AudioPlayButton,
+  ScoreHeaderPanel, CircularScore, Section, ResultCard, WordChips, slate,
+} from '@/ui/web';
 import type { TrainerProps } from '@/trainers/types';
 
-/**
- * Write from Dictation — listen (TTS of the sentence), type it exactly. Scored
- * locally with the ported deterministic engine (no AI, no credits).
- */
-export function WfdTrainer({ question, onNext }: TrainerProps) {
+/** Write from Dictation — listen, type it exactly. Deterministic local scoring. */
+export function WfdTrainer({ question, accent, onBack }: TrainerProps) {
   const sentence = String(question.text ?? '');
+  const title = typeof question.title === 'string' ? question.title : 'Dictation';
+
   const [answer, setAnswer] = useState('');
   const [result, setResult] = useState<WfdResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -24,30 +24,50 @@ export function WfdTrainer({ question, onNext }: TrainerProps) {
 
   if (result) {
     return (
-      <View style={{ gap: 16 }}>
-        <ScoreHeader score={result.pteScore} max={90} label={`Write from Dictation · ${result.accuracy}% accuracy`} />
-        <Card><Text style={{ color: theme.colors.textMuted, lineHeight: 22 }}>{performanceSummary(result)}</Text></Card>
-        <WordChips analysis={result.analysis} />
-        <Card style={{ gap: 6 }}>
-          <Text style={{ color: theme.colors.accent, fontWeight: '700' }}>Correct sentence</Text>
-          <Text style={{ color: theme.colors.text, lineHeight: 22 }}>{sentence}</Text>
-        </Card>
-        <Button label="Next sentence" onPress={() => { setResult(null); setAnswer(''); onNext(); }} />
+      <View style={{ gap: 20 }}>
+        <ScoreHeaderPanel
+          accent={accent}
+          circular={<CircularScore label="WFD Score" value={result.pteScore} max={90} pct={Math.round(result.accuracy)} accent={accent} />}
+          title={`${result.correctWords} / ${result.totalWords} words correct`}
+          text={performanceSummary(result)}
+        />
+
+        <Section title="Word-by-Word" accent={accent}>
+          <ResultCard><WordChips analysis={result.analysis} /></ResultCard>
+        </Section>
+
+        <Section title="Correct Sentence" accent={accent}>
+          <ResultCard><Text style={styles.body}>{sentence}</Text></ResultCard>
+        </Section>
+
+        <DarkButton label="Practise Another Sentence" onPress={onBack} />
       </View>
     );
   }
 
   return (
     <View style={{ gap: 16 }}>
-      <Card style={{ gap: 8 }}>
-        <Text style={{ color: theme.colors.textMuted, fontSize: theme.font.small }}>
-          Play the sentence and type it exactly as you hear it — spelling and word order both count.
-        </Text>
-        <AudioButton text={sentence} label="Play sentence" />
-      </Card>
-      <Answerbox value={answer} onChangeText={setAnswer} placeholder="Type the sentence…" />
-      {error ? <Text style={{ color: theme.colors.danger }}>{error}</Text> : null}
-      <Button label="Check my answer" onPress={submit} />
+      <BackLink label="All sentences" onPress={onBack} accent={accent} />
+      <View style={styles.listenCard}>
+        <Text style={[styles.listenLabel, { color: accent }]}>{title.toUpperCase()}</Text>
+        <Text style={styles.hint}>Play the sentence and type it exactly — spelling and word order both count.</Text>
+        <AudioPlayButton text={sentence} label="Play sentence" accent={accent} />
+      </View>
+      <View style={{ gap: 8 }}>
+        <Text style={styles.label}>TYPE WHAT YOU HEAR</Text>
+        <Textarea value={answer} onChangeText={setAnswer} placeholder="Type the sentence…" minHeight={90} />
+      </View>
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+      <PrimaryButton label="Check My Answer" onPress={submit} accent={accent} icon="checkmark" />
     </View>
   );
 }
+
+const styles = {
+  listenCard: { backgroundColor: slate[50], borderRadius: 22, borderWidth: 1, borderColor: slate[200], padding: 18, gap: 10 },
+  listenLabel: { fontSize: 11, fontWeight: '800' as const, letterSpacing: 1.5 },
+  hint: { fontSize: 13, color: slate[500], lineHeight: 19 },
+  label: { fontSize: 11, fontWeight: '800' as const, letterSpacing: 1.5, color: slate[500] },
+  body: { fontSize: 14, lineHeight: 21, color: slate[700] },
+  error: { color: slate.red, fontSize: 13 },
+};

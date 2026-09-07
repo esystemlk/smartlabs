@@ -2,19 +2,31 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { fetchCatalog, fetchQuestions, type PteTask } from '@/api/questions';
-import { Button, Card, Pill } from '@/ui/components';
-import { theme, hueFor } from '@/theme';
+import { hueFor } from '@/theme';
 import { trainerFor } from '@/trainers';
 import type { AnyQuestion } from '@/trainers/types';
+import { TrainerHeader, SelectionCard, BackLink, slate } from '@/ui/web';
 
-/** Best-effort extraction of a question's main prompt text across bank shapes. */
-function promptOf(q: AnyQuestion): string {
-  for (const k of ['passage', 'text', 'prompt', 'question', 'sentence', 'topic', 'caption', 'transcript']) {
+/** Best-effort preview text of a question across bank shapes. */
+function previewOf(q: AnyQuestion): string {
+  for (const k of ['passage', 'topic', 'text', 'situation', 'describe']) {
     const v = q[k];
     if (typeof v === 'string' && v.trim()) return v;
   }
-  return JSON.stringify(q, null, 2);
+  return '';
 }
+
+// Tasks where the prompt is audio (hidden text) — selection shows an audio hint.
+const AUDIO_TASKS = new Set([
+  'sst', 'wfd', 'repeat-sentence', 'retell-lecture', 'answer-short-question', 'summarize-group-discussion',
+]);
+
+const OVERLINE: Record<string, string> = {
+  swt: 'Summarize Written Text',
+  'write-essay': 'Write Essay',
+  sst: 'Summarize Spoken Text',
+  wfd: 'Write from Dictation',
+};
 
 export default function TaskScreen() {
   const { taskType } = useLocalSearchParams<{ taskType: string }>();
@@ -22,7 +34,7 @@ export default function TaskScreen() {
 
   const [task, setTask] = useState<PteTask | null>(null);
   const [questions, setQuestions] = useState<AnyQuestion[] | null>(null);
-  const [idx, setIdx] = useState(0);
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -44,37 +56,68 @@ export default function TaskScreen() {
     };
   }, [taskType]);
 
-  const current = useMemo(
-    () => (questions && questions.length ? questions[idx % questions.length] : null),
-    [questions, idx],
+  const selected = useMemo(
+    () => (questions && selectedIdx != null ? questions[selectedIdx] : null),
+    [questions, selectedIdx],
   );
 
   if (error) return <Centered><Text style={styles.error}>{error}</Text></Centered>;
-  if (!task || !questions || !current) return <Centered><ActivityIndicator color={theme.colors.accent} size="large" /></Centered>;
+  if (!task || !questions) return <Centered><ActivityIndicator color={slate[400]} size="large" /></Centered>;
 
-  const hue = hueFor(task.color);
+  const accent = hueFor(task.color);
   const Trainer = trainerFor(task.taskType);
+  const audio = AUDIO_TASKS.has(task.taskType);
 
+  // ── Practice + result view for the chosen question ──
+  if (selected && Trainer) {
+    return (
+      <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+        <Trainer
+          key={selected.id ?? selectedIdx}
+          task={task}
+          question={selected}
+          accent={accent}
+          onBack={() => setSelectedIdx(null)}
+        />
+      </ScrollView>
+    );
+  }
+
+  // ── Question selection grid ──
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: theme.colors.bg }} contentContainerStyle={styles.content}>
-      <View style={styles.headerRow}>
-        <Pill text={task.scoring === 'ai' ? 'AI scored' : 'Auto scored'} color={hue} />
-        <Text style={styles.counter}>{(idx % questions.length) + 1} / {questions.length}</Text>
-      </View>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <TrainerHeader
+        overline={OVERLINE[task.taskType] ?? task.label}
+        title="AI Trainer"
+        accentWord="& Examiner"
+        subtitle={
+          Trainer
+            ? 'Pick an item below, respond, and get a full AI score breakdown with coaching.'
+            : 'This task type is coming soon.'
+        }
+        accent={accent}
+      />
 
-      {Trainer ? (
-        <Trainer key={current.id ?? idx} task={task} question={current} onNext={() => setIdx((i) => i + 1)} />
+      {!Trainer ? (
+        <View style={styles.soon}>
+          <Text style={styles.soonTitle}>Trainer coming soon</Text>
+          <Text style={styles.soonBody}>The question bank is ready — the interactive trainer for this task is on the way.</Text>
+        </View>
       ) : (
-        <View style={{ gap: 16 }}>
-          <Card><Text style={styles.prompt}>{promptOf(current)}</Text></Card>
-          <Card style={{ gap: 8 }}>
-            <Text style={styles.soonTitle}>Trainer coming soon</Text>
-            <Text style={styles.soonBody}>
-              The interactive trainer for this task type is on the roadmap. The question bank and scoring are already
-              wired — this screen will host the full flow next.
-            </Text>
-          </Card>
-          <Button label="Next question" variant="ghost" onPress={() => setIdx((i) => i + 1)} />
+        <View style={{ gap: 12 }}>
+          <Text style={styles.chooseLabel}>CHOOSE AN ITEM · {questions.length}</Text>
+          {questions.map((q, i) => (
+            <SelectionCard
+              key={q.id ?? i}
+              index={i + 1}
+              title={(typeof q.title === 'string' && q.title) || `${task.label} ${i + 1}`}
+              category={typeof q.category === 'string' ? q.category : undefined}
+              preview={audio ? undefined : previewOf(q)}
+              audio={audio}
+              accent={accent}
+              onPress={() => setSelectedIdx(i)}
+            />
+          ))}
         </View>
       )}
     </ScrollView>
@@ -86,12 +129,12 @@ function Centered({ children }: { children: React.ReactNode }) {
 }
 
 const styles = StyleSheet.create({
-  content: { padding: 20, gap: 16 },
-  center: { flex: 1, backgroundColor: theme.colors.bg, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  counter: { color: theme.colors.textFaint, fontSize: theme.font.small, fontWeight: '600' },
-  prompt: { color: theme.colors.text, fontSize: theme.font.body, lineHeight: 23 },
-  soonTitle: { color: theme.colors.accent, fontSize: theme.font.h3, fontWeight: '700' },
-  soonBody: { color: theme.colors.textMuted, fontSize: theme.font.small, lineHeight: 20 },
-  error: { color: theme.colors.danger, textAlign: 'center' },
+  screen: { flex: 1, backgroundColor: slate.white },
+  content: { padding: 18, gap: 18, paddingBottom: 40 },
+  center: { flex: 1, backgroundColor: slate.white, alignItems: 'center', justifyContent: 'center', padding: 24 },
+  error: { color: slate.red, textAlign: 'center' },
+  chooseLabel: { fontSize: 12, fontWeight: '800', letterSpacing: 1, color: slate[500] },
+  soon: { alignItems: 'center', gap: 6, padding: 28, borderRadius: 24, borderWidth: 1, borderColor: slate[200], borderStyle: 'dashed', backgroundColor: slate[50] },
+  soonTitle: { fontSize: 16, fontWeight: '800', color: slate[700] },
+  soonBody: { fontSize: 13, color: slate[400], textAlign: 'center', lineHeight: 19 },
 });

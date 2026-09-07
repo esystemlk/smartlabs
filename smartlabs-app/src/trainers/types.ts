@@ -5,6 +5,8 @@ export type AnyQuestion = Record<string, unknown> & { id?: string };
 export interface TrainerProps {
   task: PteTask;
   question: AnyQuestion;
-  /** Advance to the next question (also resets the trainer). */
-  onNext: () => void;
+  /** The task's accent colour (from the catalogue), used throughout the trainer. */
+  accent: string;
+  /** Return to the question list (also resets the trainer). */
+  onBack: () => void;
 }
