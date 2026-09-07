@@ -143,7 +143,7 @@ export function SpeakingTrainer({ task, question, accent, onBack }: TrainerProps
       ) : meta.present === 'image' ? (
         <View style={styles.promptPanel}>
           {title ? <Text style={[styles.panelLabel, { color: accent }]}>{title.toUpperCase()}</Text> : null}
-          {svg ? (
+          {svg && SvgXml ? (
             <View style={styles.imageWrap}><SvgXml xml={svg} width="100%" height={220} /></View>
           ) : (
             <Text style={styles.promptText}>{promptText}</Text>
