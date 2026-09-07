@@ -20,7 +20,16 @@ import { pteSummarizeGroupDiscussionData } from '@/lib/pte-speaking-summarize-gr
 import { pteRespondToSituationData } from '@/lib/pte-speaking-respond-to-situation-data';
 
 import { pteSummarizeWrittenTextData } from '@/lib/pte-writing-summarize-written-text-data';
-import { pteWriteEssayData } from '@/lib/pte-writing-write-essay-data';
+import { pteEssayTopics } from '@/lib/pte-essay-topics';
+
+// The built-in essay topics, shaped like the app trainer expects (topic field).
+// Same list the website essay page shows, so the app matches it.
+const pteWriteEssayBank = pteEssayTopics.map((t) => ({
+  id: `topic-${t.id}`,
+  title: `Topic ${t.id}`,
+  topic: t.text,
+  category: t.category,
+}));
 
 import { pteReadingFillInBlanksDropdownData } from '@/lib/pte-reading-fill-in-blanks-dropdown-data';
 import { pteReadingMultipleChoiceMultipleAnswerData } from '@/lib/pte-reading-multiple-choice-multiple-answer-data';
@@ -49,7 +58,7 @@ export const QUESTION_BANK: Record<string, readonly any[]> = {
 
   // ── Writing ──
   'swt': pteSummarizeWrittenTextData,
-  'write-essay': pteWriteEssayData,
+  'write-essay': pteWriteEssayBank,
 
   // ── Reading ──
   'rw-fill-blanks': pteReadingFillInBlanksDropdownData,
