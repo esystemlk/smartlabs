@@ -57,18 +57,41 @@ async function readMode(): Promise<{ mode: SiteMode; bypassTokenHash?: string }>
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // ── CORS for the API ──────────────────────────────────────────────────────
+  // The mobile app calls these over native networking (no CORS), but a web
+  // build — or any browser client — needs these headers. Endpoints authenticate
+  // with a Bearer ID token (not cookies), so reflecting the origin is safe: a
+  // caller still needs a valid token, which only the signed-in user's app holds.
+  const isApi = pathname.startsWith('/api/');
+  const origin = req.headers.get('origin');
+  const applyCors = (res: NextResponse) => {
+    if (isApi) {
+      res.headers.set('Access-Control-Allow-Origin', origin ?? '*');
+      res.headers.append('Vary', 'Origin');
+      res.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      res.headers.set('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+      res.headers.set('Access-Control-Max-Age', '86400');
+    }
+    return res;
+  };
+
+  // Answer the preflight before any site-mode logic.
+  if (isApi && req.method === 'OPTIONS') {
+    return applyCors(new NextResponse(null, { status: 204 }));
+  }
+
   if (ALWAYS_ALLOWED.some(p => pathname === p || pathname.startsWith(p + '/'))) {
-    return NextResponse.next();
+    return applyCors(NextResponse.next());
   }
 
   const { mode, bypassTokenHash } = await readMode();
-  if (mode === 'live') return NextResponse.next();
+  if (mode === 'live') return applyCors(NextResponse.next());
 
   // Developer preview: the cookie holds the raw token, Firestore holds only
   // its hash, so a visitor reading the public doc still cannot forge one.
   const cookie = req.cookies.get(BYPASS_COOKIE)?.value;
   if (bypassTokenHash && cookie && safeEqual(await hashBypassToken(cookie), bypassTokenHash)) {
-    return NextResponse.next();
+    return applyCors(NextResponse.next());
   }
 
   const url = req.nextUrl.clone();
@@ -79,7 +102,7 @@ export async function middleware(req: NextRequest) {
   res.headers.set('x-site-mode', mode);
   res.headers.set('Cache-Control', 'no-store');
   if (mode !== '404') res.headers.set('Retry-After', '3600');
-  return res;
+  return applyCors(res);
 }
 
 export const config = {
