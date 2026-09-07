@@ -5,11 +5,11 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "scheme": "smartlabs",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "newArchEnabled": false,
     "splash": {
       "resizeMode": "contain",
-      "backgroundColor": "#0B1120"
+      "backgroundColor": "#FFFFFF"
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
@@ -23,7 +23,7 @@
       "package": "lk.smartlabs.app",
       "permissions": ["RECORD_AUDIO"],
       "adaptiveIcon": {
-        "backgroundColor": "#0B1120"
+        "backgroundColor": "#FFFFFF"
       }
     },
     "plugins": [

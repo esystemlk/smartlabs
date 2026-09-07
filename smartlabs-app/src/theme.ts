@@ -1,26 +1,35 @@
 /**
- * Fresh mobile design system — deliberately distinct from the website. A deep
- * navy canvas with a teal/cyan accent and warm coral for scores/alerts.
+ * Matches the main website's colour theme (smartlabs.lk).
+ *
+ * The site's design tokens (src/app/globals.css) define a light theme with a
+ * blue primary and a rose / emerald / violet / amber accent set:
+ *   --background 240 10% 99%   --foreground 240 10% 3.9%
+ *   --primary    217 91% 60%   (blue #3B82F6)
+ *   --muted      210 40% 96.1% --muted-foreground 240 3.8% 46.1%
+ *   --border     214 32% 91%   --destructive 0 84% 60%
+ *   --accent-1 rose  --accent-2 emerald  --accent-3 violet  --accent-4 amber
+ *   --radius 1rem
+ * The hex values below are those HSL tokens converted to RGB.
  */
 export const theme = {
   colors: {
-    bg: '#0B1120',
-    surface: '#131C2E',
-    surfaceAlt: '#1B2740',
-    border: '#26334F',
-    text: '#F1F5F9',
-    textMuted: '#94A3B8',
-    textFaint: '#64748B',
-    accent: '#2DD4BF',
-    accentDeep: '#14B8A6',
-    accentSoft: 'rgba(45, 212, 191, 0.12)',
-    coral: '#FB7185',
-    amber: '#FBBF24',
-    success: '#34D399',
-    danger: '#F87171',
-    onAccent: '#04211D',
+    bg: '#FAFBFC', // --background 240 10% 99%
+    surface: '#FFFFFF', // --card 0 0% 100%
+    surfaceAlt: '#F1F5F9', // --muted / --secondary 210 40% 96.1%
+    border: '#E2E8F0', // --border 214 32% 91%
+    text: '#0A0A0B', // --foreground 240 10% 3.9%
+    textMuted: '#71717A', // --muted-foreground 240 3.8% 46.1%
+    textFaint: '#A1A1AA',
+    accent: '#3B82F6', // --primary 217 91% 60%
+    accentDeep: '#2563EB',
+    accentSoft: 'rgba(59, 130, 246, 0.12)',
+    coral: '#F43F6D', // --accent-1 rose 347 89% 68%
+    amber: '#F59E0B', // --accent-4 amber 38 92% 60%
+    success: '#10B981', // --accent-2 emerald 159 70% 55%
+    danger: '#EF4444', // --destructive 0 84% 60%
+    onAccent: '#FFFFFF', // --primary-foreground
   },
-  radius: { sm: 8, md: 14, lg: 20, xl: 28, pill: 999 },
+  radius: { sm: 10, md: 14, lg: 16, xl: 22, pill: 999 }, // --radius 1rem
   spacing: (n: number) => n * 4,
   font: {
     h1: 30,
@@ -32,20 +41,23 @@ export const theme = {
   },
 } as const;
 
-/** Rotating accent hues so each task tile feels distinct (mirrors the web catalog). */
+/**
+ * Per-task accent hues — the website cycles task colours through this palette.
+ * Tuned to the 500/600 level so they stay legible on the light background.
+ */
 export const TASK_HUES: Record<string, string> = {
-  orange: '#FB923C',
-  violet: '#A78BFA',
-  blue: '#60A5FA',
-  emerald: '#34D399',
-  rose: '#FB7185',
-  amber: '#FBBF24',
-  cyan: '#22D3EE',
-  indigo: '#818CF8',
-  teal: '#2DD4BF',
-  fuchsia: '#E879F9',
-  sky: '#38BDF8',
-  lime: '#A3E635',
+  orange: '#EA580C',
+  violet: '#7C3AED',
+  blue: '#2563EB',
+  emerald: '#059669',
+  rose: '#E11D48',
+  amber: '#D97706',
+  cyan: '#0891B2',
+  indigo: '#4F46E5',
+  teal: '#0D9488',
+  fuchsia: '#C026D3',
+  sky: '#0284C7',
+  lime: '#65A30D',
 };
 
 export function hueFor(color?: string): string {
