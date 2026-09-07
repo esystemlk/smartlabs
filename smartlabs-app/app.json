@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "SmartLabs PTE",
+    "slug": "smartlabs-app",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "smartlabs",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": false,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0B1120"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "lk.smartlabs.app",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "SmartLabs needs the microphone to record your speaking answers for AI scoring."
+      }
+    },
+    "android": {
+      "package": "lk.smartlabs.app",
+      "permissions": ["RECORD_AUDIO"],
+      "adaptiveIcon": {
+        "backgroundColor": "#0B1120"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "SmartLabs needs the microphone to record your speaking answers for AI scoring."
+        }
+      ]
+    ],
+    "extra": {
+      "apiBaseUrl": "https://www.smartlabs.lk"
+    }
+  }
+}
