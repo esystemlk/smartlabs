@@ -36,7 +36,10 @@
       ]
     ],
     "extra": {
-      "apiBaseUrl": "https://www.smartlabs.lk"
+      "apiBaseUrl": "https://www.smartlabs.lk",
+      "googleWebClientId": "",
+      "googleIosClientId": "",
+      "googleAndroidClientId": ""
     }
   }
 }
