@@ -3,6 +3,8 @@ import { Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { scoreSst } from '@/api/score';
 import { ApiError } from '@/api/client';
+import { useAuth } from '@/auth/AuthContext';
+import { bumpSession } from '@/lib/progress';
 import {
   BackLink, Textarea, LiveChecks, PrimaryButton, DarkButton, AudioPlayButton,
   ScoreHeaderPanel, CircularScore, ScorePill, Section, ResultCard, Bullets, ModelAnswer, slate,
@@ -12,6 +14,7 @@ import type { TrainerProps } from '@/trainers/types';
 /** Summarize Spoken Text — listen, then write a 50–70 word summary. */
 export function SstTrainer({ question, accent, onBack }: TrainerProps) {
   const router = useRouter();
+  const { user } = useAuth();
   const transcript = String(question.transcript ?? '');
   const audioUrl = typeof question.audioUrl === 'string' ? question.audioUrl : undefined;
   const title = typeof question.title === 'string' ? question.title : 'Lecture';
@@ -30,6 +33,7 @@ export function SstTrainer({ question, accent, onBack }: TrainerProps) {
     setLoading(true);
     try {
       setResult(await scoreSst({ transcript, summary: summary.trim() }));
+      bumpSession(user?.uid);
     } catch (e) {
       if (e instanceof ApiError && (e.code === 'NO_CREDITS' || e.status === 402)) {
         setError('You are out of SST credits.');

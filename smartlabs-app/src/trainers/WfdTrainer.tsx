@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Text, View } from 'react-native';
 import { scoreWfd, performanceSummary, type WfdResult } from '@/scoring/wfd';
+import { useAuth } from '@/auth/AuthContext';
+import { bumpSession } from '@/lib/progress';
 import {
   BackLink, Textarea, PrimaryButton, DarkButton, AudioPlayButton,
   ScoreHeaderPanel, CircularScore, Section, ResultCard, WordChips, slate,
@@ -9,6 +11,7 @@ import type { TrainerProps } from '@/trainers/types';
 
 /** Write from Dictation — listen, type it exactly. Deterministic local scoring. */
 export function WfdTrainer({ question, accent, onBack }: TrainerProps) {
+  const { user } = useAuth();
   const sentence = String(question.text ?? '');
   const title = typeof question.title === 'string' ? question.title : 'Dictation';
 
@@ -20,6 +23,7 @@ export function WfdTrainer({ question, accent, onBack }: TrainerProps) {
     setError(null);
     if (!answer.trim()) return setError('Type what you heard first.');
     setResult(scoreWfd(sentence, answer.trim()));
+    bumpSession(user?.uid);
   };
 
   if (result) {

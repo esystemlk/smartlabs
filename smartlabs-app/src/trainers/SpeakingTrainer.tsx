@@ -7,6 +7,8 @@ import { Audio } from 'expo-av';
 import { scoreSpeaking, type SpeakingScore } from '@/api/score';
 import { ApiError } from '@/api/client';
 import { SpeechRecorder } from '@/audio/recorder';
+import { useAuth } from '@/auth/AuthContext';
+import { bumpSession } from '@/lib/progress';
 import {
   BackLink, AudioPlayButton, PrimaryButton, DarkButton,
   ScoreHeaderPanel, CircularScore, ScorePill, Section, ResultCard, Bullets, slate,
@@ -26,6 +28,7 @@ const META: Record<string, { promptKey: string; present: Present; instruction: s
 
 export function SpeakingTrainer({ task, question, accent, onBack }: TrainerProps) {
   const router = useRouter();
+  const { user } = useAuth();
   const meta = META[task.taskType] ?? { promptKey: 'text', present: 'text' as Present, instruction: 'Speak your answer.' };
   const promptText = String(question[meta.promptKey] ?? question.text ?? '');
   const title = typeof question.title === 'string' ? question.title : '';
@@ -87,6 +90,7 @@ export function SpeakingTrainer({ task, question, accent, onBack }: TrainerProps
     setPhase('scoring');
     try {
       setResult(await scoreSpeaking({ taskType: task.taskType, promptText, audioDataUri: dataUri }));
+      bumpSession(user?.uid);
     } catch (e) {
       if (e instanceof ApiError && (e.code === 'NO_CREDITS' || e.status === 402)) {
         setError('You are out of speaking credits.');

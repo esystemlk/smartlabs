@@ -3,6 +3,8 @@ import { Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { scoreSwt } from '@/api/score';
 import { ApiError } from '@/api/client';
+import { useAuth } from '@/auth/AuthContext';
+import { bumpSession } from '@/lib/progress';
 import {
   BackLink, PromptPanel, Textarea, LiveChecks, PrimaryButton, DarkButton,
   ScoreHeaderPanel, CircularScore, ScorePill, Section, ResultCard, Bullets,
@@ -13,6 +15,7 @@ import type { TrainerProps } from '@/trainers/types';
 /** Summarize Written Text — read the passage, write a one-sentence summary. */
 export function SwtTrainer({ question, accent, onBack }: TrainerProps) {
   const router = useRouter();
+  const { user } = useAuth();
   const passage = String(question.passage ?? question.text ?? '');
   const title = typeof question.title === 'string' ? question.title : 'Passage';
 
@@ -36,6 +39,7 @@ export function SwtTrainer({ question, accent, onBack }: TrainerProps) {
     setLoading(true);
     try {
       setResult(await scoreSwt({ passage, summary: summary.trim() }));
+      bumpSession(user?.uid);
     } catch (e) {
       if (e instanceof ApiError && (e.code === 'NO_CREDITS' || e.status === 402)) {
         setError('You are out of SWT credits.');

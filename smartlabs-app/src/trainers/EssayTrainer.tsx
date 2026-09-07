@@ -3,6 +3,8 @@ import { Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { scoreEssay } from '@/api/score';
 import { ApiError } from '@/api/client';
+import { useAuth } from '@/auth/AuthContext';
+import { bumpSession } from '@/lib/progress';
 import {
   BackLink, PromptPanel, Textarea, LiveChecks, PrimaryButton, DarkButton,
   ScoreHeaderPanel, CircularScore, Section, ResultCard, slate,
@@ -14,6 +16,7 @@ interface Criterion { name: string; score: number; max: number; color?: string; 
 /** Write Essay — 200–300 word argumentative essay, AI-scored. */
 export function EssayTrainer({ question, accent, onBack }: TrainerProps) {
   const router = useRouter();
+  const { user } = useAuth();
   const topic = String(question.topic ?? question.prompt ?? '');
 
   const [essay, setEssay] = useState('');
@@ -30,6 +33,7 @@ export function EssayTrainer({ question, accent, onBack }: TrainerProps) {
     setLoading(true);
     try {
       setResult(await scoreEssay({ topic, essay: essay.trim(), wordCount: words }));
+      bumpSession(user?.uid);
     } catch (e) {
       if (e instanceof ApiError && (e.code === 'NO_CREDITS' || e.status === 402)) {
         setError('You are out of essay credits.');
