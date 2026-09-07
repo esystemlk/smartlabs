@@ -1,12 +1,16 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import {
-  initializeAuth,
-  getReactNativePersistence,
-  type Auth,
-} from 'firebase/auth';
+import { initializeAuth, type Auth, type Persistence } from 'firebase/auth';
+// `getReactNativePersistence` ships in firebase 10's RN build but is missing
+// from the published type defs, so pull it off the namespace with a cast.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+import * as firebaseAuth from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { firebaseConfig } from '@/config';
+
+const getReactNativePersistence = (firebaseAuth as unknown as {
+  getReactNativePersistence: (storage: unknown) => Persistence;
+}).getReactNativePersistence;
 
 /**
  * Firebase JS SDK initialised for React Native. `initializeAuth` with
