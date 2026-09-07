@@ -65,8 +65,19 @@ src/
   payments/payhere.ts     PayHere SDK launcher (lazy-loaded)
 ```
 
+## Implemented trainers
+
+- **Writing/Listening AI** — SWT, Write Essay, SST (TTS listen → summary), WFD
+  (TTS listen → type, scored locally with the ported deterministic engine).
+- **Speaking (all 7)** — Read Aloud, Repeat Sentence, Describe Image (renders the
+  inline SVG), Retell Lecture, Answer Short Question, Summarize Group Discussion,
+  Respond to a Situation. Record with the mic → `/api/score-speaking` → Content /
+  Fluency / Pronunciation / overall + transcript + tips (speaking credit pool).
+  Needs a **dev build** for the microphone (Android records AAC, iOS WAV — both
+  Gemini-friendly).
+
 ## Roadmap
 
-Phase 2 writing/listening AI · Phase 3 speaking (record → `/api/score-speaking`) ·
-Phase 4 interactive non-AI types · Phase 5 payments polish + EAS builds.
-Resolve app-store IAP policy before store release (see the plan).
+Phase 4 interactive non-AI types (reading/listening MCQ, reorder, fill-blanks,
+highlight) · Phase 5 payments polish + EAS builds. Resolve app-store IAP policy
+before store release (see the plan).
