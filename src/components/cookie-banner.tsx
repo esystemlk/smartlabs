@@ -13,7 +13,7 @@ export function CookieBanner() {
   const pathname = usePathname();
   // Never show site chrome on the status page — while the site is switched
   // off it must look like nothing is there.
-  const hidden = pathname === SITE_STATUS_PATH || pathname?.startsWith(DEV_CONSOLE_PATH);
+  const hidden = pathname === SITE_STATUS_PATH || pathname?.startsWith(DEV_CONSOLE_PATH) || pathname === '/welcome';
 
   useEffect(() => {
     // We need to check if we are on the client side before accessing localStorage
