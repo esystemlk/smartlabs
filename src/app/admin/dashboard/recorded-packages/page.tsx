@@ -82,6 +82,28 @@ export default function AdminRecordedPackagesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<RecordedPackage, 'id'>>(emptyPkg());
   const [saving, setSaving] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const coverRef = useRef<HTMLInputElement>(null);
+
+  const uploadCover = async (file: File) => {
+    if (!file || !user) return;
+    if (!file.type.startsWith('image/')) { toast({ variant: 'destructive', title: 'Please choose an image file.' }); return; }
+    if (file.size > 6 * 1024 * 1024) { toast({ variant: 'destructive', title: 'Image too large (max 6 MB).' }); return; }
+    setUploadingCover(true);
+    try {
+      const base64 = await new Promise<string>((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(file); });
+      const token = await user.getIdToken();
+      const resp = await fetch('/api/recorded-packages/upload-cover', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ filename: file.name, mimeType: file.type, base64 }),
+      });
+      const d = await resp.json();
+      if (!resp.ok || !d.url) { toast({ variant: 'destructive', title: d.error || 'Upload failed.' }); return; }
+      setForm(f => ({ ...f, thumbnail: d.url }));
+      toast({ title: 'Cover uploaded' });
+    } catch (e) { console.error(e); toast({ variant: 'destructive', title: 'Upload failed.' }); }
+    finally { setUploadingCover(false); if (coverRef.current) coverRef.current.value = ''; }
+  };
 
   const [managePkg, setManagePkg] = useState<RecordedPackage | null>(null);
 
@@ -348,7 +370,34 @@ export default function AdminRecordedPackagesPage() {
               <Field label="Features (one per line)">
                 <textarea value={(form.features ?? []).join('\n')} onChange={e => setForm(f => ({ ...f, features: e.target.value.split('\n') }))} rows={3} placeholder={'Full-length real class recordings\nWatch on any device\n2 months access'} className="rp-input" />
               </Field>
-              <Field label="Cover image URL (optional — else first class thumbnail)"><input value={form.thumbnail} onChange={e => setForm(f => ({ ...f, thumbnail: e.target.value }))} placeholder="https://…" className="rp-input" /></Field>
+              <Field label="Cover image (optional — else first class thumbnail)">
+                <div className="space-y-2">
+                  {form.thumbnail ? (
+                    <div className="relative w-full overflow-hidden rounded-xl border bg-muted" style={{ aspectRatio: '16 / 9' }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={form.thumbnail} alt="Cover preview" className="h-full w-full object-cover" />
+                      <div className="absolute right-2 top-2 flex gap-1.5">
+                        <button type="button" onClick={() => coverRef.current?.click()} disabled={uploadingCover}
+                          className="rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-black/75 disabled:opacity-60">
+                          {uploadingCover ? 'Uploading…' : 'Replace'}
+                        </button>
+                        <button type="button" onClick={() => setForm(f => ({ ...f, thumbnail: '' }))}
+                          className="rounded-full bg-black/60 p-1 text-white hover:bg-black/75"><X className="h-3.5 w-3.5" /></button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button type="button" onClick={() => coverRef.current?.click()} disabled={uploadingCover}
+                      className="flex w-full flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-muted-foreground/30 bg-muted/30 text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary disabled:opacity-60"
+                      style={{ aspectRatio: '16 / 9' }}>
+                      {uploadingCover ? <Loader2 className="h-6 w-6 animate-spin" /> : <Upload className="h-6 w-6" />}
+                      <span className="text-sm font-medium">{uploadingCover ? 'Uploading…' : 'Upload cover image'}</span>
+                    </button>
+                  )}
+                  <input ref={coverRef} type="file" accept="image/*" className="hidden"
+                    onChange={e => { const f = e.target.files?.[0]; if (f) uploadCover(f); }} />
+                  <p className="text-[11px] text-muted-foreground">Recommended 1706 × 960 (16:9). JPG or PNG, max 6 MB.</p>
+                </div>
+              </Field>
             </div>
             <div className="mt-6 flex gap-2">
               <Button variant="outline" className="flex-1" onClick={() => setShowPkg(false)}>Cancel</Button>
