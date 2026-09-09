@@ -18,7 +18,7 @@ export interface AccessTier {
 
 /** Default tiers requested by SmartLabs (editable per package). */
 export const DEFAULT_TIERS: AccessTier[] = [
-  { months: 1, price: 20000 },
+  { months: 2, price: 20000 },
   { months: 3, price: 30000 },
   { months: 4, price: 40000 },
 ];

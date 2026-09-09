@@ -62,7 +62,7 @@ interface LmsBatch {
 const emptyPkg = (): Omit<RecordedPackage, 'id'> => ({
   title: '', periodLabel: '', description: '', features: [], includesGrammar: true,
   tiers: DEFAULT_TIERS.map(t => ({ ...t })),
-  price: 20000, accessMonths: 1,
+  price: DEFAULT_TIERS[0].price, accessMonths: DEFAULT_TIERS[0].months,
   thumbnail: '', published: true, order: Date.now(),
 });
 
