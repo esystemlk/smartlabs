@@ -1,222 +1,98 @@
-'use client';
-
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUser, useFirebase } from '@/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, Check, CircleNotch, CalendarBlank as CalendarIcon } from '@phosphor-icons/react';
 import Image from 'next/image';
-import { Progress } from '@/components/ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
-import { Label } from '@/components/ui/label';
+import Link from 'next/link';
+import type { Metadata } from 'next';
+import { Star, Home, ArrowUpRight, MapPin, Phone } from 'lucide-react';
 
-const TOTAL_STEPS = 5;
+export const metadata: Metadata = {
+  title: 'Welcome to Smart Labs',
+  description: 'Leave us a Google review or explore our website — Smart Labs, Nugegoda.',
+  robots: { index: false, follow: true },
+};
+
+// Your Google Business listing (visitors tap "Rate and review" there).
+// To use a one-tap review link instead, replace this with your
+// "Get more reviews" link from Google Business Profile (e.g. https://g.page/r/…/review).
+const REVIEW_URL = 'https://maps.app.goo.gl/sK4iE7wum7nFo66M7';
+const PHONE = '+94774533233';
 
 export default function WelcomePage() {
-  const router = useRouter();
-  const { user, isUserLoading } = useUser();
-  const { firestore } = useFirebase();
-  const { toast } = useToast();
-
-  const [step, setStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Step 2
-  const [targetExam, setTargetExam] = useState<string>('');
-  const [targetScore, setTargetScore] = useState<string>('');
-  const [examDate, setExamDate] = useState<Date>();
-
-  // Step 3
-  const [phone, setPhone] = useState<string>('');
-  const [homeContact, setHomeContact] = useState<string>('');
-
-  // Step 4
-  const [address, setAddress] = useState<string>('');
-  const [country, setCountry] = useState<string>('');
-
-  // Step 5
-  const [aboutSelf, setAboutSelf] = useState<string>('');
-
-
-  const handleNextStep = () => {
-    if (step < TOTAL_STEPS) {
-      setStep(step + 1);
-    }
-  };
-
-  const handleFinish = async () => {
-    if (!user || !firestore) {
-      toast({ variant: 'destructive', title: 'Error', description: 'User session not found.' });
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const userRef = doc(firestore, 'users', user.uid);
-      await updateDoc(userRef, {
-        hasCompletedOnboarding: true,
-        // Step 2
-        targetExam: targetExam || null,
-        targetScore: targetScore || null,
-        examDate: examDate ? format(examDate, 'yyyy-MM-dd') : null,
-        // Step 3
-        phone: phone || user.phoneNumber || null,
-        homeContact: homeContact || null,
-        // Step 4
-        address: address || null,
-        country: country || null,
-        // Step 5
-        aboutSelf: aboutSelf || null,
-      });
-
-      toast({
-        title: 'Setup Complete!',
-        description: 'Your dashboard is now personalized for you.',
-      });
-
-      router.push('/dashboard');
-    } catch (error) {
-      console.error("Failed to update onboarding status:", error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Could not save your preferences. Please try again.',
-      });
-      setIsLoading(false);
-    }
-  };
-
-  if (isUserLoading || !user) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-center flex flex-col items-center gap-4">
-          <Image src="/logo.png" alt="Smart Labs Logo" width={80} height={80} className="animate-pulse-glow" />
-          <p className="text-lg font-semibold">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const progress = (step / TOTAL_STEPS) * 100;
-
   return (
-    <div className="w-full bg-muted/30">
-      <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
-        <Card className="w-full max-w-2xl shadow-2xl">
-          <CardHeader>
-            <div className="text-center">
-              <Image src="/logo.png" alt="Smart Labs Logo" width={64} height={64} className="mx-auto mb-4" />
-              <CardTitle className="font-headline text-3xl">Welcome, {user.displayName}!</CardTitle>
-              <CardDescription className="mt-2 text-lg">Let's complete your profile.</CardDescription>
-            </div>
-            <Progress value={progress} className="mt-6" />
-          </CardHeader>
-          <CardContent className="min-h-[300px] flex flex-col justify-center">
-            {step === 1 && (
-              <div className="text-center animate-fade-in">
-                <h3 className="font-semibold text-2xl mb-4">Your Path to Success Starts Here</h3>
-                <p className="text-muted-foreground mb-8 max-w-lg mx-auto">In the next few steps, we'll ask a few questions to create a personalized experience just for you.</p>
-                <Button onClick={handleNextStep} size="lg">
-                  Let's Go <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            )}
+    <main className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden px-5 py-10">
+      {/* Soft brand gradient background */}
+      <div
+        aria-hidden
+        className="absolute inset-0 -z-10"
+        style={{
+          background:
+            'radial-gradient(60% 55% at 15% 12%, hsl(217 91% 60% / 0.18), transparent 60%),' +
+            'radial-gradient(55% 50% at 85% 20%, hsl(347 89% 68% / 0.16), transparent 60%),' +
+            'radial-gradient(60% 55% at 78% 92%, hsl(38 92% 60% / 0.16), transparent 60%),' +
+            'radial-gradient(50% 50% at 20% 88%, hsl(159 70% 55% / 0.14), transparent 60%),' +
+            'hsl(240 10% 99%)',
+        }}
+      />
 
-            {step === 2 && (
-              <div className="animate-fade-in space-y-6">
-                <div>
-                  <Label className="text-xl font-semibold">Which exam are you preparing for?</Label>
-                  <Select onValueChange={setTargetExam} value={targetExam}>
-                    <SelectTrigger className="h-12 text-lg mt-2">
-                      <SelectValue placeholder="Select your exam..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PTE">PTE (Pearson Test of English)</SelectItem>
-                      <SelectItem value="CELPIP">CELPIP (Canadian English Language Proficiency Index Program)</SelectItem>
-                      <SelectItem value="Other">Other / Not decided yet</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="target-score" className="text-lg font-semibold">What's your target score?</Label>
-                  <p className="text-sm text-muted-foreground">e.g., "79+" for PTE, "Level 9" for CELPIP.</p>
-                  <Input id="target-score" value={targetScore} onChange={(e) => setTargetScore(e.target.value)} placeholder="Enter target score" className="h-12 text-lg mt-2" />
-                </div>
-                <div>
-                  <Label className="text-lg font-semibold">When is your exam date?</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal h-12 text-lg mt-2", !examDate && "text-muted-foreground")}>
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {examDate ? format(examDate, "PPP") : <span>Pick a date (Optional)</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={examDate} onSelect={setExamDate} initialFocus /></PopoverContent>
-                  </Popover>
-                </div>
-                <Button onClick={handleNextStep} className="mt-4 w-full" size="lg">Next <ArrowRight className="ml-2 h-4 w-4" /></Button>
-              </div>
-            )}
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="mb-8 flex justify-center">
+          <Image src="/logo.png" alt="Smart Labs" width={220} height={78} priority className="h-auto w-52" />
+        </div>
 
-            {step === 3 && (
-              <div className="animate-fade-in space-y-6">
-                <div>
-                  <Label htmlFor="phone" className="text-xl font-semibold">Contact Information</Label>
-                  <p className="text-sm text-muted-foreground mb-2">How can we reach you?</p>
-                </div>
-                <div>
-                  <Label htmlFor="phone" className="text-lg font-semibold">Your Mobile Number</Label>
-                  <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g., +94 77 123 4567" className="h-12 text-lg mt-2" />
-                </div>
-                <div>
-                  <Label htmlFor="homeContact" className="text-lg font-semibold">Home Contact Number</Label>
-                  <Input id="homeContact" value={homeContact} onChange={(e) => setHomeContact(e.target.value)} placeholder="(Optional)" className="h-12 text-lg mt-2" />
-                </div>
-                <Button onClick={handleNextStep} className="mt-4 w-full" size="lg">Next <ArrowRight className="ml-2 h-4 w-4" /></Button>
-              </div>
-            )}
+        <div className="rounded-3xl border border-white/70 bg-white/80 p-6 shadow-xl shadow-blue-500/10 backdrop-blur-sm sm:p-8">
+          <h1 className="text-center text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
+            Welcome to Smart Labs 👋
+          </h1>
+          <p className="mx-auto mt-2 max-w-xs text-center text-sm text-slate-500">
+            Thanks for scanning! How can we help you today?
+          </p>
 
-            {step === 4 && (
-              <div className="animate-fade-in space-y-6">
-                <div>
-                  <Label className="text-xl font-semibold">Where are you from?</Label>
-                </div>
-                <div>
-                  <Label htmlFor="address" className="text-lg font-semibold">Your Address</Label>
-                  <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="e.g., 123 Main St, Colombo" className="h-12 text-lg mt-2" />
-                </div>
-                <div>
-                  <Label htmlFor="country" className="text-lg font-semibold">Country</Label>
-                  <Input id="country" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="e.g., Sri Lanka" className="h-12 text-lg mt-2" />
-                </div>
-                <Button onClick={handleNextStep} className="mt-4 w-full" size="lg">Next <ArrowRight className="ml-2 h-4 w-4" /></Button>
-              </div>
-            )}
+          <div className="mt-7 space-y-3">
+            {/* Google review */}
+            <a
+              href={REVIEW_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-4 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-5 py-4 text-white shadow-lg shadow-orange-500/25 transition-transform active:scale-[0.98]"
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/20">
+                <Star className="h-6 w-6 fill-white" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-base font-bold leading-tight">Leave us a Google Review</span>
+                <span className="block text-xs text-white/85">Rate your experience — it means a lot!</span>
+              </span>
+              <ArrowUpRight className="h-5 w-5 shrink-0 opacity-80 transition-transform group-hover:translate-x-0.5" />
+            </a>
 
-            {step === 5 && (
-              <div className="animate-fade-in space-y-4">
-                <Label className="text-xl font-semibold" htmlFor="about-self">Tell us a bit about yourself</Label>
-                <p className="text-sm text-muted-foreground">What are your goals? What do you hope to achieve? (Optional)</p>
-                <Textarea id="about-self" value={aboutSelf} onChange={(e) => setAboutSelf(e.target.value)} className="min-h-32 text-base" />
-                <Button onClick={handleFinish} className="mt-4 w-full" size="lg" disabled={isLoading}>
-                  {isLoading ? <CircleNotch weight="bold" className="mr-2 h-4 w-4 animate-spin" /> : <Check weight="bold" className="mr-2 h-4 w-4" />}
-                  Finish Setup
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            {/* Website home */}
+            <Link
+              href="/"
+              className="group flex items-center gap-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-4 text-white shadow-lg shadow-blue-600/25 transition-transform active:scale-[0.98]"
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/20">
+                <Home className="h-6 w-6" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-base font-bold leading-tight">Visit our Website</span>
+                <span className="block text-xs text-white/85">Courses, mock tests & AI practice</span>
+              </span>
+              <ArrowUpRight className="h-5 w-5 shrink-0 opacity-80 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </div>
+
+          {/* Contact strip */}
+          <div className="mt-7 flex flex-col items-center gap-2 border-t border-slate-200/70 pt-5 text-xs text-slate-500 sm:flex-row sm:justify-center sm:gap-5">
+            <a href={REVIEW_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-slate-700">
+              <MapPin className="h-3.5 w-3.5" /> 19/3 Poorwarama Rd, Nugegoda
+            </a>
+            <a href={`tel:${PHONE}`} className="inline-flex items-center gap-1.5 hover:text-slate-700">
+              <Phone className="h-3.5 w-3.5" /> {PHONE}
+            </a>
+          </div>
+        </div>
+
+        <p className="mt-6 text-center text-[11px] text-slate-400">SMART LABS · Nugegoda, Sri Lanka</p>
       </div>
-    </div>
+    </main>
   );
 }
