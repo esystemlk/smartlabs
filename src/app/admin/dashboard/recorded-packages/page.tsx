@@ -56,7 +56,7 @@ function parseLmsCsv(text: string): { title: string; url: string; course: string
 interface LmsBatch {
   courseId: string; courseTitle: string;
   batchId: string; batchName: string; startDate?: string; status?: string;
-  recordings: { title: string; bunnyLibraryId: string; bunnyVideoId: string; date?: string }[];
+  recordings: { title: string; bunnyLibraryId: string; bunnyVideoId: string; date?: string; duration?: string }[];
 }
 
 const emptyPkg = (): Omit<RecordedPackage, 'id'> => ({
@@ -122,7 +122,7 @@ export default function AdminRecordedPackagesPage() {
       let ok = 0;
       for (let i = 0; i < batch.recordings.length; i++) {
         const r = batch.recordings[i];
-        await addClass({ packageId: pkgId, title: r.title, bunnyLibraryId: r.bunnyLibraryId, bunnyVideoId: r.bunnyVideoId, duration: '', order: i, published: true });
+        await addClass({ packageId: pkgId, title: r.title, bunnyLibraryId: r.bunnyLibraryId, bunnyVideoId: r.bunnyVideoId, duration: r.duration || '', order: i, published: true });
         ok++;
       }
       toast({
@@ -234,7 +234,7 @@ export default function AdminRecordedPackagesPage() {
               <h2 className="text-lg font-semibold">Import a batch from the LMS</h2>
               <button onClick={() => !importingBatch && setShowLms(false)} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
             </div>
-            <p className="text-xs text-muted-foreground mb-4">Pick an LMS batch to create a package from its recorded classes. The package is created <b>hidden</b> — set the prices and publish it when ready.</p>
+            <p className="text-xs text-muted-foreground mb-4">Each batch auto-includes the class videos <b>recorded during its dates</b> (pulled from the Bunny library). The package is created <b>hidden</b> — set the prices and publish it when ready. You can add or remove videos afterwards in the package&apos;s Classes panel.</p>
             {lmsLoading ? (
               <div className="py-10 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" /></div>
             ) : lmsError ? (
