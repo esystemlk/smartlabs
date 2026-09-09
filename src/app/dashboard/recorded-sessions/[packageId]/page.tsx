@@ -9,10 +9,10 @@ import { payhereUrls } from '@/lib/payhere';
 import { getPackage, listClasses, getMyEnrollments } from '@/lib/services/recorded-packages.service';
 import {
   type RecordedPackage, type RecordedClass, type RecordedEnrollment,
-  formatLkr, isEnrollmentValid, daysLeft, bunnyEmbedUrl, packageTiers, tierLabel,
+  formatLkr, isEnrollmentValid, daysLeft, bunnyEmbedUrl, bunnyThumbnailUrl, packageTiers, tierLabel,
 } from '@/types/recorded-package';
 import {
-  ArrowLeft, Loader2, Lock, PlayCircle, Clock, Film,
+  ArrowLeft, Loader2, Lock, PlayCircle, Clock, Film, Search,
   AlertTriangle, ShieldCheck, ListVideo, GraduationCap, Landmark, MessageCircle, Phone,
 } from 'lucide-react';
 
@@ -63,6 +63,15 @@ export default function RecordedPackagePlayer() {
 
   const owned = isEnrollmentValid(enrollment);
   const active = classes.find(c => c.id === activeId) ?? null;
+  const activeIndex = classes.findIndex(c => c.id === activeId);
+  const [q, setQ] = useState('');
+  const filteredClasses = q.trim()
+    ? classes.filter(c => c.title.toLowerCase().includes(q.trim().toLowerCase()))
+    : classes;
+  const goTo = (delta: number) => {
+    const next = classes[activeIndex + delta];
+    if (next) { setActiveId(next.id!); if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  };
 
   const buy = async () => {
     if (!pkg) return;
@@ -181,50 +190,86 @@ export default function RecordedPackagePlayer() {
         })()
       ) : (
         // ── Player ──
-        <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+          {/* Player column */}
           <div className="min-w-0">
-            <div className="overflow-hidden rounded-2xl border bg-black aspect-video">
-              {active ? (
-                <iframe
-                  key={active.id}
-                  src={bunnyEmbedUrl(active.bunnyLibraryId, active.bunnyVideoId)}
-                  loading="lazy"
-                  className="h-full w-full"
-                  allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;fullscreen"
-                  allowFullScreen
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-white/60"><Film className="h-10 w-10" /></div>
+            <div className="lg:sticky lg:top-4">
+              <div className="overflow-hidden rounded-2xl border bg-black shadow-sm" style={{ aspectRatio: '16 / 9' }}>
+                {active ? (
+                  <iframe
+                    key={active.id}
+                    src={bunnyEmbedUrl(active.bunnyLibraryId, active.bunnyVideoId)}
+                    loading="lazy"
+                    className="h-full w-full"
+                    allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;fullscreen"
+                    allowFullScreen
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-white/60"><Film className="h-10 w-10" /></div>
+                )}
+              </div>
+
+              {active && (
+                <div className="mt-3">
+                  <h2 className="text-base sm:text-lg font-bold leading-snug">{active.title}</h2>
+                  <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                    <span className="font-medium text-muted-foreground">Class {activeIndex + 1} of {classes.length}</span>
+                    {active.duration && <span className="text-muted-foreground">· {active.duration}</span>}
+                    <span className="inline-flex items-center gap-1 font-medium text-green-600"><Clock className="h-3.5 w-3.5" /> {daysLeft(enrollment!)} day{daysLeft(enrollment!) === 1 ? '' : 's'} left</span>
+                  </p>
+                </div>
               )}
+
+              {/* Prev / Next */}
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <button onClick={() => goTo(-1)} disabled={activeIndex <= 0}
+                  className="inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-sm font-medium hover:bg-accent disabled:opacity-40">
+                  <ArrowLeft className="h-4 w-4" /> Previous
+                </button>
+                <button onClick={() => goTo(1)} disabled={activeIndex >= classes.length - 1}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-40">
+                  Next class <PlayCircle className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-            {active && <h2 className="mt-3 text-base font-bold">{active.title}</h2>}
-            <p className="mt-1 text-xs text-green-600 font-medium flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" /> {daysLeft(enrollment!)} day{daysLeft(enrollment!) === 1 ? '' : 's'} of access left
-            </p>
           </div>
 
           {/* Playlist */}
-          <div className="rounded-2xl border bg-card overflow-hidden lg:max-h-[70vh] lg:overflow-y-auto">
-            <div className="sticky top-0 flex items-center gap-2 border-b bg-muted/40 px-4 py-3 text-sm font-semibold">
-              <ListVideo className="h-4 w-4 text-primary" /> {classes.length} Classes
+          <div className="flex flex-col rounded-2xl border bg-card overflow-hidden lg:max-h-[calc(100vh-2rem)]">
+            <div className="border-b bg-muted/40 px-3 py-3">
+              <div className="mb-2 flex items-center gap-2 px-1 text-sm font-semibold">
+                <ListVideo className="h-4 w-4 text-primary" /> {classes.length} Class{classes.length === 1 ? '' : 'es'}
+              </div>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search classes…"
+                  className="w-full rounded-lg border bg-background py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+              </div>
             </div>
-            <div className="divide-y">
-              {classes.map((c, i) => {
+            <div className="divide-y overflow-y-auto">
+              {filteredClasses.map((c) => {
                 const isActive = c.id === activeId;
+                const n = classes.findIndex(x => x.id === c.id) + 1;
                 return (
-                  <button key={c.id} onClick={() => setActiveId(c.id!)}
-                    className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors ${isActive ? 'bg-primary/5' : 'hover:bg-muted/40'}`}>
-                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${isActive ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                      {isActive ? <PlayCircle className="h-4 w-4" /> : i + 1}
+                  <button key={c.id} onClick={() => { setActiveId(c.id!); if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    className={`flex w-full items-center gap-3 p-2.5 text-left transition-colors ${isActive ? 'bg-primary/5' : 'hover:bg-muted/40'}`}>
+                    <div className="relative h-12 w-20 shrink-0 overflow-hidden rounded-md bg-muted">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={bunnyThumbnailUrl(c.bunnyLibraryId, c.bunnyVideoId)} alt="" loading="lazy" className="h-full w-full object-cover" />
+                      {isActive && (
+                        <span className="absolute inset-0 flex items-center justify-center bg-black/40"><PlayCircle className="h-6 w-6 text-white" /></span>
+                      )}
+                      {c.duration && <span className="absolute bottom-0.5 right-0.5 rounded bg-black/75 px-1 text-[9px] font-semibold text-white">{c.duration}</span>}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className={`truncate text-sm ${isActive ? 'font-semibold text-primary' : 'font-medium'}`}>{c.title}</p>
-                      {c.duration && <p className="text-xs text-muted-foreground">{c.duration}</p>}
+                      <p className={`line-clamp-2 text-sm leading-snug ${isActive ? 'font-semibold text-primary' : 'font-medium'}`}>{c.title}</p>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">Class {n}</p>
                     </div>
                   </button>
                 );
               })}
               {classes.length === 0 && <p className="px-4 py-6 text-center text-sm text-muted-foreground">No classes in this package yet.</p>}
+              {classes.length > 0 && filteredClasses.length === 0 && <p className="px-4 py-6 text-center text-sm text-muted-foreground">No classes match “{q}”.</p>}
             </div>
           </div>
         </div>

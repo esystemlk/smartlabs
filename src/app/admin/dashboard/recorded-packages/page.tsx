@@ -16,7 +16,7 @@ import {
 import { type RecordedPackage, type RecordedClass, formatLkr, DEFAULT_TIERS } from '@/types/recorded-package';
 import {
   ArrowLeft, Plus, Pencil, Trash2, Loader2, X, Film, PlayCircle,
-  Eye, EyeOff, ListVideo, GripVertical, Upload, Wallet, Download,
+  Eye, EyeOff, ListVideo, GripVertical, Upload, Wallet, Download, Check,
 } from 'lucide-react';
 
 /** Parse one CSV line, honouring quoted fields and "" escaping. */
@@ -379,6 +379,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 // ─── Class manager modal ─────────────────────────────────────────────────────
 function ClassManager({ pkg, onClose }: { pkg: RecordedPackage; onClose: () => void }) {
   const { toast } = useToast();
+  const { user } = useUser();
   const [classes, setClasses] = useState<RecordedClass[]>([]);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
@@ -388,6 +389,7 @@ function ClassManager({ pkg, onClose }: { pkg: RecordedPackage; onClose: () => v
   const [bulk, setBulk] = useState('');
   const [showBulk, setShowBulk] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [showBunny, setShowBunny] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
@@ -475,6 +477,9 @@ function ClassManager({ pkg, onClose }: { pkg: RecordedPackage; onClose: () => v
           <input value={link} onChange={e => setLink(e.target.value)} placeholder="Bunny link or 12345/video-guid" className="rp-input" />
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-3">
+              <button onClick={() => setShowBunny(true)} className="inline-flex items-center gap-1 text-xs font-semibold text-primary underline">
+                <Film className="h-3 w-3" /> Browse Bunny library
+              </button>
               <button onClick={() => setShowBulk(v => !v)} className="text-xs text-primary underline">{showBulk ? 'Hide bulk paste' : 'Bulk paste'}</button>
               <button onClick={() => fileRef.current?.click()} disabled={importing} className="inline-flex items-center gap-1 text-xs text-primary underline disabled:opacity-60">
                 {importing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />} Import CSV (from LMS export)
@@ -514,6 +519,139 @@ function ClassManager({ pkg, onClose }: { pkg: RecordedPackage; onClose: () => v
               <button onClick={() => remove(c)} className="text-red-600 hover:text-red-700 shrink-0"><Trash2 className="h-4 w-4" /></button>
             </div>
           ))}
+        </div>
+      </div>
+      {showBunny && (
+        <BunnyPicker user={user} pkg={pkg} startOrder={classes.length}
+          onDone={load} onClose={() => setShowBunny(false)} />
+      )}
+    </div>
+  );
+}
+
+interface BunnyVideo { videoId: string; libraryId: string; title: string; durationSeconds: number; thumbnailUrl: string; dateUploaded: string; views: number; status: number; }
+function fmtDur(s: number): string {
+  s = Math.round(s || 0);
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  if (h) return `${h}h ${m}m`;
+  if (m) return `${m}m ${sec}s`;
+  return `${sec}s`;
+}
+
+function BunnyPicker({ user, pkg, startOrder, onDone, onClose }: {
+  user: ReturnType<typeof useUser>['user']; pkg: RecordedPackage; startOrder: number; onDone: () => void; onClose: () => void;
+}) {
+  const { toast } = useToast();
+  const [videos, setVideos] = useState<BunnyVideo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+  const [term, setTerm] = useState('');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [selected, setSelected] = useState<Record<string, BunnyVideo>>({});
+  const [adding, setAdding] = useState(false);
+  const perPage = 40;
+
+  const fetchVideos = useCallback(async (p: number, q: string) => {
+    if (!user) return;
+    setLoading(true); setErr(null);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch(`/api/recorded-packages/bunny-videos?page=${p}&perPage=${perPage}&search=${encodeURIComponent(q)}`, { headers: { Authorization: `Bearer ${token}` } });
+      const d = await res.json();
+      if (!res.ok) { setErr(d.error || 'Failed to load Bunny videos.'); setVideos([]); return; }
+      setVideos(d.videos || []); setTotal(d.totalItems || 0); setPage(d.page || p);
+    } catch { setErr('Network error loading videos.'); }
+    finally { setLoading(false); }
+  }, [user]);
+
+  useEffect(() => { fetchVideos(page, search); }, [page, search, fetchVideos]);
+
+  const toggle = (v: BunnyVideo) => setSelected(s => { const n = { ...s }; if (n[v.videoId]) delete n[v.videoId]; else n[v.videoId] = v; return n; });
+  const selCount = Object.keys(selected).length;
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
+
+  const addSelected = async () => {
+    const list = Object.values(selected);
+    if (!list.length) return;
+    setAdding(true);
+    try {
+      for (let i = 0; i < list.length; i++) {
+        const v = list[i];
+        await addClass({ packageId: pkg.id!, title: v.title, bunnyLibraryId: v.libraryId, bunnyVideoId: v.videoId, duration: fmtDur(v.durationSeconds), order: startOrder + i, published: true });
+      }
+      toast({ title: `Added ${list.length} video${list.length === 1 ? '' : 's'} to “${pkg.title}”` });
+      onDone(); onClose();
+    } catch (e) { console.error(e); toast({ variant: 'destructive', title: 'Could not add some videos.' }); }
+    finally { setAdding(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4"
+      onClick={(e) => { e.stopPropagation(); if (!adding) onClose(); }}>
+      <div className="flex w-full sm:max-w-4xl max-h-[92vh] flex-col rounded-t-2xl sm:rounded-2xl bg-card" onClick={e => e.stopPropagation()}>
+        {/* Header + search */}
+        <div className="flex items-center gap-2 border-b p-4">
+          <Film className="h-5 w-5 text-primary shrink-0" />
+          <h2 className="text-base font-semibold shrink-0">Bunny library</h2>
+          <form onSubmit={e => { e.preventDefault(); setSearch(term); setPage(1); }} className="ml-2 flex flex-1 items-center gap-2">
+            <input value={term} onChange={e => setTerm(e.target.value)} placeholder="Search by title / date…" className="rp-input flex-1" />
+            <Button type="submit" size="sm" variant="secondary">Search</Button>
+          </form>
+          <Button variant="ghost" size="sm" onClick={() => !adding && onClose()}><X className="h-4 w-4" /></Button>
+        </div>
+
+        {/* Grid */}
+        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+          {loading ? (
+            <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" /> Loading videos…</div>
+          ) : err ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">{err}</div>
+          ) : videos.length === 0 ? (
+            <p className="py-16 text-center text-sm text-muted-foreground">No videos found.</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {videos.map(v => {
+                const sel = !!selected[v.videoId];
+                return (
+                  <button key={v.videoId} type="button" onClick={() => toggle(v)}
+                    className={`group relative overflow-hidden rounded-xl border-2 text-left transition ${sel ? 'border-primary ring-2 ring-primary/30' : 'border-transparent hover:border-primary/40'}`}>
+                    <div className="relative aspect-video bg-muted">
+                      {v.thumbnailUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={v.thumbnailUrl} alt={v.title} loading="lazy" className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center"><Film className="h-8 w-8 text-muted-foreground/40" /></div>
+                      )}
+                      {v.durationSeconds > 0 && (
+                        <span className="absolute bottom-1 right-1 rounded bg-black/75 px-1.5 py-0.5 text-[10px] font-semibold text-white">{fmtDur(v.durationSeconds)}</span>
+                      )}
+                      <span className={`absolute left-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2 ${sel ? 'border-primary bg-primary text-primary-foreground' : 'border-white bg-black/40 text-transparent'}`}>
+                        <Check className="h-3 w-3" />
+                      </span>
+                      {v.status !== 4 && <span className="absolute right-1.5 top-1.5 rounded bg-amber-500 px-1.5 py-0.5 text-[9px] font-bold text-white">processing</span>}
+                    </div>
+                    <div className="p-2">
+                      <p className="line-clamp-2 text-xs font-medium leading-snug">{v.title}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Footer: pagination + add */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t p-3">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Button variant="outline" size="sm" disabled={page <= 1 || loading} onClick={() => setPage(p => Math.max(1, p - 1))}>Prev</Button>
+            <span>Page {page} / {totalPages} · {total} videos</span>
+            <Button variant="outline" size="sm" disabled={page >= totalPages || loading} onClick={() => setPage(p => p + 1)}>Next</Button>
+          </div>
+          <Button size="sm" disabled={!selCount || adding} onClick={addSelected} className="gap-1.5">
+            {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Add {selCount || ''} selected
+          </Button>
         </div>
       </div>
     </div>
