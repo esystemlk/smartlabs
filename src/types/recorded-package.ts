@@ -10,6 +10,19 @@
 // Re-export the Bunny helpers so consumers have a single import.
 export { bunnyEmbedUrl, bunnyThumbnailUrl } from '@/types/recording';
 
+/** One purchasable duration option for a package. */
+export interface AccessTier {
+  months: number;
+  price: number;
+}
+
+/** Default tiers requested by SmartLabs (editable per package). */
+export const DEFAULT_TIERS: AccessTier[] = [
+  { months: 1, price: 20000 },
+  { months: 3, price: 30000 },
+  { months: 4, price: 40000 },
+];
+
 /** A purchasable package = a set of recorded classes (e.g. "January 2026"). */
 export interface RecordedPackage {
   id?: string;
@@ -17,12 +30,19 @@ export interface RecordedPackage {
   title: string;
   /** Short period/batch label shown as a chip, e.g. "January 2026". */
   periodLabel?: string;
+  /** Source batch id from the LMS, when created from an LMS batch. */
+  lmsBatchId?: string;
+  lmsCourseTitle?: string;
   description?: string;
   /** Bullet features shown on the card + receipt. */
   features?: string[];
-  /** Price in LKR (the amount charged — no extra fee added). */
+  /** Whether grammar sessions are included (shown as a badge). */
+  includesGrammar?: boolean;
+  /** Duration/price tiers the student can choose from. */
+  tiers?: AccessTier[];
+  /** Legacy single price — kept for back-compat; tiers take precedence. */
   price: number;
-  /** Months of access granted from purchase. */
+  /** Legacy single access length — kept for back-compat; tiers take precedence. */
   accessMonths: number;
   /** Optional cover image URL. Falls back to the first class's Bunny thumbnail. */
   thumbnail?: string;
@@ -69,6 +89,14 @@ export interface RecordedEnrollment {
 
 /** LKR formatter, matching the course pages. */
 export const formatLkr = (n: number): string => `LKR ${Number(n || 0).toLocaleString('en-LK')}`;
+
+/** The tiers to show for a package (falls back to the legacy single price/access). */
+export function packageTiers(p: Pick<RecordedPackage, 'tiers' | 'price' | 'accessMonths'>): AccessTier[] {
+  if (p.tiers && p.tiers.length) return p.tiers.filter((t) => t && t.months > 0 && t.price > 0);
+  return [{ months: p.accessMonths || 1, price: p.price || 0 }];
+}
+/** Label for a duration, e.g. "1 month" / "3 months". */
+export const tierLabel = (months: number): string => `${months} month${months === 1 ? '' : 's'}`;
 
 /** Add whole months to a date (clamps end-of-month). */
 export function addMonths(date: Date, months: number): Date {

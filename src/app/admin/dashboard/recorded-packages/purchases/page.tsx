@@ -7,12 +7,12 @@ import { doc, getDoc, getDocs, collection } from 'firebase/firestore';
 import { useUser, useFirebase } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { listAllEnrollments } from '@/lib/services/recorded-packages.service';
-import { type RecordedEnrollment, formatLkr, isEnrollmentValid, daysLeft } from '@/types/recorded-package';
+import { listAllEnrollments, listPackages } from '@/lib/services/recorded-packages.service';
+import { type RecordedEnrollment, type RecordedPackage, formatLkr, isEnrollmentValid, daysLeft, packageTiers, tierLabel } from '@/types/recorded-package';
 import { phoneKey } from '@/lib/utils';
 import {
-  ArrowLeft, Loader2, Search, Wallet, Users, CalendarDays, Film,
-  TrendingUp, X, Download,
+  ArrowLeft, Loader2, Search, Wallet, Users, Film,
+  TrendingUp, X, Download, UserPlus,
 } from 'lucide-react';
 
 type Row = RecordedEnrollment & { phone: string; name: string; email: string; when: Date | null };
@@ -42,6 +42,40 @@ export default function RecordedPurchasesPage() {
 
   const [search, setSearch] = useState('');
   const [{ from, to }, setPeriod] = useState(monthRange());
+
+  // Manual grant (bank-transfer buyers)
+  const [packages, setPackages] = useState<RecordedPackage[]>([]);
+  const [grantPkgId, setGrantPkgId] = useState('');
+  const [grantEmail, setGrantEmail] = useState('');
+  const [grantMonths, setGrantMonths] = useState<number>(1);
+  const [granting, setGranting] = useState(false);
+  const [grantMsg, setGrantMsg] = useState<string | null>(null);
+
+  useEffect(() => { if (allowed) listPackages(false).then(setPackages).catch(() => {}); }, [allowed]);
+  const grantPkg = packages.find(p => p.id === grantPkgId);
+  const grantTiers = grantPkg ? packageTiers(grantPkg) : [];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (grantTiers.length) setGrantMonths(grantTiers[0].months); }, [grantPkgId]);
+
+  const grantAccess = async () => {
+    if (!user) return;
+    if (!grantPkgId || !grantEmail.trim()) { setGrantMsg('Choose a package and enter the student email.'); return; }
+    setGranting(true); setGrantMsg(null);
+    try {
+      const token = await user.getIdToken();
+      const tier = grantTiers.find(t => t.months === grantMonths);
+      const res = await fetch('/api/recorded-packages/grant-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ packageId: grantPkgId, email: grantEmail.trim(), months: grantMonths, amountPaid: tier?.price || 0 }),
+      });
+      const d = await res.json();
+      if (!res.ok) { setGrantMsg(d.error || 'Grant failed.'); return; }
+      setGrantMsg(`✓ Access granted to ${d.grantedTo} for ${d.months} month(s). Expires ${new Date(d.expiresAt).toLocaleDateString()}. Refresh to see it in the list.`);
+      setGrantEmail('');
+    } catch { setGrantMsg('Network error. Please try again.'); }
+    finally { setGranting(false); }
+  };
 
   // Access guard
   useEffect(() => {
@@ -163,6 +197,38 @@ export default function RecordedPurchasesPage() {
           <StatCard icon={Wallet} tone="text-primary bg-primary/10" label="Lifetime earnings" value={formatLkr(lifetime)} sub={`${rows.length} total`} />
           <StatCard icon={Users} tone="text-blue-600 bg-blue-500/10" label="Active students" value={String(activeCount)} sub="valid access" />
           <StatCard icon={Film} tone="text-rose-600 bg-rose-500/10" label="Expired" value={String(rows.length - activeCount)} sub="need renewal" />
+        </div>
+
+        {/* Manual grant — for bank-transfer buyers */}
+        <div className="rounded-xl border bg-card p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <UserPlus className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-semibold">Grant access manually (bank transfer)</h2>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">Enter the student&apos;s email, pick the package and duration. Access starts now and auto-expires after the chosen months. The student must already have a website account.</p>
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="min-w-[220px] flex-1">
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">Package</label>
+              <select value={grantPkgId} onChange={e => setGrantPkgId(e.target.value)} className="w-full rounded-lg border bg-background px-3 py-2 text-sm">
+                <option value="">Select a package…</option>
+                {packages.map(p => <option key={p.id} value={p.id}>{p.title}{p.published ? '' : ' (hidden)'}</option>)}
+              </select>
+            </div>
+            <div className="min-w-[220px] flex-1">
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">Student email</label>
+              <input type="email" value={grantEmail} onChange={e => setGrantEmail(e.target.value)} placeholder="student@example.com" className="w-full rounded-lg border bg-background px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">Duration</label>
+              <select value={grantMonths} onChange={e => setGrantMonths(Number(e.target.value))} className="rounded-lg border bg-background px-3 py-2 text-sm" disabled={!grantTiers.length}>
+                {grantTiers.map(t => <option key={t.months} value={t.months}>{tierLabel(t.months)} — {formatLkr(t.price)}</option>)}
+              </select>
+            </div>
+            <Button onClick={grantAccess} disabled={granting} className="gap-1.5">
+              {granting ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />} Grant access
+            </Button>
+          </div>
+          {grantMsg && <p className={`mt-2 text-xs ${grantMsg.startsWith('✓') ? 'text-green-600' : 'text-red-600'}`}>{grantMsg}</p>}
         </div>
 
         {/* Controls */}

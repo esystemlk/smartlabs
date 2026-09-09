@@ -13,10 +13,10 @@ import {
   listPackages, addPackage, updatePackage, deletePackage,
   listClasses, addClass, updateClass, deleteClass,
 } from '@/lib/services/recorded-packages.service';
-import { type RecordedPackage, type RecordedClass, formatLkr } from '@/types/recorded-package';
+import { type RecordedPackage, type RecordedClass, formatLkr, DEFAULT_TIERS } from '@/types/recorded-package';
 import {
   ArrowLeft, Plus, Pencil, Trash2, Loader2, X, Film, PlayCircle,
-  Eye, EyeOff, ListVideo, GripVertical, Upload, Wallet,
+  Eye, EyeOff, ListVideo, GripVertical, Upload, Wallet, Download,
 } from 'lucide-react';
 
 /** Parse one CSV line, honouring quoted fields and "" escaping. */
@@ -53,8 +53,16 @@ function parseLmsCsv(text: string): { title: string; url: string; course: string
   return rows;
 }
 
+interface LmsBatch {
+  courseId: string; courseTitle: string;
+  batchId: string; batchName: string; startDate?: string; status?: string;
+  recordings: { title: string; bunnyLibraryId: string; bunnyVideoId: string; date?: string }[];
+}
+
 const emptyPkg = (): Omit<RecordedPackage, 'id'> => ({
-  title: '', periodLabel: '', description: '', features: [], price: 5000, accessMonths: 2,
+  title: '', periodLabel: '', description: '', features: [], includesGrammar: true,
+  tiers: DEFAULT_TIERS.map(t => ({ ...t })),
+  price: 20000, accessMonths: 1,
   thumbnail: '', published: true, order: Date.now(),
 });
 
@@ -76,6 +84,53 @@ export default function AdminRecordedPackagesPage() {
   const [saving, setSaving] = useState(false);
 
   const [managePkg, setManagePkg] = useState<RecordedPackage | null>(null);
+
+  // LMS batch import
+  const [showLms, setShowLms] = useState(false);
+  const [lmsBatches, setLmsBatches] = useState<LmsBatch[]>([]);
+  const [lmsLoading, setLmsLoading] = useState(false);
+  const [lmsError, setLmsError] = useState<string | null>(null);
+  const [importingBatch, setImportingBatch] = useState<string | null>(null);
+
+  const openLms = async () => {
+    setShowLms(true); setLmsError(null);
+    if (!user) return;
+    setLmsLoading(true);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/recorded-packages/lms-batches', { headers: { Authorization: `Bearer ${token}` } });
+      const d = await res.json();
+      if (!res.ok) { setLmsError(d.error || 'Failed to load LMS batches.'); setLmsBatches([]); }
+      else setLmsBatches(d.batches || []);
+    } catch { setLmsError('Network error loading LMS batches.'); }
+    finally { setLmsLoading(false); }
+  };
+
+  const importBatch = async (batch: LmsBatch) => {
+    setImportingBatch(batch.batchId);
+    try {
+      const pkgId = await addPackage({
+        title: `${batch.batchName} — Recorded Classes`,
+        periodLabel: batch.batchName,
+        lmsBatchId: batch.batchId, lmsCourseTitle: batch.courseTitle,
+        description: `${batch.courseTitle} · ${batch.batchName}`,
+        features: [], includesGrammar: true,
+        tiers: DEFAULT_TIERS.map(t => ({ ...t })),
+        price: DEFAULT_TIERS[0].price, accessMonths: DEFAULT_TIERS[0].months,
+        thumbnail: '', published: false, order: Date.now(),
+      });
+      let ok = 0;
+      for (let i = 0; i < batch.recordings.length; i++) {
+        const r = batch.recordings[i];
+        await addClass({ packageId: pkgId, title: r.title, bunnyLibraryId: r.bunnyLibraryId, bunnyVideoId: r.bunnyVideoId, duration: '', order: i, published: true });
+        ok++;
+      }
+      toast({ title: `Created from “${batch.batchName}”`, description: `${ok} class(es) imported. Hidden by default — set prices & publish.` });
+      setShowLms(false);
+      await load();
+    } catch (e) { console.error(e); toast({ variant: 'destructive', title: 'Import failed' }); }
+    finally { setImportingBatch(null); }
+  };
 
   // ── Access guard ──
   useEffect(() => {
@@ -116,8 +171,13 @@ export default function AdminRecordedPackagesPage() {
         periodLabel: form.periodLabel?.trim() ?? '',
         description: form.description?.trim() ?? '',
         features: (form.features ?? []).map(f => f.trim()).filter(Boolean),
-        price: Number(form.price) || 0,
-        accessMonths: Number(form.accessMonths) || 1,
+        includesGrammar: !!form.includesGrammar,
+        tiers: (form.tiers ?? DEFAULT_TIERS)
+          .map(t => ({ months: Number(t.months) || 0, price: Number(t.price) || 0 }))
+          .filter(t => t.months > 0 && t.price > 0),
+        // Keep legacy fields in sync with the cheapest tier (back-compat).
+        price: Number((form.tiers ?? DEFAULT_TIERS)[0]?.price) || 0,
+        accessMonths: Number((form.tiers ?? DEFAULT_TIERS)[0]?.months) || 1,
         thumbnail: form.thumbnail?.trim() ?? '',
         published: form.published,
         order: Number(form.order) || Date.now(),
@@ -156,10 +216,44 @@ export default function AdminRecordedPackagesPage() {
             <Link href="/admin/dashboard/recorded-packages/purchases">
               <Button size="sm" variant="outline" className="gap-1.5"><Wallet className="h-4 w-4" /> <span className="hidden sm:inline">Purchases &amp; Earnings</span></Button>
             </Link>
+            <Button size="sm" variant="outline" onClick={openLms} className="gap-1.5"><Download className="h-4 w-4" /> <span className="hidden sm:inline">Import from LMS</span></Button>
             <Button size="sm" onClick={openAdd} className="gap-1.5"><Plus className="h-4 w-4" /> <span className="hidden sm:inline">New Package</span></Button>
           </div>
         </div>
       </div>
+
+      {showLms && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => !importingBatch && setShowLms(false)}>
+          <div className="bg-card rounded-2xl w-full max-w-2xl max-h-[88vh] overflow-auto p-5" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-lg font-semibold">Import a batch from the LMS</h2>
+              <button onClick={() => !importingBatch && setShowLms(false)} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
+            </div>
+            <p className="text-xs text-muted-foreground mb-4">Pick an LMS batch to create a package from its recorded classes. The package is created <b>hidden</b> — set the prices and publish it when ready.</p>
+            {lmsLoading ? (
+              <div className="py-10 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" /></div>
+            ) : lmsError ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">{lmsError}</div>
+            ) : lmsBatches.length === 0 ? (
+              <div className="py-10 text-center text-sm text-muted-foreground">No LMS batches found.</div>
+            ) : (
+              <div className="space-y-2">
+                {lmsBatches.map(b => (
+                  <div key={`${b.courseId}_${b.batchId}`} className="flex items-center justify-between gap-3 rounded-xl border p-3">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm truncate">{b.batchName}</p>
+                      <p className="text-xs text-muted-foreground truncate">{b.courseTitle} · {b.recordings.length} recording{b.recordings.length === 1 ? '' : 's'}{b.status ? ` · ${b.status}` : ''}</p>
+                    </div>
+                    <Button size="sm" disabled={!b.recordings.length || !!importingBatch} onClick={() => importBatch(b)} className="gap-1.5 shrink-0">
+                      {importingBatch === b.batchId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Create package
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="container mx-auto px-4 py-6 md:py-8">
         <p className="mb-6 max-w-2xl text-sm text-muted-foreground">
@@ -222,10 +316,29 @@ export default function AdminRecordedPackagesPage() {
                   </select>
                 </Field>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Price (LKR)"><input type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: parseInt(e.target.value) || 0 }))} className="rp-input" /></Field>
-                <Field label="Access (months)"><input type="number" value={form.accessMonths} onChange={e => setForm(f => ({ ...f, accessMonths: parseInt(e.target.value) || 1 }))} className="rp-input" /></Field>
-              </div>
+              <Field label="Duration & price tiers (students pick one)">
+                <div className="space-y-2">
+                  {(form.tiers ?? DEFAULT_TIERS).map((t, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <input type="number" min={1} value={t.months}
+                        onChange={e => setForm(f => { const tiers = [...(f.tiers ?? DEFAULT_TIERS)]; tiers[i] = { ...tiers[i], months: parseInt(e.target.value) || 0 }; return { ...f, tiers }; })}
+                        className="rp-input w-24" placeholder="Months" />
+                      <span className="text-xs text-muted-foreground">months —</span>
+                      <input type="number" min={0} value={t.price}
+                        onChange={e => setForm(f => { const tiers = [...(f.tiers ?? DEFAULT_TIERS)]; tiers[i] = { ...tiers[i], price: parseInt(e.target.value) || 0 }; return { ...f, tiers }; })}
+                        className="rp-input flex-1" placeholder="Price LKR" />
+                      <button type="button" onClick={() => setForm(f => ({ ...f, tiers: (f.tiers ?? DEFAULT_TIERS).filter((_, j) => j !== i) }))}
+                        className="text-red-500 text-sm px-2" aria-label="Remove tier">✕</button>
+                    </div>
+                  ))}
+                  <button type="button" onClick={() => setForm(f => ({ ...f, tiers: [...(f.tiers ?? DEFAULT_TIERS), { months: 1, price: 0 }] }))}
+                    className="text-xs font-semibold text-primary">＋ Add tier</button>
+                </div>
+              </Field>
+              <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                <input type="checkbox" checked={!!form.includesGrammar} onChange={e => setForm(f => ({ ...f, includesGrammar: e.target.checked }))} />
+                Grammar sessions included
+              </label>
               <Field label="Description"><textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={2} className="rp-input" /></Field>
               <Field label="Features (one per line)">
                 <textarea value={(form.features ?? []).join('\n')} onChange={e => setForm(f => ({ ...f, features: e.target.value.split('\n') }))} rows={3} placeholder={'Full-length real class recordings\nWatch on any device\n2 months access'} className="rp-input" />
@@ -381,7 +494,7 @@ function ClassManager({ pkg, onClose }: { pkg: RecordedPackage; onClose: () => v
           {loading ? (
             <div className="flex items-center gap-2 text-muted-foreground text-sm py-6 justify-center"><Loader2 className="h-4 w-4 animate-spin" /> Loading…</div>
           ) : classes.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">No classes yet. Add the batch's videos above.</p>
+            <p className="py-6 text-center text-sm text-muted-foreground">No classes yet. Add the batch&apos;s videos above.</p>
           ) : classes.map((c, i) => (
             <div key={c.id} className="flex items-center gap-3 rounded-lg border p-3">
               <GripVertical className="h-4 w-4 text-muted-foreground/40 shrink-0" />

@@ -9,12 +9,15 @@ import { payhereUrls } from '@/lib/payhere';
 import { getPackage, listClasses, getMyEnrollments } from '@/lib/services/recorded-packages.service';
 import {
   type RecordedPackage, type RecordedClass, type RecordedEnrollment,
-  formatLkr, isEnrollmentValid, daysLeft, bunnyEmbedUrl,
+  formatLkr, isEnrollmentValid, daysLeft, bunnyEmbedUrl, packageTiers, tierLabel,
 } from '@/types/recorded-package';
 import {
-  ArrowLeft, Loader2, Lock, PlayCircle, Clock, Film, CheckCircle2,
-  AlertTriangle, ShieldCheck, ListVideo,
+  ArrowLeft, Loader2, Lock, PlayCircle, Clock, Film,
+  AlertTriangle, ShieldCheck, ListVideo, GraduationCap, Landmark, MessageCircle, Phone,
 } from 'lucide-react';
+
+const WHATSAPP_NUMBER = '94774533233';
+const PHONE_NUMBER = '+94774533233';
 
 export default function RecordedPackagePlayer() {
   const { packageId } = useParams<{ packageId: string }>();
@@ -30,6 +33,7 @@ export default function RecordedPackagePlayer() {
 
   const [agreed, setAgreed] = useState(false);
   const [buying, setBuying] = useState(false);
+  const [selectedMonths, setSelectedMonths] = useState<number | null>(null);
   const [payhereParams, setPayhereParams] = useState<Record<string, string> | null>(null);
   const payhereFormRef = useRef<HTMLFormElement>(null);
 
@@ -55,6 +59,7 @@ export default function RecordedPackagePlayer() {
   }, [packageId, user, isUserLoading]);
 
   useEffect(() => { if (payhereParams && payhereFormRef.current) payhereFormRef.current.submit(); }, [payhereParams]);
+  useEffect(() => { if (pkg && selectedMonths == null) { const t = packageTiers(pkg); if (t.length) setSelectedMonths(t[0].months); } }, [pkg, selectedMonths]);
 
   const owned = isEnrollmentValid(enrollment);
   const active = classes.find(c => c.id === activeId) ?? null;
@@ -69,7 +74,7 @@ export default function RecordedPackagePlayer() {
       const res = await fetch('/api/recorded-packages/create-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ packageId }),
+        body: JSON.stringify({ packageId, months: selectedMonths ?? undefined }),
       });
       const d = await res.json();
       if (!res.ok || !d.params) { toast({ variant: 'destructive', title: d.error || 'Could not start payment.' }); return; }
@@ -110,29 +115,70 @@ export default function RecordedPackagePlayer() {
       </div>
 
       {!owned ? (
-        // ── Locked ──
-        <div className="mx-auto max-w-lg rounded-2xl border bg-card p-6 text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-            <Lock className="h-7 w-7 text-muted-foreground" />
+        // ── Locked / purchase ──
+        (() => {
+          const tiers = packageTiers(pkg);
+          const chosen = tiers.find(t => t.months === selectedMonths) ?? tiers[0];
+          const waText = encodeURIComponent(`Hi SmartLabs, I'd like to buy the "${pkg.title}" recorded package (${chosen ? tierLabel(chosen.months) + ' — ' + formatLkr(chosen.price) : ''}) via bank transfer.`);
+          return (
+        <div className="mx-auto max-w-xl rounded-2xl border bg-card p-6">
+          <div className="text-center">
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+              <Lock className="h-7 w-7 text-muted-foreground" />
+            </div>
+            <p className="text-lg font-bold">{enrollment ? 'Your access has expired' : 'Unlock this package'}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {classes.length} recorded class{classes.length === 1 ? '' : 'es'}
+              {pkg.includesGrammar && <> · <span className="inline-flex items-center gap-1 font-semibold text-primary"><GraduationCap className="h-3.5 w-3.5" /> Grammar included</span></>}
+            </p>
           </div>
-          <p className="text-lg font-bold">{enrollment ? 'Your access has expired' : 'Unlock this package'}</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {classes.length} recorded class{classes.length === 1 ? '' : 'es'} · {pkg.accessMonths} month{pkg.accessMonths === 1 ? '' : 's'} access
-          </p>
+
+          {/* Duration tiers */}
+          <div className="mt-5 grid gap-2.5 sm:grid-cols-3">
+            {tiers.map(t => {
+              const sel = t.months === selectedMonths;
+              return (
+                <button key={t.months} onClick={() => setSelectedMonths(t.months)}
+                  className={`rounded-xl border-2 p-3 text-center transition ${sel ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-border hover:border-primary/40'}`}>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{tierLabel(t.months)}</div>
+                  <div className="mt-1 text-lg font-black">{formatLkr(t.price)}</div>
+                  <div className="text-[11px] text-muted-foreground">access</div>
+                </button>
+              );
+            })}
+          </div>
 
           <label className="mt-5 flex items-start gap-3 rounded-xl border-2 border-red-300 bg-red-50 p-3.5 text-left cursor-pointer dark:border-red-800 dark:bg-red-950/30">
             <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="mt-0.5 h-4 w-4 accent-red-600" />
             <span className="text-sm text-red-700 dark:text-red-300">
               <span className="flex items-center gap-1.5 font-bold text-red-600 dark:text-red-400"><AlertTriangle className="h-4 w-4" /> Non-refundable payment</span>
-              I understand this payment is <b>strictly non-refundable under any circumstances</b> once paid.
+              I understand this payment is <b>strictly non-refundable under any circumstances</b> once paid, and access is removed automatically after the period ends.
             </span>
           </label>
 
           <button onClick={buy} disabled={buying}
             className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60">
-            {buying ? <><Loader2 className="h-4 w-4 animate-spin" /> Starting checkout…</> : <><ShieldCheck className="h-4 w-4" /> Pay {formatLkr(pkg.price)} via PayHere</>}
+            {buying ? <><Loader2 className="h-4 w-4 animate-spin" /> Starting checkout…</> : <><ShieldCheck className="h-4 w-4" /> Pay {chosen ? formatLkr(chosen.price) : ''} via PayHere</>}
           </button>
+
+          {/* Bank transfer */}
+          <div className="mt-5 rounded-xl border bg-muted/40 p-4">
+            <p className="flex items-center gap-1.5 text-sm font-bold"><Landmark className="h-4 w-4" /> Paying by bank transfer?</p>
+            <p className="mt-1 text-xs text-muted-foreground">Contact the SmartLabs admins to purchase by bank transfer. We&apos;ll grant your access manually once confirmed.</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=${waText}`} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-green-700">
+                <MessageCircle className="h-4 w-4" /> WhatsApp
+              </a>
+              <a href={`tel:${PHONE_NUMBER}`}
+                className="inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-semibold hover:bg-accent">
+                <Phone className="h-4 w-4" /> Call {PHONE_NUMBER}
+              </a>
+            </div>
+          </div>
         </div>
+          );
+        })()
       ) : (
         // ── Player ──
         <div className="grid gap-5 lg:grid-cols-[1fr_340px]">

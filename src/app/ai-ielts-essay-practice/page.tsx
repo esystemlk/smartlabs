@@ -14,7 +14,7 @@ import { payhereUrls } from '@/lib/payhere';
 import type { IeltsEssayResult } from '@/types/ielts-essay';
 import {
   Loader2, PenLine, Sparkles, Target, ArrowLeft, Lightbulb, ShieldAlert, RotateCcw,
-  CreditCard, X, Check,
+  CreditCard, X, Check, FileDown,
 } from 'lucide-react';
 
 const CRIMSON = '#dc2626';
@@ -36,6 +36,7 @@ export default function IeltsEssayPractice() {
   const [targetBand, setTargetBand] = useState<number | null>(null);
   const [result, setResult] = useState<IeltsEssayResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
   const [needCredits, setNeedCredits] = useState(false);
 
   // Purchase flow
@@ -112,6 +113,41 @@ export default function IeltsEssayPractice() {
   function reset() {
     setResult(null); setEssay(''); setTopic(null); setCustomTopic('');
     setTargetBand(null); setError(null); setNeedCredits(false); setPhase('setup');
+  }
+
+  // Download a full PDF report (question + answer + all result details) to share with a teacher.
+  async function handleDownloadPdf() {
+    if (!result) return;
+    setGeneratingPdf(true);
+    try {
+      const [{ pdf }, { IeltsEssayScorePDF }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/components/ielts-essay/IeltsEssayScorePDF'),
+      ]);
+      const meta = {
+        studentName: user?.displayName || 'Student',
+        studentEmail: user?.email || undefined,
+        date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }),
+        topic: activePrompt || '—',
+        wordCount: words,
+        targetBand,
+      };
+      const blob = await pdf(<IeltsEssayScorePDF meta={meta} result={{ ...result, essayText: essay.trim() }} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const safeName = (user?.displayName || 'Student').replace(/[^a-z0-9]+/gi, '_');
+      a.href = url;
+      a.download = `SmartLabs_IELTS_Essay_Report_${safeName}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('PDF generation failed:', err);
+      setError('Could not generate the PDF. Please try again.');
+    } finally {
+      setGeneratingPdf(false);
+    }
   }
 
   if (isUserLoading) {
@@ -299,6 +335,10 @@ export default function IeltsEssayPractice() {
           <div className="space-y-6">
             <IeltsEssayResultView result={result} />
             <div className="flex flex-wrap gap-3 justify-center">
+              <button onClick={handleDownloadPdf} disabled={generatingPdf} className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-black text-sm disabled:opacity-60" style={{ backgroundColor: '#0F172A' }}>
+                {generatingPdf ? <Loader2 size={15} className="animate-spin" /> : <FileDown size={15} />}
+                {generatingPdf ? 'Preparing PDF…' : 'Download PDF'}
+              </button>
               <button onClick={reset} className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-black text-sm" style={{ backgroundColor: CRIMSON }}>
                 <RotateCcw size={15} /> New essay
               </button>

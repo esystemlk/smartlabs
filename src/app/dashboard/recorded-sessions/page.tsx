@@ -1,23 +1,21 @@
 'use client';
 
-import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { payhereUrls } from '@/lib/payhere';
 import { listPackages, listClasses, getMyEnrollments } from '@/lib/services/recorded-packages.service';
 import {
   type RecordedPackage, type RecordedEnrollment,
-  formatLkr, isEnrollmentValid, daysLeft, bunnyThumbnailUrl,
+  formatLkr, isEnrollmentValid, daysLeft, bunnyThumbnailUrl, packageTiers,
 } from '@/types/recorded-package';
 import {
-  PlayCircle, Loader2, Clock, Film, CheckCircle2, AlertTriangle, ShieldCheck, X, Lock,
+  PlayCircle, Loader2, Film, CheckCircle2, GraduationCap, ArrowRight,
 } from 'lucide-react';
 
 function RecordedSessionsInner() {
   const { user, isUserLoading } = useUser();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
 
@@ -26,12 +24,6 @@ function RecordedSessionsInner() {
   const [firstThumb, setFirstThumb] = useState<Record<string, string>>({});
   const [enrollments, setEnrollments] = useState<RecordedEnrollment[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const [confirm, setConfirm] = useState<RecordedPackage | null>(null);
-  const [agreed, setAgreed] = useState(false);
-  const [buying, setBuying] = useState<string | null>(null);
-  const [payhereParams, setPayhereParams] = useState<Record<string, string> | null>(null);
-  const payhereFormRef = useRef<HTMLFormElement>(null);
 
   const load = async () => {
     setLoading(true);
@@ -69,40 +61,14 @@ function RecordedSessionsInner() {
     // eslint-disable-next-line
   }, [searchParams]);
 
-  useEffect(() => { if (payhereParams && payhereFormRef.current) payhereFormRef.current.submit(); }, [payhereParams]);
-
   const enrollFor = useMemo(() => {
     const m = new Map<string, RecordedEnrollment>();
     enrollments.forEach(e => m.set(e.packageId, e));
     return m;
   }, [enrollments]);
 
-  const buy = async () => {
-    if (!confirm) return;
-    if (!user) { router.push('/login?redirect=/dashboard/recorded-sessions'); return; }
-    if (!agreed) { toast({ variant: 'destructive', title: 'Please accept the non-refundable notice.' }); return; }
-    setBuying(confirm.id!);
-    try {
-      const token = await user.getIdToken();
-      const res = await fetch('/api/recorded-packages/create-payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ packageId: confirm.id }),
-      });
-      const d = await res.json();
-      if (!res.ok || !d.params) { toast({ variant: 'destructive', title: d.error || 'Could not start payment.' }); return; }
-      setPayhereParams(d.params);
-    } catch {
-      toast({ variant: 'destructive', title: 'Network error. Please try again.' });
-    } finally { setBuying(null); }
-  };
-
   return (
     <div className="w-full">
-      <form ref={payhereFormRef} method="post" action={payhereUrls.checkout} className="hidden">
-        {payhereParams && Object.entries(payhereParams).map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
-      </form>
-
       {/* Header */}
       <div className="mb-6 md:mb-8">
         <h1 className="text-2xl md:text-3xl font-black tracking-tight flex items-center gap-2">
@@ -153,9 +119,13 @@ function RecordedSessionsInner() {
                   <h3 className="font-bold leading-snug">{pkg.title}</h3>
                   {pkg.description && <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{pkg.description}</p>}
 
-                  <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                  <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1"><PlayCircle className="h-3.5 w-3.5" /> {count} class{count === 1 ? '' : 'es'}</span>
-                    <span className="inline-flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {pkg.accessMonths} month{pkg.accessMonths === 1 ? '' : 's'} access</span>
+                    {pkg.includesGrammar && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 font-semibold text-primary">
+                        <GraduationCap className="h-3.5 w-3.5" /> Grammar included
+                      </span>
+                    )}
                   </div>
 
                   {pkg.features && pkg.features.length > 0 && (
@@ -178,11 +148,14 @@ function RecordedSessionsInner() {
                     </div>
                   ) : (
                     <div className="flex items-center justify-between gap-3">
-                      <span className="text-lg font-extrabold">{formatLkr(pkg.price)}</span>
-                      <button onClick={() => { setConfirm(pkg); setAgreed(false); }}
+                      <div className="leading-tight">
+                        <span className="block text-[11px] text-muted-foreground">from</span>
+                        <span className="text-lg font-extrabold">{formatLkr(Math.min(...packageTiers(pkg).map(t => t.price)))}</span>
+                      </div>
+                      <Link href={`/dashboard/recorded-sessions/${pkg.id}`}
                         className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
-                        <Lock className="h-3.5 w-3.5" /> Unlock
-                      </button>
+                        View &amp; buy <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
                     </div>
                   )}
                 </div>
@@ -192,34 +165,6 @@ function RecordedSessionsInner() {
         </div>
       )}
 
-      {/* Purchase confirm modal */}
-      {confirm && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4" onClick={() => setConfirm(null)}>
-          <div className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl bg-card p-5 sm:p-6" onClick={e => e.stopPropagation()}>
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <h2 className="text-lg font-bold">Unlock {confirm.title}</h2>
-              <button onClick={() => setConfirm(null)} className="text-muted-foreground"><X className="h-5 w-5" /></button>
-            </div>
-            <div className="flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3 mb-4">
-              <span className="text-sm text-muted-foreground">{classCounts[confirm.id!] ?? 0} classes · {confirm.accessMonths} month{confirm.accessMonths === 1 ? '' : 's'} access</span>
-              <span className="text-lg font-extrabold">{formatLkr(confirm.price)}</span>
-            </div>
-
-            <label className="flex items-start gap-3 rounded-xl border-2 border-red-300 bg-red-50 p-3.5 cursor-pointer dark:border-red-800 dark:bg-red-950/30 mb-4">
-              <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="mt-0.5 h-4 w-4 accent-red-600" />
-              <span className="text-sm text-red-700 dark:text-red-300">
-                <span className="flex items-center gap-1.5 font-bold text-red-600 dark:text-red-400"><AlertTriangle className="h-4 w-4" /> Non-refundable payment</span>
-                I understand this payment is <b>strictly non-refundable under any circumstances</b> once paid.
-              </span>
-            </label>
-
-            <button onClick={buy} disabled={!!buying}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60">
-              {buying ? <><Loader2 className="h-4 w-4 animate-spin" /> Starting checkout…</> : <><ShieldCheck className="h-4 w-4" /> Pay {formatLkr(confirm.price)} via PayHere</>}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

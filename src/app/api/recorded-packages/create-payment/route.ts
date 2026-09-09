@@ -18,13 +18,26 @@ export async function POST(request: NextRequest) {
     const decoded = await adminAuth.verifyIdToken(authHeader.slice(7));
     const uid = decoded.uid;
 
-    const { packageId } = (await request.json()) as { packageId?: string };
+    const { packageId, months } = (await request.json()) as { packageId?: string; months?: number };
     if (!packageId) return NextResponse.json({ error: 'packageId is required' }, { status: 400 });
 
     const pkgSnap = await adminDb.collection('recorded_packages').doc(packageId).get();
     if (!pkgSnap.exists) return NextResponse.json({ error: 'Package not found' }, { status: 404 });
     const pkg = pkgSnap.data()!;
     if (pkg.published === false) return NextResponse.json({ error: 'Package is not available' }, { status: 409 });
+
+    // Resolve the chosen duration tier (falls back to the legacy single price).
+    const tiers: { months: number; price: number }[] = Array.isArray(pkg.tiers) && pkg.tiers.length
+      ? pkg.tiers
+      : [{ months: Number(pkg.accessMonths) || 1, price: Number(pkg.price) || 0 }];
+    const tier = months
+      ? tiers.find((t) => Number(t.months) === Number(months))
+      : tiers[0];
+    if (!tier || !(Number(tier.price) > 0)) {
+      return NextResponse.json({ error: 'Selected plan is not available for this package.' }, { status: 400 });
+    }
+    const accessMonths = Number(tier.months) || 1;
+    const tierPrice = Number(tier.price);
 
     const merchantId     = process.env.NEXT_PUBLIC_PAYHERE_MERCHANT_ID;
     const merchantSecret = process.env.PAYHERE_MERCHANT_SECRET;
@@ -40,7 +53,7 @@ export async function POST(request: NextRequest) {
     const nameParts = displayName.trim().split(' ');
 
     const orderId = `recpkg_${uid.slice(0, 8)}_${Date.now()}`;
-    const amount = Number(pkg.price).toFixed(2);
+    const amount = tierPrice.toFixed(2);
     const currency = 'LKR';
     const hash = md5(`${merchantId}${orderId}${amount}${currency}${md5(merchantSecret)}`);
 
@@ -50,8 +63,8 @@ export async function POST(request: NextRequest) {
       type: 'recorded_package',
       packageId,
       packageTitle: (pkg.title as string) ?? 'Recorded Package',
-      accessMonths: Number(pkg.accessMonths) || 1,
-      paymentAmount: Number(pkg.price),
+      accessMonths,
+      paymentAmount: tierPrice,
       paymentStatus: 'pending',
       createdAt: new Date(),
     });
