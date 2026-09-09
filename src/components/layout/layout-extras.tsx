@@ -53,8 +53,9 @@ export function LayoutExtras() {
     return () => clearTimeout(t);
   }, []);
 
-  // No site chrome while the site is switched off, or in the dev console.
-  if (pathname === SITE_STATUS_PATH || pathname?.startsWith(DEV_CONSOLE_PATH)) return null;
+  // No site chrome while the site is switched off, in the dev console, or on the
+  // bare QR landing page (/welcome must stay a clean, popup-free splash).
+  if (pathname === SITE_STATUS_PATH || pathname?.startsWith(DEV_CONSOLE_PATH) || pathname === '/welcome') return null;
   if (!ready) return null;
 
   return (
