@@ -125,7 +125,12 @@ export default function AdminRecordedPackagesPage() {
         await addClass({ packageId: pkgId, title: r.title, bunnyLibraryId: r.bunnyLibraryId, bunnyVideoId: r.bunnyVideoId, duration: '', order: i, published: true });
         ok++;
       }
-      toast({ title: `Created from “${batch.batchName}”`, description: `${ok} class(es) imported. Hidden by default — set prices & publish.` });
+      toast({
+        title: `Created from “${batch.batchName}”`,
+        description: ok
+          ? `${ok} class(es) imported. Hidden by default — set prices & publish.`
+          : `Empty package created. Add class videos, set prices, then publish.`,
+      });
       setShowLms(false);
       await load();
     } catch (e) { console.error(e); toast({ variant: 'destructive', title: 'Import failed' }); }
@@ -244,8 +249,8 @@ export default function AdminRecordedPackagesPage() {
                       <p className="font-semibold text-sm truncate">{b.batchName}</p>
                       <p className="text-xs text-muted-foreground truncate">{b.courseTitle} · {b.recordings.length} recording{b.recordings.length === 1 ? '' : 's'}{b.status ? ` · ${b.status}` : ''}</p>
                     </div>
-                    <Button size="sm" disabled={!b.recordings.length || !!importingBatch} onClick={() => importBatch(b)} className="gap-1.5 shrink-0">
-                      {importingBatch === b.batchId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Create package
+                    <Button size="sm" variant={b.recordings.length ? 'default' : 'outline'} disabled={!!importingBatch} onClick={() => importBatch(b)} className="gap-1.5 shrink-0">
+                      {importingBatch === b.batchId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} {b.recordings.length ? 'Create package' : 'Create empty'}
                     </Button>
                   </div>
                 ))}
