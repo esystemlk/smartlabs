@@ -56,8 +56,16 @@ function RecordedSessionsInner() {
 
   useEffect(() => {
     const p = searchParams?.get('payment');
-    if (p === 'success') { toast({ title: 'Payment successful! 🎬', description: 'Your recorded sessions are unlocked. Check your email for the receipt.' }); load(); }
-    else if (p === 'cancelled') { toast({ title: 'Payment cancelled', variant: 'destructive' }); }
+    if (p === 'success') {
+      toast({ title: 'Payment successful! 🎬', description: 'Activating your access — this can take a few seconds.' });
+      // The PayHere webhook grants access server-side; it can land a moment after
+      // this redirect. Re-fetch a few times so the newly-unlocked package shows
+      // up without the student having to refresh manually.
+      const delays = [1500, 4000, 8000, 15000, 25000];
+      const timers = delays.map((ms) => setTimeout(() => { load(); }, ms));
+      return () => timers.forEach(clearTimeout);
+    }
+    if (p === 'cancelled') { toast({ title: 'Payment cancelled', description: 'No charge was made. You can try again anytime.', variant: 'destructive' }); }
     // eslint-disable-next-line
   }, [searchParams]);
 
