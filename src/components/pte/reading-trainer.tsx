@@ -28,6 +28,13 @@ export type ReadingVariant = 'dropdown' | 'dragdrop' | 'mcma' | 'reorder' | 'mcs
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyQ = any;
 
+/** What a question renderer reports up to the trainer shell. */
+interface AttemptProgress {
+  answered: boolean;   // enough input to allow Submit
+  allCorrect: boolean; // the confirmed answer is fully correct
+}
+type ReportFn = (r: AttemptProgress) => void;
+
 interface Props {
   variant: ReadingVariant;
   title: string;
@@ -62,10 +69,14 @@ export function ReadingTrainer(p: Props) {
   const [query, setQuery] = useState('');
 
   // Per-attempt controls.
-  const [revealed, setRevealed] = useState(false);
-  const [resetToken, setResetToken] = useState(0); // bumped on Redo to remount the answer UI
-  const [elapsed, setElapsed] = useState(0);       // count-up timer (seconds)
+  const [submitted, setSubmitted] = useState(false); // user confirmed their own answer
+  const [peeked, setPeeked] = useState(false);        // user tapped "See Answer"
+  const [progress, setProgress] = useState<AttemptProgress>({ answered: false, allCorrect: false });
+  const [resetToken, setResetToken] = useState(0);    // bumped on Redo to remount the answer UI
+  const [elapsed, setElapsed] = useState(0);          // count-up timer (seconds)
   const [translateOn, setTranslateOn] = useState(false);
+
+  const graded = submitted || peeked;
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -73,30 +84,35 @@ export function ReadingTrainer(p: Props) {
   }, [query, p.questions, p.variant]);
   const question = filtered[index] ?? filtered[0] ?? p.questions[0];
 
-  // Count-up timer — starts on load, resets on question change / Redo, keeps counting.
+  // Count-up timer — starts on load, resets on question change / Redo, and
+  // freezes once the attempt is graded so the recorded time is the answer time.
   useEffect(() => {
+    if (graded) return;
     const id = setInterval(() => setElapsed((s) => s + 1), 1000);
     return () => clearInterval(id);
-  }, [question?.id, resetToken]);
+  }, [question?.id, resetToken, graded]);
 
-  // New question → fresh attempt.
-  useEffect(() => {
-    setRevealed(false);
-    setElapsed(0);
-    setResetToken((n) => n + 1);
-  }, [question?.id]);
-
-  const redo = useCallback(() => {
-    setRevealed(false);
+  const resetAttempt = useCallback(() => {
+    setSubmitted(false);
+    setPeeked(false);
+    setProgress({ answered: false, allCorrect: false });
     setElapsed(0);
     setResetToken((n) => n + 1);
   }, []);
+
+  // New question → fresh attempt.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { resetAttempt(); }, [question?.id]);
 
   const go = (d: number) => {
     if (!filtered.length) return;
     setIndex((i) => (i + d + filtered.length) % filtered.length);
   };
   const rand = () => filtered.length && setIndex(Math.floor(Math.random() * filtered.length));
+
+  // Children report their answered/correct state up so we can gate Submit and
+  // show the result banner.
+  const onReport = useCallback((r: AttemptProgress) => setProgress(r), []);
 
   // ── Google Website Translator (the in-page "webpage translate" dropdown) ──
   const toggleTranslate = () => {
@@ -149,25 +165,53 @@ export function ReadingTrainer(p: Props) {
             )}
 
             <div className="min-h-[120px]">
-              {p.variant === 'dropdown' && <DropdownFIB key={attemptKey} q={question} revealed={revealed} t={t} />}
-              {p.variant === 'dragdrop' && <DragDropFIB key={attemptKey} q={question} revealed={revealed} t={t} />}
-              {p.variant === 'mcma' && <MultiChoice key={attemptKey} q={question} multi revealed={revealed} t={t} />}
-              {p.variant === 'mcsa' && <MultiChoice key={attemptKey} q={question} multi={false} revealed={revealed} t={t} />}
-              {p.variant === 'reorder' && <ReorderQ key={attemptKey} q={question} revealed={revealed} t={t} />}
+              {p.variant === 'dropdown' && <DropdownFIB key={attemptKey} q={question} graded={graded} onReport={onReport} />}
+              {p.variant === 'dragdrop' && <DragDropFIB key={attemptKey} q={question} graded={graded} onReport={onReport} />}
+              {p.variant === 'mcma' && <MultiChoice key={attemptKey} q={question} multi graded={graded} t={t} onReport={onReport} />}
+              {p.variant === 'mcsa' && <MultiChoice key={attemptKey} q={question} multi={false} graded={graded} t={t} onReport={onReport} />}
+              {p.variant === 'reorder' && <ReorderQ key={attemptKey} q={question} graded={graded} onReport={onReport} />}
             </div>
+
+            {/* Result banner after the learner confirms their own answer. */}
+            {submitted && (
+              <div className={cn('mt-4 flex items-center gap-2 rounded-xl border-2 p-3 text-sm font-bold',
+                progress.allCorrect ? 'border-green-500 bg-green-500/10 text-green-700' : 'border-red-500 bg-red-500/10 text-red-700')}>
+                {progress.allCorrect
+                  ? <><CheckCircle2 className="h-5 w-5" /> Correct — well done!</>
+                  : <><XCircle className="h-5 w-5" /> Not quite — the correct answer is highlighted above.</>}
+              </div>
+            )}
           </div>
 
-          {/* Controls: See Answer · Redo · Translate */}
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setRevealed((v) => !v)}
-              className={cn('inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-sm', `bg-gradient-to-r ${t.grad}`)}
-            >
-              <Eye className="h-4 w-4" /> {revealed ? 'Hide Answer' : 'See Answer'}
-            </button>
-            <button onClick={redo} className="inline-flex items-center gap-2 rounded-xl border-2 px-5 py-2.5 text-sm font-bold hover:bg-muted">
-              <RotateCcw className="h-4 w-4" /> Redo
-            </button>
+          {/* Controls */}
+          <div className="flex flex-wrap items-center gap-2">
+            {!graded ? (
+              <>
+                <button
+                  onClick={() => setSubmitted(true)}
+                  disabled={!progress.answered}
+                  className={cn('inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-40',
+                    `bg-gradient-to-r ${t.grad}`)}
+                >
+                  <CheckCircle2 className="h-4 w-4" /> Submit Answer
+                </button>
+                <button onClick={() => setPeeked(true)} className="inline-flex items-center gap-2 rounded-xl border-2 px-5 py-2.5 text-sm font-bold hover:bg-muted">
+                  <Eye className="h-4 w-4" /> See Answer
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => go(1)}
+                  className={cn('inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-sm', `bg-gradient-to-r ${t.grad}`)}
+                >
+                  Next Question <ChevronRight className="h-4 w-4" />
+                </button>
+                <button onClick={resetAttempt} className="inline-flex items-center gap-2 rounded-xl border-2 px-5 py-2.5 text-sm font-bold hover:bg-muted">
+                  <RotateCcw className="h-4 w-4" /> Try Again
+                </button>
+              </>
+            )}
             <button
               onClick={toggleTranslate}
               className={cn(
@@ -227,9 +271,16 @@ export function ReadingTrainer(p: Props) {
 type Th = ReturnType<typeof theme>;
 
 /** Fill in the Blanks (R&W) — dropdown per blank. Passage uses {1}, {2}… */
-function DropdownFIB({ q, revealed, t }: { q: AnyQ; revealed: boolean; t: Th }) {
+function DropdownFIB({ q, graded, onReport }: { q: AnyQ; graded: boolean; onReport: ReportFn }) {
   const [picked, setPicked] = useState<Record<string, string>>({});
   const parts = q.passage.split(/\{\d+\}/);
+
+  useEffect(() => {
+    const answered = q.blanks.every((b: AnyQ) => picked[b.id]);
+    const allCorrect = q.blanks.every((b: AnyQ) => picked[b.id] === b.correctAnswer);
+    onReport({ answered, allCorrect });
+  }, [picked, q.blanks, onReport]);
+
   return (
     <div className="text-lg leading-loose">
       {parts.map((part: string, i: number) => {
@@ -239,11 +290,11 @@ function DropdownFIB({ q, revealed, t }: { q: AnyQ; revealed: boolean; t: Th }) 
             {part}
             {blank && (() => {
               const val = picked[blank.id];
-              const correct = revealed && val === blank.correctAnswer;
-              const wrong = revealed && val && val !== blank.correctAnswer;
+              const correct = graded && val === blank.correctAnswer;
+              const wrong = graded && val && val !== blank.correctAnswer;
               return (
                 <>
-                  <Select value={val} onValueChange={(v) => setPicked((s) => ({ ...s, [blank.id]: v }))} disabled={revealed}>
+                  <Select value={val} onValueChange={(v) => setPicked((s) => ({ ...s, [blank.id]: v }))} disabled={graded}>
                     <SelectTrigger className={cn('mx-1 inline-flex h-8 w-auto text-base font-semibold align-baseline',
                       correct && 'border-green-500 text-green-700',
                       wrong && 'border-red-500 text-red-700')}>
@@ -253,7 +304,7 @@ function DropdownFIB({ q, revealed, t }: { q: AnyQ; revealed: boolean; t: Th }) 
                       {blank.options.map((o: string) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
                     </SelectContent>
                   </Select>
-                  {revealed && !correct && <span className="mx-1 text-sm font-semibold text-green-600">({blank.correctAnswer})</span>}
+                  {graded && !correct && <span className="mx-1 text-sm font-semibold text-green-600">({blank.correctAnswer})</span>}
                 </>
               );
             })()}
@@ -265,20 +316,26 @@ function DropdownFIB({ q, revealed, t }: { q: AnyQ; revealed: boolean; t: Th }) 
 }
 
 /** Fill in the Blanks (Drag & Drop) — click a word to drop it into the next blank. */
-function DragDropFIB({ q, revealed, t }: { q: AnyQ; revealed: boolean; t: Th }) {
+function DragDropFIB({ q, graded, onReport }: { q: AnyQ; graded: boolean; onReport: ReportFn }) {
   const [bank, setBank] = useState<string[]>(() => shuffle([...q.correctWords, ...q.extraWords]));
   const [answers, setAnswers] = useState<(string | null)[]>(() => Array(q.correctWords.length).fill(null));
   const parts = q.passage.split('{BLANK}');
 
+  useEffect(() => {
+    const answered = answers.every((a) => a !== null);
+    const allCorrect = answers.every((a, i) => a === q.correctWords[i]);
+    onReport({ answered, allCorrect });
+  }, [answers, q.correctWords, onReport]);
+
   const placeWord = (word: string, bankIdx: number) => {
-    if (revealed) return;
+    if (graded) return;
     const empty = answers.findIndex((a) => a === null);
     if (empty === -1) return;
     setAnswers((a) => { const n = [...a]; n[empty] = word; return n; });
     setBank((b) => b.filter((_, i) => i !== bankIdx));
   };
   const removeWord = (blankIdx: number) => {
-    if (revealed) return;
+    if (graded) return;
     const word = answers[blankIdx];
     if (!word) return;
     setAnswers((a) => { const n = [...a]; n[blankIdx] = null; return n; });
@@ -293,12 +350,12 @@ function DragDropFIB({ q, revealed, t }: { q: AnyQ; revealed: boolean; t: Th }) 
             {part}
             {i < parts.length - 1 && (() => {
               const val = answers[i];
-              const correct = revealed && val === q.correctWords[i];
-              const wrong = revealed && val !== q.correctWords[i];
+              const correct = graded && val === q.correctWords[i];
+              const wrong = graded && val !== q.correctWords[i];
               return (
                 <button
                   onClick={() => removeWord(i)}
-                  disabled={revealed}
+                  disabled={graded}
                   className={cn('mx-1 inline-flex min-w-[70px] items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/50 px-2 py-0.5 text-base font-semibold align-baseline',
                     val && 'border-solid border-primary',
                     correct && 'border-green-500 bg-green-500/10 text-green-700',
@@ -311,7 +368,7 @@ function DragDropFIB({ q, revealed, t }: { q: AnyQ; revealed: boolean; t: Th }) 
           </span>
         ))}
       </div>
-      {revealed ? (
+      {graded ? (
         <div className="mt-4 rounded-lg border border-green-500 bg-green-500/10 p-3 text-sm">
           <span className="font-semibold text-green-800">Correct words: </span>
           {q.correctWords.join(' · ')}
@@ -333,14 +390,21 @@ function DragDropFIB({ q, revealed, t }: { q: AnyQ; revealed: boolean; t: Th }) 
 }
 
 /** Multiple choice — single (radio) or multiple (checkbox). */
-function MultiChoice({ q, multi, revealed, t }: { q: AnyQ; multi: boolean; revealed: boolean; t: Th }) {
+function MultiChoice({ q, multi, graded, t, onReport }: { q: AnyQ; multi: boolean; graded: boolean; t: Th; onReport: ReportFn }) {
   const correctSet = useMemo<Set<string>>(
     () => new Set(multi ? q.correctAnswers : [q.correctAnswer]),
     [q, multi],
   );
   const [sel, setSel] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const answered = sel.size > 0;
+    const allCorrect = sel.size === correctSet.size && [...sel].every((s) => correctSet.has(s));
+    onReport({ answered, allCorrect });
+  }, [sel, correctSet, onReport]);
+
   const toggle = (opt: string) => {
-    if (revealed) return;
+    if (graded) return;
     setSel((prev) => {
       if (!multi) return new Set([opt]);
       const n = new Set(prev);
@@ -352,18 +416,18 @@ function MultiChoice({ q, multi, revealed, t }: { q: AnyQ; multi: boolean; revea
   const rows = (q.options as string[]).map((opt) => {
     const chosen = sel.has(opt);
     const isCorrect = correctSet.has(opt);
-    const good = revealed && isCorrect;
-    const bad = revealed && chosen && !isCorrect;
+    const good = graded && isCorrect;
+    const bad = graded && chosen && !isCorrect;
     return (
       <label
         key={opt}
         onClick={() => toggle(opt)}
         className={cn('flex cursor-pointer items-start gap-3 rounded-xl border-2 p-3 text-base transition-colors',
-          !revealed && chosen && `${t.border} ${t.soft}`,
-          !revealed && !chosen && 'hover:bg-muted/50',
+          !graded && chosen && `${t.border} ${t.soft}`,
+          !graded && !chosen && 'hover:bg-muted/50',
           good && 'border-green-500 bg-green-500/10',
           bad && 'border-red-500 bg-red-500/10',
-          revealed && 'cursor-default')}
+          graded && 'cursor-default')}
       >
         {multi
           ? <Checkbox checked={chosen} className="mt-0.5 pointer-events-none" />
@@ -382,7 +446,7 @@ function MultiChoice({ q, multi, revealed, t }: { q: AnyQ; multi: boolean; revea
       {multi
         ? <div className="space-y-2">{rows}</div>
         : <RadioGroup value={[...sel][0] ?? ''} className="space-y-2">{rows}</RadioGroup>}
-      {revealed && (
+      {graded && (
         <div className="mt-4 rounded-lg border border-green-500 bg-green-500/10 p-3 text-sm">
           <span className="font-semibold text-green-800">Correct answer{correctSet.size > 1 ? 's' : ''}: </span>
           {[...correctSet].join(' · ')}
@@ -393,26 +457,32 @@ function MultiChoice({ q, multi, revealed, t }: { q: AnyQ; multi: boolean; revea
 }
 
 /** Re-order paragraphs — drag to reorder. Correct order is q.paragraphs. */
-function ReorderQ({ q, revealed, t }: { q: AnyQ; revealed: boolean; t: Th }) {
+function ReorderQ({ q, graded, onReport }: { q: AnyQ; graded: boolean; onReport: ReportFn }) {
   const [items, setItems] = useState<string[]>(() => {
     const s = shuffle(q.paragraphs as string[]);
     // avoid the (rare) already-correct shuffle
     return JSON.stringify(s) === JSON.stringify(q.paragraphs) ? shuffle(s) : s;
   });
+
+  useEffect(() => {
+    // A re-order item is always "answered" (there is always an order to submit).
+    onReport({ answered: true, allCorrect: JSON.stringify(items) === JSON.stringify(q.paragraphs) });
+  }, [items, q.paragraphs, onReport]);
+
   return (
     <div>
       <p className="mb-3 text-sm text-muted-foreground">Drag the boxes into the correct order.</p>
-      <Reorder.Group axis="y" values={items} onReorder={(v) => !revealed && setItems(v)} className="space-y-2">
+      <Reorder.Group axis="y" values={items} onReorder={(v) => !graded && setItems(v)} className="space-y-2">
         {items.map((item, i) => {
-          const good = revealed && q.paragraphs[i] === item;
-          const bad = revealed && q.paragraphs[i] !== item;
+          const good = graded && q.paragraphs[i] === item;
+          const bad = graded && q.paragraphs[i] !== item;
           return (
             <Reorder.Item
               key={item}
               value={item}
-              dragListener={!revealed}
+              dragListener={!graded}
               className={cn('flex items-center gap-3 rounded-lg border bg-background p-3 text-sm shadow-sm',
-                revealed ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
+                graded ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
                 good && 'border-green-500 bg-green-500/10',
                 bad && 'border-red-500 bg-red-500/10')}
             >
@@ -424,7 +494,7 @@ function ReorderQ({ q, revealed, t }: { q: AnyQ; revealed: boolean; t: Th }) {
           );
         })}
       </Reorder.Group>
-      {revealed && (
+      {graded && (
         <div className="mt-4 rounded-lg border border-green-500 bg-green-500/10 p-3">
           <p className="mb-2 text-sm font-semibold text-green-800">Correct order:</p>
           <ol className="list-inside list-decimal space-y-1 text-sm">
