@@ -6,9 +6,6 @@
  * questions. The website's own pages import the individual data files directly;
  * this registry simply re-exposes them keyed by the stable `taskType` id used in
  * `pte-catalog.ts`.
- *
- * NOTE: `reading-mcq-single` has no dedicated seed bank yet, so it is absent
- * here (the API returns 404 for it) until its data source is finalised.
  */
 
 import { pteReadAloudData } from '@/lib/pte-speaking-read-aloud-data';
@@ -35,6 +32,7 @@ import { pteReadingFillInBlanksDropdownData } from '@/lib/pte-reading-fill-in-bl
 import { pteReadingMultipleChoiceMultipleAnswerData } from '@/lib/pte-reading-multiple-choice-multiple-answer-data';
 import { pteReadingReorderParagraphsData } from '@/lib/pte-reading-reorder-paragraphs-data';
 import { pteReadingFillInBlanksDragDropData } from '@/lib/pte-reading-fill-in-blanks-drag-drop-data';
+import { pteReadingMultipleChoiceSingleAnswerData } from '@/lib/pte-reading-multiple-choice-single-answer-data';
 
 import { pteSummarizeSpokenTextData } from '@/lib/pte-listening-summarize-spoken-text-data';
 import { pteWriteFromDictationData } from '@/lib/pte-listening-write-from-dictation-data';
@@ -65,6 +63,7 @@ export const QUESTION_BANK: Record<string, readonly any[]> = {
   'mcq-multiple': pteReadingMultipleChoiceMultipleAnswerData,
   'reorder-paragraphs': pteReadingReorderParagraphsData,
   'fill-blanks': pteReadingFillInBlanksDragDropData,
+  'reading-mcq-single': pteReadingMultipleChoiceSingleAnswerData,
 
   // ── Listening ──
   'sst': pteSummarizeSpokenTextData,
