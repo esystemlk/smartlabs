@@ -127,75 +127,104 @@ export function ReadingTrainer(p: Props) {
 
   const attemptKey = `${question.id}-${resetToken}`;
 
+  const total = filtered.length;
+  const pos = total ? index + 1 : 0;
+
   return (
-    <div className="mx-auto w-full max-w-5xl">
-      {/* Header */}
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <Link href="/dashboard" className="mb-2 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="h-4 w-4" /> Practice Hub
-          </Link>
-          <h1 className={`text-2xl font-black tracking-tight md:text-3xl ${t.text}`}>{p.title}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{p.subtitle}</p>
+    <div className="mx-auto w-full max-w-5xl px-3 sm:px-5">
+      <Link href="/dashboard" className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+        <ArrowLeft className="h-4 w-4" /> Practice Hub
+      </Link>
+
+      {/* Hero header */}
+      <div className={cn('relative overflow-hidden rounded-2xl p-5 text-white shadow-lg sm:rounded-3xl sm:p-6', `bg-gradient-to-br ${t.grad}`)}>
+        <div className="pointer-events-none absolute -right-8 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-12 -left-6 h-32 w-32 rounded-full bg-black/10 blur-2xl" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-white/70">{p.instructions}</p>
+            <h1 className="text-xl font-black leading-tight tracking-tight sm:text-2xl md:text-[2rem]">{p.title}</h1>
+            <p className="mt-1 max-w-xl text-sm text-white/85">{p.subtitle}</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1.5 text-sm font-bold tabular-nums backdrop-blur-sm">
+              <Timer className="h-4 w-4" /> {fmt(elapsed)}
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1.5 text-xs font-bold backdrop-blur-sm">
+              <Sparkles className="h-3.5 w-3.5" /> {p.weight}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className={`inline-flex items-center gap-1.5 rounded-full ${t.soft} ${t.text} px-3 py-1.5 text-sm font-bold tabular-nums`} aria-live="off">
-            <Timer className="h-4 w-4" /> {fmt(elapsed)}
-          </span>
-          <span className={`hidden items-center gap-1 rounded-full ${t.soft} ${t.text} px-3 py-1.5 text-xs font-bold sm:inline-flex`}>
-            <Sparkles className="h-3 w-3" /> {p.weight}
-          </span>
+        {/* Progress */}
+        <div className="relative mt-4">
+          <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/80">
+            <span>Question {pos} of {total}</span>
+            <span>{Math.round((pos / Math.max(total, 1)) * 100)}%</span>
+          </div>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/25">
+            <div className="h-full rounded-full bg-white transition-all duration-500" style={{ width: `${(pos / Math.max(total, 1)) * 100}%` }} />
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
+      <div className="mt-4 grid gap-4 lg:mt-5 lg:grid-cols-[1fr_320px]">
         {/* Main */}
         <div className="min-w-0 space-y-4">
-          <div className="rounded-2xl border-2 bg-card p-5 md:p-6">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{p.instructions}</p>
-
-            {/* Google in-page translate dropdown appears here when enabled. */}
-            {translateOn && (
-              <div className="mb-4 rounded-xl border bg-muted/40 p-3">
-                <div id="google_translate_element" />
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  Pick a language above — Google translates this page in place. Choose “English / Show original” to revert.
-                </p>
-              </div>
-            )}
-
-            <div className="min-h-[120px]">
-              {p.variant === 'dropdown' && <DropdownFIB key={attemptKey} q={question} graded={graded} onReport={onReport} />}
-              {p.variant === 'dragdrop' && <DragDropFIB key={attemptKey} q={question} graded={graded} onReport={onReport} />}
-              {p.variant === 'mcma' && <MultiChoice key={attemptKey} q={question} multi graded={graded} t={t} onReport={onReport} />}
-              {p.variant === 'mcsa' && <MultiChoice key={attemptKey} q={question} multi={false} graded={graded} t={t} onReport={onReport} />}
-              {p.variant === 'reorder' && <ReorderQ key={attemptKey} q={question} graded={graded} onReport={onReport} />}
+          <div className={cn('overflow-hidden rounded-2xl border bg-card shadow-sm')}>
+            <div className={cn('flex items-center justify-between gap-2 border-b px-4 py-3 sm:px-6', t.soft)}>
+              <span className={cn('inline-flex items-center gap-2 text-sm font-black', t.text)}>
+                <span className={cn('flex h-6 w-6 items-center justify-center rounded-full text-xs text-white', t.bg)}>{pos}</span>
+                Question {pos}
+              </span>
+              {question.title && p.variant === 'reorder' && (
+                <span className="truncate text-xs font-semibold text-muted-foreground">{question.title}</span>
+              )}
             </div>
 
-            {/* Result banner after the learner confirms their own answer. */}
-            {submitted && (
-              <div className={cn('mt-4 flex items-center gap-2 rounded-xl border-2 p-3 text-sm font-bold',
-                progress.allCorrect ? 'border-green-500 bg-green-500/10 text-green-700' : 'border-red-500 bg-red-500/10 text-red-700')}>
-                {progress.allCorrect
-                  ? <><CheckCircle2 className="h-5 w-5" /> Correct — well done!</>
-                  : <><XCircle className="h-5 w-5" /> Not quite — the correct answer is highlighted above.</>}
+            <div className="p-4 sm:p-6">
+              {/* Google in-page translate dropdown appears here when enabled. */}
+              {translateOn && (
+                <div className="mb-4 rounded-xl border bg-muted/40 p-3">
+                  <div id="google_translate_element" />
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    Pick a language above — Google translates this page in place. Choose “English / Show original” to revert.
+                  </p>
+                </div>
+              )}
+
+              <div className="min-h-[100px]">
+                {p.variant === 'dropdown' && <DropdownFIB key={attemptKey} q={question} graded={graded} onReport={onReport} />}
+                {p.variant === 'dragdrop' && <DragDropFIB key={attemptKey} q={question} graded={graded} t={t} onReport={onReport} />}
+                {p.variant === 'mcma' && <MultiChoice key={attemptKey} q={question} multi graded={graded} t={t} onReport={onReport} />}
+                {p.variant === 'mcsa' && <MultiChoice key={attemptKey} q={question} multi={false} graded={graded} t={t} onReport={onReport} />}
+                {p.variant === 'reorder' && <ReorderQ key={attemptKey} q={question} graded={graded} t={t} onReport={onReport} />}
               </div>
-            )}
+
+              {/* Result banner after the learner confirms their own answer. */}
+              {submitted && (
+                <div className={cn('mt-5 flex items-center gap-2 rounded-xl border-2 p-3 text-sm font-bold',
+                  progress.allCorrect ? 'border-green-500 bg-green-500/10 text-green-700' : 'border-red-500 bg-red-500/10 text-red-700')}>
+                  {progress.allCorrect
+                    ? <><CheckCircle2 className="h-5 w-5 shrink-0" /> Correct — well done!</>
+                    : <><XCircle className="h-5 w-5 shrink-0" /> Not quite — the correct answer is highlighted above.</>}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Controls */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
             {!graded ? (
               <>
                 <button
                   onClick={() => setSubmitted(true)}
                   disabled={!progress.answered}
-                  className={cn('inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-40',
+                  className={cn('inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold text-white shadow-sm transition active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none',
                     `bg-gradient-to-r ${t.grad}`)}
                 >
                   <CheckCircle2 className="h-4 w-4" /> Submit Answer
                 </button>
-                <button onClick={() => setPeeked(true)} className="inline-flex items-center gap-2 rounded-xl border-2 px-5 py-2.5 text-sm font-bold hover:bg-muted">
+                <button onClick={() => setPeeked(true)} className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border-2 px-5 text-sm font-bold transition hover:bg-muted active:scale-[.98] sm:flex-none">
                   <Eye className="h-4 w-4" /> See Answer
                 </button>
               </>
@@ -203,11 +232,11 @@ export function ReadingTrainer(p: Props) {
               <>
                 <button
                   onClick={() => go(1)}
-                  className={cn('inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-sm', `bg-gradient-to-r ${t.grad}`)}
+                  className={cn('inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold text-white shadow-sm transition active:scale-[.98] sm:flex-none', `bg-gradient-to-r ${t.grad}`)}
                 >
                   Next Question <ChevronRight className="h-4 w-4" />
                 </button>
-                <button onClick={resetAttempt} className="inline-flex items-center gap-2 rounded-xl border-2 px-5 py-2.5 text-sm font-bold hover:bg-muted">
+                <button onClick={resetAttempt} className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border-2 px-5 text-sm font-bold transition hover:bg-muted active:scale-[.98] sm:flex-none">
                   <RotateCcw className="h-4 w-4" /> Try Again
                 </button>
               </>
@@ -215,7 +244,7 @@ export function ReadingTrainer(p: Props) {
             <button
               onClick={toggleTranslate}
               className={cn(
-                'inline-flex items-center gap-2 rounded-xl border-2 px-5 py-2.5 text-sm font-bold hover:bg-muted',
+                'inline-flex h-11 items-center justify-center gap-2 rounded-xl border-2 px-5 text-sm font-bold transition hover:bg-muted active:scale-[.98]',
                 translateOn && `${t.border} ${t.text}`,
               )}
             >
@@ -224,8 +253,8 @@ export function ReadingTrainer(p: Props) {
           </div>
         </div>
 
-        {/* Question list + search */}
-        <div className="rounded-2xl border bg-card">
+        {/* Question navigator */}
+        <div className="rounded-2xl border bg-card shadow-sm">
           <div className="border-b p-3">
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -238,27 +267,34 @@ export function ReadingTrainer(p: Props) {
             </div>
             <div className="mt-2 flex items-center justify-between">
               <div className="flex gap-1">
-                <button onClick={() => go(-1)} className="rounded-lg border p-1.5 hover:bg-muted"><ChevronLeft className="h-4 w-4" /></button>
-                <button onClick={() => go(1)} className="rounded-lg border p-1.5 hover:bg-muted"><ChevronRight className="h-4 w-4" /></button>
-                <button onClick={rand} className="rounded-lg border p-1.5 hover:bg-muted"><Shuffle className="h-4 w-4" /></button>
+                <button onClick={() => go(-1)} aria-label="Previous" className="rounded-lg border p-2 transition hover:bg-muted"><ChevronLeft className="h-4 w-4" /></button>
+                <button onClick={() => go(1)} aria-label="Next" className="rounded-lg border p-2 transition hover:bg-muted"><ChevronRight className="h-4 w-4" /></button>
+                <button onClick={rand} aria-label="Random" className="rounded-lg border p-2 transition hover:bg-muted"><Shuffle className="h-4 w-4" /></button>
               </div>
-              <span className="text-xs text-muted-foreground">{filtered.length ? index + 1 : 0} / {filtered.length}</span>
+              <span className="text-xs font-medium text-muted-foreground">{pos} / {total}</span>
             </div>
           </div>
-          <div className="max-h-[52vh] overflow-y-auto p-2">
-            {filtered.map((q, i) => (
-              <button
-                key={q.id ?? i}
-                onClick={() => setIndex(i)}
-                className={cn(
-                  'mb-1 block w-full truncate rounded-lg px-3 py-2 text-left text-sm transition-colors',
-                  i === index ? `${t.soft} ${t.text} font-semibold` : 'hover:bg-muted/60',
-                )}
-              >
-                {labelOf(p.variant, q)}
-              </button>
-            ))}
-            {filtered.length === 0 && <p className="p-4 text-center text-sm text-muted-foreground">No questions match.</p>}
+          {/* Numbered palette — compact and responsive on every screen. */}
+          <div className="max-h-[34vh] overflow-y-auto p-3 lg:max-h-[56vh]">
+            {total > 0 ? (
+              <div className="grid grid-cols-8 gap-1.5 sm:grid-cols-10 lg:grid-cols-6">
+                {filtered.map((q, i) => (
+                  <button
+                    key={q.id ?? i}
+                    onClick={() => setIndex(i)}
+                    title={labelOf(p.variant, q)}
+                    className={cn(
+                      'flex aspect-square items-center justify-center rounded-lg border text-xs font-bold transition',
+                      i === index ? `${t.bg} border-transparent text-white shadow-sm` : 'text-muted-foreground hover:bg-muted',
+                    )}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="p-4 text-center text-sm text-muted-foreground">No questions match.</p>
+            )}
           </div>
         </div>
       </div>
@@ -282,7 +318,7 @@ function DropdownFIB({ q, graded, onReport }: { q: AnyQ; graded: boolean; onRepo
   }, [picked, q.blanks, onReport]);
 
   return (
-    <div className="text-lg leading-loose">
+    <div className="rounded-xl bg-muted/40 p-4 text-[15px] leading-8 sm:p-5 sm:text-lg sm:leading-9">
       {parts.map((part: string, i: number) => {
         const blank = q.blanks[i];
         return (
@@ -295,7 +331,8 @@ function DropdownFIB({ q, graded, onReport }: { q: AnyQ; graded: boolean; onRepo
               return (
                 <>
                   <Select value={val} onValueChange={(v) => setPicked((s) => ({ ...s, [blank.id]: v }))} disabled={graded}>
-                    <SelectTrigger className={cn('mx-1 inline-flex h-8 w-auto text-base font-semibold align-baseline',
+                    <SelectTrigger className={cn('mx-1 inline-flex h-9 w-auto max-w-[60vw] rounded-lg bg-background text-sm font-semibold align-baseline sm:text-base',
+                      !graded && val && 'border-primary',
                       correct && 'border-green-500 text-green-700',
                       wrong && 'border-red-500 text-red-700')}>
                       <SelectValue placeholder="Select…" />
@@ -316,7 +353,7 @@ function DropdownFIB({ q, graded, onReport }: { q: AnyQ; graded: boolean; onRepo
 }
 
 /** Fill in the Blanks (Drag & Drop) — click a word to drop it into the next blank. */
-function DragDropFIB({ q, graded, onReport }: { q: AnyQ; graded: boolean; onReport: ReportFn }) {
+function DragDropFIB({ q, graded, t, onReport }: { q: AnyQ; graded: boolean; t: Th; onReport: ReportFn }) {
   const [bank, setBank] = useState<string[]>(() => shuffle([...q.correctWords, ...q.extraWords]));
   const [answers, setAnswers] = useState<(string | null)[]>(() => Array(q.correctWords.length).fill(null));
   const parts = q.passage.split('{BLANK}');
@@ -344,7 +381,7 @@ function DragDropFIB({ q, graded, onReport }: { q: AnyQ; graded: boolean; onRepo
 
   return (
     <div>
-      <div className="rounded-lg bg-muted/40 p-4 text-lg leading-loose">
+      <div className="rounded-xl bg-muted/40 p-4 text-[15px] leading-9 sm:p-5 sm:text-lg sm:leading-10">
         {parts.map((part: string, i: number) => (
           <span key={i}>
             {part}
@@ -356,10 +393,10 @@ function DragDropFIB({ q, graded, onReport }: { q: AnyQ; graded: boolean; onRepo
                 <button
                   onClick={() => removeWord(i)}
                   disabled={graded}
-                  className={cn('mx-1 inline-flex min-w-[70px] items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/50 px-2 py-0.5 text-base font-semibold align-baseline',
-                    val && 'border-solid border-primary',
-                    correct && 'border-green-500 bg-green-500/10 text-green-700',
-                    wrong && 'border-red-500 bg-red-500/10 text-red-700')}
+                  className={cn('mx-1 inline-flex min-w-[64px] max-w-[60vw] items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/40 px-2 py-0.5 text-sm font-semibold align-baseline transition sm:text-base',
+                    val && !graded && `border-solid ${t.border} ${t.soft} ${t.text}`,
+                    correct && 'border-solid border-green-500 bg-green-500/10 text-green-700',
+                    wrong && 'border-solid border-red-500 bg-red-500/10 text-red-700')}
                 >
                   {val || '    '}
                 </button>
@@ -374,14 +411,19 @@ function DragDropFIB({ q, graded, onReport }: { q: AnyQ; graded: boolean; onRepo
           {q.correctWords.join(' · ')}
         </div>
       ) : (
-        <div className="mt-4 rounded-lg border p-3">
+        <div className="mt-4 rounded-xl border bg-card p-3 sm:p-4">
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Word bank</p>
           <div className="flex flex-wrap gap-2">
             {bank.map((w, i) => (
-              <button key={`${w}-${i}`} onClick={() => placeWord(w, i)} className="rounded-lg border px-3 py-1.5 text-sm font-medium hover:bg-muted">
+              <button
+                key={`${w}-${i}`}
+                onClick={() => placeWord(w, i)}
+                className="rounded-lg border-2 border-border bg-background px-3 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:border-muted-foreground/40 hover:shadow-sm active:scale-95"
+              >
                 {w}
               </button>
             ))}
-            {bank.length === 0 && <span className="text-sm text-muted-foreground">All words placed.</span>}
+            {bank.length === 0 && <span className="py-1 text-sm text-muted-foreground">All words placed — tap a filled blank to release it.</span>}
           </div>
         </div>
       )}
@@ -413,41 +455,50 @@ function MultiChoice({ q, multi, graded, t, onReport }: { q: AnyQ; multi: boolea
     });
   };
 
-  const rows = (q.options as string[]).map((opt) => {
+  const rows = (q.options as string[]).map((opt, oi) => {
     const chosen = sel.has(opt);
     const isCorrect = correctSet.has(opt);
     const good = graded && isCorrect;
     const bad = graded && chosen && !isCorrect;
+    const letter = String.fromCharCode(65 + oi);
     return (
-      <label
+      <div
         key={opt}
+        role="button"
         onClick={() => toggle(opt)}
-        className={cn('flex cursor-pointer items-start gap-3 rounded-xl border-2 p-3 text-base transition-colors',
-          !graded && chosen && `${t.border} ${t.soft}`,
-          !graded && !chosen && 'hover:bg-muted/50',
+        className={cn('flex cursor-pointer select-none items-center gap-3 rounded-xl border-2 p-3 text-[15px] transition sm:p-3.5 sm:text-base',
+          !graded && chosen && `${t.border} ${t.soft} shadow-sm`,
+          !graded && !chosen && 'border-border hover:-translate-y-0.5 hover:border-muted-foreground/30 hover:shadow-sm',
           good && 'border-green-500 bg-green-500/10',
           bad && 'border-red-500 bg-red-500/10',
+          !graded && !good && !bad && '',
+          graded && !good && !bad && 'opacity-60',
           graded && 'cursor-default')}
       >
+        <span className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-black',
+          good ? 'bg-green-500 text-white' : bad ? 'bg-red-500 text-white' : chosen ? `${t.bg} text-white` : 'bg-muted text-muted-foreground')}>
+          {letter}
+        </span>
         {multi
-          ? <Checkbox checked={chosen} className="mt-0.5 pointer-events-none" />
-          : <RadioGroupItem value={opt} className="mt-0.5 pointer-events-none" />}
-        <span className="flex-1">{opt}</span>
+          ? <Checkbox checked={chosen} className="pointer-events-none" />
+          : <RadioGroupItem value={opt} className="pointer-events-none" />}
+        <span className="flex-1 leading-snug">{opt}</span>
         {good && <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600" />}
         {bad && <XCircle className="h-5 w-5 shrink-0 text-red-600" />}
-      </label>
+      </div>
     );
   });
 
   return (
     <div>
-      {q.passage && <p className="mb-4 rounded-lg bg-muted/40 p-4 text-base leading-relaxed">{q.passage}</p>}
-      <p className="mb-3 font-semibold">{q.question}</p>
+      {q.passage && <p className="mb-4 rounded-xl bg-muted/40 p-4 text-[15px] leading-7 sm:p-5 sm:text-base sm:leading-7">{q.passage}</p>}
+      <p className="mb-3 text-base font-bold sm:text-lg">{q.question}</p>
       {multi
-        ? <div className="space-y-2">{rows}</div>
-        : <RadioGroup value={[...sel][0] ?? ''} className="space-y-2">{rows}</RadioGroup>}
+        ? <div className="space-y-2.5">{rows}</div>
+        : <RadioGroup value={[...sel][0] ?? ''} className="space-y-2.5">{rows}</RadioGroup>}
+      {multi && !graded && <p className="mt-2 text-xs text-muted-foreground">Select all answers that apply.</p>}
       {graded && (
-        <div className="mt-4 rounded-lg border border-green-500 bg-green-500/10 p-3 text-sm">
+        <div className="mt-4 rounded-xl border border-green-500 bg-green-500/10 p-3 text-sm">
           <span className="font-semibold text-green-800">Correct answer{correctSet.size > 1 ? 's' : ''}: </span>
           {[...correctSet].join(' · ')}
         </div>
@@ -457,7 +508,7 @@ function MultiChoice({ q, multi, graded, t, onReport }: { q: AnyQ; multi: boolea
 }
 
 /** Re-order paragraphs — drag to reorder. Correct order is q.paragraphs. */
-function ReorderQ({ q, graded, onReport }: { q: AnyQ; graded: boolean; onReport: ReportFn }) {
+function ReorderQ({ q, graded, t, onReport }: { q: AnyQ; graded: boolean; t: Th; onReport: ReportFn }) {
   const [items, setItems] = useState<string[]>(() => {
     const s = shuffle(q.paragraphs as string[]);
     // avoid the (rare) already-correct shuffle
@@ -472,7 +523,7 @@ function ReorderQ({ q, graded, onReport }: { q: AnyQ; graded: boolean; onReport:
   return (
     <div>
       <p className="mb-3 text-sm text-muted-foreground">Drag the boxes into the correct order.</p>
-      <Reorder.Group axis="y" values={items} onReorder={(v) => !graded && setItems(v)} className="space-y-2">
+      <Reorder.Group axis="y" values={items} onReorder={(v) => !graded && setItems(v)} className="space-y-2.5">
         {items.map((item, i) => {
           const good = graded && q.paragraphs[i] === item;
           const bad = graded && q.paragraphs[i] !== item;
@@ -481,13 +532,18 @@ function ReorderQ({ q, graded, onReport }: { q: AnyQ; graded: boolean; onReport:
               key={item}
               value={item}
               dragListener={!graded}
-              className={cn('flex items-center gap-3 rounded-lg border bg-background p-3 text-sm shadow-sm',
-                graded ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
+              className={cn('flex items-center gap-3 rounded-xl border-2 bg-card p-3 text-[15px] leading-snug shadow-sm transition sm:text-base',
+                graded ? 'cursor-default' : 'cursor-grab hover:shadow-md active:cursor-grabbing',
                 good && 'border-green-500 bg-green-500/10',
-                bad && 'border-red-500 bg-red-500/10')}
+                bad && 'border-red-500 bg-red-500/10',
+                !graded && 'border-border')}
             >
-              <GripVertical className="h-5 w-5 shrink-0 text-muted-foreground" />
+              <span className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-black',
+                good ? 'bg-green-500 text-white' : bad ? 'bg-red-500 text-white' : `${t.bg} text-white`)}>
+                {i + 1}
+              </span>
               <span className="flex-1">{item}</span>
+              {!graded && <GripVertical className="h-5 w-5 shrink-0 text-muted-foreground/50" />}
               {good && <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600" />}
               {bad && <XCircle className="h-5 w-5 shrink-0 text-red-600" />}
             </Reorder.Item>
@@ -495,7 +551,7 @@ function ReorderQ({ q, graded, onReport }: { q: AnyQ; graded: boolean; onReport:
         })}
       </Reorder.Group>
       {graded && (
-        <div className="mt-4 rounded-lg border border-green-500 bg-green-500/10 p-3">
+        <div className="mt-4 rounded-xl border border-green-500 bg-green-500/10 p-3">
           <p className="mb-2 text-sm font-semibold text-green-800">Correct order:</p>
           <ol className="list-inside list-decimal space-y-1 text-sm">
             {q.paragraphs.map((para: string, i: number) => <li key={i}>{para}</li>)}
