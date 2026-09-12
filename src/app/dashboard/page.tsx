@@ -81,7 +81,7 @@ const pteSections = [
   },
   {
     id: 'reading',
-    disabled: true,
+    disabled: false,
     title: 'Reading',
     icon: BookOpen,
     description: 'Comprehension, vocabulary & analysis',
@@ -93,13 +93,13 @@ const pteSections = [
     iconBg: 'bg-emerald-500/10',
     badgeClass: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
     tasks: [
-      { title: 'R&W Fill in the Blanks', href: '/dashboard/practice-tests/pte-reading-fill-in-blanks-dropdown', ai: false, hot: true },
-      { title: 'MCQ Multiple Answer', href: '/dashboard/practice-tests/pte-reading-multiple-choice-multiple-answer', ai: false, hot: false },
-      { title: 'Re-order Paragraphs', href: '/dashboard/practice-tests/pte-reading-reorder-paragraphs', ai: false, hot: false },
-      { title: 'Fill in the Blanks', href: '/dashboard/practice-tests/pte-reading-fill-in-blanks-drag-drop', ai: false, hot: false },
-      { title: 'MCQ Single Answer', href: '/dashboard/practice-tests/pte-reading-test', ai: true, hot: false },
+      { title: 'R&W Fill in the Blanks', href: '/dashboard/practice/rw-fill-in-the-blanks', ai: false, hot: true },
+      { title: 'MCQ Multiple Answer', href: '/dashboard/practice/reading-mcq-multiple', ai: false, hot: false },
+      { title: 'Re-order Paragraphs', href: '/dashboard/practice/reorder-paragraphs', ai: false, hot: false },
+      { title: 'Fill in the Blanks', href: '/dashboard/practice/fill-in-the-blanks', ai: false, hot: false },
+      { title: 'MCQ Single Answer', href: '/dashboard/practice/reading-mcq-single', ai: false, hot: false },
     ],
-    sectionHref: '/dashboard/ai-score-test/reading',
+    sectionHref: '/dashboard/practice/rw-fill-in-the-blanks',
   },
   {
     id: 'listening',

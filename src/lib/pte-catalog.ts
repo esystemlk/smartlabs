@@ -70,11 +70,11 @@ export const PTE_CATALOG: PteSectionDef[] = [
   {
     id: 'reading', label: 'Reading', color: 'emerald',
     tasks: [
-      { taskType: 'rw-fill-blanks',      label: 'Fill in the Blanks (R&W)',       slug: 'rw-fill-in-the-blanks',   scoring: 'auto', weight: '25%',   input: 'blank',  color: 'emerald' },
-      { taskType: 'mcq-multiple',        label: 'Multiple Choice (Multiple)',     slug: 'reading-mcq-multiple',    scoring: 'auto', weight: '5%',   input: 'choice', color: 'teal' },
-      { taskType: 'reorder-paragraphs',  label: 'Re-order Paragraphs',            slug: 'reorder-paragraphs',      scoring: 'auto', weight: '9%',   input: 'order',  color: 'lime' },
-      { taskType: 'fill-blanks',         label: 'Fill in the Blanks (Drag & Drop)', slug: 'fill-in-the-blanks',    scoring: 'auto', weight: '20%',   input: 'blank',  color: 'green' },
-      { taskType: 'reading-mcq-single',  label: 'Multiple Choice (Single)',       slug: 'reading-mcq-single',      scoring: 'auto', weight: '3%',  input: 'choice', color: 'sky' },
+      { taskType: 'rw-fill-blanks',      label: 'Fill in the Blanks (R&W)',       slug: 'rw-fill-in-the-blanks',   scoring: 'auto', weight: '25%',  built: true, builtHref: '/dashboard/practice/rw-fill-in-the-blanks', input: 'blank',  color: 'emerald' },
+      { taskType: 'mcq-multiple',        label: 'Multiple Choice (Multiple)',     slug: 'reading-mcq-multiple',    scoring: 'auto', weight: '5%',   built: true, builtHref: '/dashboard/practice/reading-mcq-multiple',  input: 'choice', color: 'teal' },
+      { taskType: 'reorder-paragraphs',  label: 'Re-order Paragraphs',            slug: 'reorder-paragraphs',      scoring: 'auto', weight: '9%',   built: true, builtHref: '/dashboard/practice/reorder-paragraphs',     input: 'order',  color: 'lime' },
+      { taskType: 'fill-blanks',         label: 'Fill in the Blanks (Drag & Drop)', slug: 'fill-in-the-blanks',    scoring: 'auto', weight: '20%',  built: true, builtHref: '/dashboard/practice/fill-in-the-blanks',      input: 'blank',  color: 'green' },
+      { taskType: 'reading-mcq-single',  label: 'Multiple Choice (Single)',       slug: 'reading-mcq-single',      scoring: 'auto', weight: '3%',   built: true, builtHref: '/dashboard/practice/reading-mcq-single',      input: 'choice', color: 'sky' },
     ],
   },
   {
