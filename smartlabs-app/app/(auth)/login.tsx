@@ -1,21 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Link } from 'expo-router';
+import React, { useState } from 'react';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
-import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
 import Svg, { Path } from 'react-native-svg';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/auth/AuthContext';
-import { Button, Field } from '@/ui/components';
-import { theme } from '@/theme';
-
-WebBrowser.maybeCompleteAuthSession();
+import { Logo, GradientButton, AuthField } from '@/ui/brand';
+import { C } from '@/theme';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const extra = (Constants.expoConfig?.extra ?? {}) as any;
 
-// Official multicolour Google "G" (matches the website's google-logo.svg).
+// Official multicolour Google "G".
 const GoogleG = () => (
   <Svg width={20} height={20} viewBox="0 0 24 24">
     <Path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -25,7 +22,6 @@ const GoogleG = () => (
   </Svg>
 );
 
-/** Shared Google button shell. */
 function GoogleButtonShell({ onPress, loading, disabled }: { onPress?: () => void; loading?: boolean; disabled?: boolean }) {
   return (
     <Pressable
@@ -33,19 +29,16 @@ function GoogleButtonShell({ onPress, loading, disabled }: { onPress?: () => voi
       disabled={disabled || loading}
       style={({ pressed }) => [styles.googleBtn, { opacity: disabled || loading ? 0.55 : pressed ? 0.9 : 1 }]}
     >
-      {loading ? (
-        <ActivityIndicator color={theme.colors.text} />
-      ) : (
+      {loading ? <ActivityIndicator color={C.navy} /> : (
         <>
           <GoogleG />
-          <Text style={styles.googleText}>Sign in with Google</Text>
+          <Text style={styles.googleText}>Continue with Google</Text>
         </>
       )}
     </Pressable>
   );
 }
 
-/** Web: Firebase popup (no client ID needed). */
 function WebGoogleButton({ onError }: { onError: (m: string) => void }) {
   const { signInWithGoogleWeb } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -63,42 +56,45 @@ function WebGoogleButton({ onError }: { onError: (m: string) => void }) {
   return <GoogleButtonShell onPress={go} loading={loading} />;
 }
 
-/** Native: expo-auth-session (only mounted when a client ID is configured). */
+/**
+ * Native (Android/iOS) Google sign-in via Google Play Services — no browser
+ * redirect, so it avoids the "invalid_request" the web OAuth flow hits on a
+ * standalone build. The library is required lazily so it never loads on web.
+ */
 function NativeGoogleButton({ onError }: { onError: (m: string) => void }) {
   const { signInWithGoogleIdToken } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    webClientId: extra.googleWebClientId || undefined,
-    iosClientId: extra.googleIosClientId || undefined,
-    androidClientId: extra.googleAndroidClientId || undefined,
-  });
-  useEffect(() => {
-    if (response?.type === 'success' && response.params?.id_token) {
-      signInWithGoogleIdToken(response.params.id_token)
-        .catch((e) => onError(mapAuthError(e)))
-        .finally(() => setLoading(false));
-    } else if (response && response.type !== 'success') {
-      setLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [response]);
   const go = async () => {
     onError('');
     setLoading(true);
     try {
-      await promptAsync();
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { GoogleSignin } = require('@react-native-google-signin/google-signin');
+      GoogleSignin.configure({ webClientId: extra.googleWebClientId });
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      await GoogleSignin.signIn();
+      const { idToken } = await GoogleSignin.getTokens();
+      if (!idToken) throw new Error('Google did not return an ID token.');
+      await signInWithGoogleIdToken(idToken);
     } catch (e) {
-      onError(mapAuthError(e));
+      const code = (e as { code?: string })?.code ?? '';
+      // Silently ignore the user cancelling the picker.
+      if (code !== 'SIGN_IN_CANCELLED' && code !== '-5' && code !== 'CANCELED') {
+        onError(mapAuthError(e));
+      }
+    } finally {
       setLoading(false);
     }
   };
-  return <GoogleButtonShell onPress={go} loading={loading} disabled={!request} />;
+  return <GoogleButtonShell onPress={go} loading={loading} />;
 }
 
 const NATIVE_GOOGLE_READY = !!(extra.googleAndroidClientId || extra.googleIosClientId);
 
+/** Screen 3 — Sign In. */
 export default function Login() {
   const { signIn } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -123,45 +119,19 @@ export default function Login() {
   return (
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <View style={styles.brand}>
-            <Image
-              source={require('../../assets/logo.png')}
-              style={styles.logo}
-              resizeMode="contain"
-              accessibilityLabel="SmartLabs"
-            />
-            <Text style={styles.title}>SmartLabs PTE</Text>
-            <Text style={styles.subtitle}>AI practice & scoring — same account as the web.</Text>
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <View style={styles.topBar}>
+            <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/(auth)/welcome'))} hitSlop={12} style={styles.backBtn}>
+              <Ionicons name="chevron-back" size={22} color={C.navy} />
+            </Pressable>
+            <Logo height={32} />
+            <View style={{ width: 38 }} />
           </View>
 
-          <View style={{ gap: 16 }}>
-            <Field
-              label="Email"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              placeholder="you@example.com"
-            />
-            <Field
-              label="Password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              placeholder="••••••••"
-            />
+          <Text style={styles.title}>Sign In</Text>
+          <Text style={styles.subtitle}>Welcome back! Continue your PTE journey.</Text>
 
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-
-            <Button label="Sign in" onPress={onSubmit} loading={loading} />
-
-            <View style={styles.dividerRow}>
-              <View style={styles.divider} />
-              <Text style={styles.dividerText}>or</Text>
-              <View style={styles.divider} />
-            </View>
-
+          <View style={styles.googleWrap}>
             {Platform.OS === 'web' ? (
               <WebGoogleButton onError={(m) => setError(m || null)} />
             ) : NATIVE_GOOGLE_READY ? (
@@ -169,17 +139,47 @@ export default function Login() {
             ) : (
               <GoogleButtonShell disabled />
             )}
+          </View>
 
-            <Link href="/(auth)/forgot-password" style={styles.link}>
-              Forgot your password?
-            </Link>
+          <View style={styles.dividerRow}>
+            <View style={styles.divider} />
+            <Text style={styles.dividerText}>OR</Text>
+            <View style={styles.divider} />
+          </View>
+
+          <View style={{ gap: 16 }}>
+            <AuthField
+              label="Email Address"
+              icon="mail-outline"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              placeholder="youremail@example.com"
+            />
+            <AuthField
+              label="Password"
+              icon="lock-closed-outline"
+              password
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Enter your password"
+            />
+
+            <Pressable onPress={() => router.push('/(auth)/forgot-password')} style={styles.forgotRow} hitSlop={8}>
+              <Text style={styles.forgotText}>Forgot password?</Text>
+            </Pressable>
+
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+
+            <GradientButton label="Sign In" onPress={onSubmit} loading={loading} />
           </View>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>New to SmartLabs? </Text>
-            <Link href="/(auth)/signup" style={styles.footerLink}>
-              Create an account
-            </Link>
+            <Text style={styles.footerText}>Don't have an account? </Text>
+            <Pressable onPress={() => router.push('/(auth)/signup')} hitSlop={8}>
+              <Text style={styles.footerLink}>Create Account</Text>
+            </Pressable>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -210,24 +210,25 @@ export function mapAuthError(e: unknown): string {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: theme.colors.bg },
-  scroll: { flexGrow: 1, justifyContent: 'center', padding: 24, gap: 32 },
-  brand: { alignItems: 'center', gap: 10 },
-  logo: { width: 200, height: 72 },
-  title: { color: theme.colors.text, fontSize: theme.font.h1, fontWeight: '800' },
-  subtitle: { color: theme.colors.textMuted, fontSize: theme.font.body, textAlign: 'center' },
-  error: { color: theme.colors.danger, fontSize: theme.font.small },
-  dividerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  divider: { flex: 1, height: 1, backgroundColor: theme.colors.border },
-  dividerText: { color: theme.colors.textFaint, fontSize: theme.font.small, fontWeight: '600' },
+  safe: { flex: 1, backgroundColor: '#fff' },
+  scroll: { flexGrow: 1, padding: 26, paddingTop: 8 },
+  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22 },
+  backBtn: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  title: { color: C.navy, fontSize: 30, fontWeight: '800' },
+  subtitle: { color: C.slate, fontSize: 15, marginTop: 6, marginBottom: 22 },
+  googleWrap: { marginBottom: 18 },
+  error: { color: C.danger, fontSize: 13 },
+  dividerRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
+  divider: { flex: 1, height: 1, backgroundColor: C.borderStrong },
+  dividerText: { color: C.slateLight, fontSize: 12, fontWeight: '700' },
   googleBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    height: 52, borderRadius: theme.radius.md, borderWidth: 1, borderColor: theme.colors.border,
-    backgroundColor: theme.colors.surface,
+    height: 54, borderRadius: 14, borderWidth: 1, borderColor: C.borderStrong, backgroundColor: '#fff',
   },
-  googleText: { color: theme.colors.text, fontSize: 16, fontWeight: '700' },
-  link: { color: theme.colors.accent, fontSize: theme.font.small, textAlign: 'center', fontWeight: '600' },
-  footer: { flexDirection: 'row', justifyContent: 'center' },
-  footerText: { color: theme.colors.textMuted },
-  footerLink: { color: theme.colors.accent, fontWeight: '700' },
+  googleText: { color: C.navy, fontSize: 15, fontWeight: '700' },
+  forgotRow: { alignSelf: 'flex-end', marginTop: -4 },
+  forgotText: { color: C.blue, fontSize: 13, fontWeight: '700' },
+  footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 26 },
+  footerText: { color: C.slate, fontSize: 14 },
+  footerLink: { color: C.blue, fontWeight: '800', fontSize: 14 },
 });

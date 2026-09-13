@@ -29,6 +29,7 @@
     },
     "plugins": [
       "expo-router",
+      "@react-native-google-signin/google-signin",
       [
         "expo-av",
         {
@@ -38,9 +39,9 @@
     ],
     "extra": {
       "apiBaseUrl": "https://www.smartlabs.lk",
-      "googleWebClientId": "",
+      "googleWebClientId": "43848204138-84j5v663lq8hcednhkavddhkljl626s0.apps.googleusercontent.com",
       "googleIosClientId": "",
-      "googleAndroidClientId": ""
+      "googleAndroidClientId": "43848204138-mq4gr6plbvf1oop55bq1pbokvnh6fj6d.apps.googleusercontent.com"
     }
   }
 }

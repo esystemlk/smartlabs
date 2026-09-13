@@ -63,3 +63,59 @@ export const TASK_HUES: Record<string, string> = {
 export function hueFor(color?: string): string {
   return (color && TASK_HUES[color]) || theme.colors.accent;
 }
+
+/**
+ * Design-system palette for the SmartLabs mobile UI (matches the app mockups).
+ * A single source of truth so every screen shares the same blues, greys and
+ * gradients. `C` is intentionally flat and verbose for readability in screens.
+ */
+export const C = {
+  // Brand blues
+  blue: '#2563EB',
+  blueDeep: '#1D4ED8',
+  blueDark: '#1E3A8A',
+  sky: '#38BDF8',
+  cyan: '#22B0E6',
+
+  // Surfaces
+  white: '#FFFFFF',
+  bg: '#F4F7FB',
+  card: '#FFFFFF',
+  tintBlue: '#EAF1FD',
+  tintBlueSoft: '#F1F6FE',
+  track: '#E4EBF5',
+  border: '#EDF1F7',
+  borderStrong: '#E2E8F0',
+
+  // Text
+  navy: '#0F1E3D',
+  ink: '#12203C',
+  slate: '#556482',
+  slateLight: '#8A97AC',
+  faint: '#AEB8C9',
+
+  // Skill accents (Speaking / Reading / Writing / Listening)
+  speaking: '#2563EB',
+  speakingBg: '#E7F0FE',
+  reading: '#16A34A',
+  readingBg: '#E4F7EB',
+  writing: '#F59E0B',
+  writingBg: '#FEF3DA',
+  listening: '#7C3AED',
+  listeningBg: '#EFE8FE',
+
+  // Status
+  success: '#16A34A',
+  successBg: '#E4F7EB',
+  amber: '#F59E0B',
+  danger: '#EF4444',
+  dangerBg: '#FEECEC',
+} as const;
+
+/** Gradient stop sets used with expo-linear-gradient across the brand UI. */
+export const GRADIENTS = {
+  brand: ['#2563EB', '#1D4ED8', '#1E3A8A'] as const,
+  splash: ['#0E2A6B', '#122E74', '#0A1C4A'] as const,
+  button: ['#2C7BF2', '#2563EB'] as const,
+  sky: ['#EAF2FE', '#F5F9FF'] as const,
+};

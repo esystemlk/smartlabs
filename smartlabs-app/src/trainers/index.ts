@@ -5,6 +5,7 @@ import { SstTrainer } from '@/trainers/SstTrainer';
 import { WfdTrainer } from '@/trainers/WfdTrainer';
 import { EssayTrainer } from '@/trainers/EssayTrainer';
 import { SpeakingTrainer } from '@/trainers/SpeakingTrainer';
+import { ReadingTrainer } from '@/trainers/ReadingTrainer';
 
 /**
  * Maps a PTE taskType to its trainer component. Types not listed here fall back
@@ -24,6 +25,12 @@ export const TRAINERS: Record<string, ComponentType<TrainerProps>> = {
   'answer-short-question': SpeakingTrainer,
   'summarize-group-discussion': SpeakingTrainer,
   'respond-to-situation': SpeakingTrainer,
+  // Reading (deterministic marking, ported from the website ReadingTrainer)
+  'rw-fill-blanks': ReadingTrainer,
+  'fill-blanks': ReadingTrainer,
+  'mcq-multiple': ReadingTrainer,
+  'reading-mcq-single': ReadingTrainer,
+  'reorder-paragraphs': ReadingTrainer,
 };
 
 export function trainerFor(taskType: string): ComponentType<TrainerProps> | null {

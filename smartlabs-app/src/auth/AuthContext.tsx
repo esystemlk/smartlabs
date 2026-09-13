@@ -5,6 +5,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
+  sendEmailVerification,
   updateProfile,
   signOut as fbSignOut,
   GoogleAuthProvider,
@@ -22,6 +23,8 @@ interface AuthState {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (name: string, email: string, password: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  /** Re-send the verification email to the currently signed-in user. */
+  resendVerification: () => Promise<void>;
   signOut: () => Promise<void>;
   /** Web: opens the Google popup and signs in. Native: use the Google id token. */
   signInWithGoogleWeb: () => Promise<void>;
@@ -72,10 +75,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         { merge: true },
       );
     }
+    // Send the verification email (non-fatal if it fails).
+    try {
+      await sendEmailVerification(cred.user);
+    } catch {
+      /* ignore — the user can resend from the verification screen */
+    }
   };
 
   const resetPassword = async (email: string) => {
     await sendPasswordResetEmail(auth, email.trim());
+  };
+
+  const resendVerification = async () => {
+    if (auth.currentUser) await sendEmailVerification(auth.currentUser);
   };
 
   const signOut = async () => {
@@ -121,7 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, initializing, signIn, signUp, resetPassword, signOut, signInWithGoogleWeb, signInWithGoogleIdToken }}
+      value={{ user, initializing, signIn, signUp, resetPassword, resendVerification, signOut, signInWithGoogleWeb, signInWithGoogleIdToken }}
     >
       {children}
     </AuthContext.Provider>

@@ -12,6 +12,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 9002
+    },
+    {
+      "name": "smartlabs-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "smartlabs-app", "run", "web", "--", "--port", "8081"],
+      "port": 8081
     }
   ]
 }

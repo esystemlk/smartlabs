@@ -1,8 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-
-const BLUE = '#2563EB';
-const MUTED = '#9AA6B8';
+import { C } from '@/theme';
 
 export default function TabsLayout() {
   return (
@@ -11,31 +9,31 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: '#FFFFFF',
-          borderTopColor: '#EEF1F6',
-          height: 60,
+          borderTopColor: C.border,
+          height: 62,
           paddingBottom: 8,
           paddingTop: 6,
         },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
-        tabBarActiveTintColor: BLUE,
-        tabBarInactiveTintColor: MUTED,
+        tabBarLabelStyle: { fontSize: 10.5, fontWeight: '700' },
+        tabBarActiveTintColor: C.blue,
+        tabBarInactiveTintColor: '#9AA6B8',
       }}
     >
       <Tabs.Screen
         name="index"
-        options={{ title: 'Home', tabBarIcon: ({ color, size }) => <Ionicons name="home" color={color} size={size - 2} /> }}
+        options={{ title: 'Home', tabBarIcon: ({ color, size }) => <Ionicons name="home" color={color} size={size - 3} /> }}
       />
       <Tabs.Screen
         name="practice"
-        options={{ title: 'Practice', tabBarIcon: ({ color, size }) => <Ionicons name="school" color={color} size={size - 2} /> }}
+        options={{ title: 'Practice', tabBarIcon: ({ color, size }) => <Ionicons name="mic" color={color} size={size - 3} /> }}
       />
       <Tabs.Screen
         name="progress"
-        options={{ title: 'Progress', tabBarIcon: ({ color, size }) => <Ionicons name="stats-chart" color={color} size={size - 2} /> }}
+        options={{ title: 'Progress', tabBarIcon: ({ color, size }) => <Ionicons name="bar-chart" color={color} size={size - 3} /> }}
       />
       <Tabs.Screen
         name="account"
-        options={{ title: 'Account', tabBarIcon: ({ color, size }) => <Ionicons name="person-circle" color={color} size={size - 2} /> }}
+        options={{ title: 'Profile', tabBarIcon: ({ color, size }) => <Ionicons name="person" color={color} size={size - 3} /> }}
       />
     </Tabs>
   );
