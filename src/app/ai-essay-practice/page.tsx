@@ -258,7 +258,10 @@ function AIEssayPracticeInner() {
     if (!creditInfo) return null;
     if (isUnlimitedRole || creditInfo.hasMonthly) return -1; // -1 = unlimited
     if (creditInfo.paidCredits > 0) return creditInfo.paidCredits;
-    return Math.max(0, 2 - creditInfo.freeUsed);
+    // Free scoring is no longer offered to new accounts — only users who already
+    // started their free tier (freeUsed >= 1) keep the remaining free scorings.
+    const freeLimit = creditInfo.freeUsed >= 1 ? 2 : 0;
+    return Math.max(0, freeLimit - creditInfo.freeUsed);
   }, [creditInfo, isUnlimitedRole]);
 
   const genCreditsRemaining = useMemo<number | null>(() => {
@@ -1181,9 +1184,9 @@ function AIEssayPracticeInner() {
                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Free Trial</p>
                       <div className="flex items-baseline gap-1">
                         <span className="text-2xl font-black tabular-nums text-amber-300">
-                          {Math.max(0, 2 - creditInfo.freeUsed)}
+                          {creditsRemaining === -1 ? 0 : creditsRemaining}
                         </span>
-                        <span className="text-xs text-slate-500">/ 2 left</span>
+                        <span className="text-xs text-slate-500">/ {creditInfo.freeUsed >= 1 ? 2 : 0} left</span>
                       </div>
                     </div>
                   </div>
@@ -2533,12 +2536,8 @@ function AIEssayPracticeInner() {
               You need a SmartLabs account to use AI essay scoring.
             </p>
             <div className="bg-blue-50 border border-blue-200 rounded-2xl px-5 py-4 mb-6 text-left">
-              <p className="text-xs font-black text-blue-700 uppercase tracking-widest mb-2">Free Plan Includes</p>
+              <p className="text-xs font-black text-blue-700 uppercase tracking-widest mb-2">AI Essay Scoring Includes</p>
               <ul className="space-y-1.5">
-                <li className="flex items-center gap-2 text-sm text-slate-700 font-medium">
-                  <CheckCircle size={15} weight="duotone" className="text-emerald-500 shrink-0" />
-                  2 free AI essay scorings (lifetime)
-                </li>
                 <li className="flex items-center gap-2 text-sm text-slate-700 font-medium">
                   <CheckCircle size={15} weight="duotone" className="text-emerald-500 shrink-0" />
                   Full band score with 7-criterion breakdown
@@ -2546,6 +2545,10 @@ function AIEssayPracticeInner() {
                 <li className="flex items-center gap-2 text-sm text-slate-700 font-medium">
                   <CheckCircle size={15} weight="duotone" className="text-emerald-500 shrink-0" />
                   Model essay, grammar review, vocab upgrades
+                </li>
+                <li className="flex items-center gap-2 text-sm text-slate-700 font-medium">
+                  <CheckCircle size={15} weight="duotone" className="text-emerald-500 shrink-0" />
+                  Scoring runs on credits — purchase a pack anytime
                 </li>
               </ul>
             </div>
@@ -2590,7 +2593,9 @@ function AIEssayPracticeInner() {
                 </div>
                 <p className="text-slate-500 text-sm ml-11">
                   {creditsRemaining === 0
-                    ? "You've used your 2 free essay scorings. Purchase to keep practising."
+                    ? (creditInfo && creditInfo.freeUsed >= 1
+                        ? "You've used your free essay scorings. Purchase to keep practising."
+                        : "Purchase credits to start scoring your essays with AI feedback.")
                     : "Top up your credits to practise more with AI feedback."}
                 </p>
               </div>

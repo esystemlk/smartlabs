@@ -94,7 +94,10 @@ function SWTInner() {
     if (!credit) return null;
     if (unlimited) return -1;
     if (credit.paidCredits > 0) return credit.paidCredits;
-    return Math.max(0, FREE_SWT_LIMIT - credit.freeUsed);
+    // New accounts no longer get free scoring — only users already on the free
+    // tier (freeUsed >= 1) keep their remaining free scorings.
+    const freeLimit = credit.freeUsed >= 1 ? FREE_SWT_LIMIT : 0;
+    return Math.max(0, freeLimit - credit.freeUsed);
   }, [credit, unlimited]);
 
   // ── Live Form analysis ──
@@ -350,7 +353,7 @@ function SWTInner() {
           <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-200 text-center">
             <div className="w-16 h-16 rounded-2xl bg-violet-50 border border-violet-200 flex items-center justify-center mx-auto mb-5"><Lock size={30} className="text-violet-600" /></div>
             <h2 className="text-2xl font-black text-slate-900 mb-2">Sign In Required</h2>
-            <p className="text-slate-500 text-sm mb-6">Create a free SmartLabs account to use the SWT trainer — you get {FREE_SWT_LIMIT} free scorings.</p>
+            <p className="text-slate-500 text-sm mb-6">Create a SmartLabs account to use the SWT trainer. AI scoring runs on credits — purchase a pack anytime.</p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Link href="/signup" className="flex-1 bg-violet-600 hover:bg-violet-700 text-white font-extrabold px-6 py-3 rounded-xl text-sm text-center" onClick={() => setShowSignIn(false)}>Create Free Account</Link>
               <Link href="/login" className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold px-6 py-3 rounded-xl text-sm text-center" onClick={() => setShowSignIn(false)}>Sign In</Link>

@@ -35,11 +35,16 @@ async function verifyCredits(uid: string): Promise<CreditResult> {
   const paid = (d.speakingPaidCredits as number) ?? 0;
   const expiry = d.speakingMonthlyExpiry?.toDate?.() ?? null;
   const hasMonthly = !!(expiry && expiry > new Date());
-  if (!hasMonthly && paid <= 0 && freeUsed >= FREE_SPEAKING_LIMIT) {
+  // Free AI scoring is no longer offered to new accounts — only users already on
+  // the free tier (freeUsed >= 1) or holding credits/a plan keep it.
+  const freeLimit = freeUsed >= 1 ? FREE_SPEAKING_LIMIT : 0;
+  if (!hasMonthly && paid <= 0 && freeUsed >= freeLimit) {
     return {
       ok: false, status: 402, code: 'NO_CREDITS',
-      message: `You have used your ${FREE_SPEAKING_LIMIT} free speaking scorings. Purchase credits to keep practising.`,
-      extra: { freeUsed, freeTotal: FREE_SPEAKING_LIMIT, paidCredits: paid, hasMonthly },
+      message: freeUsed >= 1
+        ? `You have used your ${FREE_SPEAKING_LIMIT} free speaking scorings. Purchase credits to keep practising.`
+        : 'Free AI scoring is no longer available on new accounts. Please purchase credits to start scoring.',
+      extra: { freeUsed, freeTotal: freeLimit, paidCredits: paid, hasMonthly },
     };
   }
   return { ok: true, unlimited: false };

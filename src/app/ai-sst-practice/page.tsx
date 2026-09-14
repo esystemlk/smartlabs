@@ -119,7 +119,10 @@ function SSTInner() {
   const creditsRemaining = useMemo(() => {
     if (!credit) return 0;
     if (credit.paidCredits > 0) return credit.paidCredits;
-    return Math.max(0, FREE_SST_LIMIT - credit.freeUsed);
+    // New accounts no longer get free scoring — only users already on the free
+    // tier (freeUsed >= 1) keep their remaining free scorings.
+    const freeLimit = credit.freeUsed >= 1 ? FREE_SST_LIMIT : 0;
+    return Math.max(0, freeLimit - credit.freeUsed);
   }, [credit]);
 
   // ── Live Form analysis — official SST rule: 50–70 words = 2 marks, else 0.
@@ -345,8 +348,8 @@ function SSTInner() {
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Free Trial</p>
                       <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-black tabular-nums text-amber-300">{Math.max(0, FREE_SST_LIMIT - credit.freeUsed)}</span>
-                        <span className="text-xs text-slate-500">/ {FREE_SST_LIMIT} left</span>
+                        <span className="text-2xl font-black tabular-nums text-amber-300">{creditsRemaining}</span>
+                        <span className="text-xs text-slate-500">/ {credit.freeUsed >= 1 ? FREE_SST_LIMIT : 0} left</span>
                       </div>
                     </div>
                   </div>
@@ -560,7 +563,7 @@ function SSTInner() {
           <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-200 text-center">
             <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto mb-5"><Lock size={30} className="text-emerald-600" /></div>
             <h2 className="text-2xl font-black text-slate-900 mb-2">Sign In Required</h2>
-            <p className="text-slate-500 text-sm mb-6">Create a free SmartLabs account to use the SST trainer — you get {FREE_SST_LIMIT} free scorings.</p>
+            <p className="text-slate-500 text-sm mb-6">Create a SmartLabs account to use the SST trainer. AI scoring runs on credits — purchase a pack anytime.</p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Link href="/signup" className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-6 py-3 rounded-xl text-sm text-center" onClick={() => setShowSignIn(false)}>Create Free Account</Link>
               <Link href="/login" className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold px-6 py-3 rounded-xl text-sm text-center" onClick={() => setShowSignIn(false)}>Sign In</Link>

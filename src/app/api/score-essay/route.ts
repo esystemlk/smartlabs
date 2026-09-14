@@ -577,13 +577,20 @@ async function verifyAuthAndCredits(
   const monthlyExpiry       = userData.essayMonthlyExpiry?.toDate?.() ?? null;
   const hasMonthly          = !!(monthlyExpiry && monthlyExpiry > new Date());
 
-  if (!hasMonthly && paidCredits <= 0 && freeUsed >= FREE_ESSAY_LIMIT) {
+  // Free AI scoring is no longer offered to new accounts. Only users who already
+  // began their free tier (freeUsed >= 1) — or hold paid credits / a monthly plan
+  // — keep it; brand-new users must purchase before their first scoring.
+  const freeLimit = freeUsed >= 1 ? FREE_ESSAY_LIMIT : 0;
+
+  if (!hasMonthly && paidCredits <= 0 && freeUsed >= freeLimit) {
     return {
       ok: false,
       status: 402,
       code: 'NO_CREDITS',
-      message: `You have used your ${FREE_ESSAY_LIMIT} free essay scorings. Purchase credits to keep practising.`,
-      extra: { freeUsed, freeTotal: FREE_ESSAY_LIMIT, paidCredits, hasMonthly },
+      message: freeUsed >= 1
+        ? `You have used your ${FREE_ESSAY_LIMIT} free essay scorings. Purchase credits to keep practising.`
+        : 'Free AI scoring is no longer available on new accounts. Please purchase credits to start scoring your essays.',
+      extra: { freeUsed, freeTotal: freeLimit, paidCredits, hasMonthly },
     };
   }
 

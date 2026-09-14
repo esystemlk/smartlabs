@@ -77,11 +77,16 @@ async function verifyAuthAndCredits(authHeader: string | null, internal: boolean
   const paid = (data.ieltsEssayPaidCredits as number) ?? 0;
   const freeUsed = (data.ieltsEssayFreeUsed as number) ?? 0;
 
-  if (!hasMonthly && paid <= 0 && freeUsed >= FREE_IELTS_ESSAY_LIMIT) {
+  // Free AI scoring is no longer offered to new accounts — only users already on
+  // the free tier (freeUsed >= 1) or holding credits/a plan keep it.
+  const freeLimit = freeUsed >= 1 ? FREE_IELTS_ESSAY_LIMIT : 0;
+  if (!hasMonthly && paid <= 0 && freeUsed >= freeLimit) {
     return {
       ok: false, status: 402, code: 'NO_IELTS_CREDITS',
-      message: `You have used your ${FREE_IELTS_ESSAY_LIMIT} free IELTS essay scorings. Purchase credits to keep practising.`,
-      extra: { freeUsed, freeTotal: FREE_IELTS_ESSAY_LIMIT, paidCredits: paid, hasMonthly },
+      message: freeUsed >= 1
+        ? `You have used your ${FREE_IELTS_ESSAY_LIMIT} free IELTS essay scorings. Purchase credits to keep practising.`
+        : 'Free AI scoring is no longer available on new accounts. Please purchase credits to start scoring.',
+      extra: { freeUsed, freeTotal: freeLimit, paidCredits: paid, hasMonthly },
     };
   }
   return { ok: true, uid, unlimited: false };
