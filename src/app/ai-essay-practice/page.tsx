@@ -74,6 +74,7 @@ interface Topic {
   id: number;
   text: string;
   category: string;
+  no?: number; // sequential number shown for prediction topics
 }
 
 // Essay scoring types now live in src/types/essay.ts (AIResponse + sub-interfaces).
@@ -120,6 +121,50 @@ const TOPICS: Topic[] = [
   { id: 39, text: "People who are famous entertainers or sportspeople should give up the right to privacy as this is the price of fame. To what extent do you agree or disagree?", category: "Media" },
   { id: 40, text: "The world's governments and international organizations confront a multitude of global problems. Which do you think is the most pressing problem for the inhabitants of our planet and give the solution?", category: "Global" },
   { id: 41, text: "In many countries unemployment among young people is a serious problem. One suggested solution is to shorten the working week. What do you think are the advantages and disadvantages? Do you think this policy should apply to just young workers or the whole workforce？", category: "Economy" }
+];
+
+// High-probability predicted exam questions (reworded collection). Shown first,
+// under the "Predictions" tab; the older TOPICS list sits under "All Topics".
+const PREDICTIONS: Topic[] = [
+  { id: 5001, no: 1, text: "As cities continue to expand, governments should prioritize developing stronger public transport networks accessible to everyone instead of constructing additional roads mainly for people who own vehicles. To what extent do you agree or disagree?", category: "Travel" },
+  { id: 5002, no: 2, text: "Mass media, including television, radio and newspapers, significantly affects people, particularly younger generations. It plays an important role in forming people's views, especially those of teenagers and young adults. To what extent do you agree with this? Please provide examples.", category: "Media" },
+  { id: 5003, no: 3, text: "Today, it is becoming increasingly challenging to maintain a healthy balance between work and other parts of one's life, such as spending leisure time with family members. How important do you think this balance is, and why do some people find it difficult to achieve?", category: "Society" },
+  { id: 5004, no: 4, text: "Should parents be legally accountable for their children's behavior? Support your viewpoint using examples from your studies, observations or personal experiences.", category: "Society" },
+  { id: 5005, no: 5, text: "Some universities reduce students' marks when assignments are submitted late. What is your view on this practice? What alternative measures would you suggest?", category: "Education" },
+  { id: 5006, no: 6, text: "Advances in medical technology have contributed to a longer average life expectancy. Do you consider this development a blessing or a curse?", category: "Health" },
+  { id: 5007, no: 7, text: "Governments around the world and international organizations face numerous global challenges. Which problem do you consider the most urgent for people on our planet, and what solution would you propose?", category: "Global" },
+  { id: 5008, no: 8, text: "What are the advantages and difficulties for high school students who study plays and other theatrical works written hundreds of years ago? Discuss this using your own experience.", category: "Education" },
+  { id: 5009, no: 9, text: "As more digital media becomes available online, some believe libraries are becoming unnecessary. Universities should invest in new digital resources instead of continually updating printed textbooks. Discuss the benefits and drawbacks of this view and give your own opinion.", category: "Education" },
+  { id: 5010, no: 10, text: "Age limits apply to many activities. People are often expected to wait until an appropriate age before getting married, driving, voting, purchasing certain products, or taking part in particular activities. Choose one example, state what you think the minimum age should be, and share your own experience.", category: "Society" },
+  { id: 5011, no: 11, text: "Successful study needs sufficient time, a comfortable environment and peace. Some argue that combining education with employment is unrealistic because work may interfere with learning. To what extent do you think these statements are realistic? Give your opinion with examples.", category: "Education" },
+  { id: 5012, no: 12, text: "Which major issue should governments prioritize when allocating public funds: climate change, education, or public health? Explain your viewpoint and support it with examples.", category: "Global" },
+  { id: 5013, no: 13, text: "When companies market consumer products such as food and clothing, should they focus more on building the company's reputation or on short-term approaches such as discounts and promotional offers? Explain why.", category: "Economy" },
+  { id: 5014, no: 14, text: "Some people believe laws can influence and change human behavior, whereas others argue that legislation has very little impact. What is your opinion?", category: "Society" },
+  { id: 5015, no: 15, text: "For developing countries, the negative effects of tourism may be just as significant as its benefits. Discuss this view and explain your own opinion.", category: "Travel" },
+  { id: 5016, no: 16, text: "In today's technology-driven world, new inventions are being developed constantly. Describe a recent invention and explain whether you believe its effect on society is beneficial or harmful.", category: "Technology" },
+  { id: 5017, no: 17, text: "Television performs several useful roles: it can help people unwind, provide opportunities to learn, and offer a sense of companionship to those who are lonely. To what extent do you agree with this view? Explain your answer using your own experience.", category: "Media" },
+  { id: 5018, no: 18, text: "It is predicted that in the future people will spend fewer hours at work than they do today. To what extent do you agree with this prediction? Support your opinion with examples from your own experience.", category: "Economy" },
+  { id: 5019, no: 19, text: "Youth unemployment is a major issue in many countries. One proposed solution is to reduce the length of the working week. What are the possible benefits and drawbacks of this approach? Should it apply only to younger employees or to workers of every age group?", category: "Economy" },
+  { id: 5020, no: 20, text: "Many countries invest substantial amounts of money in preserving historic buildings instead of developing modern housing. To what extent do you agree or disagree with this approach? What are its main advantages and disadvantages? Support your answer with relevant experience or examples.", category: "Society" },
+  { id: 5021, no: 21, text: "Growing up in the 21st century is more difficult for children than it was for previous generations. To what extent do you agree with this view? Explain your opinion.", category: "Society" },
+  { id: 5022, no: 22, text: "Some people choose to live in urban areas, while others prefer the countryside. Which environment do you think is better for you? Give reasons and examples from your experience.", category: "Society" },
+  { id: 5023, no: 23, text: "Some people argue that the importance of travel is greatly exaggerated, noting that a brilliant scholar may never leave their home base. To what extent do you agree that travelling is not essential for receiving a high-quality education?", category: "Travel" },
+  { id: 5024, no: 24, text: "Climate change is a serious worldwide concern. Who should bear the greatest responsibility for addressing it: governments, major corporations, or individual citizens?", category: "Environment" },
+  { id: 5025, no: 25, text: "Many education systems evaluate student learning through formal written examinations. Some believe these exams are an effective and valid assessment method. To what extent do you agree or disagree? Support your answer with examples from your own experience.", category: "Education" },
+  { id: 5026, no: 26, text: "The information revolution created by modern mass communication has produced both beneficial and harmful effects for individuals and society. To what extent do you agree with this view? Explain your reasons using your own experience.", category: "Media" },
+  { id: 5027, no: 27, text: "In many cities and towns, large shopping centres are taking the place of small local stores. Some people consider this a positive change. To what extent do you agree with this opinion?", category: "Economy" },
+  { id: 5028, no: 28, text: "In some businesses, employers include employees in decisions concerning products and services. What are the main benefits and drawbacks of this management approach?", category: "Economy" },
+  { id: 5029, no: 29, text: "Some people believe experiential learning, or learning through practical experience, can be effective in formal education, while others prefer traditional teaching methods. Do you think learning by doing can work successfully in high schools or colleges?", category: "Education" },
+  { id: 5030, no: 30, text: "Do you believe the architectural design of buildings can have a positive or negative influence on the places where people choose to live and work?", category: "Society" },
+  { id: 5031, no: 31, text: "Nowadays, many people spend so much time on their jobs that they have very limited time for their private and personal lives. How common is this issue, and what problems can this lack of personal time create?", category: "Society" },
+  { id: 5032, no: 32, text: "Some people claim that experience is the most effective teacher because real-life experiences can teach more successfully than books or formal schooling. To what extent do you agree? Give reasons or examples from your personal experience.", category: "Education" },
+  { id: 5033, no: 33, text: "Imagine you have been asked to conduct a study on climate change. Which specific aspect of climate change would you choose to investigate, and why? Support your answer with examples.", category: "Environment" },
+  { id: 5034, no: 34, text: "Some argue that famous entertainers and athletes should sacrifice part of their right to privacy because this is a consequence of being well known. To what extent do you agree or disagree with this view? Support your opinion with relevant experiences.", category: "Media" },
+  { id: 5035, no: 35, text: "Some people believe studying a foreign language at school should be mandatory. To what extent do you agree with this idea? Use examples or personal experience to support your viewpoint.", category: "Education" },
+  { id: 5036, no: 36, text: "Many people argue that highly paid occupations should have a maximum salary because certain individuals earn excessively high incomes. Do you support this idea? Explain your viewpoint using reasons or your own experience.", category: "Economy" },
+  { id: 5037, no: 37, text: "As artificial intelligence becomes increasingly sophisticated, computers can translate foreign languages more effectively. Some therefore believe learning another language is no longer necessary. To what extent do you agree with this view?", category: "Technology" },
+  { id: 5038, no: 38, text: "Many people feel that their jobs leave insufficient time for their personal lives. How widespread do you think this problem is, and what measures could help address the difficulties caused by this lack of time?", category: "Society" },
+  { id: 5039, no: 39, text: "It is sometimes argued that studying in another country is given too much importance because many successful scholars complete their education locally. To what extent do you agree with this view?", category: "Travel" },
 ];
 
 const FILTERS = ["All", "Education", "Technology", "Society", "Health", "Environment", "Economy", "Travel", "Media", "Global"];
@@ -178,6 +223,7 @@ function AIEssayPracticeInner() {
 
   // ── Essay practice state ──────────────────────────────────────────────────
   const [selectedFilter, setSelectedFilter] = useState("All");
+  const [topicView, setTopicView] = useState<"predictions" | "all">("predictions");
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [adminTopics, setAdminTopics] = useState<Topic[]>([]);
 
@@ -510,7 +556,7 @@ function AIEssayPracticeInner() {
 
   const selectTopicHandler = (topic: Topic) => {
     setSelectedTopic(topic);
-    showToast(`Topic #${topic.id} Selected!`, 'success');
+    showToast(`${topic.no ? `Prediction #${topic.no}` : `Topic #${topic.id}`} Selected!`, 'success');
   };
 
   const startWritingHandler = () => {
@@ -721,9 +767,12 @@ function AIEssayPracticeInner() {
   }, []);
 
   const allTopics = [...adminTopics, ...TOPICS];
+  // "Predictions" = the reworded high-probability collection (front tab);
+  // "All Topics" = the full library (admin-added + original topics).
+  const activeCollection = topicView === "predictions" ? PREDICTIONS : allTopics;
   const filteredTopics = selectedFilter === "All"
-    ? allTopics
-    : allTopics.filter(t => t.category === selectedFilter);
+    ? activeCollection
+    : activeCollection.filter(t => t.category === selectedFilter);
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sora selection:bg-[#f97316]/20 selection:text-slate-900 custom-scrollbar pb-24">
@@ -1010,7 +1059,7 @@ function AIEssayPracticeInner() {
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3 w-full md:w-3/4">
               <span className="shrink-0 bg-[#f97316] text-white font-black text-xs px-2.5 py-1 rounded">
-                TOPIC #{selectedTopic.id}
+                {selectedTopic.no ? `PREDICTION #${selectedTopic.no}` : `TOPIC #${selectedTopic.id}`}
               </span>
               <p className="text-sm font-semibold text-slate-700 truncate italic">
                 &ldquo;{selectedTopic.text}&rdquo;
@@ -1322,20 +1371,50 @@ function AIEssayPracticeInner() {
       </section>
 
       {/* 4. TOPIC SELECTION GRID */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
-          <div>
-            <h2 className="font-display-serif text-3xl md:text-4xl font-black text-slate-900">Select Practice Topic</h2>
-            <p className="text-slate-500 text-sm mt-1">Select a high-probability exam topic to start your practice session</p>
+      <section className="py-16 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-6 mb-8 sm:mb-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-5">
+            <div>
+              <h2 className="font-display-serif text-2xl sm:text-3xl md:text-4xl font-black text-slate-900">Select Practice Topic</h2>
+              <p className="text-slate-500 text-sm mt-1">
+                {topicView === "predictions"
+                  ? "High-probability predicted exam questions — start here."
+                  : "Browse the full topic library across every category."}
+              </p>
+            </div>
+
+            {/* Predictions / All Topics toggle */}
+            <div className="inline-flex w-full sm:w-auto rounded-2xl border border-slate-200 bg-slate-100 p-1 shadow-inner">
+              <button
+                onClick={() => { setTopicView("predictions"); setSelectedFilter("All"); }}
+                className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-black transition-all ${topicView === "predictions"
+                    ? "bg-[#f97316] text-white shadow-md"
+                    : "text-slate-600 hover:text-slate-900"
+                  }`}
+              >
+                🔮 Predictions
+                <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${topicView === "predictions" ? "bg-white/25 text-white" : "bg-slate-200 text-slate-600"}`}>{PREDICTIONS.length}</span>
+              </button>
+              <button
+                onClick={() => { setTopicView("all"); setSelectedFilter("All"); }}
+                className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-black transition-all ${topicView === "all"
+                    ? "bg-[#f97316] text-white shadow-md"
+                    : "text-slate-600 hover:text-slate-900"
+                  }`}
+              >
+                All Topics
+                <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${topicView === "all" ? "bg-white/25 text-white" : "bg-slate-200 text-slate-600"}`}>{allTopics.length}</span>
+              </button>
+            </div>
           </div>
 
           {/* Filter Bar */}
-          <div className="flex flex-nowrap md:flex-wrap gap-2 max-w-full overflow-x-auto no-scrollbar pb-2">
+          <div className="flex flex-nowrap md:flex-wrap gap-2 max-w-full overflow-x-auto no-scrollbar pb-2 -mb-2">
             {(FILTERS || []).map(filter => (
               <button
                 key={filter}
                 onClick={() => setSelectedFilter(filter)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border shrink-0 ${selectedFilter === filter
+                className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all border shrink-0 ${selectedFilter === filter
                     ? "bg-[#f97316] text-white border-[#f97316] shadow-md"
                     : "bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
                   }`}
@@ -1363,7 +1442,7 @@ function AIEssayPracticeInner() {
               >
                 <div className="flex items-center justify-between mb-4">
                   <span className="font-jetbrains text-xs font-bold text-slate-400">
-                    Topic #{topic.id}
+                    {topic.no ? `Prediction #${topic.no}` : `Topic #${topic.id}`}
                   </span>
                   <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded border ${catColors.bg} ${catColors.text} ${catColors.border}`}>
                     {topic.category}
@@ -1382,6 +1461,18 @@ function AIEssayPracticeInner() {
             );
           })}
         </div>
+
+        {(filteredTopics || []).length === 0 && (
+          <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-white/60 py-16 text-center">
+            <p className="text-sm font-semibold text-slate-500">No topics in this category yet.</p>
+            <button
+              onClick={() => setSelectedFilter("All")}
+              className="mt-3 rounded-xl bg-[#f97316] px-4 py-2 text-xs font-bold text-white shadow-sm hover:opacity-90"
+            >
+              Show all
+            </button>
+          </div>
+        )}
       </section>
 
       {/* 5. WRITING AREA */}
