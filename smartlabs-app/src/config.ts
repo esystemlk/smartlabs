@@ -18,3 +18,10 @@ export const firebaseConfig = {
 /** Base URL of the Next.js backend that hosts the scoring / TTS / question APIs. */
 export const API_BASE_URL: string =
   (Constants.expoConfig?.extra?.apiBaseUrl as string) ?? 'https://www.smartlabs.lk';
+
+/**
+ * PayHere sandbox toggle. Keep `true` for test cards; set `payhereSandbox: false`
+ * in app.json extra for real (live) payments. Defaults to sandbox for safety.
+ */
+export const PAYHERE_SANDBOX: boolean =
+  (Constants.expoConfig?.extra?.payhereSandbox as boolean | undefined) ?? true;

@@ -17,15 +17,15 @@ import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
 import { C, GRADIENTS } from '@/theme';
 
-/** SmartLabs wordmark. `variant` picks the asset tint context. */
+/** Frame the original wordmark without its large transparent vertical margins. */
 export function Logo({ height = 40 }: { height?: number }) {
   return (
-    <Image
+    <View style={{ height, width: height * 4.3, overflow: 'hidden' }}><Image
       source={require('../../assets/logo.png')}
-      style={{ height, width: height * 3.4 }}
+      style={{ position: 'absolute', width: height * 4.3, height: height * 2.42, top: -height * 0.71 }}
       resizeMode="contain"
       accessibilityLabel="SmartLabs"
-    />
+    /></View>
   );
 }
 
@@ -47,7 +47,7 @@ export function GradientButton({
 }) {
   const off = disabled || loading;
   return (
-    <Pressable onPress={onPress} disabled={off} style={({ pressed }) => [{ opacity: off ? 0.55 : pressed ? 0.9 : 1 }, style]}>
+    <Pressable accessibilityRole="button" accessibilityState={{ disabled: !!off, busy: !!loading }} onPress={onPress} disabled={off} style={({ pressed }) => [{ opacity: off ? 0.55 : pressed ? 0.9 : 1, transform: [{ scale: pressed ? 0.985 : 1 }] }, style]}>
       <LinearGradient colors={GRADIENTS.button} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.gBtn}>
         {loading ? (
           <ActivityIndicator color="#fff" />
@@ -77,7 +77,7 @@ export function OutlineButton({
   style?: StyleProp<ViewStyle>;
 }) {
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [s.outline, { borderColor: color, opacity: pressed ? 0.85 : 1 }, style]}>
+    <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [s.outline, { borderColor: color, opacity: pressed ? 0.85 : 1 }, style]}>
       {icon ? <Ionicons name={icon} size={17} color={color} /> : null}
       <Text style={[s.outlineText, { color }]}>{label}</Text>
     </Pressable>
@@ -93,19 +93,23 @@ export function AuthField({
   ...rest
 }: TextInputProps & { label?: string; icon?: keyof typeof Ionicons.glyphMap; password?: boolean }) {
   const [show, setShow] = useState(false);
+  const [focused, setFocused] = useState(false);
   return (
     <View style={{ gap: 7 }}>
       {label ? <Text style={s.fieldLabel}>{label}</Text> : null}
-      <View style={s.fieldBox}>
+      <View style={[s.fieldBox, focused && { borderColor: C.blue, backgroundColor: C.tintBlueSoft }]}>
         {icon ? <Ionicons name={icon} size={18} color={C.slateLight} /> : null}
         <TextInput
+          accessibilityLabel={label}
           placeholderTextColor={C.faint}
           secureTextEntry={password && !show}
           style={[s.fieldInput, style]}
           {...rest}
+          onFocus={(event) => { setFocused(true); rest.onFocus?.(event); }}
+          onBlur={(event) => { setFocused(false); rest.onBlur?.(event); }}
         />
         {password ? (
-          <Pressable onPress={() => setShow((v) => !v)} hitSlop={10}>
+          <Pressable accessibilityRole="button" accessibilityLabel={show ? 'Hide password' : 'Show password'} onPress={() => setShow((v) => !v)} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
             <Ionicons name={show ? 'eye-off-outline' : 'eye-outline'} size={19} color={C.slateLight} />
           </Pressable>
         ) : null}
@@ -123,7 +127,7 @@ export function Card({ children, style }: { children: React.ReactNode; style?: S
 export function ProgressBar({ pct, color = C.blue, track = C.track, height = 8 }: { pct: number; color?: string; track?: string; height?: number }) {
   return (
     <View style={{ height, borderRadius: height / 2, backgroundColor: track, overflow: 'hidden', flex: 1 }}>
-      <View style={{ height, borderRadius: height / 2, backgroundColor: color, width: `${Math.max(2, Math.min(100, pct))}%` }} />
+      <View style={{ height, borderRadius: height / 2, backgroundColor: color, width: `${Math.max(0, Math.min(100, pct))}%` }} />
     </View>
   );
 }
@@ -197,21 +201,21 @@ export function ScreenHeader({
 }
 
 const s = StyleSheet.create({
-  gBtn: { height: 54, borderRadius: 14, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 },
+  gBtn: { minHeight: 56, paddingVertical: 16, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 },
   gBtnRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  gBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  gBtnText: { color: '#fff', fontSize: 16, fontWeight: '700', flexShrink: 1, textAlign: 'center' },
   outline: {
-    height: 50, borderRadius: 12, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center',
+    minHeight: 52, paddingVertical: 12, borderRadius: 16, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center',
     flexDirection: 'row', gap: 8, paddingHorizontal: 16, backgroundColor: '#fff',
   },
-  outlineText: { fontSize: 15, fontWeight: '700' },
+  outlineText: { fontSize: 15, fontWeight: '700', flexShrink: 1, textAlign: 'center' },
   card: { backgroundColor: C.card, borderRadius: 18, borderWidth: 1, borderColor: C.border, padding: 18 },
   fieldLabel: { color: C.slate, fontSize: 13, fontWeight: '700' },
   fieldBox: {
-    flexDirection: 'row', alignItems: 'center', gap: 10, height: 54, borderRadius: 14,
+    flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 58, borderRadius: 16,
     borderWidth: 1, borderColor: C.borderStrong, backgroundColor: '#fff', paddingHorizontal: 14,
   },
-  fieldInput: { flex: 1, fontSize: 15, color: C.navy, height: '100%' },
+  fieldInput: { flex: 1, minWidth: 0, fontSize: 16, color: C.navy, paddingVertical: 17 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 48, marginBottom: 6 },
   backBtn: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#fff', borderWidth: 1, borderColor: C.border, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { flex: 1, textAlign: 'center', fontSize: 17, fontWeight: '800', color: C.navy },

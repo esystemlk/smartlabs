@@ -13,7 +13,7 @@
  */
 export const theme = {
   colors: {
-    bg: '#FAFBFC', // --background 240 10% 99%
+    bg: '#F6F7FF', // Soft lavender canvas shared with the mobile app.
     surface: '#FFFFFF', // --card 0 0% 100%
     surfaceAlt: '#F1F5F9', // --muted / --secondary 210 40% 96.1%
     border: '#E2E8F0', // --border 214 32% 91%
@@ -79,7 +79,7 @@ export const C = {
 
   // Surfaces
   white: '#FFFFFF',
-  bg: '#F4F7FB',
+  bg: '#F6F7FF',
   card: '#FFFFFF',
   tintBlue: '#EAF1FD',
   tintBlueSoft: '#F1F6FE',
@@ -91,15 +91,15 @@ export const C = {
   navy: '#0F1E3D',
   ink: '#12203C',
   slate: '#556482',
-  slateLight: '#8A97AC',
-  faint: '#AEB8C9',
+  slateLight: '#66738D',
+  faint: '#76829A',
 
   // Skill accents (Speaking / Reading / Writing / Listening)
   speaking: '#2563EB',
   speakingBg: '#E7F0FE',
   reading: '#16A34A',
   readingBg: '#E4F7EB',
-  writing: '#F59E0B',
+  writing: '#B96508',
   writingBg: '#FEF3DA',
   listening: '#7C3AED',
   listeningBg: '#EFE8FE',
@@ -114,8 +114,8 @@ export const C = {
 
 /** Gradient stop sets used with expo-linear-gradient across the brand UI. */
 export const GRADIENTS = {
-  brand: ['#2563EB', '#1D4ED8', '#1E3A8A'] as const,
+  brand: ['#2563EB', '#5143DB', '#7139C9'] as const,
   splash: ['#0E2A6B', '#122E74', '#0A1C4A'] as const,
-  button: ['#2C7BF2', '#2563EB'] as const,
+  button: ['#2563EB', '#5941DA'] as const,
   sky: ['#EAF2FE', '#F5F9FF'] as const,
 };

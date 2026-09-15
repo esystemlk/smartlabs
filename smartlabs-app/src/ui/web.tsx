@@ -470,16 +470,16 @@ const styles = StyleSheet.create({
   checkText: { fontSize: 12, fontWeight: '600' },
   primaryBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    height: 52, borderRadius: 16, paddingHorizontal: 24,
+    minHeight: 52, paddingVertical: 14, borderRadius: 16, paddingHorizontal: 24,
   },
-  primaryBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
+  primaryBtnText: { color: '#fff', fontSize: 15, fontWeight: '800', flexShrink: 1, textAlign: 'center' },
   audioBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    height: 52, borderRadius: 16,
+    minHeight: 52, paddingVertical: 14, borderRadius: 16,
   },
   darkBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    height: 52, borderRadius: 16, backgroundColor: slate[900],
+    minHeight: 52, paddingVertical: 14, borderRadius: 16, backgroundColor: slate[900],
   },
   circle: {
     width: 128, height: 128, borderRadius: 64, borderWidth: 4,

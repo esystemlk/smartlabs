@@ -1,3 +1,4 @@
+import { useAppLayout } from '@/ui/layout';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -17,6 +18,7 @@ const SKILL_META: Record<string, { label: string; icon: keyof typeof Ionicons.gl
 
 /** Task list for one skill — bridges the Practice Arena to the trainer. */
 export default function SectionScreen() {
+  const layout = useAppLayout();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [section, setSection] = useState<PteSection | null>(null);
@@ -37,8 +39,8 @@ export default function SectionScreen() {
   }, [id]);
 
   return (
-    <SafeAreaView style={s.safe} edges={['top']}>
-      <View style={s.headerWrap}>
+    <SafeAreaView style={s.safe} edges={['top', 'bottom', 'left', 'right']}>
+      <View style={[s.headerWrap, layout.content]}>
         <ScreenHeader title={meta.label} />
       </View>
       {error ? (
@@ -46,7 +48,7 @@ export default function SectionScreen() {
       ) : !section ? (
         <View style={s.center}><ActivityIndicator color={C.blue} size="large" /></View>
       ) : (
-        <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={[s.content, layout.content]} showsVerticalScrollIndicator={false}>
           <View style={[s.hero, { backgroundColor: meta.bg }]}>
             <View style={[s.heroIcon, { backgroundColor: '#fff' }]}>
               <Ionicons name={meta.icon} size={24} color={meta.fg} />
@@ -115,8 +117,8 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: C.border, padding: 16,
   },
   rowOff: { opacity: 0.6 },
-  rowTop: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  rowTags: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8 },
-  rowLabel: { fontSize: 16, fontWeight: '700', color: C.navy },
+  rowTop: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 },
+  rowTags: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginTop: 8 },
+  rowLabel: { flexShrink: 1, fontSize: 16, fontWeight: '700', color: C.navy },
   weight: { fontSize: 12, color: C.faint, fontWeight: '600' },
 });

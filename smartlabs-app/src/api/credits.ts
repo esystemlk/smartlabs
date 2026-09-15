@@ -31,6 +31,8 @@ export interface PayHereParams {
 export function createCreditPayment(pool: CreditPool, packageId: string) {
   return apiPost<{ success: boolean; params: PayHereParams; orderId: string }>(
     `/api/${pool}-credits/create-payment`,
-    { packageId },
+    // `client: 'app'` tells the server to sign with the app's PayHere secret
+    // (the mobile app is a separate approved app entry in PayHere).
+    { packageId, client: 'app' },
   );
 }

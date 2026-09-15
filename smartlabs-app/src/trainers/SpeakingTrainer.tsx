@@ -9,6 +9,7 @@ import { SpeechRecorder } from '@/audio/recorder';
 import { PromptPlayer } from '@/audio/player';
 import { useAuth } from '@/auth/AuthContext';
 import { bumpSession } from '@/lib/progress';
+import { recordAttempt } from '@/lib/attempts';
 import { BackLink, slate, tint } from '@/ui/web';
 import type { TrainerProps } from '@/trainers/types';
 
@@ -75,6 +76,7 @@ export function SpeakingTrainer({ task, question, accent, onBack }: TrainerProps
       setResult(score);
       setPhase('result');
       bumpSession(user?.uid);
+      recordAttempt(user?.uid, 'speaking', task.taskType, score.overall, 90);
     } catch (e) {
       if (e instanceof ApiError && (e.code === 'NO_CREDITS' || e.status === 402)) {
         setError('You are out of speaking credits.');
@@ -326,7 +328,7 @@ const styles = StyleSheet.create({
   audioNoteText: { flex: 1, fontSize: 13, color: slate[500], lineHeight: 19 },
 
   recorderCard: { backgroundColor: slate.white, borderRadius: 18, borderWidth: 1, borderColor: slate[200], padding: 20, alignItems: 'center' },
-  centerRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  centerRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10 },
   centerRowLeft: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   startBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, paddingVertical: 13, borderRadius: 14 },
   startBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
@@ -341,7 +343,7 @@ const styles = StyleSheet.create({
   errText: { fontSize: 13, color: slate.red, flexShrink: 1 },
 
   resultCard: { backgroundColor: slate.white, borderRadius: 18, borderWidth: 1, borderColor: slate[200], padding: 18 },
-  resultHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  resultHead: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center', justifyContent: 'space-between' },
   resultTitle: { fontSize: 17, fontWeight: '800', color: slate[900] },
   overall: { textAlign: 'right' },
   overallNum: { fontSize: 30, fontWeight: '900' },

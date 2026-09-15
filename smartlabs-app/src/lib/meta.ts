@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/firebase';
 import { useAuth } from '@/auth/AuthContext';
 import type { CreditsState } from '@/credits/CreditsContext';
 
-export type SkillKey = 'speaking' | 'reading' | 'writing' | 'listening';
-export const SKILL_ORDER: SkillKey[] = ['speaking', 'reading', 'writing', 'listening'];
+// Skill scores + averages now derive from real recorded attempts. Re-exported
+// here so existing screens keep importing them from '@/lib/meta'.
+export type { SkillKey, SkillScores } from '@/lib/attempts';
+export { SKILL_ORDER, useSkillScores, currentAverage } from '@/lib/attempts';
 
 /** Default PTE goal shown until the student sets their own. */
 export const DEFAULT_TARGET = 79;
@@ -49,50 +50,6 @@ export function useProfileMeta(): ProfileMeta {
   }, [user]);
 
   return meta;
-}
-
-/**
- * Per-skill rolling average scores, stored locally as the student practises.
- * Returns `null` for a skill with no attempts yet (shown as "—", never faked).
- */
-const scoreKey = (uid: string) => `sl.skillScores.${uid}`;
-export type SkillScores = Record<SkillKey, number | null>;
-const EMPTY_SCORES: SkillScores = { speaking: null, reading: null, writing: null, listening: null };
-
-export function useSkillScores(): SkillScores {
-  const { user } = useAuth();
-  const [scores, setScores] = useState<SkillScores>(EMPTY_SCORES);
-
-  useEffect(() => {
-    let alive = true;
-    if (!user) return setScores(EMPTY_SCORES);
-    AsyncStorage.getItem(scoreKey(user.uid))
-      .then((raw) => {
-        if (!alive) return;
-        if (raw) {
-          try {
-            setScores({ ...EMPTY_SCORES, ...JSON.parse(raw) });
-          } catch {
-            setScores(EMPTY_SCORES);
-          }
-        } else {
-          setScores(EMPTY_SCORES);
-        }
-      })
-      .catch(() => alive && setScores(EMPTY_SCORES));
-    return () => {
-      alive = false;
-    };
-  }, [user]);
-
-  return scores;
-}
-
-/** Overall current average across skills that have data (null if none yet). */
-export function currentAverage(scores: SkillScores): number | null {
-  const vals = SKILL_ORDER.map((k) => scores[k]).filter((v): v is number => typeof v === 'number');
-  if (!vals.length) return null;
-  return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
 }
 
 /**

@@ -5,6 +5,7 @@ import { scoreEssay } from '@/api/score';
 import { ApiError } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
 import { bumpSession } from '@/lib/progress';
+import { recordAttempt } from '@/lib/attempts';
 import {
   BackLink, PromptPanel, Textarea, LiveChecks, PrimaryButton, DarkButton,
   ScoreHeaderPanel, CircularScore, Section, ResultCard, slate,
@@ -32,8 +33,10 @@ export function EssayTrainer({ question, accent, onBack }: TrainerProps) {
     if (words < 120) return setError('Write a fuller essay (aim for 200–300 words).');
     setLoading(true);
     try {
-      setResult(await scoreEssay({ topic, essay: essay.trim(), wordCount: words }));
+      const r = await scoreEssay({ topic, essay: essay.trim(), wordCount: words });
+      setResult(r);
       bumpSession(user?.uid);
+      recordAttempt(user?.uid, 'writing', 'write-essay', Number(r.overallBand) || 0, 90);
     } catch (e) {
       if (e instanceof ApiError && (e.code === 'NO_CREDITS' || e.status === 402)) {
         setError('You are out of essay credits.');

@@ -1,3 +1,4 @@
+import { useAppLayout } from '@/ui/layout';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
@@ -29,6 +30,7 @@ const OVERLINE: Record<string, string> = {
 };
 
 export default function TaskScreen() {
+  const layout = useAppLayout();
   const { taskType } = useLocalSearchParams<{ taskType: string }>();
   const navigation = useNavigation();
 
@@ -71,7 +73,7 @@ export default function TaskScreen() {
   // ── Practice + result view for the chosen question ──
   if (selected && Trainer) {
     return (
-      <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <ScrollView style={styles.screen} contentContainerStyle={[styles.content, layout.content]}>
         <Trainer
           key={selected.id ?? selectedIdx}
           task={task}
@@ -85,7 +87,7 @@ export default function TaskScreen() {
 
   // ── Question selection grid ──
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.content, layout.content]}>
       <TrainerHeader
         overline={OVERLINE[task.taskType] ?? task.label}
         title="AI Trainer"

@@ -15,14 +15,12 @@ export async function POST(request: NextRequest) {
     const data = Object.fromEntries(formData.entries());
     const { merchant_id, order_id, payhere_amount, payhere_currency, status_code, md5sig, payment_id } = data;
 
-    const merchantSecret = process.env.PAYHERE_MERCHANT_SECRET;
-    if (!merchantSecret) { console.error('[swt-notify] secret missing'); return new Response('OK', { status: 200 }); }
-
-    const localSig = md5(
-      String(merchant_id) + String(order_id) + String(payhere_amount) +
-      String(payhere_currency) + String(status_code) + md5(merchantSecret)
-    );
-    if (localSig !== String(md5sig).toUpperCase()) {
+    // Verify against BOTH the website and app secrets (separate per domain/app).
+    const secrets = [process.env.PAYHERE_MERCHANT_SECRET, process.env.PAYHERE_APP_MERCHANT_SECRET].filter(Boolean) as string[];
+    if (secrets.length === 0) { console.error('[swt-notify] secret missing'); return new Response('OK', { status: 200 }); }
+    const want = String(md5sig).toUpperCase();
+    const base = String(merchant_id) + String(order_id) + String(payhere_amount) + String(payhere_currency) + String(status_code);
+    if (!secrets.some((sec) => md5(base + md5(sec)) === want)) {
       console.warn(`[swt-notify] MD5 mismatch for order ${order_id}`);
       return new Response('OK', { status: 200 });
     }

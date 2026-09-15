@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
+import { payhereCreds } from '@/lib/payhere-creds';
 
 export const runtime = 'nodejs';
 
@@ -31,12 +32,12 @@ export async function POST(request: NextRequest) {
     const decoded = await adminAuth.verifyIdToken(authHeader.slice(7));
     const uid = decoded.uid;
 
-    const { packageId } = await request.json();
+    const { packageId, client } = await request.json();
     const pkg = SPEAKING_PACKAGES.find(p => p.id === packageId);
     if (!pkg) return NextResponse.json({ error: 'Invalid package' }, { status: 400 });
 
-    const merchantId     = process.env.NEXT_PUBLIC_PAYHERE_MERCHANT_ID;
-    const merchantSecret = process.env.PAYHERE_MERCHANT_SECRET;
+    // Mobile app payments (client === 'app') use the app's PayHere secret.
+    const { merchantId, merchantSecret } = payhereCreds(client);
     const appUrl         = process.env.NEXT_PUBLIC_APP_URL;
     if (!merchantId || !merchantSecret || !appUrl) {
       return NextResponse.json({ error: 'Payment not configured' }, { status: 500 });

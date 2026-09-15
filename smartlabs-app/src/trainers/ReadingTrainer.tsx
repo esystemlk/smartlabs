@@ -1,7 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BackLink, slate, tint } from '@/ui/web';
+import { useAuth } from '@/auth/AuthContext';
+import { recordAttempt } from '@/lib/attempts';
 import type { TrainerProps } from '@/trainers/types';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyQ = any;
@@ -36,6 +38,7 @@ function shuffle<T>(arr: T[]): T[] {
 const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
 export function ReadingTrainer({ task, question, accent, onBack }: TrainerProps) {
+  const { user } = useAuth();
   const variant = VARIANT[task.taskType] ?? 'mcsa';
   const [submitted, setSubmitted] = useState(false);
   const [peeked, setPeeked] = useState(false);
@@ -43,6 +46,17 @@ export function ReadingTrainer({ task, question, accent, onBack }: TrainerProps)
   const [resetToken, setResetToken] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const graded = submitted || peeked;
+
+  // Record the attempt once per real submit (not on "peek"). Reading is graded
+  // per item: full marks when all correct, partial credit otherwise.
+  const recordedRef = useRef(false);
+  useEffect(() => {
+    if (submitted && !recordedRef.current) {
+      recordedRef.current = true;
+      recordAttempt(user?.uid, 'reading', task.taskType, progress.allCorrect ? 90 : 43, 90);
+    }
+    if (!submitted) recordedRef.current = false;
+  }, [submitted, progress.allCorrect, task.taskType, user?.uid]);
 
   useEffect(() => {
     if (graded) return;
@@ -401,7 +415,7 @@ const styles = StyleSheet.create({
 
   reorderRow: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 2, borderRadius: 14, padding: 12, backgroundColor: slate.white },
   reorderText: { flex: 1, fontSize: 14, color: slate[800], lineHeight: 21 },
-  arrow: { width: 30, height: 22, alignItems: 'center', justifyContent: 'center', borderRadius: 6, backgroundColor: slate[100] },
+  arrow: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: slate[100] },
 
   banner: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 2, borderRadius: 14, padding: 12, marginTop: 16 },
   bannerGood: { borderColor: slate.emerald, backgroundColor: '#F0FDF4' },
@@ -413,10 +427,10 @@ const styles = StyleSheet.create({
   answerNoteVal: { fontSize: 14, color: slate[700] },
   orderItem: { fontSize: 13.5, color: slate[700], lineHeight: 20 },
 
-  controls: { flexDirection: 'row', gap: 10 },
-  primaryBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 50, borderRadius: 14 },
+  controls: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  primaryBtn: { flexGrow: 1, flexBasis: 140, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 52, padding: 14, borderRadius: 14 },
   primaryBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
-  outlineBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 50, borderRadius: 14, borderWidth: 2, borderColor: slate[200], backgroundColor: slate.white },
+  outlineBtn: { flexGrow: 1, flexBasis: 140, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 52, padding: 14, borderRadius: 14, borderWidth: 2, borderColor: slate[200], backgroundColor: slate.white },
   outlineBtnText: { color: slate[700], fontSize: 15, fontWeight: '800' },
 
   hint: { fontSize: 13, color: slate[500] },

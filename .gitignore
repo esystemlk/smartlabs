@@ -47,3 +47,6 @@ firestore-debug.log
 # LMS app — separate project, kept locally only for reference
 /lms-smartlabs
 /lms
+# Mobile app build artifacts (do not commit large binaries)
+smartlabs-app/*.apk
+smartlabs-app/android/app/build/

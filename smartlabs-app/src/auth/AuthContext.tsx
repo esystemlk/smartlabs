@@ -25,6 +25,8 @@ interface AuthState {
   resetPassword: (email: string) => Promise<void>;
   /** Re-send the verification email to the currently signed-in user. */
   resendVerification: () => Promise<void>;
+  /** Update the signed-in user's display name (auth profile + users/{uid} doc). */
+  updateName: (name: string) => Promise<void>;
   signOut: () => Promise<void>;
   /** Web: opens the Google popup and signs in. Native: use the Google id token. */
   signInWithGoogleWeb: () => Promise<void>;
@@ -37,6 +39,9 @@ const AuthContext = createContext<AuthState | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [initializing, setInitializing] = useState(true);
+  // Bumped to re-render consumers after an in-place profile update (e.g. name),
+  // since the Firebase User object keeps the same reference.
+  const [, force] = useState(0);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
@@ -91,6 +96,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (auth.currentUser) await sendEmailVerification(auth.currentUser);
   };
 
+  const updateName = async (name: string) => {
+    const u = auth.currentUser;
+    if (!u) return;
+    const clean = name.trim();
+    await updateProfile(u, { displayName: clean });
+    await setDoc(doc(db, 'users', u.uid), { displayName: clean }, { merge: true });
+    force((n) => n + 1); // reflect the new name in consumers immediately
+  };
+
   const signOut = async () => {
     await fbSignOut(auth);
   };
@@ -134,7 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, initializing, signIn, signUp, resetPassword, resendVerification, signOut, signInWithGoogleWeb, signInWithGoogleIdToken }}
+      value={{ user, initializing, signIn, signUp, resetPassword, resendVerification, updateName, signOut, signInWithGoogleWeb, signInWithGoogleIdToken }}
     >
       {children}
     </AuthContext.Provider>

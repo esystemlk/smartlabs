@@ -3,6 +3,7 @@ import { Text, View } from 'react-native';
 import { scoreWfd, performanceSummary, type WfdResult } from '@/scoring/wfd';
 import { useAuth } from '@/auth/AuthContext';
 import { bumpSession } from '@/lib/progress';
+import { recordAttempt } from '@/lib/attempts';
 import {
   BackLink, Textarea, PrimaryButton, DarkButton, AudioPlayButton,
   ScoreHeaderPanel, CircularScore, Section, ResultCard, WordChips, slate,
@@ -22,8 +23,10 @@ export function WfdTrainer({ question, accent, onBack }: TrainerProps) {
   const submit = () => {
     setError(null);
     if (!answer.trim()) return setError('Type what you heard first.');
-    setResult(scoreWfd(sentence, answer.trim()));
+    const r = scoreWfd(sentence, answer.trim());
+    setResult(r);
     bumpSession(user?.uid);
+    recordAttempt(user?.uid, 'listening', 'wfd', r.correctWords, r.totalWords || 1);
   };
 
   if (result) {

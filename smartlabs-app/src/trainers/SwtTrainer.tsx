@@ -5,6 +5,7 @@ import { scoreSwt } from '@/api/score';
 import { ApiError } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
 import { bumpSession } from '@/lib/progress';
+import { recordAttempt } from '@/lib/attempts';
 import {
   BackLink, PromptPanel, Textarea, LiveChecks, PrimaryButton, DarkButton,
   ScoreHeaderPanel, CircularScore, ScorePill, Section, ResultCard, Bullets,
@@ -38,8 +39,10 @@ export function SwtTrainer({ question, accent, onBack }: TrainerProps) {
     if (!summary.trim()) return setError('Write a one-sentence summary first.');
     setLoading(true);
     try {
-      setResult(await scoreSwt({ passage, summary: summary.trim() }));
+      const r = await scoreSwt({ passage, summary: summary.trim() });
+      setResult(r);
       bumpSession(user?.uid);
+      recordAttempt(user?.uid, 'writing', 'swt', Number(r.total) || 0, Number(r.maxTotal) || 9);
     } catch (e) {
       if (e instanceof ApiError && (e.code === 'NO_CREDITS' || e.status === 402)) {
         setError('You are out of SWT credits.');

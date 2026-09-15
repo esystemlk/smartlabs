@@ -5,6 +5,7 @@ import { scoreSst } from '@/api/score';
 import { ApiError } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
 import { bumpSession } from '@/lib/progress';
+import { recordAttempt } from '@/lib/attempts';
 import {
   BackLink, Textarea, LiveChecks, PrimaryButton, DarkButton, AudioPlayButton,
   ScoreHeaderPanel, CircularScore, ScorePill, Section, ResultCard, Bullets, ModelAnswer, slate,
@@ -32,8 +33,10 @@ export function SstTrainer({ question, accent, onBack }: TrainerProps) {
     if (words < 40) return setError('Write a summary of about 50–70 words.');
     setLoading(true);
     try {
-      setResult(await scoreSst({ transcript, summary: summary.trim() }));
+      const r = await scoreSst({ transcript, summary: summary.trim() });
+      setResult(r);
       bumpSession(user?.uid);
+      recordAttempt(user?.uid, 'listening', 'sst', Number(r.total) || 0, Number(r.maxTotal) || 12);
     } catch (e) {
       if (e instanceof ApiError && (e.code === 'NO_CREDITS' || e.status === 402)) {
         setError('You are out of SST credits.');

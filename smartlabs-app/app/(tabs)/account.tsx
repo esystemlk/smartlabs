@@ -1,5 +1,6 @@
+import { useAppLayout } from '@/ui/layout';
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,16 +9,17 @@ import { useCredits } from '@/credits/CreditsContext';
 import { useProfileMeta, totalPaidCredits } from '@/lib/meta';
 import { C } from '@/theme';
 
-const MENU: { icon: keyof typeof Ionicons.glyphMap; label: string; route?: string }[] = [
-  { icon: 'school-outline', label: 'My Courses' },
-  { icon: 'time-outline', label: 'Practice History' },
-  { icon: 'document-text-outline', label: 'Mock History' },
-  { icon: 'settings-outline', label: 'Settings' },
-  { icon: 'help-circle-outline', label: 'Help & Support' },
+const MENU: { icon: keyof typeof Ionicons.glyphMap; label: string; route?: string; url?: string }[] = [
+  { icon: 'settings-outline', label: 'Settings', route: '/settings' },
+  { icon: 'mic-outline', label: 'My practice space', route: '/(tabs)/practice' },
+  { icon: 'bar-chart-outline', label: 'My progress', route: '/(tabs)/progress' },
+  { icon: 'document-text-outline', label: 'Explore mock tests', route: '/mock' },
+  { icon: 'help-buoy-outline', label: 'Help & Support', url: 'https://www.smartlabs.lk/contact' },
 ];
 
 /** Screen 12 — Profile. */
 export default function Account() {
+  const layout = useAppLayout();
   const { user, signOut } = useAuth();
   const credits = useCredits();
   const meta = useProfileMeta();
@@ -32,11 +34,11 @@ export default function Account() {
     : 'Not set';
 
   return (
-    <SafeAreaView style={s.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={s.safe} edges={['top', 'left', 'right']}>
+      <ScrollView contentContainerStyle={[s.content, layout.content]} showsVerticalScrollIndicator={false}>
         <View style={s.titleRow}>
           <Text style={s.title}>Profile</Text>
-          <Pressable style={s.gear} hitSlop={8}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Settings" style={s.gear} onPress={() => router.push('/settings')}>
             <Ionicons name="settings-outline" size={20} color={C.slate} />
           </Pressable>
         </View>
@@ -48,25 +50,24 @@ export default function Account() {
             <Text style={s.name}>{name}</Text>
             <Text style={s.email}>{user?.email}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color={C.faint} />
         </View>
 
-        {/* Stat cards */}
-        <View style={s.statRow}>
-          <View style={s.statCard}>
+        {/* Stat cards — tap to edit in Settings */}
+        <View style={[s.statRow, layout.compact && { flexDirection: 'column' }]}>
+          <Pressable style={s.statCard} onPress={() => router.push('/settings')}>
             <View style={s.statIcon}><Ionicons name="flag" size={16} color={C.blue} /></View>
             <Text style={s.statLabel}>PTE Target</Text>
             <Text style={s.statValue}>{meta.targetScore}</Text>
-          </View>
-          <View style={s.statCard}>
+          </Pressable>
+          <Pressable style={s.statCard} onPress={() => router.push('/settings')}>
             <View style={[s.statIcon, { backgroundColor: C.writingBg }]}><Ionicons name="calendar" size={16} color={C.writing} /></View>
             <Text style={s.statLabel}>Exam Date</Text>
             <Text style={[s.statValue, { fontSize: 15 }]}>{examLabel}</Text>
-          </View>
+          </Pressable>
         </View>
 
         {/* AI Credits */}
-        <Pressable style={s.creditRow} onPress={() => !credits.unlimited && router.push('/credits')}>
+        <Pressable style={[s.creditRow, layout.compact && { flexWrap: 'wrap' }]} onPress={() => !credits.unlimited && router.push('/credits')}>
           <View style={s.creditIcon}><Ionicons name="flash" size={18} color="#fff" /></View>
           <View style={{ flex: 1 }}>
             <Text style={s.creditLabel}>AI Credits</Text>
@@ -81,9 +82,10 @@ export default function Account() {
         <View style={s.menu}>
           {MENU.map((m, i) => (
             <Pressable
+              accessibilityRole="button"
               key={m.label}
               style={[s.menuRow, i < MENU.length - 1 && s.menuBorder]}
-              onPress={() => m.route && router.push(m.route as never)}
+              onPress={() => (m.url ? Linking.openURL(m.url) : m.route ? router.push(m.route as never) : undefined)}
             >
               <View style={s.menuIcon}><Ionicons name={m.icon} size={19} color={C.slate} /></View>
               <Text style={s.menuLabel}>{m.label}</Text>
@@ -93,7 +95,7 @@ export default function Account() {
         </View>
 
         {/* Sign out */}
-        <Pressable style={s.signOut} onPress={signOut}>
+        <Pressable accessibilityRole="button" style={s.signOut} onPress={signOut}>
           <Ionicons name="log-out-outline" size={19} color={C.danger} />
           <Text style={s.signOutText}>Sign Out</Text>
         </Pressable>
@@ -111,7 +113,7 @@ const s = StyleSheet.create({
   title: { fontSize: 26, fontWeight: '800', color: C.navy },
   gear: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#fff', borderWidth: 1, borderColor: C.border, alignItems: 'center', justifyContent: 'center' },
 
-  idCard: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: C.border, padding: 16, marginTop: 18 },
+  idCard: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: '#EDEBFF', borderRadius: 24, borderWidth: 1, borderColor: '#E3DFFE', padding: 20, marginTop: 18 },
   avatar: { width: 54, height: 54, borderRadius: 27, backgroundColor: C.blue, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: '#fff', fontSize: 22, fontWeight: '800' },
   name: { fontSize: 18, fontWeight: '800', color: C.navy },

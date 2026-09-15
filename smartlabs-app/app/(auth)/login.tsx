@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 import Svg, { Path } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/auth/AuthContext';
-import { Logo, GradientButton, AuthField } from '@/ui/brand';
+import { GradientButton, AuthField } from '@/ui/brand';
 import { C } from '@/theme';
+import { AuthScreen, AuthNotice } from '@/ui/auth';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const extra = (Constants.expoConfig?.extra ?? {}) as any;
@@ -25,6 +25,8 @@ const GoogleG = () => (
 function GoogleButtonShell({ onPress, loading, disabled }: { onPress?: () => void; loading?: boolean; disabled?: boolean }) {
   return (
     <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled: !!(disabled || loading), busy: !!loading }}
       onPress={onPress}
       disabled={disabled || loading}
       style={({ pressed }) => [styles.googleBtn, { opacity: disabled || loading ? 0.55 : pressed ? 0.9 : 1 }]}
@@ -108,7 +110,7 @@ export default function Login() {
     }
     setLoading(true);
     try {
-      await signIn(email, password);
+      await signIn(email.trim(), password);
     } catch (e) {
       setError(mapAuthError(e));
     } finally {
@@ -117,20 +119,7 @@ export default function Login() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          <View style={styles.topBar}>
-            <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/(auth)/welcome'))} hitSlop={12} style={styles.backBtn}>
-              <Ionicons name="chevron-back" size={22} color={C.navy} />
-            </Pressable>
-            <Logo height={32} />
-            <View style={{ width: 38 }} />
-          </View>
-
-          <Text style={styles.title}>Sign In</Text>
-          <Text style={styles.subtitle}>Welcome back! Continue your PTE journey.</Text>
-
+    <AuthScreen title="Welcome back." subtitle="Your next step toward PTE confidence starts here." eyebrow="GOOD TO SEE YOU AGAIN">
           <View style={styles.googleWrap}>
             {Platform.OS === 'web' ? (
               <WebGoogleButton onError={(m) => setError(m || null)} />
@@ -155,6 +144,8 @@ export default function Login() {
               onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
+              autoComplete="email"
+              autoCorrect={false}
               placeholder="youremail@example.com"
             />
             <AuthField
@@ -164,26 +155,27 @@ export default function Login() {
               value={password}
               onChangeText={setPassword}
               placeholder="Enter your password"
+              autoComplete="current-password"
+              returnKeyType="go"
+              onSubmitEditing={onSubmit}
             />
 
-            <Pressable onPress={() => router.push('/(auth)/forgot-password')} style={styles.forgotRow} hitSlop={8}>
+            <Pressable accessibilityRole="button" onPress={() => router.push('/(auth)/forgot-password')} style={styles.forgotRow} hitSlop={8}>
               <Text style={styles.forgotText}>Forgot password?</Text>
             </Pressable>
 
-            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {error ? <AuthNotice>{error}</AuthNotice> : null}
 
             <GradientButton label="Sign In" onPress={onSubmit} loading={loading} />
           </View>
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Don't have an account? </Text>
-            <Pressable onPress={() => router.push('/(auth)/signup')} hitSlop={8}>
+            <Pressable accessibilityRole="button" onPress={() => router.push('/(auth)/signup')} hitSlop={8}>
               <Text style={styles.footerLink}>Create Account</Text>
             </Pressable>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    </AuthScreen>
   );
 }
 
@@ -210,25 +202,18 @@ export function mapAuthError(e: unknown): string {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#fff' },
-  scroll: { flexGrow: 1, padding: 26, paddingTop: 8 },
-  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22 },
-  backBtn: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  title: { color: C.navy, fontSize: 30, fontWeight: '800' },
-  subtitle: { color: C.slate, fontSize: 15, marginTop: 6, marginBottom: 22 },
   googleWrap: { marginBottom: 18 },
-  error: { color: C.danger, fontSize: 13 },
   dividerRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
   divider: { flex: 1, height: 1, backgroundColor: C.borderStrong },
   dividerText: { color: C.slateLight, fontSize: 12, fontWeight: '700' },
   googleBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    height: 54, borderRadius: 14, borderWidth: 1, borderColor: C.borderStrong, backgroundColor: '#fff',
+    minHeight: 54, paddingVertical: 14, borderRadius: 16, borderWidth: 1, borderColor: C.borderStrong, backgroundColor: '#fff',
   },
-  googleText: { color: C.navy, fontSize: 15, fontWeight: '700' },
-  forgotRow: { alignSelf: 'flex-end', marginTop: -4 },
+  googleText: { color: C.navy, fontSize: 15, fontWeight: '700', flexShrink: 1, textAlign: 'center' },
+  forgotRow: { alignSelf: 'flex-end', minHeight: 44, justifyContent: 'center', marginTop: -4 },
   forgotText: { color: C.blue, fontSize: 13, fontWeight: '700' },
-  footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 26 },
+  footer: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', rowGap: 8, marginTop: 26 },
   footerText: { color: C.slate, fontSize: 14 },
   footerLink: { color: C.blue, fontWeight: '800', fontSize: 14 },
 });

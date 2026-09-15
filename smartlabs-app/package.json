@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
+    "@payhere/payhere-mobilesdk-reactnative": "^4.1.0",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-google-signin/google-signin": "^13.1.0",
     "expo": "~51.0.0",

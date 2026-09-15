@@ -1,3 +1,4 @@
+import { useAppLayout } from '@/ui/layout';
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,12 +17,13 @@ const MOCKS = [
 
 /** Mock Tests tab — Phase-2 catalogue (scoring engine wired later). */
 export default function Mock() {
+  const layout = useAppLayout();
   return (
-    <SafeAreaView style={s.safe} edges={['top']}>
-      <View style={s.headerWrap}>
+    <SafeAreaView style={s.safe} edges={['top', 'bottom', 'left', 'right']}>
+      <View style={[s.headerWrap, layout.content]}>
         <ScreenHeader title="Mock Tests" />
       </View>
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[s.content, layout.content]} showsVerticalScrollIndicator={false}>
         <Text style={s.sub}>Full exam-style practice under real timing</Text>
 
         <View style={s.soon}>

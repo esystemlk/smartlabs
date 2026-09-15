@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/auth/AuthContext';
-import { Logo, GradientButton, AuthField } from '@/ui/brand';
+import { GradientButton, AuthField } from '@/ui/brand';
 import { mapAuthError } from './login';
 import { C } from '@/theme';
+import { AuthScreen, AuthNotice } from '@/ui/auth';
 
 /** Screen 6 — Forgot Password. */
 export default function ForgotPassword() {
@@ -22,7 +22,7 @@ export default function ForgotPassword() {
     if (!email.trim()) return setError('Enter your email.');
     setLoading(true);
     try {
-      await resetPassword(email);
+      await resetPassword(email.trim());
       setSent(true);
     } catch (e) {
       setError(mapAuthError(e));
@@ -32,20 +32,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <SafeAreaView style={s.safe}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <View style={s.topBar}>
-          <Pressable onPress={() => router.replace('/(auth)/login')} hitSlop={12} style={s.backBtn}>
-            <Ionicons name="chevron-back" size={22} color={C.navy} />
-          </Pressable>
-          <Logo height={32} />
-          <View style={{ width: 38 }} />
-        </View>
-
-        <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          <Text style={s.title}>Forgot Password?</Text>
-          <Text style={s.sub}>No worries! Enter your email and we'll send you a reset link.</Text>
-
+    <AuthScreen title="Let’s get you back in." subtitle="Enter your email and we’ll send a link to reset your password." eyebrow="A FRESH START" artwork={false} onBack={() => router.replace('/(auth)/login')}>
           {sent ? (
             <View style={{ gap: 18, marginTop: 26 }}>
               <View style={s.successBox}>
@@ -54,7 +41,7 @@ export default function ForgotPassword() {
                   If an account exists for {email.trim()}, a reset link is on its way. Check your inbox and spam.
                 </Text>
               </View>
-              <Pressable onPress={() => router.replace('/(auth)/login')} hitSlop={8} style={{ alignSelf: 'center' }}>
+              <Pressable accessibilityRole="button" onPress={() => router.replace('/(auth)/login')} hitSlop={8} style={{ alignSelf: 'center' }}>
                 <Text style={s.backLink}>Back to Sign In</Text>
               </Pressable>
             </View>
@@ -67,33 +54,24 @@ export default function ForgotPassword() {
                 onChangeText={setEmail}
                 autoCapitalize="none"
                 keyboardType="email-address"
+              autoComplete="email"
+              autoCorrect={false}
                 placeholder="youremail@example.com"
               />
-              {error ? <Text style={s.error}>{error}</Text> : null}
+              {error ? <AuthNotice>{error}</AuthNotice> : null}
               <GradientButton label="Send Reset Link" onPress={onSubmit} loading={loading} />
-              <Pressable onPress={() => router.replace('/(auth)/login')} hitSlop={8} style={{ alignSelf: 'center' }}>
+              <Pressable accessibilityRole="button" onPress={() => router.replace('/(auth)/login')} hitSlop={8} style={{ alignSelf: 'center' }}>
                 <Text style={s.backLink}>Back to Sign In</Text>
               </Pressable>
             </View>
           )}
 
-          <Text style={s.script}>Small Steps{'\n'}Big Results</Text>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    </AuthScreen>
   );
 }
 
 const s = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#fff' },
-  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 8 },
-  backBtn: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  scroll: { flexGrow: 1, padding: 26, paddingTop: 20 },
-  title: { fontSize: 28, fontWeight: '800', color: C.navy },
-  sub: { fontSize: 15, color: C.slate, marginTop: 8, lineHeight: 22 },
-  error: { color: C.danger, fontSize: 13 },
   backLink: { color: C.blue, fontWeight: '800', fontSize: 15 },
   successBox: { flexDirection: 'row', gap: 12, backgroundColor: C.successBg, borderRadius: 14, padding: 16 },
   successText: { flex: 1, color: '#0F6B3D', fontSize: 14, lineHeight: 20 },
-  script: { marginTop: 60, alignSelf: 'flex-end', color: '#C7D6EE', fontSize: 24, fontStyle: 'italic', fontWeight: '700', textAlign: 'right', lineHeight: 30 },
 });

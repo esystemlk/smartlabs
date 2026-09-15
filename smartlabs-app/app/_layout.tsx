@@ -77,15 +77,13 @@ export default function RootLayout() {
               <Stack.Screen name="(auth)" options={{ headerShown: false }} />
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="mock" options={{ headerShown: false }} />
+              <Stack.Screen name="settings" options={{ headerShown: false }} />
               <Stack.Screen name="section/[id]" options={{ headerShown: false }} />
               <Stack.Screen
                 name="practice/[taskType]"
                 options={{ title: 'Practice', headerLeft: () => <HeaderBack label="Practice" /> }}
               />
-              <Stack.Screen
-                name="credits"
-                options={{ title: 'Buy credits', presentation: 'modal', headerLeft: () => <HeaderBack label="Close" close /> }}
-              />
+              <Stack.Screen name="credits" options={{ headerShown: false, presentation: 'modal' }} />
             </Stack>
           </AuthGate>
         </CreditsProvider>
