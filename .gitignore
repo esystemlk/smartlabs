@@ -50,3 +50,7 @@ firestore-debug.log
 # Mobile app build artifacts (do not commit large binaries)
 smartlabs-app/*.apk
 smartlabs-app/android/app/build/
+
+# EAS / Play Store secrets
+smartlabs-app/play-service-account.json
+smartlabs-app/credentials.json

@@ -3,6 +3,10 @@
     "name": "SmartLabs PTE",
     "slug": "smartlabs-app",
     "version": "0.1.0",
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
     "orientation": "portrait",
     "scheme": "smartlabs",
     "userInterfaceStyle": "light",
@@ -13,7 +17,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#FFFFFF"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "lk.smartlabs.app",
@@ -23,7 +29,11 @@
     },
     "android": {
       "package": "lk.smartlabs.app",
-      "permissions": ["RECORD_AUDIO"],
+      "permissions": [
+        "RECORD_AUDIO",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
@@ -44,7 +54,13 @@
       "payhereSandbox": false,
       "googleWebClientId": "43848204138-84j5v663lq8hcednhkavddhkljl626s0.apps.googleusercontent.com",
       "googleIosClientId": "",
-      "googleAndroidClientId": "43848204138-mq4gr6plbvf1oop55bq1pbokvnh6fj6d.apps.googleusercontent.com"
+      "googleAndroidClientId": "43848204138-mq4gr6plbvf1oop55bq1pbokvnh6fj6d.apps.googleusercontent.com",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "94071082-95d8-441a-b320-f65119f4ce18"
+      }
     }
   }
 }
