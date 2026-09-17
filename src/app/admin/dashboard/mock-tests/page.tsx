@@ -7,6 +7,7 @@ import {
   AlertTriangle, Clock, Users, Music, ChevronUp, ChevronDown,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
+import { MockCreditManager } from '@/components/admin/mock-credit-manager';
 import { useToast } from '@/hooks/use-toast';
 import { listQuestions } from '@/lib/services/pte-questions.service';
 import type { PteQuestion, PteSection } from '@/types/pte-question';
@@ -172,6 +173,8 @@ export default function MockTestsAdminPage() {
           Build a {MOCK_TOTAL_QUESTIONS}-question mock ({formatDuration(MOCK_TOTAL_SECONDS)}) from the question bank.
         </p>
       </div>
+
+      <MockCreditManager />
 
       {!editing && (
         <button onClick={startNew} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-extrabold text-sm">
