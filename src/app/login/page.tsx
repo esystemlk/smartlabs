@@ -117,10 +117,9 @@ export default function LoginPage() {
         router.push(redirectPath);
       } else if (userRole === 'admin' || userRole === 'developer') {
         router.push('/admin/dashboard');
-      } else if (hasCompletedOnboarding) {
-        router.push('/dashboard');
       } else {
-        router.push('/welcome');
+        // /welcome is the public review landing page, not account onboarding.
+        router.push('/dashboard');
       }
     } catch (error) {
       handleAuthError(error);

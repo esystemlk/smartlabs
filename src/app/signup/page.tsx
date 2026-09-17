@@ -110,7 +110,7 @@ export default function SignupPage() {
         // Show the success animation (~3s), then redirect.
         const target = (userRole === 'admin' || userRole === 'developer')
           ? '/admin/dashboard'
-          : '/welcome';
+          : '/dashboard';
         setShowSuccess(true);
         setTimeout(() => router.push(target), 3200);
       } else {
@@ -134,10 +134,8 @@ export default function SignupPage() {
 
         if (existingRole === 'admin' || existingRole === 'developer') {
           router.push('/admin/dashboard');
-        } else if (userData.hasCompletedOnboarding) {
-          router.push('/dashboard');
         } else {
-          router.push('/welcome');
+          router.push('/dashboard');
         }
       }
     } catch (error) {

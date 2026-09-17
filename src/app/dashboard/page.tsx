@@ -415,10 +415,9 @@ export default function DashboardPage() {
       getDoc(userRef).then(userDoc => {
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          setUserRole(userData.role);
-          if (userData.role === 'user' && !userData.hasCompletedOnboarding) {
-            router.push('/welcome');
-          }
+          // Legacy accounts may not have completed the retired onboarding flow.
+          // Authentication and the user document still gate dashboard access.
+          setUserRole(userData.role || 'user');
         } else {
           router.push('/login');
         }
