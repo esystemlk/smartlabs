@@ -51,6 +51,12 @@ function contentField(taskType: string): string {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizeDoc(taskType: string, id: string, d: any): Record<string, unknown> {
+  // Seeded/interactive questions store the FULL original object under `data`
+  // (options, answers, paragraphs, blanks, …) — return it verbatim so the
+  // app/site get the complete question, not just a prompt string.
+  if (d?.data && typeof d.data === 'object') {
+    return { ...d.data, id };
+  }
   const q: Record<string, unknown> = {
     id,
     title: d.title ?? '',
