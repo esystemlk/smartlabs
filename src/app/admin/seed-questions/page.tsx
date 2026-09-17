@@ -16,7 +16,7 @@ export default function SeedQuestionsPage() {
     try {
       setResult(await seedAllQuestions());
     } catch (error) {
-      setResult({ success: false, perType: {}, total: 0, error: error instanceof Error ? error.message : String(error) });
+      setResult({ success: false, perType: {}, total: 0, failed: 0, error: error instanceof Error ? error.message : String(error) });
     } finally {
       setLoading(false);
     }
