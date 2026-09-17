@@ -6,6 +6,7 @@ import { ApiError } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
 import { bumpSession } from '@/lib/progress';
 import { recordAttempt } from '@/lib/attempts';
+import { notifyScoreDone } from '@/lib/notifications';
 import {
   BackLink, Textarea, LiveChecks, PrimaryButton, DarkButton, AudioPlayButton,
   ScoreHeaderPanel, CircularScore, ScorePill, Section, ResultCard, Bullets, ModelAnswer, slate,
@@ -37,10 +38,10 @@ export function SstTrainer({ question, accent, onBack }: TrainerProps) {
       setResult(r);
       bumpSession(user?.uid);
       recordAttempt(user?.uid, 'listening', 'sst', Number(r.total) || 0, Number(r.maxTotal) || 12);
+      notifyScoreDone(Math.round((Number(r.total) / (Number(r.maxTotal) || 12)) * 90), 'Summarize Spoken Text');
     } catch (e) {
       if (e instanceof ApiError && (e.code === 'NO_CREDITS' || e.status === 402)) {
-        setError('You are out of SST credits.');
-        router.push('/credits');
+        router.push({ pathname: '/credits', params: { reason: e.message || 'You need credits to use AI Summarize Spoken Text scoring.' } });
       } else setError(e instanceof Error ? e.message : 'Scoring failed.');
     } finally {
       setLoading(false);

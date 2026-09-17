@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import type { CreditPool } from '@/api/credits';
@@ -45,6 +45,7 @@ const POOLS: { pool: CreditPool; title: string; icon: keyof typeof Ionicons.glyp
 export default function Credits() {
   const layout = useAppLayout();
   const router = useRouter();
+  const { reason } = useLocalSearchParams<{ reason?: string }>();
   const [busy, setBusy] = useState<string | null>(null);
 
   const onBuy = async (pool: CreditPool, pkg: Pkg) => {
@@ -73,6 +74,13 @@ export default function Credits() {
         <ScreenHeader title="Top up credits" onBack={() => router.back()} />
       </View>
       <ScrollView contentContainerStyle={[s.content, layout.content]} showsVerticalScrollIndicator={false}>
+        {reason ? (
+          <View style={s.notice}>
+            <Ionicons name="information-circle" size={20} color={C.amber} />
+            <Text style={s.noticeText}>{reason}</Text>
+          </View>
+        ) : null}
+
         <View style={s.balance}>
           <View style={s.balanceIcon}><Ionicons name="flash" size={20} color="#fff" /></View>
           <View style={{ flex: 1 }}>
@@ -120,6 +128,8 @@ const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: C.bg },
   header: { paddingTop: 4 },
   content: { padding: 20, paddingBottom: 32 },
+  notice: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, backgroundColor: '#FFF7E6', borderRadius: 14, borderWidth: 1, borderColor: '#FCE3AE', padding: 14, marginBottom: 16 },
+  noticeText: { flex: 1, fontSize: 13.5, color: '#7A5B12', lineHeight: 19, fontWeight: '600' },
   balance: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: C.border, padding: 16 },
   balanceIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: C.amber, alignItems: 'center', justifyContent: 'center' },
   balanceLabel: { fontSize: 15, fontWeight: '800', color: C.navy },

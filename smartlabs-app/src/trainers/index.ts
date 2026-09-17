@@ -6,6 +6,7 @@ import { WfdTrainer } from '@/trainers/WfdTrainer';
 import { EssayTrainer } from '@/trainers/EssayTrainer';
 import { SpeakingTrainer } from '@/trainers/SpeakingTrainer';
 import { ReadingTrainer } from '@/trainers/ReadingTrainer';
+import { ListeningTrainer } from '@/trainers/ListeningTrainer';
 
 /**
  * Maps a PTE taskType to its trainer component. Types not listed here fall back
@@ -31,6 +32,13 @@ export const TRAINERS: Record<string, ComponentType<TrainerProps>> = {
   'mcq-multiple': ReadingTrainer,
   'reading-mcq-single': ReadingTrainer,
   'reorder-paragraphs': ReadingTrainer,
+  // Listening (audio prompt + deterministic interactive marking)
+  'listening-mcq-single': ListeningTrainer,
+  'listening-mcq-multiple': ListeningTrainer,
+  'highlight-correct-summary': ListeningTrainer,
+  'select-missing-word': ListeningTrainer,
+  'listening-fill-blanks': ListeningTrainer,
+  'highlight-incorrect-words': ListeningTrainer,
 };
 
 export function trainerFor(taskType: string): ComponentType<TrainerProps> | null {

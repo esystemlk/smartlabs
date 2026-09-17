@@ -64,6 +64,8 @@ function normalizeDoc(taskType: string, id: string, d: any): Record<string, unkn
   };
   if (d.audioUrl) q.audioUrl = d.audioUrl;
   if (d.category) q.category = d.category;
+  if (d.group) q.group = d.group; // essay: 'prediction' | 'topic' (for app filtering)
+  if (d.no !== undefined && d.no !== null) q.no = d.no; // prediction number
   if (d.svg) q.svg = d.svg; // describe-image image, when present
   return q;
 }

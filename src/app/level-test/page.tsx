@@ -106,7 +106,8 @@ export default function LevelTestPage() {
     const handleCompleteTest = async () => {
         setIsSubmitting(true);
         setIsTimerRunning(false);
-        setStep(8);
+        window.scrollTo(0, 0);
+        setStep(9); // show the "Analyzing…" loading screen while scoring runs
 
         try {
             // 1. Calculate base scores
@@ -205,15 +206,16 @@ export default function LevelTestPage() {
             }
 
             setTestResult(resultData);
-            setStep(9);
+            setStep(10); // scoring done — show the result
+            setIsSubmitting(false);
         } catch (error) {
             console.error("Error finalizing test:", error);
             toast({
                 variant: "destructive",
                 title: "Submission Error",
-                description: "There was an error scoring your test. Please contact support."
+                description: "There was an error scoring your test. Please try again or contact support."
             });
-            setStep(7);
+            setStep(8); // back to the review step so they can resubmit
             setIsSubmitting(false);
         }
     };
@@ -230,7 +232,7 @@ export default function LevelTestPage() {
         <div className="container mx-auto py-8 px-4 max-w-5xl min-h-screen">
             <AnimatePresence mode="wait">
                 {step === 0 && <IntroStep onStart={startTest} />}
-                {step >= 1 && step <= 7 && (
+                {step >= 1 && step <= 8 && (
                     <motion.div
                         key="test-content"
                         initial={{ opacity: 0, y: 20 }}
@@ -246,7 +248,7 @@ export default function LevelTestPage() {
                                 </div>
                                 <div>
                                     <h2 className="text-xl font-bold font-headline">Smart Level Test</h2>
-                                    <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">Section {step} of 7</p>
+                                    <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">{step === 8 ? 'Final Review' : `Section ${step} of 7`}</p>
                                 </div>
                             </div>
 
@@ -254,9 +256,9 @@ export default function LevelTestPage() {
                                 <div className="flex-1 md:flex-none">
                                     <div className="flex justify-between text-xs mb-1 font-medium">
                                         <span>Progress</span>
-                                        <span>{Math.round((step / 7) * 100)}%</span>
+                                        <span>{Math.min(100, Math.round((step / 7) * 100))}%</span>
                                     </div>
-                                    <Progress value={(step / 7) * 100} className="h-2 w-full md:w-48" />
+                                    <Progress value={Math.min(100, (step / 7) * 100)} className="h-2 w-full md:w-48" />
                                 </div>
 
                                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full font-mono font-bold ${timeLeft < 300 ? 'bg-red-100 text-red-600 animate-pulse' : 'bg-secondary text-secondary-foreground'}`}>
@@ -323,6 +325,7 @@ export default function LevelTestPage() {
                         <div className="space-y-2">
                             <h2 className="text-3xl font-bold font-headline">Analyzing Your Performance</h2>
                             <p className="text-muted-foreground max-w-md">Our AI is evaluating your sentences, pronunciation, and fluency to provide a comprehensive diagnostic report...</p>
+                            <p className="text-sm font-semibold text-primary max-w-md mx-auto pt-2">Please wait and do not close or refresh this page. Scoring can take up to a minute.</p>
                         </div>
                     </motion.div>
                 )}
@@ -884,7 +887,7 @@ function ResultStep({ result }: { result: any }) {
                             </div>
                             <div className="w-px h-12 bg-white/20" />
                             <div className="text-center">
-                                <p className="text-4xl font-black">{result.scores.percentage}%</p>
+                                <p className="text-4xl font-black">{Math.round(result.scores.percentage)}%</p>
                                 <p className="text-xs uppercase opacity-70">Accuracy</p>
                             </div>
                         </div>

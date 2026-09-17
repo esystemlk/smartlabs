@@ -10,6 +10,7 @@ import { PromptPlayer } from '@/audio/player';
 import { useAuth } from '@/auth/AuthContext';
 import { bumpSession } from '@/lib/progress';
 import { recordAttempt } from '@/lib/attempts';
+import { notifyScoreDone } from '@/lib/notifications';
 import { BackLink, slate, tint } from '@/ui/web';
 import type { TrainerProps } from '@/trainers/types';
 
@@ -77,11 +78,11 @@ export function SpeakingTrainer({ task, question, accent, onBack }: TrainerProps
       setPhase('result');
       bumpSession(user?.uid);
       recordAttempt(user?.uid, 'speaking', task.taskType, score.overall, 90);
+      notifyScoreDone(score.overall, task.label);
     } catch (e) {
       if (e instanceof ApiError && (e.code === 'NO_CREDITS' || e.status === 402)) {
-        setError('You are out of speaking credits.');
-        setPhase('error');
-        router.push('/credits');
+        setPhase('idle');
+        router.push({ pathname: '/credits', params: { reason: e.message || 'You need credits to use AI speaking scoring.' } });
       } else {
         setError(e instanceof Error ? e.message : 'Scoring failed. Please try again.');
         setPhase('error');

@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { AuthProvider, useAuth } from '@/auth/AuthContext';
 import { CreditsProvider } from '@/credits/CreditsContext';
 import { SplashHost } from '@/ui/splash';
+import { initNotifications } from '@/lib/notifications';
 import { theme } from '@/theme';
 
 /** A consistent header back / close control for pushed screens. */
@@ -35,6 +36,12 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     const t = setTimeout(() => setMinElapsed(true), 1600);
     return () => clearTimeout(t);
   }, []);
+
+  // Set up study reminders + push token once the user is signed in. Re-arms the
+  // "comeback" inactivity nudge on each cold start.
+  useEffect(() => {
+    if (user) initNotifications(user.uid);
+  }, [user]);
 
   useEffect(() => {
     // Wait until auth resolves. The navigator (Stack) is always mounted below,

@@ -46,6 +46,14 @@ export default function Progress() {
           <Stat icon="albums" tint={C.tintBlue} fg={C.blue} value={a.total} label="total" />
         </View>
 
+        {a.total > 0 ? (
+          <Pressable onPress={() => router.push('/history')} style={s.historyLink}>
+            <Ionicons name="time-outline" size={16} color={C.blue} />
+            <Text style={s.historyLinkText}>See full practice history</Text>
+            <Ionicons name="chevron-forward" size={16} color={C.blue} />
+          </Pressable>
+        ) : null}
+
         {/* Tabs */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.tabs}>
           {TABS.map((t) => (
@@ -173,6 +181,9 @@ const s = StyleSheet.create({
   content: { padding: 20, paddingBottom: 28 },
   title: { fontSize: 26, fontWeight: '800', color: C.navy },
   sub: { color: C.slate, fontSize: 15, lineHeight: 23, marginTop: 8 },
+
+  historyLink: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, backgroundColor: C.tintBlue, borderRadius: 14, paddingVertical: 13, marginTop: 12 },
+  historyLinkText: { fontSize: 14, fontWeight: '800', color: C.blue },
 
   stats: { flexDirection: 'row', gap: 12, marginTop: 18 },
   stat: { flex: 1, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: C.border, padding: 14, alignItems: 'flex-start' },

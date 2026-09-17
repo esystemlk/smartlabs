@@ -7,6 +7,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/firebase';
 import { useAuth } from '@/auth/AuthContext';
 import { useProfileMeta } from '@/lib/meta';
+import { scheduleReminders, cancelReminders, ensurePermission } from '@/lib/notifications';
 import { ScreenHeader } from '@/ui/brand';
 import { useAppLayout } from '@/ui/layout';
 import { C } from '@/theme';
@@ -97,7 +98,15 @@ export default function Settings() {
 
   const toggleNotif = async (v: boolean) => {
     setNotif(v);
-    if (user) AsyncStorage.setItem(NOTIF_KEY(user.uid), v ? '1' : '0');
+    if (!user) return;
+    await AsyncStorage.setItem(NOTIF_KEY(user.uid), v ? '1' : '0');
+    if (v) {
+      const ok = await ensurePermission();
+      if (ok) await scheduleReminders(user.uid);
+      else { setNotif(false); await AsyncStorage.setItem(NOTIF_KEY(user.uid), '0'); }
+    } else {
+      await cancelReminders();
+    }
   };
 
   return (

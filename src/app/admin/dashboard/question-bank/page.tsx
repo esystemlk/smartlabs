@@ -137,6 +137,12 @@ export default function QuestionBankPage() {
         <p className="text-sm text-muted-foreground font-medium mt-1">
           Manage practice questions for each PTE part. Writing and Listening → Summarize Spoken Text are active — the rest unlock as we rebuild them.
         </p>
+        <Link
+          href="/admin/dashboard/question-bank/bulk"
+          className="mt-3 inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-sm font-black text-white hover:bg-violet-700"
+        >
+          <Upload size={16} /> Bulk upload
+        </Link>
       </div>
 
       {/* Section tabs */}
