@@ -219,7 +219,7 @@ export default function CreditManagerPage() {
             </p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full min-w-[680px] text-sm">
                 <thead>
                   <tr className="text-[10px] uppercase tracking-widest text-slate-500 border-b border-slate-800">
                     <th className="text-left font-black px-4 py-3">Student</th>

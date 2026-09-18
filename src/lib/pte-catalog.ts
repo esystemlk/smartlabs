@@ -82,12 +82,12 @@ export const PTE_CATALOG: PteSectionDef[] = [
     tasks: [
       { taskType: 'sst',                     label: 'Summarize Spoken Text',       slug: 'summarize-spoken-text', scoring: 'ai',   weight: '10%',  built: true, builtHref: '/ai-sst-practice', input: 'text',   color: 'orange' },
       { taskType: 'wfd',                     label: 'Write from Dictation',        slug: 'write-from-dictation',  scoring: 'auto', weight: '13%',  built: true, builtHref: '/ai-wfd-practice', input: 'text',   color: 'amber' },
-      { taskType: 'listening-mcq-multiple',  label: 'Multiple Choice (Multiple)',  slug: 'listening-mcq-multiple',scoring: 'auto', weight: '3%',  input: 'choice', color: 'rose' },
-      { taskType: 'listening-fill-blanks',   label: 'Fill in the Blanks',          slug: 'listening-fill-in-the-blanks', scoring: 'auto', weight: '8%', input: 'blank', color: 'indigo' },
-      { taskType: 'highlight-correct-summary', label: 'Highlight Correct Summary', slug: 'highlight-correct-summary', scoring: 'auto', weight: '2%', input: 'choice', color: 'cyan' },
-      { taskType: 'listening-mcq-single',    label: 'Multiple Choice (Single)',    slug: 'listening-mcq-single',  scoring: 'auto', weight: '2%', input: 'choice', color: 'fuchsia' },
-      { taskType: 'select-missing-word',     label: 'Select Missing Word',         slug: 'select-missing-word',   scoring: 'auto', weight: '1%',  input: 'choice', color: 'sky' },
-      { taskType: 'highlight-incorrect-words',label: 'Highlight Incorrect Words',  slug: 'highlight-incorrect-words', scoring: 'auto', weight: '8%', input: 'choice', color: 'violet' },
+      { taskType: 'listening-mcq-multiple',  label: 'Multiple Choice (Multiple)',  slug: 'listening-mcq-multiple',scoring: 'auto', weight: '3%',  built: true, builtHref: '/dashboard/practice/listening-mcq-multiple', input: 'choice', color: 'rose' },
+      { taskType: 'listening-fill-blanks',   label: 'Fill in the Blanks',          slug: 'listening-fill-in-the-blanks', scoring: 'auto', weight: '8%', built: true, builtHref: '/dashboard/practice/listening-fill-in-the-blanks', input: 'blank', color: 'indigo' },
+      { taskType: 'highlight-correct-summary', label: 'Highlight Correct Summary', slug: 'highlight-correct-summary', scoring: 'auto', weight: '2%', built: true, builtHref: '/dashboard/practice/highlight-correct-summary', input: 'choice', color: 'cyan' },
+      { taskType: 'listening-mcq-single',    label: 'Multiple Choice (Single)',    slug: 'listening-mcq-single',  scoring: 'auto', weight: '2%', built: true, builtHref: '/dashboard/practice/listening-mcq-single', input: 'choice', color: 'fuchsia' },
+      { taskType: 'select-missing-word',     label: 'Select Missing Word',         slug: 'select-missing-word',   scoring: 'auto', weight: '1%',  built: true, builtHref: '/dashboard/practice/select-missing-word', input: 'choice', color: 'sky' },
+      { taskType: 'highlight-incorrect-words',label: 'Highlight Incorrect Words',  slug: 'highlight-incorrect-words', scoring: 'auto', weight: '8%', built: true, builtHref: '/dashboard/practice/highlight-incorrect-words', input: 'choice', color: 'violet' },
     ],
   },
 ];
