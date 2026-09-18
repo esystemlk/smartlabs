@@ -51,13 +51,13 @@ export const PTE_CATALOG: PteSectionDef[] = [
   {
     id: 'speaking', label: 'Speaking', color: 'blue',
     tasks: [
-      { taskType: 'read-aloud',           label: 'Read Aloud',              slug: 'read-aloud',           scoring: 'ai', weight: '9%',  built: true, input: 'mic',  color: 'orange' },
-      { taskType: 'repeat-sentence',      label: 'Repeat Sentence',         slug: 'repeat-sentence',      scoring: 'ai', weight: '16%',  built: true, input: 'mic',  color: 'violet' },
-      { taskType: 'describe-image',       label: 'Describe Image',          slug: 'describe-image',       scoring: 'ai', weight: '31%', built: true, input: 'mic',  color: 'blue' },
-      { taskType: 'retell-lecture',       label: 'Retell Lecture',          slug: 'retell-lecture',       scoring: 'ai', weight: '13%',  built: true, input: 'mic',  color: 'emerald' },
-      { taskType: 'answer-short-question',label: 'Answer Short Question',   slug: 'answer-short-question',scoring: 'ai', weight: '2%',  built: true, input: 'mic',  color: 'rose' },
-      { taskType: 'summarize-group-discussion', label: 'Summarize Group Discussion', slug: 'summarize-group-discussion', scoring: 'ai', weight: '19%', isNew: true, input: 'mic', color: 'amber' },
-      { taskType: 'respond-to-situation', label: 'Respond to a Situation',  slug: 'respond-to-situation', scoring: 'ai', weight: '13%',  isNew: true, input: 'mic', color: 'cyan' },
+      { taskType: 'read-aloud',           label: 'Read Aloud',              slug: 'read-aloud',           scoring: 'ai', weight: '9%',  built: true, builtHref: '/dashboard/practice/read-aloud',            input: 'mic',  color: 'orange' },
+      { taskType: 'repeat-sentence',      label: 'Repeat Sentence',         slug: 'repeat-sentence',      scoring: 'ai', weight: '16%',  built: true, builtHref: '/dashboard/practice/repeat-sentence',       input: 'mic',  color: 'violet' },
+      { taskType: 'describe-image',       label: 'Describe Image',          slug: 'describe-image',       scoring: 'ai', weight: '31%', built: true, builtHref: '/dashboard/practice/describe-image',        input: 'mic',  color: 'blue' },
+      { taskType: 'retell-lecture',       label: 'Retell Lecture',          slug: 'retell-lecture',       scoring: 'ai', weight: '13%',  built: true, builtHref: '/dashboard/practice/retell-lecture',        input: 'mic',  color: 'emerald' },
+      { taskType: 'answer-short-question',label: 'Answer Short Question',   slug: 'answer-short-question',scoring: 'ai', weight: '2%',  built: true, builtHref: '/dashboard/practice/answer-short-question', input: 'mic',  color: 'rose' },
+      { taskType: 'summarize-group-discussion', label: 'Summarize Group Discussion', slug: 'summarize-group-discussion', scoring: 'ai', weight: '19%', isNew: true, built: true, builtHref: '/dashboard/practice/summarize-group-discussion', input: 'mic', color: 'amber' },
+      { taskType: 'respond-to-situation', label: 'Respond to a Situation',  slug: 'respond-to-situation', scoring: 'ai', weight: '13%',  isNew: true, built: true, builtHref: '/dashboard/practice/respond-to-situation', input: 'mic', color: 'cyan' },
     ],
   },
   {
