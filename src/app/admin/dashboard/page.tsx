@@ -14,7 +14,7 @@ import {
     DollarSign, UserCheck, LayoutDashboard, Video, Brain, Presentation,
     ShieldCheck, Gift, ChevronRight, Activity, Clock, Zap,
     BookOpen, CreditCard, Star, AlertTriangle, CheckCircle2, BarChart3,
-    Settings, Globe, Bell, Layers, ArrowUpRight, RefreshCw, Crown, Award
+    Settings, Globe, Bell, Layers, ArrowUpRight, RefreshCw, Crown, Award, Coins
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -317,6 +317,7 @@ export default function AdminDashboardPage() {
             items: [
                 { title: 'Payment Settings', desc: 'PayHere merchant config and course prices', icon: Settings, href: '/admin/dashboard/payments/settings', accent: 'bg-emerald-500/10' },
                 { title: 'Payment History', desc: 'Browse and export all transactions', icon: CreditCard, href: '/admin/dashboard/payments', accent: 'bg-green-500/10' },
+                { title: 'Credit Manager', desc: 'All students holding credits + gift/deduct universal AI credits', icon: Coins, href: '/admin/dashboard/credit-manager', badge: 'AI', badgeColor: 'bg-orange-500/20 text-orange-600', accent: 'bg-orange-500/10' },
                 { title: 'Essay Credit Manager', desc: 'Give or adjust essay scoring & gen credits', icon: Gift, href: '/admin/dashboard/essay-credits', badge: 'AI', badgeColor: 'bg-orange-500/20 text-orange-600', accent: 'bg-orange-500/10' },
                 { title: 'IELTS Essay Credits', desc: 'Give or adjust IELTS essay scoring credits', icon: Gift, href: '/admin/dashboard/ielts-essay-credits', badge: 'IELTS', badgeColor: 'bg-red-500/20 text-red-600', accent: 'bg-red-500/10' },
                 { title: 'Question Bank', desc: 'Manage PTE practice questions (Writing active)', icon: FileText, href: '/admin/dashboard/question-bank', badge: 'New', badgeColor: 'bg-violet-500/20 text-violet-600', accent: 'bg-violet-500/10' },

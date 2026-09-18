@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
 import { logAiCall } from '@/lib/services/ai-usage.service';
 import { isInternalRequest } from '@/lib/internal-auth';
 import { ieltsOverallBand, ieltsBandLabel } from '@/types/ielts-essay';
+import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -45,6 +45,7 @@ function extractJson(text: string): string {
 // ─── Credit gate — own IELTS pool, independent of PTE ─────────────────────────
 const FREE_IELTS_ESSAY_LIMIT = 2;
 const UNLIMITED_ROLES = new Set(['admin', 'developer', 'teacher']);
+const IELTS_POOL: PoolConfig = { paid: 'ieltsEssayPaidCredits', monthly: 'ieltsEssayMonthlyExpiry', free: 'ieltsEssayFreeUsed', freeLimit: FREE_IELTS_ESSAY_LIMIT };
 
 type AuthResult =
   | { ok: false; status: number; code: string; message: string; extra?: Record<string, unknown> }
@@ -71,22 +72,15 @@ async function verifyAuthAndCredits(authHeader: string | null, internal: boolean
   const data = snap.data() ?? {};
   if (UNLIMITED_ROLES.has(data.role as string)) return { ok: true, uid, unlimited: true };
 
-  const now = Date.now();
-  const monthlyExpiry = (data.ieltsEssayMonthlyExpiry as number) ?? 0;
-  const hasMonthly = monthlyExpiry > now;
-  const paid = (data.ieltsEssayPaidCredits as number) ?? 0;
-  const freeUsed = (data.ieltsEssayFreeUsed as number) ?? 0;
-
-  // Free AI scoring is no longer offered to new accounts — only users already on
-  // the free tier (freeUsed >= 1) or holding credits/a plan keep it.
-  const freeLimit = freeUsed >= 1 ? FREE_IELTS_ESSAY_LIMIT : 0;
-  if (!hasMonthly && paid <= 0 && freeUsed >= freeLimit) {
+  // Eligible if this IELTS pool OR the shared universal pool can cover the use.
+  if (!hasCreditFor(data, IELTS_POOL)) {
+    const freeUsed = (data.ieltsEssayFreeUsed as number) ?? 0;
     return {
       ok: false, status: 402, code: 'NO_IELTS_CREDITS',
       message: freeUsed >= 1
         ? `You have used your ${FREE_IELTS_ESSAY_LIMIT} free IELTS essay scorings. Purchase credits to keep practising.`
         : 'Free AI scoring is no longer available on new accounts. Please purchase credits to start scoring.',
-      extra: { freeUsed, freeTotal: freeLimit, paidCredits: paid, hasMonthly },
+      extra: { freeUsed, paidCredits: (data.ieltsEssayPaidCredits as number) ?? 0, universalPaidCredits: (data.universalPaidCredits as number) ?? 0 },
     };
   }
   return { ok: true, uid, unlimited: false };
@@ -100,12 +94,10 @@ async function deductIeltsCredit(uid: string): Promise<void> {
       const snap = await tx.get(ref);
       const data = snap.data() ?? {};
       if (UNLIMITED_ROLES.has(data.role as string)) return;
-      const now = Date.now();
-      const hasMonthly = ((data.ieltsEssayMonthlyExpiry as number) ?? 0) > now;
-      if (hasMonthly) return; // subscription — nothing to decrement
-      const paid = (data.ieltsEssayPaidCredits as number) ?? 0;
-      if (paid > 0) tx.update(ref, { ieltsEssayPaidCredits: FieldValue.increment(-1) });
-      else tx.update(ref, { ieltsEssayFreeUsed: FieldValue.increment(1) });
+      // Spend order (shared helper): IELTS paid → IELTS free tier → universal paid;
+      // an active IELTS OR universal monthly plan charges nothing.
+      const upd = deductionFor(data, IELTS_POOL);
+      if (upd) tx.update(ref, upd);
     });
   } catch (e) {
     console.warn('[score-ielts-essay] credit deduction failed:', e);

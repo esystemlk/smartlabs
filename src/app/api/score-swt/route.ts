@@ -1,14 +1,15 @@
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
 import { logAiCall } from '@/lib/services/ai-usage.service';
 import { isInternalRequest } from '@/lib/internal-auth';
+import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// ─── SWT credit system (own pool, separate from essay credits) ──────────────
+// ─── SWT credit system (own pool + shared universal pool) ───────────────────
 const UNLIMITED_ROLES = new Set(['admin', 'developer', 'teacher']);
 const FREE_SWT_LIMIT = 2;
+const SWT_POOL: PoolConfig = { paid: 'swtPaidCredits', monthly: 'swtMonthlyExpiry', free: 'swtFreeUsed', freeLimit: FREE_SWT_LIMIT };
 
 type CreditResult =
   | { ok: true; unlimited: boolean }
@@ -20,34 +21,27 @@ async function verifyCredits(uid: string): Promise<CreditResult> {
   const d = snap.data() ?? {};
   const role = (d.role as string) ?? 'student';
   if (UNLIMITED_ROLES.has(role)) return { ok: true, unlimited: true };
+  // Eligible if this pool OR the shared universal pool can cover the use.
+  if (hasCreditFor(d, SWT_POOL)) return { ok: true, unlimited: false };
   const freeUsed = (d.swtFreeUsed as number) ?? 0;
-  const paid = (d.swtPaidCredits as number) ?? 0;
-  const expiry = d.swtMonthlyExpiry?.toDate?.() ?? null;
-  const hasMonthly = !!(expiry && expiry > new Date());
-  // Free AI scoring is no longer offered to new accounts — only users already on
-  // the free tier (freeUsed >= 1) or holding credits/a plan keep it.
-  const freeLimit = freeUsed >= 1 ? FREE_SWT_LIMIT : 0;
-  if (!hasMonthly && paid <= 0 && freeUsed >= freeLimit) {
-    return {
-      ok: false, status: 402, code: 'NO_CREDITS',
-      message: freeUsed >= 1
-        ? `You have used your ${FREE_SWT_LIMIT} free SWT scorings. Purchase credits to keep practising.`
-        : 'Free AI scoring is no longer available on new accounts. Please purchase credits to start scoring.',
-      extra: { freeUsed, freeTotal: freeLimit, paidCredits: paid, hasMonthly },
-    };
-  }
-  return { ok: true, unlimited: false };
+  return {
+    ok: false, status: 402, code: 'NO_CREDITS',
+    message: freeUsed >= 1
+      ? `You have used your ${FREE_SWT_LIMIT} free SWT scorings. Purchase credits to keep practising.`
+      : 'Free AI scoring is no longer available on new accounts. Please purchase credits to start scoring.',
+    extra: { freeUsed, paidCredits: (d.swtPaidCredits as number) ?? 0, universalPaidCredits: (d.universalPaidCredits as number) ?? 0 },
+  };
 }
 
 async function deductSwtCredit(uid: string): Promise<void> {
   const userRef = adminDb!.collection('users').doc(uid);
-  const snap = await userRef.get();
-  const d = snap.data() ?? {};
-  const expiry = d.swtMonthlyExpiry?.toDate?.() ?? null;
-  if (expiry && expiry > new Date()) return; // unlimited plan active
-  const paid = (d.swtPaidCredits as number) ?? 0;
-  if (paid > 0) await userRef.update({ swtPaidCredits: FieldValue.increment(-1) });
-  else await userRef.update({ swtFreeUsed: FieldValue.increment(1) });
+  await adminDb!.runTransaction(async (tx) => {
+    const snap = await tx.get(userRef);
+    const d = snap.data() ?? {};
+    if (UNLIMITED_ROLES.has((d.role as string) ?? 'student')) return;
+    const upd = deductionFor(d, SWT_POOL);
+    if (upd) tx.update(userRef, upd);
+  });
 }
 
 const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
@@ -123,21 +117,35 @@ function scoreForm(summary: string): { form: 0 | 1; wordCount: number; reasons: 
 // ─── System prompt (faithful to the SWT master document) ────────────────────
 const SYSTEM_PROMPT = `You are an expert PTE Academic Summarize Written Text (SWT) examiner, trainer, and coach. You do NOT just score — you teach the student to think like a high-scoring SWT candidate.
 
-CORE TRUTH: SWT is primarily a READING and THINKING task, not a writing task. Idea selection matters more than grammar or vocabulary. A summary is ONE complete sentence containing only the MOST IMPORTANT ideas (main topic + major ideas + relationships), with details removed.
+CORE TRUTH: SWT is primarily a READING and THINKING task, not a writing task. Idea SELECTION matters more than writing sophistication. A summary is ONE complete sentence that captures the essential information — the main topic plus the most important supporting ideas. A response does NOT need to reproduce every detail, and it does NOT need a sophisticated relationship between ideas: accurately selecting and combining the key information is enough.
 
-═══ OFFICIAL SCORING ═══
-CONTENT (0-4):
- 4 = full comprehension, main topic + all important ideas, synthesized, unnecessary details omitted, coherent.
- 3 = good comprehension, most important ideas, minor omissions, generally coherent.
- 2 = partial comprehension, several important ideas missing, heavy copying, weak synthesis.
- 1 = limited comprehension, only one/few ideas, major ideas missing.
+═══ CONTENT ASSESSMENT (0-4) — READ CAREFULLY ═══
+A high-scoring response does NOT need every detail from the passage. Award full content marks when the response successfully identifies the ESSENTIAL information:
+ • MAIN TOPIC / CENTRAL IDEA — the response clearly identifies what the passage is mainly about.
+ • IMPORTANT SUPPORTING INFORMATION — at least TWO important facts, findings, explanations, or ideas from the passage (they may come from different sentences/sections; must be relevant and factually consistent with the source).
+ • LOGICAL COMBINATION — the student may select up to three meaningful pieces of information and combine them into one sentence. The ideas do NOT need a sophisticated relationship. Simple coordination using "and", "while", "but", "so", "or", or "which", with correct commas, is ACCEPTABLE. Do NOT reduce the content score merely because the student used simple linking structures.
+ • CONCLUSION / FINAL POINT — if the passage has an important concluding idea, implication, outcome, or final key point, including it contributes positively to content.
+A response following "main topic + important fact + important additional fact + concluding point" should be eligible for full content marks.
+
+MARKING PRINCIPLES (do not violate):
+ • Do NOT require the student to explain relationships that are not explicitly stated in the source passage.
+ • Do NOT penalize a response for combining independently stated facts using simple conjunctions such as "and".
+ • If the student accurately selected the main idea and sufficient important supporting information, the response IS eligible for full content marks — do not withhold marks for lack of complexity.
+ • Content is about IDEAS, not language. A response with accurate content must NOT lose content marks solely because its sentence structure is simple. Language errors are penalized ONLY under Grammar and Vocabulary below.
+
+CONTENT BANDS:
+ 4 = main topic identified AND sufficient important supporting information captured (≈2+ key points, plus the concluding point when the passage has one); factually accurate; no essential information distorted. Simple but accurate combination fully qualifies.
+ 3 = main topic and most key information captured; one important point missing or slightly weak.
+ 2 = partial — main topic present but several important ideas missing, or notable distortion / heavy verbatim copying with poor selection.
+ 1 = limited — only one idea, or major ideas missing / misunderstood.
  0 = no meaningful summary / misunderstanding / irrelevant.
 
-GRAMMAR (0-2): 2 = correct structure; 1 = minor errors not hindering meaning; 0 = serious errors hindering meaning. Check subject-verb agreement, tense, articles, prepositions, sentence structure, run-ons, fragments.
+═══ LANGUAGE — SCORED SEPARATELY FROM CONTENT ═══
+GRAMMAR (0-2): 2 = correct structure; 1 = minor errors not hindering meaning; 0 = serious errors hindering meaning. Check subject-verb agreement, tense, articles, prepositions, sentence structure, run-ons, fragments, and punctuation (including the commas used with connectors).
 
 VOCABULARY (0-2): 2 = appropriate accurate word choice; 1 = minor lexical errors; 0 = poor word choice hindering meaning.
 
-(FORM is scored automatically by the system — do not score it.)
+(FORM is scored automatically by the system — do not score it. It checks single-sentence + 5–75 words only.)
 
 SPELLING: there is NO separate spelling score, but spelling errors can hurt Vocabulary/Grammar/clarity. Identify every spelling mistake with the correct spelling.
 
@@ -145,11 +153,19 @@ SPELLING: there is NO separate spelling score, but spelling errors can hurt Voca
 - Identify the main topic, the 2–5 major ideas, supporting ideas, and details that should NOT appear (examples, statistics, dates, names, case studies, quotes, repetition).
 - For EACH sentence of the source, decide PICK or SKIP, give importance (High/Medium/Low) and a clear reason. Skip examples/statistics/dates/names/repetition; pick topic, causes, effects, problems, solutions, comparisons, conclusions.
 - Recognize synonyms/paraphrasing/alternative structures — evaluate meaning, not exact words.
-- Coach connectors (addition: and/moreover/furthermore; contrast: but/however/yet; comparison: while/whereas; cause-effect: because/therefore/thus/consequently; purpose: to/in order to/so that; concession: although/even though/despite) and recommend a comma before major connecting words joining large ideas.
+- Coach connectors (addition: and/moreover/furthermore; contrast: but/however/yet; comparison: while/whereas; cause-effect: because/therefore/thus/consequently; purpose: to/in order to/so that; concession: although/even though/despite) and recommend a comma before major connecting words joining large ideas. Present these as ways to improve fluency — NOT as a requirement for a good content score.
 - Be encouraging, analytical, specific. Never just say "wrong" — explain what happened, why, how to fix it, how to avoid it next time.
 
+═══ FEEDBACK CHECKLIST (address every point) ═══
+- State whether the MAIN TOPIC was correctly identified.
+- Identify which important supporting points were successfully captured.
+- State whether any essential information was missed or distorted.
+- Confirm whether the ideas were combined into ONE grammatically acceptable sentence.
+- Identify grammar, spelling, punctuation, and vocabulary errors SEPARATELY (never let these lower the content judgement).
+- Do NOT demand unnecessary complexity when a clear, accurate combination of the passage's key information is sufficient.
+
 ═══ MODEL ANSWER ═══
-Provide ONE high-scoring summary sentence (clear synthesis, proper connectors, strong grammar, appropriate vocabulary, no unnecessary details) and explain why it scores highly.
+Provide ONE high-scoring summary sentence (accurate selection of the key information, correct connectors and commas, strong grammar, appropriate vocabulary, no unnecessary details) and explain why it scores highly. The model answer may use simple coordination — it does not need to be elaborate.
 
 Return ONLY valid JSON (no markdown, no text outside the object). Do not include "form" or "total" (computed server-side):
 {

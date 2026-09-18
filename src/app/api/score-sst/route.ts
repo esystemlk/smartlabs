@@ -1,14 +1,15 @@
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
 import { logAiCall } from '@/lib/services/ai-usage.service';
 import { isInternalRequest } from '@/lib/internal-auth';
+import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// ─── SST credit system (own pool, separate from essay & SWT credits) ────────
+// ─── SST credit system (own pool + shared universal pool) ───────────────────
 const UNLIMITED_ROLES = new Set(['admin', 'developer', 'teacher']);
 const FREE_SST_LIMIT = 2;
+const SST_POOL: PoolConfig = { paid: 'sstPaidCredits', monthly: 'sstMonthlyExpiry', free: 'sstFreeUsed', freeLimit: FREE_SST_LIMIT };
 
 type CreditResult =
   | { ok: true; unlimited: boolean }
@@ -20,34 +21,27 @@ async function verifyCredits(uid: string): Promise<CreditResult> {
   const d = snap.data() ?? {};
   const role = (d.role as string) ?? 'student';
   if (UNLIMITED_ROLES.has(role)) return { ok: true, unlimited: true };
+  // Eligible if this pool OR the shared universal pool can cover the use.
+  if (hasCreditFor(d, SST_POOL)) return { ok: true, unlimited: false };
   const freeUsed = (d.sstFreeUsed as number) ?? 0;
-  const paid = (d.sstPaidCredits as number) ?? 0;
-  const expiry = d.sstMonthlyExpiry?.toDate?.() ?? null;
-  const hasMonthly = !!(expiry && expiry > new Date());
-  // Free AI scoring is no longer offered to new accounts — only users already on
-  // the free tier (freeUsed >= 1) or holding credits/a plan keep it.
-  const freeLimit = freeUsed >= 1 ? FREE_SST_LIMIT : 0;
-  if (!hasMonthly && paid <= 0 && freeUsed >= freeLimit) {
-    return {
-      ok: false, status: 402, code: 'NO_CREDITS',
-      message: freeUsed >= 1
-        ? `You have used your ${FREE_SST_LIMIT} free SST scorings. Purchase credits to keep practising.`
-        : 'Free AI scoring is no longer available on new accounts. Please purchase credits to start scoring.',
-      extra: { freeUsed, freeTotal: freeLimit, paidCredits: paid, hasMonthly },
-    };
-  }
-  return { ok: true, unlimited: false };
+  return {
+    ok: false, status: 402, code: 'NO_CREDITS',
+    message: freeUsed >= 1
+      ? `You have used your ${FREE_SST_LIMIT} free SST scorings. Purchase credits to keep practising.`
+      : 'Free AI scoring is no longer available on new accounts. Please purchase credits to start scoring.',
+    extra: { freeUsed, paidCredits: (d.sstPaidCredits as number) ?? 0, universalPaidCredits: (d.universalPaidCredits as number) ?? 0 },
+  };
 }
 
 async function deductSstCredit(uid: string): Promise<void> {
   const userRef = adminDb!.collection('users').doc(uid);
-  const snap = await userRef.get();
-  const d = snap.data() ?? {};
-  const expiry = d.sstMonthlyExpiry?.toDate?.() ?? null;
-  if (expiry && expiry > new Date()) return; // unlimited plan active
-  const paid = (d.sstPaidCredits as number) ?? 0;
-  if (paid > 0) await userRef.update({ sstPaidCredits: FieldValue.increment(-1) });
-  else await userRef.update({ sstFreeUsed: FieldValue.increment(1) });
+  await adminDb!.runTransaction(async (tx) => {
+    const snap = await tx.get(userRef);
+    const d = snap.data() ?? {};
+    if (UNLIMITED_ROLES.has((d.role as string) ?? 'student')) return;
+    const upd = deductionFor(d, SST_POOL);
+    if (upd) tx.update(userRef, upd);
+  });
 }
 
 const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
@@ -100,18 +94,30 @@ function getApiKey(): { key: string; label: string; keyIndex: number } | null {
 }
 
 // ─── Deterministic Form scoring ──────────────────────────────────────────────
-// Official rule: 50–70 words = 2 marks. Anything else = 0. No partial marks.
-function scoreForm(summary: string): { form: 0 | 2; wordCount: number; reason: string } {
+// Official SST word-count rule (per trainer spec):
+//   50–70 words → 2/2 (required range)
+//   35–49 words → 1/2 (below minimum)
+//   below 35    → 0/2 (far below minimum)
+//   71–80 words → 1/2 (above maximum)
+//   81+ words   → 0/2 (far above maximum)
+function scoreForm(summary: string): { form: 0 | 1 | 2; wordCount: number; reason: string } {
   const trimmed = summary.trim();
   const wordCount = trimmed ? trimmed.split(/\s+/).filter(Boolean).length : 0;
-  const ok = wordCount >= 50 && wordCount <= 70;
-  return {
-    form: ok ? 2 : 0,
-    wordCount,
-    reason: ok
-      ? `${wordCount} words — within the required 50–70 range.`
-      : `${wordCount} words — outside the required 50–70 range. Form is all-or-nothing, so this scores 0.`,
-  };
+
+  let form: 0 | 1 | 2;
+  let reason: string;
+  if (wordCount >= 50 && wordCount <= 70) {
+    form = 2; reason = `${wordCount} words — within the required 50–70 range.`;
+  } else if (wordCount >= 35 && wordCount <= 49) {
+    form = 1; reason = `${wordCount} words — below the 50-word minimum (35–49 scores 1/2).`;
+  } else if (wordCount >= 71 && wordCount <= 80) {
+    form = 1; reason = `${wordCount} words — above the 70-word maximum (71–80 scores 1/2).`;
+  } else if (wordCount < 35) {
+    form = 0; reason = `${wordCount} words — far below the minimum (under 35 scores 0/2).`;
+  } else {
+    form = 0; reason = `${wordCount} words — far above the maximum (81+ scores 0/2).`;
+  }
+  return { form, wordCount, reason };
 }
 
 // ─── System prompt — the official SST rubric supplied by the PTE trainer ─────
@@ -128,47 +134,53 @@ The preferred structure is:
 "The lecture mainly discusses... It explains... Additionally, it highlights... Finally, it concludes that..."
 The wording does NOT have to match this template exactly, but the response should follow a logical flow.
 
+You MUST compare the student's response directly with the transcript before awarding marks. The purpose is to determine whether the student understood the MAIN MEANING of the audio and summarized the important information within the word limit.
+
 ═══ CONTENT (4 marks) — you score this ═══
-Evaluate whether the student has accurately summarized the lecture.
- 4 = Main topic accurately identified; most important ideas included; information relevant; no major missing concepts.
- 3 = Main topic identified; some important points missing; mostly relevant.
- 2 = Only partial understanding; several important ideas omitted; some irrelevant information.
- 1 = Very limited understanding; mostly general statements; few actual lecture ideas.
- 0 = Completely irrelevant; random information; off-topic.
+Content is the most important criterion. First, internally analyse the transcript and identify: the main topic, main idea/message, main points, important supporting points, key facts/causes/effects/results/examples/arguments, and any conclusion/outcome/implication. Then compare those against the student's response.
 
-★ IMPORTANT RULE FOR KEYWORDS ★
-Do NOT award high content marks simply because the student includes isolated keywords.
-A keyword must represent a meaningful CONCEPT or IDEA from the lecture.
- Good (meaningful phrases): "protecting biodiversity", "renewable energy sources", "economic development", "environmental conservation"
- Poor (isolated words): "biodiversity", "environment", "climate", "pollution"
-Single random words must NOT receive credit. Keywords should normally contain at least two meaningful words that clearly represent the speaker's ideas, and must be central ideas from the lecture.
-Do NOT reward: generic words, random vocabulary, repeated words, unrelated concepts.
-Content marks must reflect UNDERSTANDING of the lecture rather than keyword matching.
-List any isolated/generic/vague keywords the student leaned on in "weakKeywords".
+★ KEY-PHRASE / INFORMATION-UNIT REQUIREMENT ★
+For full Content marks the response should contain a MINIMUM of 6 meaningful key phrases, concepts, or information units from the audio.
+- A key phrase need NOT be long — a short phrase or small group of words is fine as long as it carries a meaningful piece of information (a concept, cause, effect, result, fact, finding, argument, problem, solution, process, comparison, or important supporting detail).
+- Do NOT count as key phrases: articles, prepositions, conjunctions, generic words, repeated information, meaningless copied words, information unrelated to the audio, information invented by the student, or the same idea expressed multiple times.
+- Paraphrasing is completely acceptable — the wording does NOT have to match the transcript as long as the meaning is accurately preserved. Focus on MEANING, not exact wording.
+Report the number you counted in "keyPhraseCount" and list the actual ones in "keyIdeasCovered".
 
-═══ VOCABULARY (2 marks) — you score the BASE, system applies the penalty ═══
- 2 = Varied and accurate vocabulary; academic language appropriate.
- 1 = Mostly simple vocabulary; some repetition; occasional incorrect word choice.
- 0 = Very poor or incorrect vocabulary; many inappropriate words.
-VOCABULARY PENALTY: if frequent spelling mistakes affect word recognition, report "vocabSpellingPenalty" of 0.5 or 1 (otherwise 0), because incorrect spelling reduces lexical accuracy. The system subtracts it from your base score.
+EXPECTED STRUCTURE: MAIN TOPIC + MAIN POINTS + ADDITIONAL/SUPPORTING POINTS + SUMMARY/CONCLUSION. The final part should give an appropriate overall summary/conclusion/result/implication when the audio provides one.
+
+CONTENT SCORING (drive this by the meaningful key-phrase count AND coverage):
+ 4 = Main topic correctly identified; main meaning accurately represented; AT LEAST 6 meaningful key phrases; important main points + relevant supporting info included; forms a meaningful summary with an appropriate conclusion where relevant; no major distortion.
+ 3 = Main topic correct; overall meaning substantially correct; ~4–5 meaningful key phrases; several main points included; some supporting info or the conclusion may be missing/weak.
+ 2 = General topic understood; ~2–3 meaningful key phrases; several important main points missing; too general or incomplete; conclusion weak/missing.
+ 1 = Very limited understanding; only 1 clear meaningful key phrase; most important information missing.
+ 0 = Does not meaningfully represent the audio; main topic incorrect/absent; no meaningful key info; mostly irrelevant, invented, or inaccurate.
+
+IMPORTANT CONTENT RULE: Do NOT give high Content marks merely because the English sounds fluent or grammatically correct. A grammatically perfect response that fails to capture the important information MUST lose Content marks. Conversely, accurate paraphrasing counts fully.
+
+═══ VOCABULARY (2 marks) — you score this (0-2 integer) ═══
+Advanced vocabulary is NOT required — accuracy and appropriateness matter more than difficulty.
+ 2 = Vocabulary appropriately and accurately communicates the audio content; meaningful in context; no significant errors affecting meaning.
+ 1 = Some vocabulary appropriate, but noticeable incorrect/awkward/repetitive/inappropriate word choices; meaning still understandable.
+ 0 = Seriously limited or inaccurate vocabulary; wrong word choices substantially interfere with meaning.
+Do NOT deduct Vocabulary marks just because the student uses simple English — simple but accurate vocabulary can score 2. Do NOT treat a spelling error as a vocabulary error (spelling has its own score).
 
 ═══ GRAMMAR, SPELLING and FORM — do NOT score these ═══
 The system computes them deterministically from the lists/counts you provide:
-- Grammar: 0 mistakes = 2, exactly 1 mistake = 1, 2 or more = 0. List EVERY grammar mistake in "grammarMistakes" (sentence structure, verb tense, agreement, articles, prepositions, punctuation). If grammar errors make the summary difficult to understand, list them all — the count will drive the 0.
-- Spelling: 0 mistakes = 2, 1–2 mistakes = 1, 3 or more = 0. List EVERY spelling mistake in "spellingMistakes".
-- Form: 50–70 words = 2, otherwise 0 (system counts the words).
+- Grammar: 0 mistakes = 2, exactly 1 mistake = 1, 2 or more = 0 (capped). List EVERY significant grammar mistake in "grammarMistakes" (sentence structure, verb tense, agreement, articles, prepositions, punctuation). Do NOT list the same repeated construction problem more than once, and do not flag mere style preferences.
+- Spelling: 0 mistakes = 2, exactly 1 mistake = 1, 2 or more = 0 (capped). List EVERY spelling mistake in "spellingMistakes". Do not confuse a spelling error with a vocabulary error.
+- Form: word-count based, system counts the words.
 Be exhaustive and accurate with these lists — they directly set the marks.
 
 ═══ ADDITIONAL RULES ═══
-- If there are many spelling mistakes, also consider reducing Content if important ideas become unclear, and apply the vocabulary penalty.
-- Evaluate based on MEANING, not exact wording. Accept synonyms and paraphrases. Do not expect identical phrases from the lecture.
-- Focus on whether the student captured the main message and key supporting ideas.
-- Be fair but strict, following the PTE marking criteria consistently.
+- Always compare the response with the transcript. Evaluate based on MEANING, not exact wording — accept synonyms and paraphrases.
+- Be consistent: two responses with similar content coverage and language accuracy should get comparable scores.
 
 Return ONLY valid JSON (no markdown, no text outside the object). Do NOT include grammar, spelling, form or total scores — the system computes those:
 {
-  "scores": { "content": <0-4 integer>, "vocabularyBase": <0|1|2> },
-  "vocabSpellingPenalty": <0|0.5|1>,
+  "scores": { "content": <0-4 integer>, "vocabulary": <0|1|2> },
+  "keyPhraseCount": <integer — how many meaningful key phrases/information units from the audio the student captured>,
+  "mainTopicIdentified": "Yes" | "Partially" | "No",
+  "summaryConclusion": "Strong" | "Acceptable" | "Weak" | "Missing",
   "grammarMistakes": [{"error":"<student text>","correction":"<corrected>","rule":"<which grammar rule, explained simply>"}],
   "spellingMistakes": [{"incorrect":"<misspelled word>","correct":"<correct spelling>"}],
   "mainTopic": "<the lecture's main topic in one line>",
@@ -176,11 +188,10 @@ Return ONLY valid JSON (no markdown, no text outside the object). Do NOT include
   "summaryText": "<2-3 sentences of overall honest feedback>",
   "keyIdeasCovered": ["<meaningful idea/phrase the student correctly captured>", "..."],
   "missingKeyIdeas": ["<important lecture idea the student missed>", "..."],
-  "weakKeywords": ["<isolated or overly general word the student used that earns no credit>", "..."],
   "vocabularyWeaknesses": ["<specific vocabulary weakness>", "..."],
   "strengths": ["<what the student genuinely did well>", "..."],
-  "suggestedImprovements": ["<actionable improvement: identifying the topic, selecting meaningful key phrases instead of isolated words, grammar, vocabulary, spelling, word limit>", "..."],
-  "contentJustification": "<3-5 sentences justifying the Content mark per the rubric>",
+  "suggestedImprovements": ["<actionable improvement: identifying the topic, capturing more meaningful key phrases, grammar, vocabulary, spelling, word limit>", "..."],
+  "contentJustification": "<3-5 sentences justifying the Content mark — state whether the main topic was identified, which key points were captured, what was missed, and whether the 6 key-phrase target was reached>",
   "modelAnswer": "<a model 50-70 word summary of THIS lecture following the preferred structure>",
   "modelAnswerWhy": "<why this model answer would score full marks>"
 }`;
@@ -341,15 +352,13 @@ Score CONTENT (0-4) and VOCABULARY BASE (0-2), and list EVERY grammar and spelli
     const grammar: 0 | 1 | 2 =
       grammarMistakeCount === 0 ? 2 : grammarMistakeCount === 1 ? 1 : 0;
 
+    // Spelling (capped at 2): 0 mistakes = 2, exactly 1 = 1, 2 or more = 0.
     const spellingMistakeCount = spellingMistakes.length;
     const spelling: 0 | 1 | 2 =
-      spellingMistakeCount === 0 ? 2 : spellingMistakeCount <= 2 ? 1 : 0;
+      spellingMistakeCount === 0 ? 2 : spellingMistakeCount === 1 ? 1 : 0;
 
-    // ── Vocabulary: AI base (0-2) minus the spelling penalty (0 / 0.5 / 1) ──
-    const vocabBase = Math.max(0, Math.min(2, Math.round(Number(parsed?.scores?.vocabularyBase ?? 0))));
-    const rawPenalty = Number(parsed?.vocabSpellingPenalty ?? 0);
-    const vocabSpellingPenalty = [0, 0.5, 1].includes(rawPenalty) ? rawPenalty : 0;
-    const vocabulary = Math.max(0, vocabBase - vocabSpellingPenalty);
+    // ── Vocabulary: AI-judged 0-2 (spelling is scored separately, not double-counted) ──
+    const vocabulary = Math.max(0, Math.min(2, Math.round(Number(parsed?.scores?.vocabulary ?? 0))));
 
     const total = content + grammar + vocabulary + spelling + form.form;
     const maxTotal = 12;
@@ -367,8 +376,6 @@ Score CONTENT (0-4) and VOCABULARY BASE (0-2), and list EVERY grammar and spelli
       spellingMistakes,
       grammarMistakeCount,
       spellingMistakeCount,
-      vocabBase,
-      vocabSpellingPenalty,
       total,
       maxTotal,
       band,

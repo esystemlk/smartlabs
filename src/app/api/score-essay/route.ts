@@ -3,6 +3,7 @@ import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { logAiCall } from '@/lib/services/ai-usage.service';
 import { isInternalRequest } from '@/lib/internal-auth';
+import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
 
 // ─── Retry helpers ────────────────────────────────────────────────────────────
 const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
@@ -487,6 +488,7 @@ type AuthCreditResult =
 
 const UNLIMITED_ROLES = new Set(['admin', 'developer', 'teacher']);
 const FREE_ESSAY_LIMIT = 2;
+const ESSAY_POOL: PoolConfig = { paid: 'essayPaidCredits', monthly: 'essayMonthlyExpiry', free: 'essayFreeUsed', freeLimit: FREE_ESSAY_LIMIT };
 
 async function verifyAuthAndCredits(
   authHeader:  string | null,
@@ -571,18 +573,12 @@ async function verifyAuthAndCredits(
   // Mock exams pay with their own credit — skip the essay balance entirely.
   if (internal) return { ok: true, uid, unlimited: true };
 
-  // 6. Check current user credit balance
-  const freeUsed: number   = (userData.essayFreeUsed    as number) ?? 0;
-  const paidCredits: number = (userData.essayPaidCredits as number) ?? 0;
-  const monthlyExpiry       = userData.essayMonthlyExpiry?.toDate?.() ?? null;
-  const hasMonthly          = !!(monthlyExpiry && monthlyExpiry > new Date());
-
-  // Free AI scoring is no longer offered to new accounts. Only users who already
-  // began their free tier (freeUsed >= 1) — or hold paid credits / a monthly plan
-  // — keep it; brand-new users must purchase before their first scoring.
-  const freeLimit = freeUsed >= 1 ? FREE_ESSAY_LIMIT : 0;
-
-  if (!hasMonthly && paidCredits <= 0 && freeUsed >= freeLimit) {
+  // 6. Check credit balance — this essay pool OR the shared universal pool.
+  //    Free AI scoring is no longer offered to brand-new accounts; only users who
+  //    already began their free tier (freeUsed >= 1), hold paid/universal credits,
+  //    or a monthly plan keep access.
+  if (!hasCreditFor(userData, ESSAY_POOL)) {
+    const freeUsed: number = (userData.essayFreeUsed as number) ?? 0;
     return {
       ok: false,
       status: 402,
@@ -590,7 +586,7 @@ async function verifyAuthAndCredits(
       message: freeUsed >= 1
         ? `You have used your ${FREE_ESSAY_LIMIT} free essay scorings. Purchase credits to keep practising.`
         : 'Free AI scoring is no longer available on new accounts. Please purchase credits to start scoring your essays.',
-      extra: { freeUsed, freeTotal: freeLimit, paidCredits, hasMonthly },
+      extra: { freeUsed, paidCredits: (userData.essayPaidCredits as number) ?? 0, universalPaidCredits: (userData.universalPaidCredits as number) ?? 0 },
     };
   }
 
@@ -604,24 +600,15 @@ async function deductEssayCredit(uid: string, deductGen: boolean): Promise<void>
     const userSnap = await userRef.get();
     const userData = userSnap.data() ?? {};
 
-    const monthlyExpiry = userData.essayMonthlyExpiry?.toDate?.() ?? null;
-    const hasMonthly    = !!(monthlyExpiry && monthlyExpiry > new Date());
-
     // Use FieldValue.increment for atomic server-side updates (no read-then-write race)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updates: Record<string, any> = {};
 
     // ── Deduct scoring credit ─────────────────────────────────────────────
-    if (!hasMonthly) {
-      const paidCredits: number = (userData.essayPaidCredits as number) ?? 0;
-      if (paidCredits > 0) {
-        // Paid pack: decrement paid credits atomically
-        updates.essayPaidCredits = FieldValue.increment(-1);
-      } else {
-        // Free tier: increment "used" counter atomically
-        updates.essayFreeUsed = FieldValue.increment(1);
-      }
-    }
+    // Spend order (shared helper): essay paid → essay free tier → universal paid;
+    // an active essay OR universal monthly plan charges nothing.
+    const scoringDeduction = deductionFor(userData, ESSAY_POOL);
+    if (scoringDeduction) Object.assign(updates, scoringDeduction);
 
     // ── Deduct generation credit if model essay was actually produced ─────
     if (deductGen) {

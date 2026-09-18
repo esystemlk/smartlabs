@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, LayoutDashboard, LogOut, Target, Globe, Zap, Sparkles, Book, Video, Phone, ArrowRight, Search, Bot, PenLine, FileText, Headphones, Volume2, Mic, BookOpen, Clock, GraduationCap } from "lucide-react";
+import { Menu, X, ChevronDown, LayoutDashboard, LogOut, Target, Globe, Zap, Sparkles, Book, Video, Phone, ArrowRight, Search, Bot, PenLine, FileText, Headphones, Volume2, Mic, BookOpen, Clock, GraduationCap, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth } from "@/firebase";
@@ -778,6 +778,15 @@ export default function Header() {
                         </div>
                         <span className="text-sm font-bold tracking-tight">Dashboard</span>
                         <ArrowRight className="h-3 w-3 ml-auto opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                      </Link>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem asChild className="p-3 rounded-2xl cursor-pointer group focus:bg-orange-500 focus:text-white mb-1 transition-all">
+                      <Link href="/credits" className="flex items-center gap-3 w-full">
+                        <div className="h-8 w-8 rounded-xl bg-orange-500/10 flex items-center justify-center group-focus:bg-white/20 transition-colors">
+                          <Coins className="h-4 w-4 text-orange-500 group-focus:text-white" />
+                        </div>
+                        <span className="text-sm font-bold tracking-tight">AI Credits</span>
                       </Link>
                     </DropdownMenuItem>
 

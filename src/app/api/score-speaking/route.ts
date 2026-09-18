@@ -1,7 +1,7 @@
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
 import { isInternalRequest } from '@/lib/internal-auth';
 import { scorePteSpeaking } from '@/ai/flows/score-pte-speaking';
+import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -20,6 +20,7 @@ export const dynamic = 'force-dynamic';
 
 const UNLIMITED_ROLES = new Set(['admin', 'developer', 'teacher']);
 const FREE_SPEAKING_LIMIT = 3;
+const SPEAKING_POOL: PoolConfig = { paid: 'speakingPaidCredits', monthly: 'speakingMonthlyExpiry', free: 'speakingFreeUsed', freeLimit: FREE_SPEAKING_LIMIT };
 
 type CreditResult =
   | { ok: true; unlimited: boolean }
@@ -31,34 +32,27 @@ async function verifyCredits(uid: string): Promise<CreditResult> {
   const d = snap.data() ?? {};
   const role = (d.role as string) ?? 'student';
   if (UNLIMITED_ROLES.has(role)) return { ok: true, unlimited: true };
+  // Eligible if this pool OR the shared universal pool can cover the use.
+  if (hasCreditFor(d, SPEAKING_POOL)) return { ok: true, unlimited: false };
   const freeUsed = (d.speakingFreeUsed as number) ?? 0;
-  const paid = (d.speakingPaidCredits as number) ?? 0;
-  const expiry = d.speakingMonthlyExpiry?.toDate?.() ?? null;
-  const hasMonthly = !!(expiry && expiry > new Date());
-  // Free AI scoring is no longer offered to new accounts — only users already on
-  // the free tier (freeUsed >= 1) or holding credits/a plan keep it.
-  const freeLimit = freeUsed >= 1 ? FREE_SPEAKING_LIMIT : 0;
-  if (!hasMonthly && paid <= 0 && freeUsed >= freeLimit) {
-    return {
-      ok: false, status: 402, code: 'NO_CREDITS',
-      message: freeUsed >= 1
-        ? `You have used your ${FREE_SPEAKING_LIMIT} free speaking scorings. Purchase credits to keep practising.`
-        : 'Free AI scoring is no longer available on new accounts. Please purchase credits to start scoring.',
-      extra: { freeUsed, freeTotal: freeLimit, paidCredits: paid, hasMonthly },
-    };
-  }
-  return { ok: true, unlimited: false };
+  return {
+    ok: false, status: 402, code: 'NO_CREDITS',
+    message: freeUsed >= 1
+      ? `You have used your ${FREE_SPEAKING_LIMIT} free speaking scorings. Purchase credits to keep practising.`
+      : 'Free AI scoring is no longer available on new accounts. Please purchase credits to start scoring.',
+    extra: { freeUsed, paidCredits: (d.speakingPaidCredits as number) ?? 0, universalPaidCredits: (d.universalPaidCredits as number) ?? 0 },
+  };
 }
 
 async function deductSpeakingCredit(uid: string): Promise<void> {
   const userRef = adminDb!.collection('users').doc(uid);
-  const snap = await userRef.get();
-  const d = snap.data() ?? {};
-  const expiry = d.speakingMonthlyExpiry?.toDate?.() ?? null;
-  if (expiry && expiry > new Date()) return; // unlimited plan active
-  const paid = (d.speakingPaidCredits as number) ?? 0;
-  if (paid > 0) await userRef.update({ speakingPaidCredits: FieldValue.increment(-1) });
-  else await userRef.update({ speakingFreeUsed: FieldValue.increment(1) });
+  await adminDb!.runTransaction(async (tx) => {
+    const snap = await tx.get(userRef);
+    const d = snap.data() ?? {};
+    if (UNLIMITED_ROLES.has((d.role as string) ?? 'student')) return;
+    const upd = deductionFor(d, SPEAKING_POOL);
+    if (upd) tx.update(userRef, upd);
+  });
 }
 
 const VALID_TASKS = new Set([

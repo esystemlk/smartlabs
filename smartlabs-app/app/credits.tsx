@@ -3,7 +3,6 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import type { CreditPool } from '@/api/credits';
 import { buyCredits } from '@/payments/payhere';
 import { ScreenHeader } from '@/ui/brand';
 import { useAppLayout } from '@/ui/layout';
@@ -12,35 +11,16 @@ import { C } from '@/theme';
 
 interface Pkg { id: string; label: string; price: number; scoring: number; best?: boolean }
 
-const POOLS: { pool: CreditPool; title: string; icon: keyof typeof Ionicons.glyphMap; fg: string; bg: string; packages: Pkg[] }[] = [
-  {
-    pool: 'speaking', title: 'Speaking', icon: 'mic', fg: C.speaking, bg: C.speakingBg,
-    packages: [
-      { id: 'speaking_10', label: '10 Scorings', price: 1500, scoring: 10 },
-      { id: 'speaking_40', label: '40 Scorings', price: 3500, scoring: 40, best: true },
-      { id: 'speaking_100', label: '100 Scorings', price: 6000, scoring: 100 },
-      { id: 'speaking_unlimited', label: 'Unlimited · 40 days', price: 15000, scoring: -1 },
-    ],
-  },
-  {
-    pool: 'sst', title: 'Summarize Spoken Text', icon: 'headset', fg: C.listening, bg: C.listeningBg,
-    packages: [
-      { id: 'sst_10', label: '10 Scorings', price: 1500, scoring: 10 },
-      { id: 'sst_40', label: '40 Scorings', price: 3500, scoring: 40, best: true },
-      { id: 'sst_100', label: '100 Scorings', price: 6000, scoring: 100 },
-      { id: 'sst_unlimited', label: 'Unlimited · 40 days', price: 15000, scoring: -1 },
-    ],
-  },
-  {
-    pool: 'swt', title: 'Summarize Written Text', icon: 'pencil', fg: C.writing, bg: C.writingBg,
-    packages: [
-      { id: 'swt_10', label: '10 Scorings', price: 1500, scoring: 10 },
-      { id: 'swt_40', label: '40 Scorings', price: 3500, scoring: 40, best: true },
-      { id: 'swt_100', label: '100 Scorings', price: 6000, scoring: 100 },
-      { id: 'swt_unlimited', label: 'Unlimited · 40 days', price: 15000, scoring: -1 },
-    ],
-  },
+// One universal pool — these credits work on EVERY AI-scored part (Essay, SWT,
+// SST, all Speaking tasks, IELTS essay). One credit = one AI scoring.
+const UNIVERSAL_PACKAGES: Pkg[] = [
+  { id: 'universal_10', label: '10 AI Credits', price: 1500, scoring: 10 },
+  { id: 'universal_40', label: '40 AI Credits', price: 3500, scoring: 40, best: true },
+  { id: 'universal_100', label: '100 AI Credits', price: 6000, scoring: 100 },
+  { id: 'universal_unlimited', label: 'Unlimited · 40 days', price: 15000, scoring: -1 },
 ];
+
+const AI_PARTS = ['Write Essay', 'Summarize Written Text', 'Summarize Spoken Text', 'All Speaking tasks', 'IELTS Essay'];
 
 export default function Credits() {
   const layout = useAppLayout();
@@ -48,10 +28,10 @@ export default function Credits() {
   const { reason } = useLocalSearchParams<{ reason?: string }>();
   const [busy, setBusy] = useState<string | null>(null);
 
-  const onBuy = async (pool: CreditPool, pkg: Pkg) => {
+  const onBuy = async (pkg: Pkg) => {
     setBusy(pkg.id);
     try {
-      const res = await buyCredits(pool, pkg.id, { sandbox: PAYHERE_SANDBOX });
+      const res = await buyCredits('universal', pkg.id, { sandbox: PAYHERE_SANDBOX });
       if (res.status === 'completed') {
         Alert.alert('Payment complete', 'Your credits will appear here as soon as the payment is confirmed.', [
           { text: 'Great', onPress: () => router.back() },
@@ -84,36 +64,43 @@ export default function Credits() {
         <View style={s.balance}>
           <View style={s.balanceIcon}><Ionicons name="flash" size={20} color="#fff" /></View>
           <View style={{ flex: 1 }}>
-            <Text style={s.balanceLabel}>AI scoring credits</Text>
-            <Text style={s.balanceSub}>Shared with your smartlabs.lk account · prices in LKR</Text>
+            <Text style={s.balanceLabel}>Universal AI credits</Text>
+            <Text style={s.balanceSub}>One credit = one AI scoring · shared with your smartlabs.lk account · prices in LKR</Text>
           </View>
         </View>
 
-        {POOLS.map((group) => (
-          <View key={group.pool} style={{ marginTop: 22 }}>
-            <View style={s.groupHead}>
-              <View style={[s.groupIcon, { backgroundColor: group.bg }]}><Ionicons name={group.icon} size={18} color={group.fg} /></View>
-              <Text style={s.groupTitle}>{group.title}</Text>
-            </View>
-            <View style={{ gap: 10 }}>
-              {group.packages.map((pkg) => (
-                <Pressable key={pkg.id} onPress={() => onBuy(group.pool, pkg)} disabled={!!busy}
-                  style={({ pressed }) => [s.pkg, pkg.best && { borderColor: group.fg }, pressed && { opacity: 0.9 }]}>
-                  <View style={{ flex: 1 }}>
-                    <View style={s.pkgTop}>
-                      <Text style={s.pkgLabel}>{pkg.label}</Text>
-                      {pkg.best ? <View style={[s.badge, { backgroundColor: group.fg }]}><Text style={s.badgeText}>POPULAR</Text></View> : null}
-                    </View>
-                    <Text style={s.pkgSub}>{pkg.scoring === -1 ? 'Unlimited AI scorings' : `${pkg.scoring} AI scorings`}</Text>
-                  </View>
-                  {busy === pkg.id
-                    ? <ActivityIndicator color={group.fg} />
-                    : <Text style={[s.pkgPrice, { color: group.fg }]}>Rs {pkg.price.toLocaleString()}</Text>}
-                </Pressable>
-              ))}
-            </View>
+        {/* What the credits work on */}
+        <View style={s.worksOn}>
+          <Text style={s.worksOnTitle}>Works on every AI-scored part</Text>
+          <View style={s.worksOnList}>
+            {AI_PARTS.map((p) => (
+              <View key={p} style={s.worksOnRow}>
+                <Ionicons name="checkmark-circle" size={16} color={C.success} />
+                <Text style={s.worksOnText}>{p}</Text>
+              </View>
+            ))}
           </View>
-        ))}
+        </View>
+
+        <View style={{ gap: 10, marginTop: 22 }}>
+          {UNIVERSAL_PACKAGES.map((pkg) => (
+            <Pressable key={pkg.id} onPress={() => onBuy(pkg)} disabled={!!busy}
+              style={({ pressed }) => [s.pkg, pkg.best && { borderColor: C.blue }, pressed && { opacity: 0.9 }]}>
+              <View style={{ flex: 1 }}>
+                <View style={s.pkgTop}>
+                  <Text style={s.pkgLabel}>{pkg.label}</Text>
+                  {pkg.best ? <View style={[s.badge, { backgroundColor: C.blue }]}><Text style={s.badgeText}>POPULAR</Text></View> : null}
+                </View>
+                <Text style={s.pkgSub}>{pkg.scoring === -1 ? 'Unlimited AI scorings for 40 days' : `${pkg.scoring} AI scorings`}</Text>
+              </View>
+              {busy === pkg.id
+                ? <ActivityIndicator color={C.blue} />
+                : <Text style={[s.pkgPrice, { color: C.blue }]}>Rs {pkg.price.toLocaleString()}</Text>}
+            </Pressable>
+          ))}
+        </View>
+
+        <Text style={s.legacyNote}>Any part-specific credits you already own are used first, then your universal credits.</Text>
 
         <View style={s.secure}>
           <Ionicons name="shield-checkmark" size={15} color={C.success} />
@@ -134,6 +121,12 @@ const s = StyleSheet.create({
   balanceIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: C.amber, alignItems: 'center', justifyContent: 'center' },
   balanceLabel: { fontSize: 15, fontWeight: '800', color: C.navy },
   balanceSub: { fontSize: 12, color: C.slateLight, marginTop: 2, lineHeight: 16 },
+  worksOn: { backgroundColor: C.tintBlue, borderRadius: 16, padding: 16, marginTop: 14 },
+  worksOnTitle: { fontSize: 13, fontWeight: '800', color: C.blue, marginBottom: 10 },
+  worksOnList: { gap: 8 },
+  worksOnRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  worksOnText: { fontSize: 14, color: C.navy, fontWeight: '600' },
+  legacyNote: { fontSize: 12, color: C.slateLight, textAlign: 'center', lineHeight: 17, marginTop: 16 },
   groupHead: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
   groupIcon: { width: 34, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   groupTitle: { fontSize: 17, fontWeight: '800', color: C.navy },

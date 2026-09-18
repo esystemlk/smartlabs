@@ -1,7 +1,7 @@
 import { apiPost } from '@/api/client';
 
 /** Credit pools that map to a `/api/<pool>-credits/create-payment` endpoint. */
-export type CreditPool = 'sst' | 'swt' | 'speaking';
+export type CreditPool = 'sst' | 'swt' | 'speaking' | 'universal';
 
 export interface PayHereParams {
   merchant_id: string;
