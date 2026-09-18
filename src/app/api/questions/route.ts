@@ -55,7 +55,13 @@ function normalizeDoc(taskType: string, id: string, d: any): Record<string, unkn
   // (options, answers, paragraphs, blanks, …) — return it verbatim so the
   // app/site get the complete question, not just a prompt string.
   if (d?.data && typeof d.data === 'object') {
-    return { ...d.data, id };
+    // Return the full stored object, but also carry the top-level prediction
+    // flags (set by the admin uploader) so the app can filter predictions.
+    const out: Record<string, unknown> = { ...d.data, id };
+    if (d.group) out.group = d.group;
+    if (d.prediction) out.prediction = d.prediction;
+    if (d.imageUrl && out.imageUrl == null) out.imageUrl = d.imageUrl;
+    return out;
   }
   const q: Record<string, unknown> = {
     id,
