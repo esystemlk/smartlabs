@@ -36,6 +36,9 @@ export default function QuestionBankPage() {
   const contentLabel = isWfd
     ? 'Official Transcript (the exact sentence)'
     : isSst ? 'Lecture Transcript' : isSwt ? 'Source Passage' : 'Essay Topic / Prompt';
+  // Text types use the inline form; structured types open the full "all parts" editor.
+  const NATIVE_FORM = new Set(['write-essay', 'swt', 'summarize-spoken-text', 'write-from-dictation']);
+  const nativeForm = NATIVE_FORM.has(taskType);
 
   const load = async () => {
     setLoading(true);
@@ -135,7 +138,8 @@ export default function QuestionBankPage() {
           <ListChecks className="h-7 w-7 text-violet-600" /> PTE Question Bank
         </h1>
         <p className="text-sm text-muted-foreground font-medium mt-1">
-          Manage practice questions for each PTE part. Writing and Listening → Summarize Spoken Text are active — the rest unlock as we rebuild them.
+          Manage practice questions for every PTE part. Text types (Essay, SWT, SST, WFD) add inline
+          here; structured types open the full editor prefilled with the right fields.
         </p>
         <Link
           href="/admin/dashboard/question-bank/bulk"
@@ -144,8 +148,7 @@ export default function QuestionBankPage() {
           <Upload size={16} /> Add questions — all parts (single or bulk)
         </Link>
         <p className="mt-2 text-xs text-muted-foreground">
-          The tabs below cover Writing &amp; SST/WFD. To add questions for <strong>any</strong> other
-          part (Speaking, Reading, Listening interactive types), use “Add questions — all parts” above.
+          Every part below is now active. You can also add many at once from “Add questions — all parts”.
         </p>
       </div>
 
@@ -191,7 +194,25 @@ export default function QuestionBankPage() {
         })}
       </div>
 
-      {/* Add / Edit form */}
+      {/* Structured types → open the full editor prefilled for this type */}
+      {!nativeForm && (
+        <div className="rounded-2xl border-2 border-violet-200 bg-violet-50/40 p-5">
+          <h2 className="text-sm font-black uppercase tracking-wider text-violet-700">Add {currentTask?.label ?? ''} question</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            This part uses structured fields (options, answers, blanks…). Open the full editor —
+            it’s prefilled with the correct fields for <strong>{currentTask?.label}</strong>.
+          </p>
+          <Link
+            href={`/admin/dashboard/question-bank/bulk?type=${taskType}`}
+            className="mt-3 inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-sm font-black text-white hover:bg-violet-700"
+          >
+            <Plus size={15} /> Add {currentTask?.label} question →
+          </Link>
+        </div>
+      )}
+
+      {/* Add / Edit form (text types) */}
+      {nativeForm && (
       <div className="rounded-2xl border-2 border-violet-200 bg-violet-50/40 p-5">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-black uppercase tracking-wider text-violet-700">
@@ -270,6 +291,7 @@ export default function QuestionBankPage() {
           {editingId ? 'Update Question' : 'Add Question'}
         </button>
       </div>
+      )}
 
       {/* Questions list */}
       <div>

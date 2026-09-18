@@ -15,9 +15,10 @@ export interface PteSectionDef {
 }
 
 /**
- * The full PTE task tree for the admin question bank.
- * Only Writing's two sub-parts are enabled for now; the rest are placeholders
- * until those trainers are rebuilt.
+ * The full PTE task tree for the admin question bank. Every part is enabled:
+ * the writing/listening text types (Essay, SWT, SST, WFD) use the inline form,
+ * and the structured types (Speaking prompts, Reading & Listening interactive)
+ * open the "Add questions — all parts" editor with the correct fields.
  */
 export const PTE_TASK_TREE: PteSectionDef[] = [
   {
@@ -32,25 +33,27 @@ export const PTE_TASK_TREE: PteSectionDef[] = [
   {
     section: 'speaking',
     label: 'Speaking',
-    enabled: false,
+    enabled: true,
     tasks: [
-      { taskType: 'read-aloud', label: 'Read Aloud', enabled: false },
-      { taskType: 'repeat-sentence', label: 'Repeat Sentence', enabled: false },
-      { taskType: 'describe-image', label: 'Describe Image', enabled: false },
-      { taskType: 'retell-lecture', label: 'Re-tell Lecture', enabled: false },
-      { taskType: 'answer-short-question', label: 'Answer Short Question', enabled: false },
+      { taskType: 'read-aloud', label: 'Read Aloud', enabled: true },
+      { taskType: 'repeat-sentence', label: 'Repeat Sentence', enabled: true },
+      { taskType: 'describe-image', label: 'Describe Image', enabled: true },
+      { taskType: 'retell-lecture', label: 'Re-tell Lecture', enabled: true },
+      { taskType: 'answer-short-question', label: 'Answer Short Question', enabled: true },
+      { taskType: 'summarize-group-discussion', label: 'Summarize Group Discussion', enabled: true },
+      { taskType: 'respond-to-situation', label: 'Respond to a Situation', enabled: true },
     ],
   },
   {
     section: 'reading',
     label: 'Reading',
-    enabled: false,
+    enabled: true,
     tasks: [
-      { taskType: 'rw-fill-blanks', label: 'R&W Fill in the Blanks', enabled: false },
-      { taskType: 'mcq-multiple', label: 'MCQ Multiple Answer', enabled: false },
-      { taskType: 'reorder-paragraphs', label: 'Re-order Paragraphs', enabled: false },
-      { taskType: 'fill-blanks', label: 'Fill in the Blanks', enabled: false },
-      { taskType: 'mcq-single', label: 'MCQ Single Answer', enabled: false },
+      { taskType: 'rw-fill-blanks', label: 'R&W Fill in the Blanks', enabled: true },
+      { taskType: 'mcq-multiple', label: 'MCQ Multiple Answer', enabled: true },
+      { taskType: 'reorder-paragraphs', label: 'Re-order Paragraphs', enabled: true },
+      { taskType: 'fill-blanks', label: 'Fill in the Blanks', enabled: true },
+      { taskType: 'reading-mcq-single', label: 'MCQ Single Answer', enabled: true },
     ],
   },
   {
@@ -60,9 +63,12 @@ export const PTE_TASK_TREE: PteSectionDef[] = [
     tasks: [
       { taskType: 'summarize-spoken-text', label: 'Summarize Spoken Text', enabled: true },
       { taskType: 'write-from-dictation', label: 'Write from Dictation', enabled: true },
-      { taskType: 'mcq-multiple', label: 'MCQ Multiple Answer', enabled: false },
-      { taskType: 'fill-blanks', label: 'Fill in the Blanks', enabled: false },
-      { taskType: 'highlight-correct-summary', label: 'Highlight Correct Summary', enabled: false },
+      { taskType: 'listening-mcq-multiple', label: 'MCQ Multiple Answer', enabled: true },
+      { taskType: 'listening-fill-blanks', label: 'Fill in the Blanks', enabled: true },
+      { taskType: 'highlight-correct-summary', label: 'Highlight Correct Summary', enabled: true },
+      { taskType: 'listening-mcq-single', label: 'MCQ Single Answer', enabled: true },
+      { taskType: 'select-missing-word', label: 'Select Missing Word', enabled: true },
+      { taskType: 'highlight-incorrect-words', label: 'Highlight Incorrect Words', enabled: true },
     ],
   },
 ];

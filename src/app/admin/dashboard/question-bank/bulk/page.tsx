@@ -24,6 +24,14 @@ export default function BulkUploadPage() {
   const selected = useMemo(() => TASK_OPTIONS.find((t) => t.taskType === taskType)!, [taskType]);
   const isEssay = taskType === 'write-essay';
 
+  // Allow deep-linking a specific type: /…/bulk?type=<taskType>
+  useEffect(() => {
+    try {
+      const t = new URLSearchParams(window.location.search).get('type');
+      if (t && TASK_OPTIONS.some((o) => o.taskType === t)) setTaskType(t);
+    } catch { /* ignore */ }
+  }, []);
+
   // Prefill the single-question editor with one example item whenever the type changes.
   useEffect(() => {
     const one = (exampleForTask(taskType)[0] ?? {}) as Record<string, unknown>;
