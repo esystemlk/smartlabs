@@ -36,6 +36,19 @@ service firebase.storage {
                    && underMB(20);
     }
 
+    // Describe Image question images — public read (shown in the trainer),
+    // signed-in upload of an image up to 8 MB.
+    match /describe-image/{fileName} {
+      allow read: if true;
+      allow write: if isAuthed() && isImage() && underMB(8);
+    }
+
+    // General bucket for any PTE question images uploaded from the admin.
+    match /pte-images/{fileName} {
+      allow read: if true;
+      allow write: if isAuthed() && isImage() && underMB(8);
+    }
+
     // Identity documents for certificate requests — SENSITIVE.
     // Only the owner (path segment == their uid) may read or write their own docs.
     // Admins view submitted docs via the tokenized download URL saved in Firestore.
