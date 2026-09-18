@@ -199,14 +199,15 @@ export default function QuestionBankPage() {
         <div className="rounded-2xl border-2 border-violet-200 bg-violet-50/40 p-5">
           <h2 className="text-sm font-black uppercase tracking-wider text-violet-700">Add {currentTask?.label ?? ''} question</h2>
           <p className="mt-1 text-sm text-slate-600">
-            This part uses structured fields (options, answers, blanks…). Open the full editor —
-            it’s prefilled with the correct fields for <strong>{currentTask?.label}</strong>.
+            {taskType === 'describe-image'
+              ? 'Upload the image students describe, add key facts for the AI, and mark predictions — one or many at once.'
+              : <>This part uses structured fields (options, answers, blanks…). Open the full editor — it’s prefilled with the correct fields for <strong>{currentTask?.label}</strong>.</>}
           </p>
           <Link
-            href={`/admin/dashboard/question-bank/bulk?type=${taskType}`}
+            href={taskType === 'describe-image' ? '/admin/dashboard/question-bank/describe-image' : `/admin/dashboard/question-bank/bulk?type=${taskType}`}
             className="mt-3 inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-sm font-black text-white hover:bg-violet-700"
           >
-            <Plus size={15} /> Add {currentTask?.label} question →
+            <Plus size={15} /> {taskType === 'describe-image' ? 'Upload Describe Image questions' : `Add ${currentTask?.label} question`} →
           </Link>
         </div>
       )}

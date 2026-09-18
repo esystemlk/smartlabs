@@ -117,9 +117,13 @@ export async function bulkAddQuestions(
           content: promptOf(item),
           category: (item.category as string) ?? null,
           audioUrl: (item.audioUrl as string) ?? null,
+          imageUrl: (item.imageUrl as string) ?? null,
           data: item,
           active: true,
           source: 'bulk',
+          // Prediction flag (used by the predictions filter on any task type).
+          prediction: !!opts.isPrediction,
+          group: opts.isPrediction ? 'prediction' : null,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         };

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SvgXml } from 'react-native-svg';
@@ -45,6 +45,7 @@ export function SpeakingTrainer({ task, question, accent, onBack }: TrainerProps
   const promptText = String(question[meta.promptKey] ?? question.text ?? '');
   const title = typeof question.title === 'string' ? question.title : '';
   const svg = typeof question.svg === 'string' ? question.svg : '';
+  const imageUrl = typeof question.imageUrl === 'string' ? question.imageUrl : '';
   const audioUrl = typeof question.audioUrl === 'string' ? question.audioUrl : undefined;
 
   const recorderRef = useRef<SpeechRecorder | null>(null);
@@ -177,7 +178,10 @@ export function SpeakingTrainer({ task, question, accent, onBack }: TrainerProps
       <View style={[styles.promptCard, busy && { borderColor: accent, borderWidth: 2 }]}>
         <Text style={styles.instruction}>{meta.instruction}</Text>
         {meta.present === 'image' ? (
-          svg ? <View style={styles.imageWrap}><SvgXml xml={svg} width="100%" height={220} /></View> : <Text style={styles.promptText}>{promptText}</Text>
+          imageUrl
+            ? <View style={styles.imageWrap}><Image source={{ uri: imageUrl }} style={{ width: '100%', height: 220 }} resizeMode="contain" /></View>
+            : svg ? <View style={styles.imageWrap}><SvgXml xml={svg} width="100%" height={220} /></View>
+            : <Text style={styles.promptText}>{promptText}</Text>
         ) : meta.present === 'audio' ? (
           <View style={styles.audioNote}>
             <Ionicons name="volume-high" size={18} color={slate[500]} />
