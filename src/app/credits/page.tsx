@@ -10,13 +10,15 @@ import {
   Coins, Check, Crown, Loader2, ShieldCheck, ChevronLeft, Sparkles, AlertCircle,
 } from 'lucide-react';
 
-interface Pkg { id: string; label: string; price: number; scoring: number; best?: boolean }
+interface Pkg { id: string; label: string; price: number; priceUSD: number; scoring: number; best?: boolean }
 const UNIVERSAL_PACKAGES: Pkg[] = [
-  { id: 'universal_10', label: '10 AI Credits', price: 1500, scoring: 10 },
-  { id: 'universal_40', label: '40 AI Credits', price: 3500, scoring: 40, best: true },
-  { id: 'universal_100', label: '100 AI Credits', price: 6000, scoring: 100 },
-  { id: 'universal_unlimited', label: 'Unlimited · 40 days', price: 15000, scoring: -1 },
+  { id: 'universal_10', label: '10 AI Credits', price: 1500, priceUSD: 5, scoring: 10 },
+  { id: 'universal_40', label: '40 AI Credits', price: 3500, priceUSD: 12, scoring: 40, best: true },
+  { id: 'universal_100', label: '100 AI Credits', price: 6000, priceUSD: 20, scoring: 100 },
+  { id: 'universal_unlimited', label: 'Unlimited · 40 days', price: 15000, priceUSD: 50, scoring: -1 },
 ];
+type Currency = 'LKR' | 'USD';
+const fmtPrice = (pkg: Pkg, c: Currency) => c === 'USD' ? `$${pkg.priceUSD}` : `Rs ${pkg.price.toLocaleString()}`;
 const AI_PARTS = ['Write Essay', 'Summarize Written Text', 'Summarize Spoken Text', 'All Speaking tasks', 'IELTS Essay'];
 
 function CreditsInner() {
@@ -29,6 +31,7 @@ function CreditsInner() {
   const [balance, setBalance] = useState<{ paid: number; planActive: boolean; planExpiry: string | null } | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState('');
+  const [currency, setCurrency] = useState<Currency>('LKR');
 
   const [payhereParams, setPayhereParams] = useState<Record<string, string> | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -60,7 +63,7 @@ function CreditsInner() {
       const res = await fetch('/api/universal-credits/create-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ packageId: pkg.id }), // web → default (website) PayHere secret
+        body: JSON.stringify({ packageId: pkg.id, currency }), // web → default (website) PayHere secret
       });
       const data = await res.json();
       if (!res.ok || !data.params) { setErr(data.error || 'Could not start checkout. Please try again.'); return; }
@@ -90,7 +93,20 @@ function CreditsInner() {
           </div>
           <div>
             <h1 className="text-2xl font-black tracking-tight">AI Credits</h1>
-            <p className="text-sm text-slate-500">One credit = one AI scoring · works on every AI part · prices in LKR</p>
+            <p className="text-sm text-slate-500">One credit = one AI scoring · works on every AI part</p>
+          </div>
+        </div>
+
+        {/* Currency toggle */}
+        <div className="mt-5 flex items-center gap-2">
+          <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Pay in</span>
+          <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+            {(['LKR', 'USD'] as Currency[]).map((c) => (
+              <button key={c} onClick={() => setCurrency(c)}
+                className={`rounded-lg px-4 py-1.5 text-sm font-black transition-colors ${currency === c ? 'bg-orange-500 text-white' : 'text-slate-500 hover:text-slate-800'}`}>
+                {c}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -159,7 +175,7 @@ function CreditsInner() {
               </div>
               {busy === pkg.id
                 ? <Loader2 size={20} className="animate-spin text-orange-500" />
-                : <span className="text-lg font-black text-orange-600">Rs {pkg.price.toLocaleString()}</span>}
+                : <span className="text-lg font-black text-orange-600">{fmtPrice(pkg, currency)}</span>}
             </button>
           ))}
         </div>

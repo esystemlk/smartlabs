@@ -9,16 +9,18 @@ import { useAppLayout } from '@/ui/layout';
 import { PAYHERE_SANDBOX } from '@/config';
 import { C } from '@/theme';
 
-interface Pkg { id: string; label: string; price: number; scoring: number; best?: boolean }
+interface Pkg { id: string; label: string; price: number; priceUSD: number; scoring: number; best?: boolean }
+type Currency = 'LKR' | 'USD';
 
 // One universal pool — these credits work on EVERY AI-scored part (Essay, SWT,
 // SST, all Speaking tasks, IELTS essay). One credit = one AI scoring.
 const UNIVERSAL_PACKAGES: Pkg[] = [
-  { id: 'universal_10', label: '10 AI Credits', price: 1500, scoring: 10 },
-  { id: 'universal_40', label: '40 AI Credits', price: 3500, scoring: 40, best: true },
-  { id: 'universal_100', label: '100 AI Credits', price: 6000, scoring: 100 },
-  { id: 'universal_unlimited', label: 'Unlimited · 40 days', price: 15000, scoring: -1 },
+  { id: 'universal_10', label: '10 AI Credits', price: 1500, priceUSD: 5, scoring: 10 },
+  { id: 'universal_40', label: '40 AI Credits', price: 3500, priceUSD: 12, scoring: 40, best: true },
+  { id: 'universal_100', label: '100 AI Credits', price: 6000, priceUSD: 20, scoring: 100 },
+  { id: 'universal_unlimited', label: 'Unlimited · 40 days', price: 15000, priceUSD: 50, scoring: -1 },
 ];
+const fmtPrice = (pkg: Pkg, c: Currency) => (c === 'USD' ? `$${pkg.priceUSD}` : `Rs ${pkg.price.toLocaleString()}`);
 
 const AI_PARTS = ['Write Essay', 'Summarize Written Text', 'Summarize Spoken Text', 'All Speaking tasks', 'IELTS Essay'];
 
@@ -27,11 +29,12 @@ export default function Credits() {
   const router = useRouter();
   const { reason } = useLocalSearchParams<{ reason?: string }>();
   const [busy, setBusy] = useState<string | null>(null);
+  const [currency, setCurrency] = useState<Currency>('LKR');
 
   const onBuy = async (pkg: Pkg) => {
     setBusy(pkg.id);
     try {
-      const res = await buyCredits('universal', pkg.id, { sandbox: PAYHERE_SANDBOX });
+      const res = await buyCredits('universal', pkg.id, { sandbox: PAYHERE_SANDBOX, currency });
       if (res.status === 'completed') {
         Alert.alert('Payment complete', 'Your credits will appear here as soon as the payment is confirmed.', [
           { text: 'Great', onPress: () => router.back() },
@@ -65,7 +68,7 @@ export default function Credits() {
           <View style={s.balanceIcon}><Ionicons name="flash" size={20} color="#fff" /></View>
           <View style={{ flex: 1 }}>
             <Text style={s.balanceLabel}>Universal AI credits</Text>
-            <Text style={s.balanceSub}>One credit = one AI scoring · shared with your smartlabs.lk account · prices in LKR</Text>
+            <Text style={s.balanceSub}>One credit = one AI scoring · shared with your smartlabs.lk account</Text>
           </View>
         </View>
 
@@ -82,7 +85,19 @@ export default function Credits() {
           </View>
         </View>
 
-        <View style={{ gap: 10, marginTop: 22 }}>
+        {/* Currency toggle */}
+        <View style={s.currencyRow}>
+          <Text style={s.currencyLabel}>PAY IN</Text>
+          <View style={s.currencyToggle}>
+            {(['LKR', 'USD'] as Currency[]).map((c) => (
+              <Pressable key={c} onPress={() => setCurrency(c)} style={[s.currencyBtn, currency === c && s.currencyBtnActive]}>
+                <Text style={[s.currencyBtnText, currency === c && s.currencyBtnTextActive]}>{c}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        <View style={{ gap: 10, marginTop: 12 }}>
           {UNIVERSAL_PACKAGES.map((pkg) => (
             <Pressable key={pkg.id} onPress={() => onBuy(pkg)} disabled={!!busy}
               style={({ pressed }) => [s.pkg, pkg.best && { borderColor: C.blue }, pressed && { opacity: 0.9 }]}>
@@ -95,7 +110,7 @@ export default function Credits() {
               </View>
               {busy === pkg.id
                 ? <ActivityIndicator color={C.blue} />
-                : <Text style={[s.pkgPrice, { color: C.blue }]}>Rs {pkg.price.toLocaleString()}</Text>}
+                : <Text style={[s.pkgPrice, { color: C.blue }]}>{fmtPrice(pkg, currency)}</Text>}
             </Pressable>
           ))}
         </View>
@@ -137,6 +152,13 @@ const s = StyleSheet.create({
   badgeText: { color: '#fff', fontSize: 9, fontWeight: '900', letterSpacing: 0.5 },
   pkgSub: { fontSize: 13, color: C.slateLight, marginTop: 3 },
   pkgPrice: { fontSize: 17, fontWeight: '800' },
+  currencyRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 20 },
+  currencyLabel: { fontSize: 11, fontWeight: '800', letterSpacing: 1, color: C.slateLight },
+  currencyToggle: { flexDirection: 'row', backgroundColor: '#EEF1F8', borderRadius: 12, padding: 3 },
+  currencyBtn: { paddingHorizontal: 18, paddingVertical: 7, borderRadius: 9 },
+  currencyBtnActive: { backgroundColor: C.blue },
+  currencyBtnText: { fontSize: 13, fontWeight: '800', color: C.slate },
+  currencyBtnTextActive: { color: '#fff' },
   secure: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, marginTop: 24 },
   secureText: { fontSize: 12, color: C.slateLight },
 });

@@ -45,9 +45,9 @@ function toSdkPayment(p: PayHereParams, sandbox: boolean) {
 export async function buyCredits(
   pool: CreditPool,
   packageId: string,
-  opts: { sandbox?: boolean } = {},
+  opts: { sandbox?: boolean; currency?: 'LKR' | 'USD' } = {},
 ): Promise<PayResult> {
-  const { params } = await createCreditPayment(pool, packageId);
+  const { params } = await createCreditPayment(pool, packageId, opts.currency ?? 'LKR');
   const PayHere = loadSdk();
   if (!PayHere) {
     return {

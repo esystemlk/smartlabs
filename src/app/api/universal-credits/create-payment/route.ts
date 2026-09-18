@@ -12,10 +12,10 @@ const md5 = (data: string) => createHash('md5').update(data).digest('hex').toUpp
  * `universalPaidCredits` (or a 40-day `universalMonthlyExpiry` for Unlimited).
  */
 const UNIVERSAL_PACKAGES = [
-  { id: 'universal_10',        scoring: 10,  price: 1500,  label: '10 AI Credits' },
-  { id: 'universal_40',        scoring: 40,  price: 3500,  label: '40 AI Credits' },
-  { id: 'universal_100',       scoring: 100, price: 6000,  label: '100 AI Credits' },
-  { id: 'universal_unlimited', scoring: -1,  price: 15000, label: 'Unlimited (40 days)' },
+  { id: 'universal_10',        scoring: 10,  price: 1500,  priceUSD: 5,  label: '10 AI Credits' },
+  { id: 'universal_40',        scoring: 40,  price: 3500,  priceUSD: 12, label: '40 AI Credits' },
+  { id: 'universal_100',       scoring: 100, price: 6000,  priceUSD: 20, label: '100 AI Credits' },
+  { id: 'universal_unlimited', scoring: -1,  price: 15000, priceUSD: 50, label: 'Unlimited (40 days)' },
 ] as const;
 
 export async function POST(request: NextRequest) {
@@ -30,9 +30,12 @@ export async function POST(request: NextRequest) {
     const decoded = await adminAuth.verifyIdToken(authHeader.slice(7));
     const uid = decoded.uid;
 
-    const { packageId, client } = await request.json();
+    const { packageId, client, currency: reqCurrency } = await request.json();
     const pkg = UNIVERSAL_PACKAGES.find(p => p.id === packageId);
     if (!pkg) return NextResponse.json({ error: 'Invalid package' }, { status: 400 });
+    // Customer-chosen currency (needs USD enabled on the PayHere Business App).
+    const currency = reqCurrency === 'USD' ? 'USD' : 'LKR';
+    const priceValue = currency === 'USD' ? pkg.priceUSD : pkg.price;
 
     const { merchantId, merchantSecret } = payhereCreds(client);
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
@@ -49,8 +52,7 @@ export async function POST(request: NextRequest) {
     const lastName  = nameParts.slice(1).join(' ') || '-';
 
     const orderId = `uni_${uid.slice(0, 8)}_${Date.now()}`;
-    const amount  = pkg.price.toFixed(2);
-    const currency = 'LKR';
+    const amount  = priceValue.toFixed(2);
     const hash = md5(`${merchantId}${orderId}${amount}${currency}${md5(merchantSecret)}`);
 
     await adminDb.collection('payment_orders').add({
@@ -59,7 +61,8 @@ export async function POST(request: NextRequest) {
       type: 'universal_credits',
       packageId: pkg.id,
       scoringCredits: pkg.scoring,
-      paymentAmount: pkg.price,
+      paymentAmount: priceValue,
+      currency,
       paymentStatus: 'pending',
       createdAt: new Date(),
     });

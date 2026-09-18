@@ -28,11 +28,11 @@ export interface PayHereParams {
  * (`PayHere.startPayment(params, onComplete, onError, onDismiss)`). The matching
  * `/api/payhere/<pool>-notify` webhook credits the shared account on success.
  */
-export function createCreditPayment(pool: CreditPool, packageId: string) {
+export function createCreditPayment(pool: CreditPool, packageId: string, currency: 'LKR' | 'USD' = 'LKR') {
   return apiPost<{ success: boolean; params: PayHereParams; orderId: string }>(
     `/api/${pool}-credits/create-payment`,
     // `client: 'app'` tells the server to sign with the app's PayHere secret
     // (the mobile app is a separate approved app entry in PayHere).
-    { packageId, client: 'app' },
+    { packageId, client: 'app', currency },
   );
 }
