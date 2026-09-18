@@ -141,8 +141,12 @@ export default function QuestionBankPage() {
           href="/admin/dashboard/question-bank/bulk"
           className="mt-3 inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-sm font-black text-white hover:bg-violet-700"
         >
-          <Upload size={16} /> Bulk upload
+          <Upload size={16} /> Add questions — all parts (single or bulk)
         </Link>
+        <p className="mt-2 text-xs text-muted-foreground">
+          The tabs below cover Writing &amp; SST/WFD. To add questions for <strong>any</strong> other
+          part (Speaking, Reading, Listening interactive types), use “Add questions — all parts” above.
+        </p>
       </div>
 
       {/* Section tabs */}
