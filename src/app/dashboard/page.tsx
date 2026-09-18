@@ -40,7 +40,7 @@ import {
 const pteSections = [
   {
     id: 'speaking',
-    disabled: true,
+    disabled: false,
     title: 'Speaking',
     icon: Microphone,
     description: 'Pronunciation, fluency & oral communication',
@@ -52,13 +52,15 @@ const pteSections = [
     iconBg: 'bg-blue-500/10',
     badgeClass: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
     tasks: [
-      { title: 'Read Aloud', href: '/dashboard/practice-tests/pte-speaking-read-aloud', ai: true, hot: true },
-      { title: 'Repeat Sentence', href: '/dashboard/practice-tests/pte-speaking-repeat-sentence', ai: true, hot: true },
-      { title: 'Describe Image', href: '/dashboard/practice-tests/pte-speaking-describe-image', ai: true, hot: false },
-      { title: 'Re-tell Lecture', href: '/dashboard/practice-tests/pte-speaking-retell-lecture', ai: true, hot: false },
-      { title: 'Answer Short Question', href: '/dashboard/practice-tests/pte-speaking-answer-short-question', ai: true, hot: false },
+      { title: 'Read Aloud', href: '/dashboard/practice/read-aloud', ai: true, hot: true },
+      { title: 'Repeat Sentence', href: '/dashboard/practice/repeat-sentence', ai: true, hot: true },
+      { title: 'Describe Image', href: '/dashboard/practice/describe-image', ai: true, hot: false },
+      { title: 'Re-tell Lecture', href: '/dashboard/practice/retell-lecture', ai: true, hot: false },
+      { title: 'Answer Short Question', href: '/dashboard/practice/answer-short-question', ai: true, hot: false },
+      { title: 'Summarize Group Discussion', href: '/dashboard/practice/summarize-group-discussion', ai: true, hot: false },
+      { title: 'Respond to a Situation', href: '/dashboard/practice/respond-to-situation', ai: true, hot: false },
     ],
-    sectionHref: '/dashboard/ai-score-test/speaking',
+    sectionHref: '/dashboard/practice/read-aloud',
   },
   {
     id: 'writing',
@@ -103,7 +105,7 @@ const pteSections = [
   },
   {
     id: 'listening',
-    disabled: true,
+    disabled: false,
     title: 'Listening',
     icon: Headphones,
     description: 'Audio comprehension & dictation accuracy',
@@ -117,14 +119,14 @@ const pteSections = [
     tasks: [
       { title: 'Write from Dictation', href: '/ai-wfd-practice', ai: true, hot: true, featured: true, enabled: true },
       { title: 'Summarize Spoken Text', href: '/ai-sst-practice', ai: true, hot: true, featured: true, enabled: true },
-      { title: 'MCQ Multiple Answer', href: '/dashboard/practice-tests/pte-listening-multiple-choice-multiple-answer', ai: false, hot: false },
-      { title: 'Fill in the Blanks', href: '/dashboard/practice-tests/pte-listening-fill-in-blanks', ai: false, hot: false },
-      { title: 'Highlight Correct Summary', href: '/dashboard/practice-tests/pte-listening-highlight-correct-summary', ai: false, hot: false },
-      { title: 'MCQ Single Answer', href: '/dashboard/practice-tests/pte-listening-multiple-choice-single-answer', ai: false, hot: false },
-      { title: 'Select Missing Word', href: '/dashboard/practice-tests/pte-listening-select-missing-word', ai: false, hot: false },
-      { title: 'Highlight Incorrect Words', href: '/dashboard/practice-tests/pte-listening-highlight-incorrect-words', ai: false, hot: false },
+      { title: 'MCQ Multiple Answer', href: '/dashboard/practice/listening-mcq-multiple', ai: false, hot: false },
+      { title: 'Fill in the Blanks', href: '/dashboard/practice/listening-fill-in-the-blanks', ai: false, hot: false },
+      { title: 'Highlight Correct Summary', href: '/dashboard/practice/highlight-correct-summary', ai: false, hot: false },
+      { title: 'MCQ Single Answer', href: '/dashboard/practice/listening-mcq-single', ai: false, hot: false },
+      { title: 'Select Missing Word', href: '/dashboard/practice/select-missing-word', ai: false, hot: false },
+      { title: 'Highlight Incorrect Words', href: '/dashboard/practice/highlight-incorrect-words', ai: false, hot: false },
     ],
-    sectionHref: '/dashboard/ai-score-test/listening',
+    sectionHref: '/ai-sst-practice',
   },
 ];
 
