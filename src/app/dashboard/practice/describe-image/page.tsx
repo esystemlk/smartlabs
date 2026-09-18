@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { SpeakingTrainer } from '@/components/pte/speaking-trainer';
 import { pteDescribeImageData } from '@/lib/pte-speaking-describe-image-data';
 import { getTaskByType } from '@/lib/pte-catalog';
@@ -48,12 +48,27 @@ export default function DescribeImagePage() {
         renderPrompt={(q) => (
           <div className="flex flex-col items-center gap-2">
             <p className="text-sm font-semibold">{q.title}</p>
-            {q.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={q.imageUrl} alt={q.title} className="w-full max-w-md rounded-xl border bg-white p-3" />
-            ) : (
-              <div className="w-full max-w-md rounded-xl border bg-white p-3" dangerouslySetInnerHTML={{ __html: q.svg ?? '' }} />
-            )}
+            {/* Protected image: block right-click, drag, long-press-save and selection. */}
+            <div
+              className="relative w-full max-w-md select-none"
+              onContextMenu={(e) => e.preventDefault()}
+              onDragStart={(e) => e.preventDefault()}
+              style={{ WebkitTouchCallout: 'none', userSelect: 'none', WebkitUserSelect: 'none' } as CSSProperties}
+            >
+              {q.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={q.imageUrl}
+                  alt={q.title}
+                  draggable={false}
+                  className="pointer-events-none w-full rounded-xl border bg-white p-3 select-none"
+                />
+              ) : (
+                <div className="pointer-events-none w-full rounded-xl border bg-white p-3" dangerouslySetInnerHTML={{ __html: q.svg ?? '' }} />
+              )}
+              {/* Transparent overlay absorbs long-press / right-click / drag gestures. */}
+              <span aria-hidden="true" className="absolute inset-0 z-10 block" />
+            </div>
           </div>
         )}
         searchText={(q) => q.title}
