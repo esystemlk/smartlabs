@@ -254,7 +254,7 @@ export function ReadingTrainer(p: Props) {
         </div>
 
         {/* Question navigator */}
-        <div className="rounded-2xl border bg-card shadow-sm">
+        <div className="min-w-0 rounded-2xl border bg-card shadow-sm">
           <div className="border-b p-3">
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
