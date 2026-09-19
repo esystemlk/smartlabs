@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { CreditsPill } from '@/components/pte/credits-pill';
 import Link from 'next/link';
 import { useUser } from '@/firebase';
 import { IeltsEssayResultView } from '@/components/ielts-essay/IeltsEssayResult';
@@ -171,9 +172,10 @@ export default function IeltsEssayPractice() {
           Instant band scoring on all four official criteria — Task Response, Coherence &amp; Cohesion,
           Lexical Resource, and Grammatical Range &amp; Accuracy.
         </p>
-        <div className="mb-8">
+        <div className="mb-8 flex items-center gap-2">
+          {user && <CreditsPill pool="ielts" />}
           <button
-            onClick={() => setShowBuy(true)}
+            onClick={() => router.push('/credits')}
             className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border border-red-200 text-red-600 hover:bg-red-50"
           >
             <CreditCard size={13} /> Buy credits
@@ -306,7 +308,7 @@ export default function IeltsEssayPractice() {
               </p>
             )}
             {needCredits && (
-              <button onClick={() => setShowBuy(true)} className="inline-flex items-center gap-1.5 text-sm font-bold underline" style={{ color: CRIMSON }}>
+              <button onClick={() => router.push('/credits')} className="inline-flex items-center gap-1.5 text-sm font-bold underline" style={{ color: CRIMSON }}>
                 <CreditCard size={15} /> Buy IELTS essay credits →
               </button>
             )}

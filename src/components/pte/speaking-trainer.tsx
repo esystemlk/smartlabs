@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { CreditsPill } from '@/components/pte/credits-pill';
 import { scorePteSpeaking, type SpeakingScore } from '@/ai/flows/score-pte-speaking';
 import {
   Mic, Square, Loader2, RotateCcw, Play, Search, ChevronLeft, ChevronRight,
@@ -162,7 +163,10 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
           <h1 className={`text-2xl md:text-3xl font-black tracking-tight ${t.text}`}>{p.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{p.subtitle}</p>
         </div>
-        <span className={`hidden sm:inline-flex items-center gap-1 rounded-full ${t.soft} ${t.text} px-3 py-1 text-xs font-bold`}><Sparkles className="h-3 w-3" /> AI Score · {p.weight}</span>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <CreditsPill pool="speaking" />
+          <span className={`hidden sm:inline-flex items-center gap-1 rounded-full ${t.soft} ${t.text} px-3 py-1 text-xs font-bold`}><Sparkles className="h-3 w-3" /> AI Score · {p.weight}</span>
+        </div>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[1fr_300px]">

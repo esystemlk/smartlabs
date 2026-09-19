@@ -3,6 +3,7 @@
 import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { CreditsPill } from '@/components/pte/credits-pill';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { payhereUrls } from '@/lib/payhere';
@@ -123,7 +124,7 @@ function SWTInner() {
         body: JSON.stringify({ passage: selected.content, summary }),
       });
       const data = await res.json();
-      if (res.status === 402 || data.code === 'NO_CREDITS') { setShowPurchase(true); return; }
+      if (res.status === 402 || data.code === 'NO_CREDITS') { window.location.assign('/credits'); return; }
       if (!res.ok) throw new Error(data.error || 'Scoring failed.');
       setResult(data as SWTResult);
       refreshCredits();
@@ -185,9 +186,10 @@ function SWTInner() {
             <ArrowLeft size={16} /> Dashboard
           </Link>
           <div className="flex items-center gap-3">
-            {/* Credits chip */}
-            {user && credit && (
-              <button onClick={() => setShowPurchase(true)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-50 border border-violet-200 text-violet-700 text-xs font-black">
+            {/* Credits chip → top up (pool + universal) */}
+            {user && <CreditsPill pool="swt" />}
+            {false && credit && (
+              <button onClick={() => window.location.assign('/credits')} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-50 border border-violet-200 text-violet-700 text-xs font-black">
                 {unlimited ? <><InfinityIcon size={13} /> Unlimited</> : <>{remaining} left</>}
                 <CreditCard size={13} />
               </button>

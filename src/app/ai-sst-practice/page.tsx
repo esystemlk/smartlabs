@@ -3,6 +3,7 @@
 import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { CreditsPill } from '@/components/pte/credits-pill';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { payhereUrls } from '@/lib/payhere';
@@ -189,7 +190,7 @@ function SSTInner() {
         body: JSON.stringify({ transcript: selected.content, summary }),
       });
       const data = await res.json();
-      if (res.status === 402 || data.code === 'NO_CREDITS') { setShowPurchase(true); return; }
+      if (res.status === 402 || data.code === 'NO_CREDITS') { window.location.assign('/credits'); return; }
       if (!res.ok) throw new Error(data.error || 'Scoring failed.');
       setResult(data as SSTResult);
       setTimerRunning(false);
@@ -279,8 +280,9 @@ function SSTInner() {
             <span className="flex items-center gap-1.5 text-emerald-600"><Headphones size={15} /> SST AI</span>
           </div>
           <div className="flex items-center gap-2">
-            {user && credit && (
-              <button onClick={() => setShowPurchase(true)} className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-black">
+            {user && <CreditsPill pool="sst" className="hidden sm:inline-flex" />}
+            {false && credit && (
+              <button onClick={() => window.location.assign('/credits')} className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-black">
                 {unlimited ? <><InfinityIcon size={13} /> Unlimited</> : <>{creditsRemaining} Scoring</>}
                 <CreditCard size={13} />
               </button>
@@ -359,7 +361,7 @@ function SSTInner() {
 
             {user && !unlimited && (
               <div className="shrink-0">
-                <button onClick={() => setShowPurchase(true)} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm px-5 py-3 rounded-xl shadow-lg transition-all hover:scale-[1.02]">
+                <button onClick={() => window.location.assign('/credits')} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm px-5 py-3 rounded-xl shadow-lg transition-all hover:scale-[1.02]">
                   <CreditCard size={16} /> <span>Buy Credits</span>
                 </button>
               </div>

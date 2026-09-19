@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { CreditsPill } from '@/components/pte/credits-pill';
 import { payhereUrls } from '@/lib/payhere';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -286,7 +287,7 @@ function AIEssayPracticeInner() {
 
         {/* CTA */}
         <button
-          onClick={() => handlePurchase(pkg.id)}
+          onClick={() => router.push('/credits')}
           disabled={!!purchasingPkg}
           className={`w-full mt-auto py-3 px-4 rounded-2xl font-extrabold text-sm text-white transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${c.btn}`}
         >
@@ -478,7 +479,7 @@ function AIEssayPracticeInner() {
 
     // Gate: must have credits
     if (hasCredits === false) {
-      setShowPurchaseModal(true);
+      router.push('/credits');
       return;
     }
 
@@ -519,7 +520,7 @@ function AIEssayPracticeInner() {
 
     // Client-side credit guard
     if (hasCredits === false) {
-      setShowPurchaseModal(true);
+      router.push('/credits');
       return;
     }
 
@@ -559,7 +560,7 @@ function AIEssayPracticeInner() {
           return;
         }
         if (errorData.code === 'NO_CREDITS') {
-          setShowPurchaseModal(true);
+          router.push('/credits');
           setIsTimerRunning(true);
           return;
         }
@@ -850,10 +851,13 @@ function AIEssayPracticeInner() {
               </Link>
             )}
 
+            {/* Remaining credits (click to top up) */}
+            {user && <CreditsPill pool="essay" className="hidden sm:inline-flex" />}
+
             {/* Buy Credits button */}
             {user && creditsRemaining !== -1 && (
               <button
-                onClick={() => setShowPurchaseModal(true)}
+                onClick={() => router.push('/credits')}
                 className="hidden sm:flex items-center gap-1.5 bg-[#f97316] hover:bg-[#fb923c] text-white font-extrabold text-xs px-4 py-2 rounded-lg transition-all"
               >
                 <CreditCard size={14} weight="bold" /> Buy Credits
@@ -942,7 +946,7 @@ function AIEssayPracticeInner() {
             <div className="px-4 py-4 border-t border-slate-200 space-y-2">
               {user ? (
                 <button
-                  onClick={() => { setMobileNavOpen(false); setShowPurchaseModal(true); }}
+                  onClick={() => { setMobileNavOpen(false); router.push('/credits'); }}
                   className="w-full bg-[#f97316] hover:bg-[#fb923c] text-white font-extrabold text-sm px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2"
                 >
                   <CreditCard size={16} weight="bold" /> Buy Essay Credits
@@ -1103,7 +1107,7 @@ function AIEssayPracticeInner() {
             {user && !isUnlimitedRole && !creditInfo?.hasMonthly && (
               <div className="shrink-0">
                 <button
-                  onClick={() => setShowPurchaseModal(true)}
+                  onClick={() => router.push('/credits')}
                   className="flex items-center gap-2 bg-[#f97316] hover:bg-[#fb923c] text-white font-extrabold text-sm px-5 py-3 rounded-xl shadow-lg transition-all hover:scale-[1.02]"
                 >
                   <CreditCard size={16} weight="bold" />
@@ -1499,7 +1503,7 @@ function AIEssayPracticeInner() {
                     {creditsRemaining === -1
                       ? <span className="flex items-center gap-1 text-xs font-black text-violet-700"><InfinityIcon size={12} weight="bold" /> Unlimited</span>
                       : creditsRemaining === 0
-                        ? <button onClick={() => setShowPurchaseModal(true)} className="text-xs font-black text-red-600 hover:underline">Buy credits</button>
+                        ? <button onClick={() => router.push('/credits')} className="text-xs font-black text-red-600 hover:underline">Buy credits</button>
                         : <span className="text-sm font-black text-slate-800">{creditsRemaining} left</span>
                     }
                   </div>
@@ -1519,7 +1523,7 @@ function AIEssayPracticeInner() {
                       ? <span className="flex items-center gap-1 text-xs font-black text-violet-700"><InfinityIcon size={12} weight="bold" /> Unlimited</span>
                       : (genCreditsRemaining ?? 0) > 0
                         ? <span className="text-sm font-black text-slate-800">{genCreditsRemaining} left</span>
-                        : <button onClick={() => setShowPurchaseModal(true)} className="text-xs font-black text-slate-500 hover:text-[#f97316] hover:underline transition-colors">Buy package</button>
+                        : <button onClick={() => router.push('/credits')} className="text-xs font-black text-slate-500 hover:text-[#f97316] hover:underline transition-colors">Buy package</button>
                     }
                   </div>
                 </div>
@@ -1540,7 +1544,7 @@ function AIEssayPracticeInner() {
                       checked={requestModelEssay}
                       onChange={(e) => {
                         if (!isUnlimitedRole && (genCreditsRemaining ?? 0) === 0 && creditInfo) {
-                          setShowPurchaseModal(true);
+                          router.push('/credits');
                           return;
                         }
                         setRequestModelEssay(e.target.checked);
@@ -2556,7 +2560,7 @@ function AIEssayPracticeInner() {
                       </div>
                     </div>
                     <button
-                      onClick={() => handlePurchase(pkg.id)}
+                      onClick={() => router.push('/credits')}
                       disabled={!!purchasingPkg}
                       className={`w-full mt-1 py-2 px-3 rounded-xl font-extrabold text-xs text-white transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5 ${pkg.popular ? 'bg-[#f97316] hover:bg-[#fb923c]'
                           : isUnlimited ? 'bg-violet-600 hover:bg-violet-500'
@@ -2613,7 +2617,7 @@ function AIEssayPracticeInner() {
                 Contact Support
               </a>
               <button
-                onClick={() => { setIsBlocked(false); setShowPurchaseModal(true); }}
+                onClick={() => { setIsBlocked(false); router.push('/credits'); }}
                 className="flex-1 bg-[#f97316] hover:bg-[#fb923c] text-white font-extrabold px-6 py-3 rounded-xl text-sm transition-all hover:scale-[1.02]"
               >
                 Purchase Credits
