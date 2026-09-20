@@ -99,6 +99,8 @@ interface CreditInfo {
   hasMonthly: boolean;
   genCredits: number;
   role: string;
+  universalPaid: number;
+  universalMonthly: boolean;
 }
 
 function AIEssayPracticeInner() {
@@ -162,8 +164,10 @@ function AIEssayPracticeInner() {
 
   const creditsRemaining = useMemo<number | null>(() => {
     if (!creditInfo) return null;
-    if (isUnlimitedRole || creditInfo.hasMonthly) return -1; // -1 = unlimited
-    if (creditInfo.paidCredits > 0) return creditInfo.paidCredits;
+    if (isUnlimitedRole || creditInfo.hasMonthly || creditInfo.universalMonthly) return -1; // -1 = unlimited
+    // Usable = essay paid credits + shared universal credits.
+    const paid = creditInfo.paidCredits + creditInfo.universalPaid;
+    if (paid > 0) return paid;
     // Free scoring is no longer offered to new accounts — only users who already
     // started their free tier (freeUsed >= 1) keep the remaining free scorings.
     const freeLimit = creditInfo.freeUsed >= 1 ? 2 : 0;
@@ -393,12 +397,15 @@ function AIEssayPracticeInner() {
         if (cancelled) return;
         const data = snap.data() ?? {};
         const monthlyExpiry = (data.essayMonthlyExpiry as { toDate?: () => Date } | undefined)?.toDate?.() ?? null;
+        const uniExpiry = (data.universalMonthlyExpiry as { toDate?: () => Date } | undefined)?.toDate?.() ?? null;
         setCreditInfo({
           freeUsed: (data.essayFreeUsed as number) ?? 0,
           paidCredits: (data.essayPaidCredits as number) ?? 0,
           hasMonthly: !!(monthlyExpiry && monthlyExpiry > new Date()),
           genCredits: (data.essayGenCredits as number) ?? 0,
           role: (data.role as string) ?? 'student',
+          universalPaid: (data.universalPaidCredits as number) ?? 0,
+          universalMonthly: !!(uniExpiry && uniExpiry > new Date()),
         });
       } catch { /* silent — server-side check is authoritative */ }
       finally { if (!cancelled) setCreditLoading(false); }
@@ -603,12 +610,15 @@ function AIEssayPracticeInner() {
         const snap = await getDoc(doc(firestore, 'users', user.uid));
         const data = snap.data() ?? {};
         const monthlyExpiry = (data.essayMonthlyExpiry as { toDate?: () => Date } | undefined)?.toDate?.() ?? null;
+        const uniExpiry = (data.universalMonthlyExpiry as { toDate?: () => Date } | undefined)?.toDate?.() ?? null;
         setCreditInfo({
           freeUsed: (data.essayFreeUsed as number) ?? 0,
           paidCredits: (data.essayPaidCredits as number) ?? 0,
           hasMonthly: !!(monthlyExpiry && monthlyExpiry > new Date()),
           genCredits: (data.essayGenCredits as number) ?? 0,
           role: (data.role as string) ?? 'student',
+          universalPaid: (data.universalPaidCredits as number) ?? 0,
+          universalMonthly: !!(uniExpiry && uniExpiry > new Date()),
         });
       }
 
@@ -1233,51 +1243,26 @@ function AIEssayPracticeInner() {
 
       {/* ── PACKAGES SECTION ──────────────────────────────────────────────── */}
       <section id="packages" className="py-20 bg-slate-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <div className="inline-flex items-center gap-2 text-[#f97316] font-bold text-xs uppercase tracking-[0.2em] mb-4 bg-orange-900/30 px-4 py-1.5 rounded-full border border-orange-800">
-              <CreditCard size={14} weight="duotone" />
-              Credit Packages
-            </div>
-            <h2 className="font-display-serif text-3xl md:text-4xl font-black text-white mb-3">
-              Choose Your Practice Plan
-            </h2>
-            <p className="text-slate-400 text-sm font-medium max-w-2xl mx-auto">
-              All payments are secure via PayHere. Credits are added to your account instantly after payment confirmation.
-            </p>
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
+          <div className="inline-flex items-center gap-2 text-[#f97316] font-bold text-xs uppercase tracking-[0.2em] mb-4 bg-orange-900/30 px-4 py-1.5 rounded-full border border-orange-800">
+            <CreditCard size={14} weight="duotone" />
+            AI Credits
           </div>
-
-          {/* Package grid — main packages */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
-            {ESSAY_PACKAGES.filter(pkg => MAIN_PACKAGE_IDS.includes(pkg.id)).map(renderPackageCard)}
-          </div>
-
-          {/* More options toggle */}
-          {ESSAY_PACKAGES.some(pkg => MORE_PACKAGE_IDS.includes(pkg.id)) && (
-            <div className="text-center mb-6">
-              <button
-                onClick={() => setShowMorePackages(v => !v)}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-black uppercase tracking-widest transition-all"
-              >
-                {showMorePackages ? 'Hide options' : 'More options'}
-                <CaretDown
-                  size={14}
-                  weight="bold"
-                  className={`transition-transform duration-300 ${showMorePackages ? 'rotate-180' : ''}`}
-                />
-              </button>
-            </div>
-          )}
-
-          {/* Hidden packages (e.g. Unlimited) */}
-          {showMorePackages && (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
-              {ESSAY_PACKAGES.filter(pkg => MORE_PACKAGE_IDS.includes(pkg.id)).map(renderPackageCard)}
-            </div>
-          )}
-
-          <p className="text-center text-xs text-slate-500 font-medium">
-            🔒 Secured by PayHere · Payments processed in LKR · Credits never expire (except unlimited plan)
+          <h2 className="font-display-serif text-3xl md:text-4xl font-black text-white mb-3">
+            One credit pool for every AI part
+          </h2>
+          <p className="text-slate-400 text-sm font-medium max-w-xl mx-auto mb-8">
+            Your credits work across Write Essay, SWT, SST, Speaking and IELTS — one credit = one AI scoring.
+            Top up once and use it anywhere.
+          </p>
+          <Link
+            href="/credits"
+            className="inline-flex items-center gap-2 rounded-full bg-[#f97316] hover:bg-[#fb923c] px-8 py-4 text-base font-black text-white transition-all"
+          >
+            <CreditCard size={18} weight="bold" /> Go to AI Credits
+          </Link>
+          <p className="mt-5 text-center text-xs text-slate-500 font-medium">
+            🔒 Secured by PayHere · pay in LKR or USD
           </p>
         </div>
       </section>
