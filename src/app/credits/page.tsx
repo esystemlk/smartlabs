@@ -19,6 +19,26 @@ const UNIVERSAL_PACKAGES: Pkg[] = [
 ];
 type Currency = 'LKR' | 'USD';
 const fmtPrice = (pkg: Pkg, c: Currency) => c === 'USD' ? `$${pkg.priceUSD}` : `Rs ${pkg.price.toLocaleString()}`;
+
+// Legacy per-part pools (shown when the user still holds some — used before universal).
+const LEGACY_POOLS: { label: string; paid: string; monthly: string }[] = [
+  { label: 'Write Essay', paid: 'essayPaidCredits', monthly: 'essayMonthlyExpiry' },
+  { label: 'Summarize Written Text', paid: 'swtPaidCredits', monthly: 'swtMonthlyExpiry' },
+  { label: 'Summarize Spoken Text', paid: 'sstPaidCredits', monthly: 'sstMonthlyExpiry' },
+  { label: 'Speaking', paid: 'speakingPaidCredits', monthly: 'speakingMonthlyExpiry' },
+  { label: 'IELTS Essay', paid: 'ieltsEssayPaidCredits', monthly: 'ieltsEssayMonthlyExpiry' },
+];
+// Expiry may be a Firestore Timestamp/Date or an epoch-ms number (IELTS).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function planActiveOf(v: any): boolean {
+  if (v == null) return false;
+  let ms = 0;
+  if (typeof v === 'number') ms = v;
+  else if (typeof v?.toDate === 'function') ms = v.toDate().getTime();
+  else if (v instanceof Date) ms = v.getTime();
+  return ms > Date.now();
+}
+interface LegacyBalance { label: string; paid: number; plan: boolean }
 const AI_PARTS = ['Write Essay', 'Summarize Written Text', 'Summarize Spoken Text', 'All Speaking tasks', 'IELTS Essay'];
 
 function CreditsInner() {
@@ -29,6 +49,7 @@ function CreditsInner() {
   const paymentState = params.get('payment'); // 'success' | 'cancelled' | null
 
   const [balance, setBalance] = useState<{ paid: number; planActive: boolean; planExpiry: string | null } | null>(null);
+  const [legacy, setLegacy] = useState<LegacyBalance[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState('');
   const [currency, setCurrency] = useState<Currency>('LKR');
@@ -49,6 +70,14 @@ function CreditsInner() {
         planActive: !!(exp && exp > new Date()),
         planExpiry: exp ? exp.toISOString() : null,
       });
+      // Legacy per-part credits the user still holds (paid balance or active plan).
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const dd = d as any;
+      setLegacy(
+        LEGACY_POOLS
+          .map((p) => ({ label: p.label, paid: Number(dd[p.paid]) || 0, plan: planActiveOf(dd[p.monthly]) }))
+          .filter((p) => p.paid > 0 || p.plan),
+      );
     } catch { /* non-fatal */ }
   }, [user, firestore]);
 
@@ -139,6 +168,24 @@ function CreditsInner() {
                 <p className="text-xl font-black tabular-nums text-slate-900">{balance ? balance.paid : '—'} <span className="text-sm font-semibold text-slate-500">credits</span></p>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Legacy per-part credits the user still holds (used before universal) */}
+        {user && legacy.length > 0 && (
+          <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50/60 p-5">
+            <p className="text-xs font-black uppercase tracking-widest text-slate-500 mb-3">You also have (used first)</p>
+            <div className="space-y-2">
+              {legacy.map((p) => (
+                <div key={p.label} className="flex items-center justify-between text-sm">
+                  <span className="font-semibold text-slate-700">{p.label}</span>
+                  {p.plan
+                    ? <span className="inline-flex items-center gap-1 font-black text-amber-600"><Crown size={13} /> Unlimited</span>
+                    : <span className="font-black tabular-nums text-slate-900">{p.paid} <span className="text-xs font-semibold text-slate-500">left</span></span>}
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-xs text-slate-500">These part-specific credits are spent before your universal credits.</p>
           </div>
         )}
 
