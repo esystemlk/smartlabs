@@ -369,12 +369,15 @@ function AIEssayPracticeInner() {
         getDoc(doc(firestore, 'users', user.uid)).then(snap => {
           const data = snap.data() ?? {};
           const monthlyExpiry = (data.essayMonthlyExpiry as { toDate?: () => Date } | undefined)?.toDate?.() ?? null;
+          const uniExpiry = (data.universalMonthlyExpiry as { toDate?: () => Date } | undefined)?.toDate?.() ?? null;
           setCreditInfo({
             freeUsed: (data.essayFreeUsed as number) ?? 0,
             paidCredits: (data.essayPaidCredits as number) ?? 0,
             hasMonthly: !!(monthlyExpiry && monthlyExpiry > new Date()),
             genCredits: (data.essayGenCredits as number) ?? 0,
             role: (data.role as string) ?? 'student',
+            universalPaid: (data.universalPaidCredits as number) ?? 0,
+            universalMonthly: !!(uniExpiry && uniExpiry > new Date()),
           });
         });
       }
