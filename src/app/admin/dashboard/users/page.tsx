@@ -1,11 +1,11 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useUser, useFirebase, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Shield, UserCheck, UserX, UserCog, ArrowLeft, CreditCard, RefreshCw, Star } from 'lucide-react';
+import { MoreHorizontal, Shield, UserCheck, UserX, UserCog, ArrowLeft, CreditCard, RefreshCw, Star, Search } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -25,6 +25,18 @@ export default function UserManagementPage() {
     [firestore]
   );
   const { data: users, isLoading: usersLoading } = useCollection(usersQuery);
+
+  const [search, setSearch] = useState('');
+  const filteredUsers = useMemo(() => {
+    if (!users) return [];
+    const q = search.trim().toLowerCase();
+    if (!q) return users;
+    return users.filter((u) =>
+      (u.email ?? '').toLowerCase().includes(q) ||
+      (u.displayName ?? '').toLowerCase().includes(q) ||
+      (u.name ?? '').toLowerCase().includes(q),
+    );
+  }, [users, search]);
 
   const handleAddCredits = async (
     targetUid: string,
@@ -92,6 +104,15 @@ export default function UserManagementPage() {
             <CardHeader>
                 <CardTitle>User Management</CardTitle>
                 <CardDescription>View, manage roles, and monitor all users on the platform.</CardDescription>
+                <div className="relative mt-4 max-w-sm">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search by email or name…"
+                    className="w-full rounded-lg border bg-background py-2 pl-9 pr-3 text-sm outline-none focus:border-primary"
+                  />
+                </div>
             </CardHeader>
             <CardContent>
                 {usersLoading ? <p>Loading users...</p> : (
@@ -108,7 +129,10 @@ export default function UserManagementPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {users && users.map((user) => (
+                        {filteredUsers.length === 0 && (
+                            <TableRow><TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-8">No users match “{search}”.</TableCell></TableRow>
+                        )}
+                        {filteredUsers.map((user) => (
                             <TableRow key={user.id}>
                                 <TableCell>
                                     <div className="flex items-center gap-3">
