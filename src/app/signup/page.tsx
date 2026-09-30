@@ -105,6 +105,21 @@ export default function SignupPage() {
           { role: userRole }
         );
 
+        // Best-effort partner referral attribution (from the /r/{code} cookie).
+        // Never blocks or fails signup.
+        try {
+          const refCode = document.cookie.match(/(?:^|;\s*)ref_code=([^;]+)/)?.[1];
+          if (refCode) {
+            const token = await user.getIdToken();
+            await fetch('/api/partners/attribute', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ code: decodeURIComponent(refCode), studentName: finalDisplayName || '', studentContact: user.email || '' }),
+            });
+            document.cookie = 'ref_code=; Max-Age=0; path=/';
+          }
+        } catch { /* attribution is best-effort */ }
+
         setIsLoading(false);
 
         // Show the success animation (~3s), then redirect.
