@@ -130,42 +130,46 @@ export async function POST(request: Request) {
     } catch { /* verification link optional; can be resent at login */ }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.smartlabs.lk';
-    // Applicant acknowledgement
-    sendMail({
-      to: email,
-      replyTo: CONTACT,
-      subject: `SmartLabs partner application received — ${ref}`,
-      html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#0f172a">
-        <h2 style="color:#163C69">Thank you for applying, ${esc(fullName)}</h2>
-        <p>We have received your request to become a SmartLabs referral partner and notified our team at ${CONTACT}.</p>
-        <p>Your application reference is <b>${esc(ref)}</b>. Your application is <b>pending review</b>. You can sign in any time to check its status.</p>
-        ${verifyLink ? `<p style="margin:20px 0"><a href="${verifyLink}" style="background:#163C69;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold">Verify your email</a></p>` : ''}
-        <p style="margin-top:20px"><a href="${appUrl}/partners/login">Sign in to your partner account →</a></p>
-        <p style="color:#64748b;font-size:12px;margin-top:24px">This email confirms receipt of the application; it does not confirm approval.</p>
-      </div>`,
-    }).catch((e) => console.warn('[partners/apply] ack email failed:', e));
+    // IMPORTANT: await the emails. On Vercel serverless the function is killed as
+    // soon as the response is sent, so fire-and-forget mail never actually goes
+    // out. The application is already saved, so a mail failure is non-fatal.
+    const emailResults = await Promise.allSettled([
+      sendMail({
+        to: email,
+        replyTo: CONTACT,
+        subject: `SmartLabs partner application received — ${ref}`,
+        html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#0f172a">
+          <h2 style="color:#163C69">Thank you for applying, ${esc(fullName)}</h2>
+          <p>We have received your request to become a SmartLabs referral partner and notified our team at ${CONTACT}.</p>
+          <p>Your application reference is <b>${esc(ref)}</b>. Your application is <b>pending review</b>. You can sign in any time to check its status.</p>
+          ${verifyLink ? `<p style="margin:20px 0"><a href="${verifyLink}" style="background:#163C69;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold">Verify your email</a></p>` : ''}
+          <p style="margin-top:20px"><a href="${appUrl}/partners/login">Sign in to your partner account →</a></p>
+          <p style="color:#64748b;font-size:12px;margin-top:24px">This email confirms receipt of the application; it does not confirm approval.</p>
+        </div>`,
+      }),
+      sendMail({
+        to: CONTACT,
+        replyTo: email,
+        subject: `New partner application — ${ref} (${partnerType})`,
+        html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#0f172a">
+          <h3>New referral partner application</h3>
+          <p><b>Reference:</b> ${esc(ref)}<br/>
+             <b>Type:</b> ${esc(partnerType)}<br/>
+             <b>Name:</b> ${esc(fullName)}<br/>
+             <b>Username:</b> ${esc(username)}<br/>
+             <b>Email:</b> ${esc(email)}<br/>
+             <b>Phone:</b> ${esc(phone)}<br/>
+             <b>Location:</b> ${esc(location)}<br/>
+             ${partnerType === 'business' ? `<b>Business:</b> ${esc(businessName)}<br/>` : ''}
+             ${referralDescription ? `<b>How they'll refer:</b> ${esc(referralDescription)}<br/>` : ''}</p>
+          <p>Review it in the admin partners queue.</p>
+        </div>`,
+      }),
+    ]);
+    emailResults.forEach((r, i) => { if (r.status === 'rejected') console.error(`[partners/apply] email ${i === 0 ? 'ack' : 'admin'} failed:`, r.reason); });
+    const ackSent = emailResults[0].status === 'fulfilled';
 
-    // Admin notification
-    sendMail({
-      to: CONTACT,
-      replyTo: email,
-      subject: `New partner application — ${ref} (${partnerType})`,
-      html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#0f172a">
-        <h3>New referral partner application</h3>
-        <p><b>Reference:</b> ${esc(ref)}<br/>
-           <b>Type:</b> ${esc(partnerType)}<br/>
-           <b>Name:</b> ${esc(fullName)}<br/>
-           <b>Username:</b> ${esc(username)}<br/>
-           <b>Email:</b> ${esc(email)}<br/>
-           <b>Phone:</b> ${esc(phone)}<br/>
-           <b>Location:</b> ${esc(location)}<br/>
-           ${partnerType === 'business' ? `<b>Business:</b> ${esc(businessName)}<br/>` : ''}
-           ${referralDescription ? `<b>How they'll refer:</b> ${esc(referralDescription)}<br/>` : ''}</p>
-        <p>Review it in the admin partners queue.</p>
-      </div>`,
-    }).catch((e) => console.warn('[partners/apply] admin email failed:', e));
-
-    return NextResponse.json({ success: true, ref });
+    return NextResponse.json({ success: true, ref, ackSent });
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Unknown error';
     console.error('[partners/apply] error:', error);
