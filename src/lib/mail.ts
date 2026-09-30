@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-export async function sendMail({ to, subject, html }: { to: string; subject: string; html: string }) {
+export async function sendMail({ to, subject, html, replyTo }: { to: string; subject: string; html: string; replyTo?: string }) {
     if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
         throw new Error('GMAIL_USER or GMAIL_PASS environment variables are not set.');
     }
@@ -20,6 +20,7 @@ export async function sendMail({ to, subject, html }: { to: string; subject: str
         to,
         subject,
         html,
+        ...(replyTo ? { replyTo } : {}),
     });
     return info;
 }

@@ -289,6 +289,24 @@ service cloud.firestore {
     match /webinarAdminEmails/{id} { allow read: if isStaff(); allow write: if isStaff(); }
     match /contact_messages/{id}   { allow read: if isStaff(); allow write: if false; }
 
+    // ── Referral partner portal ───────────────────────────────────────────────
+    // All writes go through the admin SDK on the server (create-account, review,
+    // etc.), so client writes are denied. Reads are owner-scoped or staff-only.
+    match /partner_applications/{id} {
+      allow read: if isStaff() || (isAuthed() && resource.data.uid == request.auth.uid);
+      allow write: if false;
+    }
+    match /partners/{uid} {
+      allow read: if isStaff() || (isAuthed() && request.auth.uid == uid);
+      allow write: if false;
+    }
+    match /partner_usernames/{name} { allow read: if false; allow write: if false; }
+    match /referrals/{id} {
+      // A partner sees only their own referrals; staff see all. Server writes only.
+      allow read: if isStaff() || (isAuthed() && resource.data.partnerUid == request.auth.uid);
+      allow write: if false;
+    }
+
     // ─── Default: deny everything not explicitly allowed above ───────────────
     match /{document=**} {
       allow read, write: if false;

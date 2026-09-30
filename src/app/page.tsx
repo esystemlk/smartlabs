@@ -54,7 +54,8 @@ import {
   X,
   HelpCircle,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  Handshake
 } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import {
@@ -862,6 +863,11 @@ export default function Home() {
                 <Link href="/level-test"><Activity className="mr-2 h-4 w-4" />Take Free Level Test</Link>
               </Button>
               <FindCoursesButton size="lg" className="h-12 px-8 rounded-2xl border-2 border-slate-900 text-slate-900 font-black" />
+            </div>
+            <div className="hero-fade-in mt-3" style={{ animationDelay: '0.5s' }}>
+              <Link href="/partners" className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors">
+                <Handshake className="h-4 w-4" /> Become a Partner
+              </Link>
             </div>
           </div>
 
