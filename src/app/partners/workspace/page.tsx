@@ -7,6 +7,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { signOut, sendEmailVerification } from 'firebase/auth';
 import { useUser, useFirestore, useAuth } from '@/firebase';
 import { Handshake, Loader2, LogOut, MailCheck, Clock, CheckCircle2, XCircle, ShieldAlert, Pencil, Ban } from 'lucide-react';
+import { WorkspaceDashboard } from '@/components/partners/workspace-dashboard';
 
 interface Partner {
   fullName?: string; ref?: string; partnerType?: string; businessName?: string;
@@ -22,7 +23,7 @@ interface Application {
 const STATUS: Record<string, { label: string; tone: string; icon: typeof Clock; note: string }> = {
   pending: { label: 'Pending review', tone: 'bg-amber-100 text-amber-700', icon: Clock, note: 'Our team is reviewing your application. You’ll get an email when there’s an update.' },
   needs_info: { label: 'More info needed', tone: 'bg-orange-100 text-orange-700', icon: ShieldAlert, note: 'We’ve requested some corrections. Update your details below and resubmit.' },
-  approved: { label: 'Approved', tone: 'bg-emerald-100 text-emerald-700', icon: CheckCircle2, note: 'Your partnership is approved. Your full referral workspace is coming soon.' },
+  approved: { label: 'Approved', tone: 'bg-emerald-100 text-emerald-700', icon: CheckCircle2, note: 'Your partnership is active. Use the tools below to refer students and track your earnings.' },
   rejected: { label: 'Not approved', tone: 'bg-red-100 text-red-700', icon: XCircle, note: 'This application was not approved. You can correct your details below and resubmit for another review.' },
   withdrawn: { label: 'Withdrawn', tone: 'bg-slate-100 text-slate-600', icon: XCircle, note: 'This application was withdrawn.' },
 };
@@ -135,6 +136,7 @@ export default function PartnerWorkspacePage() {
   const st = STATUS[status] ?? STATUS.pending;
   const verified = !!user?.emailVerified;
   const suspended = accountState === 'suspended';
+  const showDashboard = status === 'approved' && verified && !['suspended', 'deactivated', 'banned', 'closed'].includes(accountState);
   const canResubmit = status === 'needs_info' || status === 'rejected';
   const isBiz = partner.partnerType === 'business';
 
@@ -196,6 +198,12 @@ export default function PartnerWorkspacePage() {
             </button>
           )}
         </div>
+
+        {/* Full referral dashboard (approved + active + verified) */}
+        {showDashboard && (
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          <WorkspaceDashboard user={user!} firestore={firestore} partner={partner as any} />
+        )}
 
         {/* Edit / resubmit form */}
         {canResubmit && editing && (
