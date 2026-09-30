@@ -1,6 +1,6 @@
 {
   "name": "smartlabs-app",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "SmartLabs PTE/AI practice — React Native + Expo client. Shares accounts, credits, database and AI scoring with smartlabs.lk.",
   "main": "expo-router/entry",

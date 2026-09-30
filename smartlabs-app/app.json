@@ -2,7 +2,7 @@
   "expo": {
     "name": "SmartLabs PTE",
     "slug": "smartlabs-app",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "runtimeVersion": "1.0.0",
     "updates": {
       "fallbackToCacheTimeout": 0
