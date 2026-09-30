@@ -21,25 +21,16 @@ App facts (already configured in the code):
 
 ---
 
-## ⚠️ READ THIS FIRST — Google Play payments policy (important)
+## ✅ Google Play payments policy — handled
 
-The app currently lets users **buy AI credits inside the app via PayHere**. Google Play's
-**Payments policy requires Google Play Billing for digital goods bought and consumed inside an
-Android app** (AI scoring credits count as digital goods). Shipping PayHere in-app checkout can
-get the app **rejected or later removed**.
+Google Play requires **Google Play Billing** for digital goods bought inside an Android app, so we
+**removed the in-app PayHere checkout**. The app's Credits screen now shows the **balance** and a
+**"Top up on smartlabs.lk"** button that opens the website; users buy there (PayHere is fine on the
+web) and credits sync back to the app automatically. This keeps the app compliant.
 
-You have three safe options — pick one **before** submitting:
-
-1. **Recommended for first release:** Remove the in-app "Buy credits" checkout from the Android
-   app. Keep the credits screen showing the **balance** and a message like *"Top up on
-   smartlabs.lk"* (link out to the website). Users buy on the web (PayHere is fine on the web) and
-   the credits sync to the app. — I can make this change quickly; ask me.
-2. Integrate **Google Play Billing** (react-native-iap / expo-in-app-purchases) for the Android app
-   and give Google its cut. Bigger job.
-3. Submit as-is and risk rejection. **Not recommended.**
-
-Everything else below assumes the app is otherwise ready. Tell me which option you want and I'll
-implement #1 if you choose it.
+Because of this, in the **Data safety** / financial-features questions you can say the **app itself
+does not process payments**. (If Google's reviewer asks, the top-up link just opens your website in
+the browser — no in-app digital purchase.)
 
 ---
 
@@ -157,7 +148,7 @@ The app collects / handles:
 ---
 
 ## Quick checklist
-- [ ] Choose payments option (see warning) — ideally move buying to web for the app
+- [x] Payments: in-app checkout removed — buying happens on the website (compliant)
 - [ ] `eas login` → `eas build -p android --profile production`
 - [ ] Create Play developer account ($25, verified)
 - [ ] Create app "SmartLabs PTE" (package `lk.smartlabs.app`)

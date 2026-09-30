@@ -17,6 +17,9 @@ export interface CreditsState {
   loading: boolean;
   role: string;
   unlimited: boolean; // staff roles never spend credits
+  /** Shared universal credits — usable on every AI part. */
+  universalPaid: number;
+  universalMonthly: boolean;
   sst: PoolStatus;
   swt: PoolStatus;
   speaking: PoolStatus;
@@ -35,13 +38,14 @@ function toDate(v: unknown): Date | null {
   return ts?.toDate ? ts.toDate() : null;
 }
 
-function poolFrom(d: Record<string, unknown>, key: PoolKey, unlimited: boolean): PoolStatus {
+function poolFrom(d: Record<string, unknown>, key: PoolKey, unlimited: boolean, universalUsable: boolean): PoolStatus {
   const freeLimit = FREE_LIMITS[key];
   const freeUsed = (d[`${key}FreeUsed`] as number) ?? 0;
   const paid = (d[`${key}PaidCredits`] as number) ?? 0;
   const expiry = toDate(d[`${key}MonthlyExpiry`]);
   const monthlyActive = !!(expiry && expiry > new Date());
-  const canUse = unlimited || monthlyActive || paid > 0 || freeUsed < freeLimit;
+  // Universal credits (paid or monthly) can also cover this pool.
+  const canUse = unlimited || monthlyActive || paid > 0 || freeUsed < freeLimit || universalUsable;
   return { freeUsed, freeLimit, paid, monthlyActive, canUse };
 }
 
@@ -51,6 +55,8 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
     loading: true,
     role: 'student',
     unlimited: false,
+    universalPaid: 0,
+    universalMonthly: false,
     sst: EMPTY,
     swt: EMPTY,
     speaking: EMPTY,
@@ -68,14 +74,20 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
         const d = (snap.data() ?? {}) as Record<string, unknown>;
         const role = (d.role as string) ?? 'student';
         const unlimited = ['admin', 'developer', 'teacher'].includes(role);
+        const universalPaid = (d.universalPaidCredits as number) ?? 0;
+        const uniExpiry = toDate(d.universalMonthlyExpiry);
+        const universalMonthly = !!(uniExpiry && uniExpiry > new Date());
+        const universalUsable = universalPaid > 0 || universalMonthly;
         setState({
           loading: false,
           role,
           unlimited,
-          sst: poolFrom(d, 'sst', unlimited),
-          swt: poolFrom(d, 'swt', unlimited),
-          speaking: poolFrom(d, 'speaking', unlimited),
-          essay: poolFrom(d, 'essay', unlimited),
+          universalPaid,
+          universalMonthly,
+          sst: poolFrom(d, 'sst', unlimited, universalUsable),
+          swt: poolFrom(d, 'swt', unlimited, universalUsable),
+          speaking: poolFrom(d, 'speaking', unlimited, universalUsable),
+          essay: poolFrom(d, 'essay', unlimited, universalUsable),
         });
       },
       () => setState((s) => ({ ...s, loading: false })),

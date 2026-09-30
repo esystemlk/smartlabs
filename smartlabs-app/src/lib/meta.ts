@@ -57,5 +57,5 @@ export function useProfileMeta(): ProfileMeta {
  * credits across every pool. Staff roles show as unlimited via `credits.unlimited`.
  */
 export function totalPaidCredits(credits: CreditsState): number {
-  return credits.speaking.paid + credits.sst.paid + credits.swt.paid + credits.essay.paid;
+  return credits.universalPaid + credits.speaking.paid + credits.sst.paid + credits.swt.paid + credits.essay.paid;
 }
