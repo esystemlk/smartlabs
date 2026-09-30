@@ -6,11 +6,11 @@ import { useRouter } from 'next/navigation';
 import { doc, getDoc } from 'firebase/firestore';
 import { signOut, sendEmailVerification } from 'firebase/auth';
 import { useUser, useFirestore, useAuth } from '@/firebase';
-import { Handshake, Loader2, LogOut, MailCheck, Clock, CheckCircle2, XCircle, ShieldAlert, Pencil } from 'lucide-react';
+import { Handshake, Loader2, LogOut, MailCheck, Clock, CheckCircle2, XCircle, ShieldAlert, Pencil, Ban } from 'lucide-react';
 
 interface Partner {
   fullName?: string; ref?: string; partnerType?: string; businessName?: string;
-  reviewStatus?: string; accountState?: string;
+  reviewStatus?: string; accountState?: string; stateReason?: string;
 }
 
 interface Application {
@@ -110,9 +110,31 @@ export default function PartnerWorkspacePage() {
     );
   }
 
+  // Kill switch: a session that was open when the partner got banned/deactivated
+  // (Firebase blocks the *next* sign-in; this locks the current session too).
+  const accountState = partner.accountState ?? 'pending_activation';
+  if (accountState === 'banned' || accountState === 'deactivated') {
+    const permanent = accountState === 'banned';
+    return (
+      <div className="mx-auto max-w-md px-4 py-20 text-center">
+        <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600"><Ban size={26} /></div>
+        <h1 className="text-xl font-black text-slate-900">{permanent ? 'Account closed' : 'Account deactivated'}</h1>
+        <p className="mt-2 text-sm text-slate-600">
+          {permanent
+            ? 'Your partner account has been permanently closed and access has been removed.'
+            : 'Your partner account is temporarily deactivated. You cannot access the workspace until it is reactivated.'}
+        </p>
+        {partner.stateReason ? <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-700">Reason: {partner.stateReason}</p> : null}
+        <p className="mt-4 text-xs text-slate-500">Questions? Email contact@smartlabs.lk</p>
+        <button onClick={() => signOut(auth).then(() => router.replace('/partners/login'))} className="mt-5 inline-flex items-center gap-1.5 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white"><LogOut size={15} /> Sign out</button>
+      </div>
+    );
+  }
+
   const status = partner.reviewStatus ?? 'pending';
   const st = STATUS[status] ?? STATUS.pending;
   const verified = !!user?.emailVerified;
+  const suspended = accountState === 'suspended';
   const canResubmit = status === 'needs_info' || status === 'rejected';
   const isBiz = partner.partnerType === 'business';
 
@@ -134,6 +156,12 @@ export default function PartnerWorkspacePage() {
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
             <div className="flex items-center gap-2 text-sm font-semibold text-amber-800"><MailCheck size={18} /> Please verify your email to activate your account.</div>
             <button onClick={resend} disabled={sent} className="rounded-xl bg-amber-600 px-4 py-2 text-xs font-black text-white hover:bg-amber-700 disabled:opacity-60">{sent ? 'Email sent' : 'Resend verification'}</button>
+          </div>
+        )}
+
+        {suspended && (
+          <div className="mt-5 flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-800">
+            <ShieldAlert size={18} /> Your account is temporarily suspended while we review it. Referral tools are paused.{partner.stateReason ? ` Reason: ${partner.stateReason}` : ''}
           </div>
         )}
 

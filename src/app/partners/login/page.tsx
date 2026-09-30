@@ -37,8 +37,13 @@ export default function PartnerLoginPage() {
       if (!email) { setError('Invalid username/email or password.'); return; }
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/partners/workspace');
-    } catch {
-      setError('Invalid username/email or password.');
+    } catch (err) {
+      const code = (err as { code?: string })?.code;
+      if (code === 'auth/user-disabled') {
+        setError('This partner account has been deactivated. Please contact contact@smartlabs.lk.');
+      } else {
+        setError('Invalid username/email or password.');
+      }
     } finally { setBusy(false); }
   };
 

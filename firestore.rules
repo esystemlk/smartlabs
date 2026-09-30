@@ -308,6 +308,10 @@ service cloud.firestore {
       allow read: if isStaff() || (isAuthed() && resource.data.partnerUid == request.auth.uid);
       allow write: if false;
     }
+    // Referral code → uid reverse lookup: resolved server-side only.
+    match /partner_codes/{code} { allow read: if false; allow write: if false; }
+    // Record of admin broadcast / maintenance emails to partners. Staff read only.
+    match /partner_broadcasts/{id} { allow read: if isStaff(); allow write: if false; }
 
     // ─── Default: deny everything not explicitly allowed above ───────────────
     match /{document=**} {

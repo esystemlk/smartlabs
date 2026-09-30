@@ -7,7 +7,7 @@ import { collection, doc, getDoc, getDocs, orderBy, query, setDoc, serverTimesta
 import { useUser, useFirestore, useAuth } from '@/firebase';
 import {
   ArrowLeft, Loader2, Plus, Trash2, Save, CheckCircle2, Coins, Users, XCircle,
-  ShieldAlert, MailCheck, MailX, Search, RefreshCw,
+  ShieldAlert, MailCheck, MailX, Search, RefreshCw, Ban, Pause, Play, Send, Megaphone, Power,
 } from 'lucide-react';
 import type { CommissionRate, CommissionSettings } from '@/components/partners/earnings';
 
@@ -29,7 +29,7 @@ export default function PartnersAdminPage() {
   const router = useRouter();
 
   const [allowed, setAllowed] = useState<boolean | null>(null);
-  const [tab, setTab] = useState<'applications' | 'commission'>('applications');
+  const [tab, setTab] = useState<'applications' | 'partners' | 'broadcast' | 'commission'>('applications');
 
   useEffect(() => {
     if (isUserLoading) return;
@@ -51,16 +51,19 @@ export default function PartnersAdminPage() {
       <Link href="/admin/dashboard" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900"><ArrowLeft size={16} /> Admin dashboard</Link>
       <h1 className="mt-3 flex items-center gap-2 text-2xl font-black"><Users size={22} className="text-blue-600" /> Referral Partners</h1>
 
-      <div className="mt-4 inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
-        {(['applications', 'commission'] as const).map((t) => (
+      <div className="mt-4 inline-flex flex-wrap rounded-xl border border-slate-200 bg-slate-50 p-1">
+        {(['applications', 'partners', 'broadcast', 'commission'] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
             className={`rounded-lg px-4 py-1.5 text-sm font-black capitalize transition-colors ${tab === t ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-900'}`}>
-            {t === 'applications' ? 'Applications' : 'Commission'}
+            {t === 'applications' ? 'Applications' : t === 'partners' ? 'Partners' : t === 'broadcast' ? 'Broadcast' : 'Commission'}
           </button>
         ))}
       </div>
 
-      {tab === 'applications' ? <Applications getToken={() => user!.getIdToken()} firestore={firestore} /> : <Commission firestore={firestore} />}
+      {tab === 'applications' && <Applications getToken={() => user!.getIdToken()} firestore={firestore} />}
+      {tab === 'partners' && <Partners getToken={() => user!.getIdToken()} firestore={firestore} />}
+      {tab === 'broadcast' && <Broadcast getToken={() => user!.getIdToken()} firestore={firestore} />}
+      {tab === 'commission' && <Commission firestore={firestore} />}
     </div>
   );
 }
@@ -160,6 +163,205 @@ function Applications({ getToken, firestore }: { getToken: () => Promise<string>
               </div>
             );
           })}
+      </div>
+    </div>
+  );
+}
+
+/* ── Partners roster (state management) ─────────────────────────────────────── */
+const STATE_TONE: Record<string, string> = {
+  active: 'bg-emerald-100 text-emerald-700', suspended: 'bg-amber-100 text-amber-700',
+  deactivated: 'bg-orange-100 text-orange-700', banned: 'bg-red-100 text-red-700',
+  pending_activation: 'bg-slate-100 text-slate-600', closed: 'bg-slate-100 text-slate-600',
+};
+const STATE_LABEL: Record<string, string> = {
+  active: 'Active', suspended: 'Suspended', deactivated: 'Deactivated', banned: 'Banned',
+  pending_activation: 'Pending', closed: 'Closed',
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function Partners({ getToken, firestore }: { getToken: () => Promise<string>; firestore: any }) {
+  const [rows, setRows] = useState<App[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [filter, setFilter] = useState<'all' | 'active' | 'suspended' | 'deactivated' | 'banned' | 'pending_activation'>('all');
+  const [q, setQ] = useState('');
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true); setError('');
+    try {
+      const snap = await getDocs(query(collection(firestore, 'partners'), orderBy('createdAt', 'desc')));
+      setRows(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    } catch (e) {
+      setError('Could not load partners. Make sure the partner Firestore rules are published.');
+      console.error(e);
+    } finally { setLoading(false); }
+  }, [firestore]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const act = async (uid: string, action: 'suspend' | 'deactivate' | 'reactivate' | 'ban', name: string) => {
+    let reason = '';
+    if (action === 'ban') {
+      if (!window.confirm(`Permanently BAN ${name}? They will be signed out and blocked from logging in. Referral history is kept.`)) return;
+      reason = window.prompt('Reason for the ban (sent to the partner):') ?? '';
+      if (!reason.trim()) return;
+    } else if (action === 'suspend' || action === 'deactivate') {
+      reason = window.prompt(action === 'suspend' ? 'Reason for suspending (review):' : 'Reason for temporary deactivation:') ?? '';
+      if (!reason.trim()) return;
+    } else if (!window.confirm(`Reactivate ${name}?`)) return;
+
+    setBusy(uid);
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/partners/admin/state', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ uid, action, reason }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || 'Failed.'); return; }
+      setRows((prev) => prev.map((r) => (r.uid === uid ? { ...r, accountState: data.accountState, stateReason: reason || null } : r)));
+    } catch { alert('Network error.'); }
+    finally { setBusy(null); }
+  };
+
+  const term = q.trim().toLowerCase();
+  const shown = rows.filter((r) => {
+    const state = r.accountState ?? 'pending_activation';
+    return (filter === 'all' || state === filter) &&
+      (!term || (r.fullName ?? '').toLowerCase().includes(term) || (r.email ?? '').toLowerCase().includes(term) ||
+        (r.username ?? '').toLowerCase().includes(term) || (r.businessName ?? '').toLowerCase().includes(term) || (r.ref ?? '').toLowerCase().includes(term));
+  });
+
+  return (
+    <div className="mt-5">
+      <p className="mb-3 text-sm text-slate-600">All registered partners. Suspend (read-only review), temporarily deactivate (blocks login), reactivate, or permanently ban. History is never deleted.</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[180px]">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, email, username…" className="w-full rounded-xl border border-slate-200 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none" />
+        </div>
+        <select value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} className="rounded-xl border border-slate-200 px-3 py-2 text-sm">
+          {['all', 'active', 'suspended', 'deactivated', 'banned', 'pending_activation'].map((s) => <option key={s} value={s}>{s === 'all' ? 'All states' : STATE_LABEL[s]}</option>)}
+        </select>
+        <button onClick={load} className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50"><RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh</button>
+      </div>
+
+      {error && <p className="mt-3 text-sm font-semibold text-red-600">{error}</p>}
+
+      <div className="mt-4 space-y-3">
+        {loading ? <div className="flex items-center gap-2 py-8 text-slate-400"><Loader2 size={16} className="animate-spin" /> Loading…</div>
+          : shown.length === 0 ? <p className="py-8 text-center text-sm text-slate-400">No partners{filter !== 'all' ? ` (${STATE_LABEL[filter]})` : ''}.</p>
+          : shown.map((r) => {
+            const state = r.accountState ?? 'pending_activation';
+            return (
+              <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-black text-slate-900">{r.fullName || '—'}</span>
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase text-slate-500">{r.partnerType}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${STATE_TONE[state] ?? STATE_TONE.pending_activation}`}>{STATE_LABEL[state] ?? state}</span>
+                      {r.reviewStatus === 'approved' && <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-600">approved</span>}
+                    </div>
+                    <p className="mt-1 text-xs text-slate-500">
+                      @{r.username} · {r.email} · {r.phone}{r.businessName ? ` · ${r.businessName}` : ''} · {r.ref}
+                    </p>
+                    {r.stateReason ? <p className="mt-1 text-xs font-semibold text-orange-600">State note: {r.stateReason}</p> : null}
+                  </div>
+                  <div className="flex shrink-0 flex-wrap gap-1.5">
+                    {state === 'banned' ? (
+                      <button disabled={busy === r.uid} onClick={() => act(r.uid, 'reactivate', r.fullName)} className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-black text-white hover:bg-emerald-700 disabled:opacity-50"><Play size={13} /> Restore</button>
+                    ) : (state === 'suspended' || state === 'deactivated') ? (
+                      <button disabled={busy === r.uid} onClick={() => act(r.uid, 'reactivate', r.fullName)} className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-black text-white hover:bg-emerald-700 disabled:opacity-50"><Play size={13} /> Reactivate</button>
+                    ) : (
+                      <>
+                        <button disabled={busy === r.uid} onClick={() => act(r.uid, 'suspend', r.fullName)} className="inline-flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-black text-white hover:bg-amber-600 disabled:opacity-50"><Pause size={13} /> Suspend</button>
+                        <button disabled={busy === r.uid} onClick={() => act(r.uid, 'deactivate', r.fullName)} className="inline-flex items-center gap-1 rounded-lg bg-orange-500 px-3 py-1.5 text-xs font-black text-white hover:bg-orange-600 disabled:opacity-50"><Power size={13} /> Deactivate</button>
+                      </>
+                    )}
+                    {state !== 'banned' && (
+                      <button disabled={busy === r.uid} onClick={() => act(r.uid, 'ban', r.fullName)} className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-black text-white hover:bg-red-700 disabled:opacity-50"><Ban size={13} /> Ban</button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+      </div>
+    </div>
+  );
+}
+
+/* ── Broadcast / maintenance email ──────────────────────────────────────────── */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function Broadcast({ getToken, firestore }: { getToken: () => Promise<string>; firestore: any }) {
+  const [audience, setAudience] = useState<'active' | 'all' | 'one'>('active');
+  const [partners, setPartners] = useState<App[]>([]);
+  const [uid, setUid] = useState('');
+  const [subject, setSubject] = useState('');
+  const [body, setBody] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+
+  useEffect(() => {
+    getDocs(query(collection(firestore, 'partners'), orderBy('createdAt', 'desc')))
+      .then((snap) => setPartners(snap.docs.map((d) => ({ id: d.id, ...d.data() }))))
+      .catch(() => { /* one-recipient mode still works via manual selection */ });
+  }, [firestore]);
+
+  const send = async () => {
+    setResult(null);
+    if (!subject.trim() || !body.trim()) { setResult('Subject and message are required.'); return; }
+    const count = audience === 'one' ? 1 : audience === 'active' ? partners.filter((p) => (p.accountState ?? '') === 'active').length : partners.length;
+    if (!window.confirm(`Send this email to ${audience === 'one' ? 'the selected partner' : `${count} partner(s)`}?`)) return;
+
+    setBusy(true);
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/partners/admin/broadcast', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ audience, uid: audience === 'one' ? uid : undefined, subject, body }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setResult(data.error || 'Failed to send.'); return; }
+      setResult(`Sent to ${data.sent} partner(s)${data.failed ? `, ${data.failed} failed` : ''}.`);
+      setSubject(''); setBody('');
+    } catch { setResult('Network error.'); }
+    finally { setBusy(false); }
+  };
+
+  const inp = 'w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
+  return (
+    <div className="mt-5">
+      <p className="mb-4 flex items-center gap-2 text-sm text-slate-600"><Megaphone size={16} className="text-blue-600" /> Email partners — maintenance notices, rule changes, or a direct message. Each partner receives their own email.</p>
+      <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6">
+        <div>
+          <span className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Audience</span>
+          <div className="flex flex-wrap gap-2">
+            {(['active', 'all', 'one'] as const).map((a) => (
+              <button key={a} onClick={() => setAudience(a)} className={`rounded-xl border px-4 py-2 text-sm font-bold ${audience === a ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+                {a === 'active' ? 'Active partners' : a === 'all' ? 'All partners' : 'One partner'}
+              </button>
+            ))}
+          </div>
+        </div>
+        {audience === 'one' && (
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Partner</span>
+            <select value={uid} onChange={(e) => setUid(e.target.value)} className={inp}>
+              <option value="">Select a partner…</option>
+              {partners.map((p) => <option key={p.uid} value={p.uid}>{p.fullName} · @{p.username} · {p.email}</option>)}
+            </select>
+          </label>
+        )}
+        <label className="block"><span className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Subject</span><input value={subject} onChange={(e) => setSubject(e.target.value)} className={inp} placeholder="e.g. Scheduled maintenance this weekend" /></label>
+        <label className="block"><span className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Message</span><textarea value={body} onChange={(e) => setBody(e.target.value)} rows={7} className={inp} placeholder="Write your message. Line breaks are preserved." /></label>
+        <div className="flex items-center gap-3 pt-1">
+          <button onClick={send} disabled={busy} className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-6 py-3 text-sm font-black text-white hover:bg-blue-700 disabled:opacity-50">{busy ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} Send</button>
+          {result && <span className="text-sm font-bold text-slate-700">{result}</span>}
+        </div>
       </div>
     </div>
   );
