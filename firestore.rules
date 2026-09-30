@@ -301,6 +301,8 @@ service cloud.firestore {
       allow write: if false;
     }
     match /partner_usernames/{name} { allow read: if false; allow write: if false; }
+    // Public programme settings (commission rates shown on /partners). Staff edit.
+    match /partner_settings/{id} { allow read: if true; allow write: if isStaff(); }
     match /referrals/{id} {
       // A partner sees only their own referrals; staff see all. Server writes only.
       allow read: if isStaff() || (isAuthed() && resource.data.partnerUid == request.auth.uid);

@@ -4,6 +4,7 @@ import {
   Handshake, UserPlus, Send, BadgeCheck, LayoutDashboard, Mail, ArrowRight,
   Building2, User, ShieldCheck, LineChart,
 } from 'lucide-react';
+import { PartnerEarnings } from '@/components/partners/earnings';
 
 export const metadata: Metadata = {
   title: 'Become a Partner — SmartLabs Referral Programme',
@@ -97,6 +98,9 @@ export default function PartnersPage() {
           </div>
         </div>
       </section>
+
+      {/* Earn from referrals (admin-configurable) */}
+      <PartnerEarnings />
 
       {/* Approval + trust */}
       <section className="mx-auto max-w-5xl px-4 py-14 sm:px-6">

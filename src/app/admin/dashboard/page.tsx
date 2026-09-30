@@ -14,7 +14,7 @@ import {
     DollarSign, UserCheck, LayoutDashboard, Video, Brain, Presentation,
     ShieldCheck, Gift, ChevronRight, Activity, Clock, Zap,
     BookOpen, CreditCard, Star, AlertTriangle, CheckCircle2, BarChart3,
-    Settings, Globe, Bell, Layers, ArrowUpRight, RefreshCw, Crown, Award, Coins
+    Settings, Globe, Bell, Layers, ArrowUpRight, RefreshCw, Crown, Award, Coins, Handshake
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -294,6 +294,7 @@ export default function AdminDashboardPage() {
             items: [
                 { title: 'User Management', desc: 'Edit roles, ban, and manage all accounts', icon: UserCog, href: '/admin/dashboard/users', accent: 'bg-blue-500/10' },
                 { title: 'Enrollments', desc: 'Approve and manage student enrollments', icon: UserCheck, href: '/admin/dashboard/enrollments', badge: stats.pendingEnrollments > 0 ? `${stats.pendingEnrollments} pending` : undefined, badgeColor: 'bg-amber-500/20 text-amber-600', accent: 'bg-amber-500/10' },
+                { title: 'Partners', desc: 'Referral programme — commission rates & partner management', icon: Handshake, href: '/partners/admin', badge: 'New', badgeColor: 'bg-violet-500/20 text-violet-600', accent: 'bg-blue-500/10' },
             ],
         },
         {
