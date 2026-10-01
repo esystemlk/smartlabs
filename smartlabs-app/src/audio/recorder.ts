@@ -1,45 +1,22 @@
-import { Audio } from 'expo-av';
-import * as FileSystem from 'expo-file-system';
+import { AudioModule, RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, type AudioRecorder } from 'expo-audio';
+// The functional file API moved to the /legacy entry point in Expo SDK 54+.
+import { readAsStringAsync, EncodingType } from 'expo-file-system/legacy';
 
 /**
- * Microphone recorder for speaking tasks. Records in formats Gemini accepts for
- * inline audio (AAC on Android, LinearPCM/WAV on iOS), then returns a
- * `data:audio/…;base64,…` URI to POST to /api/score-speaking.
+ * Microphone recorder for speaking tasks. Records AAC/M4A (accepted by Gemini
+ * for inline audio) and returns a `data:audio/…;base64,…` URI to POST to
+ * /api/score-speaking.
  *
- * Requires the microphone permission and a native build (Expo Go can't grant
- * mic access reliably) — see the app README.
+ * Migrated from expo-av (removed in Expo SDK 54+) to expo-audio. Uses the
+ * HIGH_QUALITY preset (.m4a / AAC) so we don't hand-maintain platform codecs.
+ *
+ * Requires the microphone permission and a native build.
  */
-const RECORDING_OPTIONS: Audio.RecordingOptions = {
-  isMeteringEnabled: true,
-  android: {
-    extension: '.aac',
-    outputFormat: Audio.AndroidOutputFormat.AAC_ADTS,
-    audioEncoder: Audio.AndroidAudioEncoder.AAC,
-    sampleRate: 44100,
-    numberOfChannels: 1,
-    bitRate: 96000,
-  },
-  ios: {
-    extension: '.wav',
-    audioQuality: Audio.IOSAudioQuality.HIGH,
-    outputFormat: Audio.IOSOutputFormat.LINEARPCM,
-    sampleRate: 44100,
-    numberOfChannels: 1,
-    bitRate: 96000,
-    linearPCMBitDepth: 16,
-    linearPCMIsBigEndian: false,
-    linearPCMIsFloat: false,
-  },
-  web: {
-    mimeType: 'audio/webm',
-    bitsPerSecond: 128000,
-  },
-};
-
 const MIME_BY_EXT: Record<string, string> = {
   aac: 'audio/aac',
   wav: 'audio/wav',
   m4a: 'audio/mp4',
+  mp4: 'audio/mp4',
   mp3: 'audio/mpeg',
   webm: 'audio/webm',
   caf: 'audio/x-caf',
@@ -47,51 +24,51 @@ const MIME_BY_EXT: Record<string, string> = {
 
 function mimeForUri(uri: string): string {
   const ext = uri.split('.').pop()?.toLowerCase() ?? '';
-  return MIME_BY_EXT[ext] ?? 'audio/aac';
+  return MIME_BY_EXT[ext] ?? 'audio/mp4';
 }
 
 export class SpeechRecorder {
-  private recording: Audio.Recording | null = null;
+  private recorder: AudioRecorder | null = null;
 
   /** Ask for mic permission. Returns true if granted. */
   static async requestPermission(): Promise<boolean> {
-    const { granted } = await Audio.requestPermissionsAsync();
+    const { granted } = await requestRecordingPermissionsAsync();
     return granted;
   }
 
   async start(): Promise<void> {
-    await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-    const recording = new Audio.Recording();
-    await recording.prepareToRecordAsync(RECORDING_OPTIONS);
-    await recording.startAsync();
-    this.recording = recording;
+    await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: true });
+    const recorder = new AudioModule.AudioRecorder(RecordingPresets.HIGH_QUALITY);
+    await recorder.prepareToRecordAsync();
+    recorder.record();
+    this.recorder = recorder;
   }
 
   /** Stop and return the file uri + a base64 data URI for upload. */
   async stop(): Promise<{ uri: string; dataUri: string; durationMs: number }> {
-    const recording = this.recording;
-    if (!recording) throw new Error('No active recording.');
-    await recording.stopAndUnloadAsync();
-    await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
-    const status = await recording.getStatusAsync();
-    const uri = recording.getURI();
-    this.recording = null;
+    const recorder = this.recorder;
+    if (!recorder) throw new Error('No active recording.');
+    const durationSec = recorder.currentTime ?? 0;
+    await recorder.stop();
+    await setAudioModeAsync({ allowsRecording: false });
+    const uri = recorder.uri;
+    this.recorder = null;
     if (!uri) throw new Error('Recording produced no file.');
-    const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+    const base64 = await readAsStringAsync(uri, { encoding: EncodingType.Base64 });
     const mime = mimeForUri(uri);
     return {
       uri,
       dataUri: `data:${mime};base64,${base64}`,
-      durationMs: status.durationMillis ?? 0,
+      durationMs: Math.round(durationSec * 1000),
     };
   }
 
   async cancel(): Promise<void> {
     try {
-      await this.recording?.stopAndUnloadAsync();
+      await this.recorder?.stop();
     } catch {
       /* ignore */
     }
-    this.recording = null;
+    this.recorder = null;
   }
 }

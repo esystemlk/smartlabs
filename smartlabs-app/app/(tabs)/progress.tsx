@@ -201,7 +201,7 @@ const s = StyleSheet.create({
   chartValuePill: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999 },
   chartValueText: { fontWeight: '800', fontSize: 15 },
   outOf: { fontSize: 11, color: C.faint, fontWeight: '700' },
-  chartEmpty: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
+  chartEmpty: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
   chartEmptyText: { textAlign: 'center', paddingHorizontal: 16, color: C.slate, fontSize: 13, fontWeight: '600' },
   months: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8, paddingHorizontal: 4 },
   monthText: { fontSize: 10, color: C.faint, fontWeight: '600' },

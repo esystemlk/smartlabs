@@ -27,7 +27,8 @@ const DAILY_ID = 'sl-daily';
 // Show a banner even when the app is foregrounded.
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: false,
     shouldSetBadge: false,
   }),
@@ -84,7 +85,7 @@ export async function scheduleReminders(uid?: string): Promise<void> {
     await Notifications.scheduleNotificationAsync({
       identifier: DAILY_ID,
       content: { title: 'Time for PTE practice 🎯', body: 'A few minutes today keeps your streak alive.' },
-      trigger: { hour: 19, minute: 0, repeats: true },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: 19, minute: 0 },
     });
     await scheduleComeback(uid);
   } catch {
@@ -100,7 +101,7 @@ export async function scheduleComeback(uid?: string): Promise<void> {
     await Notifications.scheduleNotificationAsync({
       identifier: COMEBACK_ID,
       content: { title: 'We miss you! 🔥', body: "Don't lose your progress — jump back in for a quick practice." },
-      trigger: { seconds: 2 * 24 * 60 * 60 },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 2 * 24 * 60 * 60, repeats: false },
     });
   } catch {
     /* ignore */

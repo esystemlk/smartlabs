@@ -11,11 +11,6 @@
     "scheme": "smartlabs",
     "userInterfaceStyle": "light",
     "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/logo.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FFFFFF"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -43,19 +38,18 @@
       "@react-native-google-signin/google-signin",
       "expo-notifications",
       [
-        "expo-av",
+        "expo-audio",
         {
           "microphonePermission": "SmartLabs needs the microphone to record your speaking answers for AI scoring."
         }
       ],
+      "expo-asset",
       [
-        "expo-build-properties",
+        "expo-splash-screen",
         {
-          "android": {
-            "compileSdkVersion": 36,
-            "targetSdkVersion": 36,
-            "buildToolsVersion": "36.0.0"
-          }
+          "image": "./assets/logo.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFFFF"
         }
       ]
     ],

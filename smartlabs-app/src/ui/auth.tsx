@@ -9,7 +9,7 @@ import { C } from '@/theme';
 
 export const STUDY_ART = require('../../assets/study-hero.png');
 export function StudyArtwork({ compact = false }: { compact?: boolean }) {
-  return <View style={{ width: '100%', aspectRatio: compact ? 2.4 : 1.5, borderRadius: 24, overflow: 'hidden' }}><Image source={STUDY_ART} accessibilityLabel="A student practicing English with headphones, a notebook and a laptop" resizeMode="cover" style={{ ...StyleSheet.absoluteFillObject, width: '100%', height: '100%' }} /></View>;
+  return <View style={{ width: '100%', aspectRatio: compact ? 2.4 : 1.5, borderRadius: 24, overflow: 'hidden' }}><Image source={STUDY_ART} accessibilityLabel="A student practicing English with headphones, a notebook and a laptop" resizeMode="cover" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%' }} /></View>;
 }
 export function SkillTags() {
   return <View style={s.tags}>{[

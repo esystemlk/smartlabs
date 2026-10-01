@@ -1,32 +1,38 @@
-import { Audio } from 'expo-av';
+import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import { synthesizeSpeech } from '@/api/tts';
 
 /**
  * Plays a listening prompt. If the item has a hosted `audioUrl` we stream it;
  * otherwise we synthesize the text with the backend TTS endpoint (base64 MP3)
  * and play that — mirroring the website's fallback behaviour.
+ *
+ * Migrated from expo-av (removed in Expo SDK 54+) to expo-audio.
  */
 export class PromptPlayer {
-  private sound: Audio.Sound | null = null;
+  private player: AudioPlayer | null = null;
 
   async prepare(opts: { audioUrl?: string; text?: string; voice?: string }): Promise<void> {
     await this.unload();
-    await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+    await setAudioModeAsync({ playsInSilentMode: true });
     const uri = opts.audioUrl && opts.audioUrl.trim()
       ? opts.audioUrl
       : await synthesizeSpeech(opts.text ?? '', opts.voice);
-    const { sound } = await Audio.Sound.createAsync({ uri }, { shouldPlay: false });
-    this.sound = sound;
+    this.player = createAudioPlayer({ uri });
   }
 
   async play(): Promise<void> {
-    if (!this.sound) return;
-    await this.sound.replayAsync();
+    if (!this.player) return;
+    try {
+      await this.player.seekTo(0);
+    } catch {
+      /* ignore */
+    }
+    this.player.play();
   }
 
   async stop(): Promise<void> {
     try {
-      await this.sound?.stopAsync();
+      this.player?.pause();
     } catch {
       /* ignore */
     }
@@ -34,10 +40,10 @@ export class PromptPlayer {
 
   async unload(): Promise<void> {
     try {
-      await this.sound?.unloadAsync();
+      this.player?.remove();
     } catch {
       /* ignore */
     }
-    this.sound = null;
+    this.player = null;
   }
 }
