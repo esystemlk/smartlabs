@@ -158,6 +158,7 @@ const pteAiQuickLinks = [
 // IELTS trainers. Only Writing Task 2 (Essay) is live; the rest are shown but
 // disabled until each part is built, so students can see what's coming.
 const ieltsTools = [
+  { name: "IELTS Studio", href: "/dashboard/ielts", description: "Your dedicated space for all four IELTS skills.", icon: BookOpen, color: "text-red-500", bgColor: "bg-red-500/10", hoverBorder: "hover:border-red-500/50", tag: "New", active: true },
   {
     name: "Writing Task 2 · Essay",
     href: "/ai-ielts-essay-practice",

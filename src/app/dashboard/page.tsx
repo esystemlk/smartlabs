@@ -594,19 +594,20 @@ export default function DashboardPage() {
           <div>
             <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
               <GraduationCap weight="bold" className="h-5 w-5 text-red-500" />
-              IELTS Practice Hub
+              IELTS Studio
             </h2>
             <p className="text-xs text-muted-foreground font-medium mt-0.5">
-              Academic IELTS — Writing live now, more parts coming soon
+              Your dedicated IELTS space — explore all four skills
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {ieltsSections.map((section, i) => (
-            <SectionCard key={section.id} section={section} index={i} />
+            <SectionCard key={section.id} section={{ ...section, disabled: false, tasks: section.tasks.map(task => ({ ...task, enabled: task.href !== '#' })), sectionHref: '/dashboard/ielts/' + section.id.replace('ielts-', '') }} index={i} />
           ))}
         </div>
+        <Link href="/dashboard/ielts" className="inline-flex mt-4 text-sm font-bold text-red-600 hover:underline">Explore IELTS Studio →</Link>
       </div>
 
       {/* ─── Feature Spotlight ─────────────────────────────────────────────── */}

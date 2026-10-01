@@ -17,6 +17,10 @@ import {
   X,
   BookmarkSimple,
   FilmSlate,
+  Headphones,
+  BookOpen,
+  Microphone,
+  Clock,
 } from '@phosphor-icons/react';
 
 const mainNav = [
@@ -30,6 +34,14 @@ const practiceNav = [
 const toolsNav = [
   { title: 'Recorded Sessions', href: '/dashboard/recorded-sessions', icon: FilmSlate, color: 'text-rose-500', bg: 'bg-rose-500/10' },
   { title: 'Resources', href: '/resources', icon: BookmarkSimple, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
+];
+
+const ieltsNav = [
+  { title: 'Listening', href: '/dashboard/ielts/listening', icon: Headphones },
+  { title: 'Reading', href: '/dashboard/ielts/reading', icon: BookOpen },
+  { title: 'Writing', href: '/dashboard/ielts/writing', icon: PencilSimple },
+  { title: 'Speaking', href: '/dashboard/ielts/speaking', icon: Microphone },
+  { title: 'Mock tests', href: '/dashboard/ielts/mock-tests', icon: Clock },
 ];
 
 function NavItem({ item, pathname, onClick }: { item: any; pathname: string; onClick?: () => void }) {
@@ -68,6 +80,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   const auth = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const isIelts = pathname.startsWith('/dashboard/ielts');
 
   const handleLogout = async () => {
     if (auth) {
@@ -84,7 +97,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           <Image src="/logo.png" alt="SmartLabs" width={38} height={38} className="rounded-xl shrink-0" />
           <div className="min-w-0">
             <div className="font-black text-sm tracking-tight">SMARTLABS</div>
-            <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">PTE Platform</div>
+            <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{isIelts ? 'IELTS Studio' : 'PTE Platform'}</div>
           </div>
         </Link>
         {onClose && (
@@ -98,7 +111,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Home */}
         <div className="space-y-1">
-          {mainNav.map(item => (
+          {(isIelts ? [{ title: 'IELTS overview', href: '/dashboard/ielts', icon: House, exact: true }, { title: 'Back to PTE', href: '/dashboard', icon: House, exact: true }] : [...mainNav, { title: 'IELTS Studio', href: '/dashboard/ielts', icon: BookOpen, exact: false }]).map(item => (
             <NavItem key={item.href} item={item} pathname={pathname} onClick={onClose} />
           ))}
         </div>
@@ -109,7 +122,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
             Practice Sections
           </div>
           <div className="space-y-1">
-            {practiceNav.map(item => (
+            {(isIelts ? ieltsNav : practiceNav).map(item => (
               <NavItem key={item.href} item={item} pathname={pathname} onClick={onClose} />
             ))}
           </div>
