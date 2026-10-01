@@ -1,163 +1,150 @@
-# SmartLabs PTE — Play Store Release Runbook
+# SmartLabs PTE — Play Store release runbook (v1.0.0)
 
-This is the step-by-step guide to build the Android app and publish it to Google Play.
-Everything in **Part A** is done in the terminal (with your Expo/EAS login). Everything in
-**Part B** is done by you in the **Google Play Console** (web).
-
-App facts (already configured in the code):
-
-| Item | Value |
-|---|---|
-| App name | **SmartLabs PTE** |
-| Package name (Application ID) | `lk.smartlabs.app` |
-| Version name | `1.0.0` |
-| Version code | managed automatically by EAS (`autoIncrement`) |
-| Target SDK | 36 (meets Play's 2025 requirement) |
-| Min SDK | Expo default (24) |
-| API backend | `https://www.smartlabs.lk` |
-| Privacy Policy URL | `https://www.smartlabs.lk/policies` |
-| Account deletion URL | `https://www.smartlabs.lk/delete-account` |
-| EAS project id | `94071082-95d8-441a-b320-f65119f4ce18` |
+Everything needed to publish the Android app to Google Play. **Part A** is the
+build (EAS cloud). **Part B** is what *you* do in the Play Console. **Part C** is
+uploading the build. **Part D** is compliance notes to avoid rejection.
 
 ---
 
-## ✅ Google Play payments policy — handled
-
-Google Play requires **Google Play Billing** for digital goods bought inside an Android app, so we
-**removed the in-app PayHere checkout**. The app's Credits screen now shows the **balance** and a
-**"Top up on smartlabs.lk"** button that opens the website; users buy there (PayHere is fine on the
-web) and credits sync back to the app automatically. This keeps the app compliant.
-
-Because of this, in the **Data safety** / financial-features questions you can say the **app itself
-does not process payments**. (If Google's reviewer asks, the top-up link just opens your website in
-the browser — no in-app digital purchase.)
+## ✅ Already done for you (app is release-ready)
+- App config cleaned — **`expo-doctor` passes 17/17**, TypeScript compiles with no errors.
+- `app.json`: name **SmartLabs PTE**, version **1.0.0**, package **`lk.smartlabs.app`**, API base **https://www.smartlabs.lk**.
+- Converted to a clean **managed Expo project** (removed the stale local `android/` folder) so EAS builds a correctly **release-signed `.aab`** — no debug-keystore problem.
+- `eas.json` production profile already builds an **App Bundle (.aab)** — the format Play requires for a first upload.
+- **Play-compliant payments**: all credit buying happens on the website; the app does not sell digital goods in-app (see Part D).
+- Store art is ready in `smartlabs-app/store-assets/`:
+  - `store-icon-512.png` (app icon, 512×512)
+  - `feature-graphic-1024x500.png` (feature graphic)
 
 ---
 
-# PART A — Build & upload the app (terminal)
+## Part A — Build the AAB with EAS (≈15–25 min, mostly waiting)
 
-> Run these from `smartlabs-app/`. You need your **Expo account** (the one that owns EAS project
-> `94071082-…`). PowerShell blocks `npx.ps1` — if you hit "running scripts is disabled", run
-> `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, or use `npx.cmd`.
+You need a **free Expo account** (expo.dev). Run these on your PC:
 
-### A1. Install & log in to EAS
-```
+```bash
 npm install -g eas-cli
+cd "C:\Users\SMART LABS\Desktop\smartlabs-2\smartlabs-app"
 eas login
+eas build -p android --profile production
 ```
 
-### A2. Build the production Android App Bundle (.aab)
-```
-eas build --platform android --profile production
-```
-- This runs in the cloud (~15–25 min) and produces an **`.aab`** file.
-- The **first** production build asks to generate a **Play upload keystore** — say **yes** and let
-  EAS manage it (`eas credentials` can show it later). Keep this account safe; it signs all future
-  updates.
-- When it finishes, EAS prints a download link for the `.aab`. You can upload that manually (Part
-  B6) **or** use `eas submit` (A3) to push it automatically.
+- On the **first** build EAS asks: *"Generate a new Android Keystore?"* → answer **Yes**.
+  EAS creates and safely stores your signing key — you never have to manage a keystore file.
+- When it finishes, EAS prints a build page URL. Open it and **Download** the `.aab`
+  (e.g. `SmartLabs-PTE-1.0.0.aab`). That is the file you upload to Play.
 
-### A3. (Optional) Auto-submit to Play — needs a service account key
-This uploads the build straight to the **Internal testing** track as a **draft**.
-1. Create the Google service account JSON (Part B2) and save it as
-   `smartlabs-app/play-service-account.json` (it is **git-ignored — never commit it**).
-2. Then:
-```
-eas submit --platform android --profile production --latest
-```
-If you'd rather upload the `.aab` by hand the first time, skip this and do Part B6.
-
-### A4. Future updates
-Bump `version` in `app.json` (e.g. `1.0.1`), then re-run A2 (and A3). EAS auto-increments the
-version code. You can release updates to Play **any time** — Google review is usually hours to ~1–2
-days.
+> Version numbers: `eas.json` uses `appVersionSource: remote` with `autoIncrement`,
+> so EAS manages the Android `versionCode` automatically on every build. For the next
+> release just bump `version` in `app.json` (e.g. `1.0.1`) and run the build again.
 
 ---
 
-# PART B — Google Play Console (web, done by you)
+## Part B — Google Play Console setup (your side, one-time)
 
-### B1. Create the developer account (one-time)
-- Go to **play.google.com/console**, pay the **one-time $25** fee, complete identity verification
-  (can take 1–2 days). Google now requires **D-U-N-S**/organization verification for company
-  accounts, or ID for individual — have that ready.
+### B1. Developer account
+- Go to https://play.google.com/console → pay the **one-time US$25** registration (if not already done).
+- Complete identity verification (Google may take 1–2 days — do this first if the account is new).
 
-### B2. Service account for `eas submit` (only if using A3)
-- Play Console → **Setup → API access** → link a Google Cloud project → **Create service account**
-  → in Google Cloud, create a **JSON key** → back in Play Console **grant it access** with the
-  **"Release to testing tracks"** (and later "Release to production") permission.
-- Download the JSON → save as `smartlabs-app/play-service-account.json`.
+### B2. Create the app
+**All apps → Create app**
+- App name: **SmartLabs PTE**
+- Default language: **English (United States)** (or English (UK))
+- App or game: **App**
+- Free or paid: **Free**
+- Accept the declarations → **Create app**.
 
-### B3. Create the app
-- Play Console → **Create app**:
-  - App name: **SmartLabs PTE**
-  - Default language: **English (en-US)**
-  - App or game: **App**
-  - Free or paid: **Free** (purchases happen via credits, not a paid app)
-  - Confirm the declarations.
+### B3. Fill "Set up your app" (left nav → **Dashboard** → complete each task)
+1. **App access** — the app needs login. Choose *"All functionality is restricted"* and add a **test student account** (email + password) so Google's reviewer can sign in. Create a throwaway student on smartlabs.lk and paste the credentials here.
+2. **Ads** — select **No, my app does not contain ads** (unless you add some).
+3. **Content rating** — fill the questionnaire (Education app, no violence/gambling). You'll get an "Everyone/PEGI 3" rating.
+4. **Target audience and content** — target age **18+** (or 13+); answer the children's-policy questions truthfully.
+5. **Data safety** — declare what the app collects. Typical answers for this app:
+   - Collects: **Name, Email address** (account), **Audio** (speaking practice for AI scoring), **App activity** (progress).
+   - Is data encrypted in transit: **Yes**.
+   - Do you sell data: **No**.
+   - Can users request deletion: **Yes** (point to contact@smartlabs.lk).
+   - Audio: used for **App functionality** (scoring), not shared, not for tracking.
+6. **Government apps** — No.
+7. **Financial features** — No.
+8. **Privacy policy** — URL: **https://www.smartlabs.lk/policies**
 
-### B4. Store listing (Grow → Store presence → Main store listing)
-Prepare these assets:
-- **App icon:** 512×512 PNG (you have a 1024×1024 — resize/export a 512).
-- **Feature graphic:** 1024×500 PNG (required). *(Not in the repo yet — I can generate one.)*
-- **Phone screenshots:** at least **2** (up to 8), 16:9 or 9:16, min 320px side. Capture from the
-  running app (Splash, Home, a Practice trainer, Progress, Credits).
-- **Short description** (≤80 chars), e.g.: *"AI-scored PTE practice — speaking, writing, reading &
-  listening."*
-- **Full description** (≤4000 chars): what the app does (all 4 skills, AI scoring, predictions,
-  progress tracking, mock tests).
+### B4. Main store listing (left nav → **Store presence → Main store listing**)
+- **App name:** SmartLabs PTE
+- **Short description** (≤80 chars), e.g.:
+  `AI-powered PTE & IELTS practice — speaking, writing, mock tests & instant scoring.`
+- **Full description** (≤4000 chars) — describe PTE/IELTS practice, AI scoring, mock tests, recorded classes, progress tracking.
+- **App icon:** upload `store-assets/store-icon-512.png`
+- **Feature graphic:** upload `store-assets/feature-graphic-1024x500.png`
+- **Phone screenshots:** **at least 2** (recommended 4–8), PNG/JPG, 16:9 or 9:16.
+  *Take these on a phone or emulator: home, a speaking practice screen, scoring result, mock test.*
+- **App category:** **Education**
+- **Contact details:** email (e.g. info@smartlabs.lk), website https://www.smartlabs.lk
+- Save.
 
-### B5. Required policy sections (App content — left menu)
-Complete **every** item or you can't publish:
-- **Privacy policy:** `https://www.smartlabs.lk/policies`
-- **App access:** the app needs login. Provide a **test account** (email + password) so Google's
-  reviewer can sign in, and note that some features need purchased/granted credits — so grant that
-  test account credits (via Admin → Credit Manager) or a monthly plan.
-- **Ads:** No ads → declare "No".
-- **Content rating:** fill the questionnaire (education app, no objectionable content) → likely
-  **Everyone**.
-- **Target audience & content:** choose age groups (13+ / 18+). Not designed for children.
-- **Data safety:** declare what you collect (see B7).
-- **Government apps / Financial features:** if asked about payments — see the payments warning
-  above.
-- **Account deletion:** provide `https://www.smartlabs.lk/delete-account` (required because
-  accounts can be created in-app).
+---
 
-### B6. Upload the build & make a release
-- **Testing → Internal testing → Create new release** (do internal first, not production).
-- Upload the **`.aab`** from Part A2 (or it's already there if you used `eas submit`).
-- Add **release notes** (e.g. "First release — AI PTE practice across all four skills.").
-- Add **internal testers** (your email list) → **Save → Review release → Start rollout to Internal
-  testing**.
-- Install via the tester opt-in link, verify it works on a real phone.
-- When happy: **Production → Create new release** → promote the same build → **Send for review**.
+## Part C — Upload the build and release
 
-### B7. Data safety answers (use these)
-The app collects / handles:
-- **Personal info:** Name, Email address — *collected*, for account management; not sold.
-- **Audio:** Voice recordings (Speaking tasks) — *collected*, sent to the server for AI scoring.
-  State whether they're stored or processed transiently (confirm with your backend; if not stored,
-  say "not stored").
-- **App activity / user content:** practice answers, scores.
-- **Financial info:** purchases (handled by the payment provider, not stored by you directly).
-- Data **encrypted in transit:** Yes. Users can **request deletion:** Yes (the deletion URL).
+**Recommended first path: Internal testing → then Production.**
 
-### B8. Permissions to justify
-- **RECORD_AUDIO (microphone):** used only to record the student's spoken answers for AI scoring of
-  Speaking tasks. Mention this in the listing/data-safety.
+### C1. Internal testing (fastest — live in minutes to your testers)
+1. Left nav → **Testing → Internal testing → Create new release**.
+2. If asked about **Play App Signing**, **accept** (let Google manage the app signing key — this is the safe default and means you can never be locked out by a lost key).
+3. **Upload** the `.aab` from Part A.
+4. Release name: `1.0.0`. Add release notes (e.g. "First release").
+5. **Save → Review release → Start rollout to Internal testing**.
+6. On the **Testers** tab, add your email(s) to a tester list, copy the **opt-in link**, open it on your phone, and install via Play. Verify login, speaking recording, and scoring all work.
+
+### C2. Promote to Production
+Once internal testing looks good:
+1. Left nav → **Production → Create new release**.
+2. Reuse the same `.aab` (Play lets you promote the internal build) or upload again.
+3. Add release notes → **Review** → **Start rollout to Production**.
+4. Google reviews it (typically a few hours to a few days for a new app). You'll get an email when it's live.
+
+### C3. (Optional) Automate future submits with `eas submit`
+Instead of manual uploads later, you can run:
+```bash
+eas submit -p android --profile production
+```
+This needs a Google **service account key**:
+1. Play Console → **Setup → API access → Create new service account** (opens Google Cloud).
+2. In Google Cloud, create the service account and a **JSON key**; download it.
+3. Back in Play Console, grant that account **Release manager** access.
+4. Save the JSON as `smartlabs-app/play-service-account.json` (already gitignored).
+*(For the very first release, manual upload in C1/C2 is simplest — set this up later.)*
+
+---
+
+## Part D — Compliance notes (read before you submit)
+
+1. **Payments / Play billing — the #1 rejection risk.**
+   Google requires that **digital goods used inside the app** be sold via Google Play
+   Billing. We deliberately **do not sell credits in the app** — buying is on the
+   website only. Keep it that way: the app may **show a balance** and let users
+   **manage top-ups on smartlabs.lk**, but must **not** present an in-app "Buy credits"
+   button that funnels to a web checkout. If a reviewer flags payments, the response is
+   "all purchases occur on our website; the app provides learning features only."
+
+2. **Microphone permission.** The app requests `RECORD_AUDIO` for speaking practice.
+   This is declared in `app.json` with a usage description — no extra Play form needed,
+   but your Data safety answers (Part B5) must mention audio.
+
+3. **Privacy policy must be reachable** at https://www.smartlabs.lk/policies before you submit.
+
+4. **Test account.** Provide working student credentials in **App access** (B3.1) or the
+   review will fail at the login screen.
+
+5. **First upload must be an `.aab`** (not APK). The EAS production profile already
+   produces an `.aab`. ✔
 
 ---
 
 ## Quick checklist
-- [x] Payments: in-app checkout removed — buying happens on the website (compliant)
-- [ ] `eas login` → `eas build -p android --profile production`
-- [ ] Create Play developer account ($25, verified)
-- [ ] Create app "SmartLabs PTE" (package `lk.smartlabs.app`)
-- [ ] Store listing: icon 512, feature graphic 1024×500, 2+ screenshots, descriptions
-- [ ] App content: privacy policy, app access (test login + credits), content rating, data safety,
-      account deletion, ads = no
-- [ ] Upload `.aab` to Internal testing → test on a device
-- [ ] Promote to Production → Send for review
-
----
-*Generated for the SmartLabs PTE app. Ask Claude to (a) switch app credit-buying to web-only, or
-(b) generate the feature graphic / help capture screenshots.*
+- [ ] `eas login` → `eas build -p android --profile production` → download `.aab`
+- [ ] Play Console: create app **SmartLabs PTE**, package `lk.smartlabs.app`
+- [ ] Complete App access (+ test login), Ads, Content rating, Target audience, Data safety, Privacy policy
+- [ ] Store listing: short/full description, icon 512, feature graphic, ≥2 screenshots, category Education
+- [ ] Internal testing release → upload `.aab` → accept Play App Signing → test on your phone
+- [ ] Promote to Production → Start rollout → wait for Google review

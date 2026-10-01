@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,11 +7,9 @@ import { ScreenHeader } from '@/ui/brand';
 import { useAppLayout } from '@/ui/layout';
 import { useCredits } from '@/credits/CreditsContext';
 import { totalPaidCredits } from '@/lib/meta';
-import { API_BASE_URL } from '@/config';
 import { C } from '@/theme';
 
 const AI_PARTS = ['Write Essay', 'Summarize Written Text', 'Summarize Spoken Text', 'All Speaking tasks', 'IELTS Essay'];
-const TOPUP_URL = `${API_BASE_URL}/credits`;
 
 /**
  * Credits are purchased on the website (smartlabs.lk) and sync to the app.
@@ -26,8 +24,6 @@ export default function Credits() {
 
   const unlimited = credits.unlimited || credits.universalMonthly;
   const total = totalPaidCredits(credits);
-
-  const topUp = () => { Linking.openURL(TOPUP_URL).catch(() => {}); };
 
   return (
     <SafeAreaView style={s.safe} edges={['top', 'left', 'right']}>
@@ -69,15 +65,14 @@ export default function Credits() {
           </View>
         </View>
 
-        {/* Top up (on the website) */}
-        <Pressable onPress={topUp} style={({ pressed }) => [s.topUpBtn, pressed && { opacity: 0.9 }]}>
-          <Ionicons name="open-outline" size={18} color="#fff" />
-          <Text style={s.topUpText}>Top up on smartlabs.lk</Text>
-        </Pressable>
-        <Text style={s.helper}>
-          Buy credits securely on our website — they appear here automatically. Any part-specific
-          credits you already own are used first, then your universal credits.
-        </Text>
+        {/* Informational only — no in-app or outbound checkout (Play policy safe). */}
+        <View style={s.infoCard}>
+          <Ionicons name="information-circle-outline" size={18} color={C.slateLight} />
+          <Text style={s.infoText}>
+            Credits are managed on your SmartLabs account and sync here automatically. Any
+            part-specific credits you already own are used first, then your universal credits.
+          </Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -102,7 +97,6 @@ const s = StyleSheet.create({
   worksOnList: { gap: 8 },
   worksOnRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   worksOnText: { fontSize: 14, color: C.navy, fontWeight: '600' },
-  topUpBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: C.blue, borderRadius: 16, paddingVertical: 16, marginTop: 20 },
-  topUpText: { color: '#fff', fontSize: 15, fontWeight: '800' },
-  helper: { fontSize: 12.5, color: C.slateLight, textAlign: 'center', lineHeight: 18, marginTop: 14 },
+  infoCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: C.border, padding: 16, marginTop: 20 },
+  infoText: { flex: 1, fontSize: 13, color: C.slateLight, lineHeight: 19, fontWeight: '600' },
 });
