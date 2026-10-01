@@ -7,7 +7,7 @@ import { useUser, useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type CSSProperties } from 'react';
 import { cn } from '@/lib/utils';
 import {
   House,
@@ -62,12 +62,12 @@ function NavItem({ item, pathname, onClick }: { item: any; pathname: string; onC
       <div
         className={cn(
           'w-8 h-8 rounded-lg flex items-center justify-center transition-all shrink-0',
-          isActive ? 'bg-white/20' : item.bg || 'bg-muted'
+          isActive ? 'bg-white/20' : pathname.startsWith('/dashboard/ielts') ? 'bg-primary/5' : item.bg || 'bg-muted'
         )}
       >
         <Icon
           weight="bold"
-          className={cn('h-4 w-4', isActive ? 'text-white' : item.color || 'text-muted-foreground')}
+          className={cn('h-4 w-4', isActive ? 'text-white' : pathname.startsWith('/dashboard/ielts') ? 'text-primary' : item.color || 'text-muted-foreground')}
         />
       </div>
       <span className="truncate">{item.title}</span>
@@ -190,7 +190,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const isDesktopClient = isElectron && !isMac;
 
   return (
-    <div className={cn('min-h-screen bg-muted/20', isDesktopClient && 'pt-8')}>
+    <div className={cn('min-h-screen bg-muted/20', isDesktopClient && 'pt-8')}
+      style={pathname.startsWith('/dashboard/ielts') ? {
+        '--primary': '358 79% 47%', '--primary-foreground': '0 0% 100%',
+        '--background': '0 0% 100%', '--foreground': '0 0% 13%',
+        '--muted': '0 0% 95%', '--muted-foreground': '0 0% 38%',
+        '--border': '0 0% 88%', '--accent': '358 100% 97%',
+        '--accent-foreground': '0 0% 13%', '--ring': '358 79% 47%',
+      } as CSSProperties : undefined}>
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
