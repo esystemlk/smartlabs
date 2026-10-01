@@ -54,3 +54,6 @@ smartlabs-app/android/app/build/
 # EAS / Play Store secrets
 smartlabs-app/play-service-account.json
 smartlabs-app/credentials.json
+
+# Scratch / source material (never commit)
+tmp/
