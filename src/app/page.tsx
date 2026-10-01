@@ -10,7 +10,6 @@ import {
   RefreshCw,
   RefreshCcw,
   Lightbulb,
-  Scan,
   Cpu,
   Trophy,
   Activity,
@@ -43,7 +42,6 @@ import {
   PenTool,
   Headphones,
   BarChart3,
-  Flag,
   Monitor,
   Laptop,
   Bell,
@@ -672,17 +670,17 @@ export default function Home() {
               Welcome to
             </motion.p>
 
-            <div style={{ overflow: 'hidden' }}>
+            <div style={{ overflowX: 'visible', overflowY: 'hidden' }}>
               <motion.h1 initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ duration: 0.85, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 className="font-black text-slate-900 leading-none tracking-tighter"
-                style={{ fontSize: 'clamp(4rem, 10vw, 8.5rem)', lineHeight: 0.88 }}>
+                style={{ fontSize: 'clamp(4rem, 10vw, 8.5rem)', lineHeight: 0.95, paddingRight: '0.05em' }}>
                 SMART
               </motion.h1>
             </div>
-            <div style={{ overflow: 'hidden', marginBottom: '1.75rem' }}>
+            <div style={{ overflowX: 'visible', overflowY: 'hidden', marginBottom: '1.75rem' }}>
               <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ duration: 0.85, delay: 0.52, ease: [0.16, 1, 0.3, 1] }}
                 className="font-black leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1"
-                style={{ fontSize: 'clamp(4rem, 10vw, 8.5rem)', lineHeight: 0.88 }}>
+                style={{ fontSize: 'clamp(4rem, 10vw, 8.5rem)', lineHeight: 0.95, paddingRight: '0.05em' }}>
                 LABS
               </motion.div>
             </div>
@@ -837,15 +835,15 @@ export default function Home() {
             <p className="hero-fade-in text-[11px] font-bold uppercase tracking-[0.5em] text-slate-400 mb-5" style={{ animationDelay: '0.2s' }}>
               Welcome to
             </p>
-            <div style={{ overflow: 'hidden' }}>
+            <div style={{ overflowX: 'visible', overflowY: 'hidden' }}>
               <h1 className="hero-rise-in font-black text-slate-900 leading-none tracking-tighter"
-                style={{ fontSize: '18vw', lineHeight: 0.88, animationDelay: '0.05s' }}>
+                style={{ fontSize: '18vw', lineHeight: 0.95, animationDelay: '0.05s' }}>
                 SMART
               </h1>
             </div>
-            <div style={{ overflow: 'hidden', marginBottom: '1rem' }}>
+            <div style={{ overflowX: 'visible', overflowY: 'hidden', marginBottom: '1rem' }}>
               <div className="hero-rise-in font-black leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1"
-                style={{ fontSize: '18vw', lineHeight: 0.88, animationDelay: '0.15s' }}>
+                style={{ fontSize: '18vw', lineHeight: 0.95, animationDelay: '0.15s' }}>
                 LABS
               </div>
             </div>
@@ -1000,7 +998,7 @@ export default function Home() {
 
               <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
                 The Ultimate <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 italic">Self-Paced Exam</span> <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 italic pr-2">Self-Paced Exam</span> <br />
                 Strategy Vault
               </h2>
 
@@ -1109,7 +1107,7 @@ export default function Home() {
               </motion.div>
               <h2 className="text-5xl sm:text-7xl font-black tracking-tight leading-none">
                 Your Strategic <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 animate-gradient italic">Path to Success</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 animate-gradient italic pr-2">Path to Success</span>
               </h2>
             </div>
             <p className="text-lg text-muted-foreground max-w-md pb-2">
@@ -1234,7 +1232,7 @@ export default function Home() {
             </motion.div>
             <h2 className="text-5xl sm:text-7xl font-black tracking-tight leading-none">
               Engineered for <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 animate-gradient italic">Peak Performance</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 animate-gradient italic pr-2">Peak Performance</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl">
               Discover the proprietary technology and expert-led methodologies that have established Smart Labs as the undisputed industry leader.
@@ -1274,93 +1272,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Comparison Section - Smart Labs vs Traditional */}
-      <section className="py-24 sm:py-32 bg-slate-50 dark:bg-slate-900/50 relative overflow-hidden">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-20 lg:gap-32 items-center">
-            <div className="space-y-10">
-              <div className="space-y-6">
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-1/10 text-accent-1 text-[10px] font-black uppercase tracking-[0.3em]"
-                >
-                  Market Comparison
-                </motion.div>
-                <h2 className="text-5xl sm:text-7xl font-black mb-8 leading-[0.9] tracking-tight">
-                  Transcend the <br />
-                  <span className="text-primary italic">Conventional</span>
-                </h2>
-                <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
-                  Traditional coaching is fundamentally disconnected from modern exam algorithms. Smart Labs bridges that critical gap with data-driven precision.
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                {displayComparisons.slice(0, 3).map((item, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1 }}
-                    className="flex items-center gap-6 p-6 rounded-[32px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <div className="w-14 h-14 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-600 shrink-0">
-                      <Check className="h-8 w-8" />
-                    </div>
-                    <div>
-                      <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{item.item}</div>
-                      <div className="font-black text-xl text-primary">{item.smartlabs}</div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              className="glass-card rounded-[56px] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-[0_80px_160px_rgba(0,0,0,0.1)] bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl"
-            >
-              <div className="p-10 lg:p-16 overflow-x-auto">
-                <table className="w-full text-left min-w-[500px]">
-                  <thead>
-                    <tr className="border-b border-slate-100 dark:border-slate-800">
-                      <th className="pb-10 font-black uppercase text-[10px] tracking-[0.3em] text-slate-400">Parameter</th>
-                      <th className="pb-10 font-black uppercase text-[10px] tracking-[0.3em] text-slate-400">Traditional</th>
-                      <th className="pb-10 font-black uppercase text-[10px] tracking-[0.3em] text-primary">Smart Labs</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
-                    {displayComparisons.map((row, i) => (
-                      <tr key={i} className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                        <td className="py-8 font-black text-lg tracking-tight">{row.item}</td>
-                        <td className="py-8 text-muted-foreground">
-                          <div className="flex items-center gap-3">
-                            <X className="h-4 w-4 text-red-400" />
-                            <span className="text-sm font-medium">{row.traditional}</span>
-                          </div>
-                        </td>
-                        <td className="py-8">
-                          <div className="flex items-center gap-3 text-primary">
-                            <Check className="h-5 w-5 text-green-500" />
-                            <span className="text-lg font-black">{row.smartlabs}</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-
       {/* Courses Section - Premium Design */}
       <section id="courses" className="relative py-24 sm:py-32 overflow-hidden bg-slate-50 dark:bg-[#020617]">
         {/* Advanced Background Effects */}
@@ -1378,7 +1289,7 @@ export default function Home() {
             </motion.div>
             <h2 className="text-5xl sm:text-7xl font-black tracking-tight leading-none">
               Choose Your <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 animate-gradient italic">Victory Path</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 animate-gradient italic pr-2">Victory Path</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl">
               World-class preparation for PTE, IELTS, KET & PET — engineered by internationally trained experts.
@@ -1475,7 +1386,7 @@ export default function Home() {
               </motion.div>
               <h2 className="text-5xl sm:text-7xl font-black tracking-tight leading-none">
                 Mastery on <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-3 via-primary to-accent-1 animate-gradient italic">Your Terms</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-3 via-primary to-accent-1 animate-gradient italic pr-2">Your Terms</span>
               </h2>
             </div>
             <p className="text-lg text-muted-foreground max-w-md pb-2 leading-relaxed">
@@ -1530,55 +1441,6 @@ export default function Home() {
                 </div>
               </div>
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Expert Lifecycle - Detailed Roadmap */}
-      <section className="py-24 sm:py-32 relative overflow-hidden">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center text-center space-y-6 mb-24">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              className="px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-black uppercase tracking-[0.3em]"
-            >
-              The Success Protocol
-            </motion.div>
-            <h2 className="text-5xl sm:text-7xl font-black tracking-tight leading-none">
-              Strategic <br />
-              <span className="text-primary italic">Lifecycle Management</span>
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-4 gap-8 lg:gap-12 relative">
-            {/* Connecting Vector - Desktop */}
-            <div className="absolute top-[120px] left-[10%] right-[10%] h-px bg-slate-200 dark:bg-slate-800 hidden md:block" />
-
-            {[
-              { title: 'Assessment', desc: 'Neural AI Diagnostic Analysis', icon: Scan, color: 'text-accent-1', bg: 'bg-accent-1/10', step: '01' },
-              { title: 'Optimization', desc: 'Custom Algorithmic Curriculum', icon: Map, color: 'text-accent-2', bg: 'bg-accent-2/10', step: '02' },
-              { title: 'Simulation', desc: 'Real-time Exam Emulation', icon: Trophy, color: 'text-accent-3', bg: 'bg-accent-3/10', step: '03' },
-              { title: 'Certification', desc: 'Verified Target Achievement', icon: Flag, color: 'text-accent-4', bg: 'bg-accent-4/10', step: '04' },
-            ].map((step, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-              >
-                <div className="relative group h-full p-10 rounded-[48px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 transition-all duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] hover:-translate-y-4 hover:border-primary/30 flex flex-col items-center text-center">
-                  <div className="absolute top-8 right-10 text-5xl font-black opacity-[0.03] group-hover:opacity-[0.08] transition-opacity select-none">{step.step}</div>
-                  <div className={cn("w-20 h-20 rounded-[32px] flex items-center justify-center mb-8 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-2xl", step.bg, step.color)}>
-                    <step.icon className="h-10 w-10" />
-                  </div>
-                  <h3 className="text-2xl font-black mb-3 tracking-tight group-hover:text-primary transition-colors">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
-                </div>
-              </motion.div>
-            ))}
           </div>
         </div>
       </section>
@@ -1658,7 +1520,7 @@ export default function Home() {
             </motion.div>
             <h2 className="text-5xl sm:text-7xl font-black tracking-tight leading-none">
               The Four <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 animate-gradient italic">Dimensions</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1 animate-gradient italic pr-2">Dimensions</span>
             </h2>
           </div>
 
