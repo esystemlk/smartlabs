@@ -1,15 +1,87 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useSyncExternalStore, type CSSProperties } from 'react';
-import { ArrowUpRight, ArrowRight, Headphones, BookOpen, PenLine, Mic, Check, Clock3, Layers3, Sparkles } from 'lucide-react';
+import { useState, useSyncExternalStore, type CSSProperties } from 'react';
+import { ArrowUpRight, ArrowRight, ChevronDown, Headphones, BookOpen, PenLine, Mic, Check, Clock3, Layers3, Sparkles } from 'lucide-react';
 import { ieltsSkills } from '@/lib/ielts-catalog';
 const icons = { listening: Headphones, reading: BookOpen, writing: PenLine, speaking: Mic };
+type ReadingTest = { n: number; title: string; desc: string };
+type ReadingBook = { book: number; tests: ReadingTest[] };
+const cambridgeReadingBooks: ReadingBook[] = [
+  { book: 21, tests: [
+    { n: 1, title: 'Test 1', desc: 'Three passages · 40 questions · notes completion, True/False/Not Given, locating information, summary completion and matching people · answer review' },
+    { n: 2, title: 'Test 2', desc: 'Three passages · 40 questions · table completion, True/False/Not Given, locating information, choose-two and summary completion · answer review' },
+    { n: 3, title: 'Test 3', desc: 'Three passages · 40 questions · notes completion, True/False/Not Given, sentence completion and multiple choice · answer review' },
+    { n: 4, title: 'Test 4', desc: 'Three passages · 40 questions · True/False/Not Given, flow-chart and notes completion, summary completion and multiple choice · answer review' },
+  ] },
+  { book: 20, tests: [
+    { n: 1, title: 'Test 1', desc: 'Three passages · 40 questions · True/False/Not Given, notes completion, locating information, matching people and summary completion · answer review' },
+    { n: 2, title: 'Test 2', desc: 'Three passages · 40 questions · notes completion, True/False/Not Given, locating information, summary completion and choose-two · answer review' },
+    { n: 3, title: 'Test 3', desc: 'Three passages · 40 questions · notes completion, True/False/Not Given, matching headings, choose-two and matching experts · answer review' },
+    { n: 4, title: 'Test 4', desc: 'Three passages · 40 questions · notes completion, True/False/Not Given, locating information and matching people · answer review' },
+  ] },
+  { book: 19, tests: [
+    { n: 1, title: 'Test 1', desc: 'Three passages · 40 questions · True/False/Not Given, notes completion, locating information, choose-two and summary completion · answer review' },
+    { n: 2, title: 'Test 2', desc: 'Three passages · 40 questions · notes completion, True/False/Not Given, locating information, sentence completion and summary completion · answer review' },
+    { n: 3, title: 'Test 3', desc: 'Three passages · 40 questions · True/False/Not Given, notes completion, locating information, sentence completion and matching experts · answer review' },
+    { n: 4, title: 'Test 4', desc: 'Three passages · 40 questions · True/False/Not Given, notes completion, matching people and summary completion · answer review' },
+  ] },
+  { book: 18, tests: [
+    { n: 1, title: 'Test 1', desc: 'Three passages · 40 questions · sentence and table completion, True/False/Not Given, locating information and matching timber cuts · answer review' },
+    { n: 2, title: 'Test 2', desc: 'Three passages · 40 questions · notes completion, True/False/Not Given, multiple choice and summary completion · answer review' },
+    { n: 3, title: 'Test 3', desc: 'Three passages · 40 questions · locating information, summary completion, matching people and matching headings · answer review' },
+    { n: 4, title: 'Test 4', desc: 'Three passages · 40 questions · locating information, choose-two, multiple choice, matching people and summary completion · answer review' },
+  ] },
+  { book: 17, tests: [
+    { n: 1, title: 'Test 1', desc: 'Three passages · 40 questions · sentence and notes completion, True/False/Not Given, locating information, choose-two and summary completion · answer review' },
+    { n: 2, title: 'Test 2', desc: 'Three passages · 40 questions · notes completion, True/False/Not Given, locating information, matching researchers and multiple choice · answer review' },
+    { n: 3, title: 'Test 3', desc: 'Three passages · 40 questions · notes completion, True/False/Not Given, locating information, choose-two and sentence completion · answer review' },
+    { n: 4, title: 'Test 4', desc: 'Three passages · 40 questions · True/False/Not Given, table completion, locating information, summary completion and choose-two · answer review' },
+  ] },
+  { book: 16, tests: [
+    { n: 1, title: 'Test 1', desc: 'Three passages · 40 questions · True/False/Not Given, table completion, matching headings, choose-two, multiple choice and matching people · answer review' },
+    { n: 2, title: 'Test 2', desc: 'Three passages · 40 questions · True/False/Not Given, summary completion, multiple choice and Yes/No/Not Given · answer review' },
+    { n: 3, title: 'Test 3', desc: 'Three passages · 40 questions · True/False/Not Given, summary completion, locating information and choose-two · answer review' },
+    { n: 4, title: 'Test 4', desc: 'Three passages · 40 questions · diagram labelling, True/False/Not Given, multiple choice, summary completion and matching headings · answer review' },
+  ] },
+  { book: 15, tests: [
+    { n: 1, title: 'Test 1', desc: 'Three passages · 40 questions · notes and table completion, locating information, choose-two, multiple choice and matching explorers · answer review' },
+    { n: 2, title: 'Test 2', desc: 'Three passages · 40 questions · locating information, summary completion, matching people and multiple choice · answer review' },
+    { n: 3, title: 'Test 3', desc: 'Three passages · 40 questions · True/False/Not Given, notes completion, matching headings, summary completion and sentence endings · answer review' },
+    { n: 4, title: 'Test 4', desc: 'Three passages · 40 questions · notes and table completion, True/False/Not Given, summary completion and multiple choice · answer review' },
+  ] },
+  { book: 14, tests: [
+    { n: 1, title: 'Test 1', desc: 'Three passages · 40 questions · notes completion, locating information, choose-two and matching researchers · answer review' },
+    { n: 2, title: 'Test 2', desc: 'Three passages · 40 questions · True/False/Not Given, notes completion, locating information, summary and matching headings · answer review' },
+    { n: 3, title: 'Test 3', desc: 'Three passages · 40 questions · locating information, matching theories, choose-two and matching researchers · answer review' },
+    { n: 4, title: 'Test 4', desc: 'Three passages · 40 questions · notes completion, True/False/Not Given, locating information, choose-two and multiple choice · answer review' },
+  ] },
+  { book: 13, tests: [
+    { n: 1, title: 'Test 1', desc: 'Three passages · 40 questions · table completion, True/False/Not Given, matching headings, matching people and sentence endings · answer review' },
+    { n: 2, title: 'Test 2', desc: 'Three passages · 40 questions · notes completion, locating information, matching researchers, matching companies and sentence endings · answer review' },
+    { n: 3, title: 'Test 3', desc: 'Three passages · 40 questions · table completion, matching researchers, summary completion and locating information · answer review' },
+    { n: 4, title: 'Test 4', desc: 'Three passages · 40 questions · True/False/Not Given, sentence completion, sentence endings, locating information and multiple choice · answer review' },
+  ] },
+  { book: 12, tests: [
+    { n: 1, title: 'Test 1', desc: 'Three passages · 40 questions · True/False/Not Given, notes and sentence completion, matching headings and summary completion · answer review' },
+    { n: 2, title: 'Test 2', desc: 'Three passages · 40 questions · locating information, matching people, choose-two, matching headings, table and sentence completion · answer review' },
+    { n: 3, title: 'Test 3', desc: 'Three passages · 40 questions · matching headings, notes completion, locating information, summary completion and multiple choice · answer review' },
+    { n: 4, title: 'Test 4', desc: 'Three passages · 40 questions · notes completion, multiple choice, summary completion and matching headings · answer review' },
+  ] },
+  { book: 11, tests: [
+    { n: 1, title: 'Test 1', desc: 'Three passages · 40 questions · diagram labelling, completion and matching · answer review' },
+    { n: 2, title: 'Test 2', desc: 'Three passages · 40 questions · True/False/Not Given, paragraph headings, diagram, summary and multiple choice · answer review' },
+    { n: 3, title: 'Test 3', desc: 'Three passages · 40 questions · notes and sentence completion, sentence endings, section matching and True/False/Not Given · answer review' },
+    { n: 4, title: 'Test 4', desc: 'Three passages · 40 questions · True/False/Not Given, matching researchers, multiple choice, matching headings and summary completion · answer review' },
+  ] },
+];
 let visitTrack = 'academic';
 function readTrack() { try { return localStorage.getItem('ielts-track') || visitTrack; } catch { return visitTrack; } }
 function subscribeTrack(callback: () => void) { window.addEventListener('storage', callback); window.addEventListener('ielts-track-change', callback); return () => { window.removeEventListener('storage', callback); window.removeEventListener('ielts-track-change', callback); }; }
 export function IeltsStudio({ section }: { section?: string }) {
   const track = useSyncExternalStore(subscribeTrack, readTrack, () => 'academic');
+  const [openBooks, setOpenBooks] = useState<Record<number, boolean>>({ 21: true });
+  function toggleBook(book: number) { setOpenBooks(prev => ({ ...prev, [book]: !prev[book] })); }
   function chooseTrack(value: 'academic' | 'general') { visitTrack = value; try { localStorage.setItem('ielts-track', value); } catch { /* Keep the choice for this visit. */ } window.dispatchEvent(new Event('ielts-track-change')); }
   const skill = ieltsSkills.find(item => item.id === section);
   const isGeneral = track === 'general';
@@ -27,31 +99,13 @@ export function IeltsStudio({ section }: { section?: string }) {
     </> : skill ? <>
       <section className="studio-detail-hero" style={{ '--skill-color': skill.color, '--skill-tint': skill.tint } as CSSProperties}><p className="studio-eyebrow">{isGeneral ? 'GENERAL TRAINING' : 'ACADEMIC'} · {skill.title.toUpperCase()}</p><h1>{skill.subtitle}</h1><p>{skill.description}</p><span className="studio-detail-label">{skill.id === 'listening' || skill.id === 'speaking' ? 'Shared by Academic and General Training' : `${isGeneral ? 'General Training' : 'Academic'} practice path`}</span></section>
       <div className="studio-section-title"><div><p className="studio-eyebrow">YOUR PRACTICE COLLECTION</p><h2>{skill.title} sections</h2></div></div>
-      {skill.id === 'reading' && !isGeneral ? <div className="studio-parts">
-        <section className="studio-part"><span className="studio-part-number">01</span><div><h3>Cambridge IELTS 11 · Academic Reading Test 1</h3><p>Three passages · 40 questions · diagram labelling, completion and matching · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-11-test-1">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">02</span><div><h3>Cambridge IELTS 11 · Academic Reading Test 2</h3><p>Three passages · 40 questions · True/False/Not Given, paragraph headings, diagram, summary and multiple choice · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-11-test-2">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">03</span><div><h3>Cambridge IELTS 11 · Academic Reading Test 3</h3><p>Three passages · 40 questions · notes and sentence completion, sentence endings, section matching and True/False/Not Given · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-11-test-3">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">04</span><div><h3>Cambridge IELTS 11 · Academic Reading Test 4</h3><p>Three passages · 40 questions · True/False/Not Given, matching researchers, multiple choice, matching headings and summary completion · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-11-test-4">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">05</span><div><h3>Cambridge IELTS 12 · Academic Reading Test 1</h3><p>Three passages · 40 questions · True/False/Not Given, notes and sentence completion, matching headings and summary completion · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-12-test-1">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">06</span><div><h3>Cambridge IELTS 12 · Academic Reading Test 2</h3><p>Three passages · 40 questions · locating information, matching people, choose-two, matching headings, table and sentence completion · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-12-test-2">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">07</span><div><h3>Cambridge IELTS 12 · Academic Reading Test 3</h3><p>Three passages · 40 questions · matching headings, notes completion, locating information, summary completion and multiple choice · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-12-test-3">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">08</span><div><h3>Cambridge IELTS 12 · Academic Reading Test 4</h3><p>Three passages · 40 questions · notes completion, multiple choice, summary completion and matching headings · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-12-test-4">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">09</span><div><h3>Cambridge IELTS 13 · Academic Reading Test 1</h3><p>Three passages · 40 questions · table completion, True/False/Not Given, matching headings, matching people and sentence endings · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-13-test-1">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">10</span><div><h3>Cambridge IELTS 13 · Academic Reading Test 2</h3><p>Three passages · 40 questions · notes completion, locating information, matching researchers, matching companies and sentence endings · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-13-test-2">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">11</span><div><h3>Cambridge IELTS 13 · Academic Reading Test 3</h3><p>Three passages · 40 questions · table completion, matching researchers, summary completion and locating information · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-13-test-3">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">12</span><div><h3>Cambridge IELTS 13 · Academic Reading Test 4</h3><p>Three passages · 40 questions · True/False/Not Given, sentence completion, sentence endings, locating information and multiple choice · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-13-test-4">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">13</span><div><h3>Cambridge IELTS 14 · Academic Reading Test 1</h3><p>Three passages · 40 questions · notes completion, locating information, choose-two and matching researchers · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-14-test-1">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">14</span><div><h3>Cambridge IELTS 14 · Academic Reading Test 2</h3><p>Three passages · 40 questions · True/False/Not Given, notes completion, locating information, summary and matching headings · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-14-test-2">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">15</span><div><h3>Cambridge IELTS 14 · Academic Reading Test 3</h3><p>Three passages · 40 questions · locating information, matching theories, choose-two and matching researchers · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-14-test-3">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">16</span><div><h3>Cambridge IELTS 14 · Academic Reading Test 4</h3><p>Three passages · 40 questions · notes completion, True/False/Not Given, locating information, choose-two and multiple choice · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-14-test-4">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">17</span><div><h3>Cambridge IELTS 15 · Academic Reading Test 1</h3><p>Three passages · 40 questions · notes and table completion, locating information, choose-two, multiple choice and matching explorers · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-15-test-1">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">18</span><div><h3>Cambridge IELTS 15 · Academic Reading Test 2</h3><p>Three passages · 40 questions · locating information, summary completion, matching people and multiple choice · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-15-test-2">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">19</span><div><h3>Cambridge IELTS 15 · Academic Reading Test 3</h3><p>Three passages · 40 questions · True/False/Not Given, notes completion, matching headings, summary completion and sentence endings · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-15-test-3">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">20</span><div><h3>Cambridge IELTS 15 · Academic Reading Test 4</h3><p>Three passages · 40 questions · notes and table completion, True/False/Not Given, summary completion and multiple choice · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-15-test-4">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">21</span><div><h3>Cambridge IELTS 16 · Academic Reading Test 1</h3><p>Three passages · 40 questions · True/False/Not Given, table completion, matching headings, choose-two, multiple choice and matching people · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-16-test-1">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">22</span><div><h3>Cambridge IELTS 16 · Academic Reading Test 2</h3><p>Three passages · 40 questions · True/False/Not Given, summary completion, multiple choice and Yes/No/Not Given · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-16-test-2">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">23</span><div><h3>Cambridge IELTS 16 · Academic Reading Test 3</h3><p>Three passages · 40 questions · True/False/Not Given, summary completion, locating information and choose-two · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-16-test-3">Start practice <ArrowUpRight size={16} /></Link></section>
-        <section className="studio-part"><span className="studio-part-number">24</span><div><h3>Cambridge IELTS 16 · Academic Reading Test 4</h3><p>Three passages · 40 questions · diagram labelling, True/False/Not Given, multiple choice, summary completion and matching headings · answer review</p></div><Link className="studio-primary" href="/dashboard/ielts/reading/cambridge-16-test-4">Start practice <ArrowUpRight size={16} /></Link></section>
+      {skill.id === 'reading' && !isGeneral ? <div className="studio-books">{cambridgeReadingBooks.map((group, gi) => { const open = !!openBooks[group.book]; return <section className="studio-book" key={group.book} data-open={open}>
+        <button type="button" className="studio-book-header" aria-expanded={open} onClick={() => toggleBook(group.book)}>
+          <span className="studio-book-title"><span className="studio-part-number">{String(cambridgeReadingBooks.length - gi).padStart(2, '0')}</span><h3>Cambridge IELTS {group.book} · Academic Reading</h3>{gi === 0 && <span className="studio-book-badge">LATEST</span>}</span>
+          <span className="studio-book-meta">{group.tests.length} tests <ChevronDown className="studio-book-chevron" size={18} /></span>
+        </button>
+        {open && <div className="studio-book-tests">{group.tests.map(test => <section className="studio-subpart" key={test.n}><span className="studio-subpart-number">{String(test.n).padStart(2, '0')}</span><div><h4>{test.title}</h4><p>{test.desc}</p></div><Link className="studio-primary" href={`/dashboard/ielts/reading/cambridge-${group.book}-test-${test.n}`}>Start practice <ArrowUpRight size={16} /></Link></section>)}</div>}
+      </section>; })}
       </div> : <div className="studio-parts">{groups?.map((group, i) => { const live = skill.id === 'writing' && i === 1; return <section className="studio-part" key={group}><span className="studio-part-number">0{i + 1}</span><div><h3>{group}</h3><p>{live ? 'Develop your essay and receive AI practice feedback.' : 'Questions for this section are being prepared.'}</p></div>{live ? <Link className="studio-primary" href="/ai-ielts-essay-practice">Start practice <ArrowUpRight size={16} /></Link> : <span className="studio-soon">Coming soon</span>}</section>; })}</div>}
       <section className="studio-types"><h2>What you’ll practise</h2><div>{types?.map(type => <span key={type}>{type}</span>)}</div><p>These are the planned practice categories. Question collections will appear here as they become available.</p></section>
       {skill.id !== 'writing' && !(skill.id === 'reading' && !isGeneral) && <section className="studio-empty"><Sparkles size={24} /><h2>Your next practice collection is on its way.</h2><p>While we prepare these questions, you can start building your writing confidence.</p><Link href="/ai-ielts-essay-practice">Try Writing Task 2 <ArrowRight size={17} /></Link></section>}
