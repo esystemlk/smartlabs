@@ -75,6 +75,11 @@ const cambridgeReadingBooks: ReadingBook[] = [
     { n: 4, title: 'Test 4', desc: 'Three passages · 40 questions · True/False/Not Given, matching researchers, multiple choice, matching headings and summary completion · answer review' },
   ] },
 ];
+const cambridgeListeningBooks: ReadingBook[] = [
+  { book: 11, tests: [
+    { n: 1, title: 'Test 1', desc: 'Four parts · 40 questions · notes completion, map labelling and multiple choice · audio + answer review' },
+  ] },
+];
 let visitTrack = 'academic';
 function readTrack() { try { return localStorage.getItem('ielts-track') || visitTrack; } catch { return visitTrack; } }
 function subscribeTrack(callback: () => void) { window.addEventListener('storage', callback); window.addEventListener('ielts-track-change', callback); return () => { window.removeEventListener('storage', callback); window.removeEventListener('ielts-track-change', callback); }; }
@@ -87,6 +92,8 @@ export function IeltsStudio({ section }: { section?: string }) {
   const isGeneral = track === 'general';
   const groups = skill?.id === 'writing' && isGeneral ? ['Task 1 · Letter', 'Task 2 · Essay'] : skill?.id === 'reading' && isGeneral ? ['Section 1 · Everyday reading', 'Section 2 · Workplace reading', 'Section 3 · Extended reading'] : skill?.groups;
   const types = skill?.id === 'writing' && isGeneral ? ['Formal letters', 'Semi-formal letters', 'Informal letters', 'Opinion essays', 'Discussion essays', 'Multi-part essays'] : skill?.types;
+  const books = skill?.id === 'reading' && !isGeneral ? cambridgeReadingBooks : skill?.id === 'listening' ? cambridgeListeningBooks : null;
+  const bookLabel = skill?.id === 'listening' ? 'Listening' : 'Academic Reading';
   return <div className="studio-wrap">
     <div className="studio-top"><Link href="/dashboard/ielts" className="studio-wordmark">IELTS <span>STUDIO</span><i /></Link><span className="studio-top-note">A little practice. A world of possibility.</span></div>
     <nav className="studio-nav" aria-label="IELTS sections">{[{ id: '', title: 'Overview' }, ...ieltsSkills, { id: 'mock-tests', title: 'Mock tests' }].map(item => <Link key={item.id} aria-current={(section || '') === item.id ? 'page' : undefined} href={`/dashboard/ielts${item.id ? `/${item.id}` : ''}`}>{item.title}</Link>)}</nav>
@@ -99,16 +106,16 @@ export function IeltsStudio({ section }: { section?: string }) {
     </> : skill ? <>
       <section className="studio-detail-hero" style={{ '--skill-color': skill.color, '--skill-tint': skill.tint } as CSSProperties}><p className="studio-eyebrow">{isGeneral ? 'GENERAL TRAINING' : 'ACADEMIC'} · {skill.title.toUpperCase()}</p><h1>{skill.subtitle}</h1><p>{skill.description}</p><span className="studio-detail-label">{skill.id === 'listening' || skill.id === 'speaking' ? 'Shared by Academic and General Training' : `${isGeneral ? 'General Training' : 'Academic'} practice path`}</span></section>
       <div className="studio-section-title"><div><p className="studio-eyebrow">YOUR PRACTICE COLLECTION</p><h2>{skill.title} sections</h2></div></div>
-      {skill.id === 'reading' && !isGeneral ? <div className="studio-books">{cambridgeReadingBooks.map((group, gi) => { const open = !!openBooks[group.book]; return <section className="studio-book" key={group.book} data-open={open}>
+      {books ? <div className="studio-books">{books.map((group, gi) => { const open = !!openBooks[group.book]; return <section className="studio-book" key={group.book} data-open={open}>
         <button type="button" className="studio-book-header" aria-expanded={open} onClick={() => toggleBook(group.book)}>
-          <span className="studio-book-title"><span className="studio-part-number">{String(cambridgeReadingBooks.length - gi).padStart(2, '0')}</span><h3>Cambridge IELTS {group.book} · Academic Reading</h3>{gi === 0 && <span className="studio-book-badge">LATEST</span>}</span>
-          <span className="studio-book-meta">{group.tests.length} tests <ChevronDown className="studio-book-chevron" size={18} /></span>
+          <span className="studio-book-title"><span className="studio-part-number">{String(books.length - gi).padStart(2, '0')}</span><h3>Cambridge IELTS {group.book} · {bookLabel}</h3>{gi === 0 && <span className="studio-book-badge">LATEST</span>}</span>
+          <span className="studio-book-meta">{group.tests.length} test{group.tests.length === 1 ? '' : 's'} <ChevronDown className="studio-book-chevron" size={18} /></span>
         </button>
-        {open && <div className="studio-book-tests">{group.tests.map(test => <section className="studio-subpart" key={test.n}><span className="studio-subpart-number">{String(test.n).padStart(2, '0')}</span><div><h4>{test.title}</h4><p>{test.desc}</p></div><Link className="studio-primary" href={`/dashboard/ielts/reading/cambridge-${group.book}-test-${test.n}`}>Start practice <ArrowUpRight size={16} /></Link></section>)}</div>}
+        {open && <div className="studio-book-tests">{group.tests.map(test => <section className="studio-subpart" key={test.n}><span className="studio-subpart-number">{String(test.n).padStart(2, '0')}</span><div><h4>{test.title}</h4><p>{test.desc}</p></div><Link className="studio-primary" href={`/dashboard/ielts/${skill.id}/cambridge-${group.book}-test-${test.n}`}>Start practice <ArrowUpRight size={16} /></Link></section>)}</div>}
       </section>; })}
       </div> : <div className="studio-parts">{groups?.map((group, i) => { const live = skill.id === 'writing' && i === 1; return <section className="studio-part" key={group}><span className="studio-part-number">0{i + 1}</span><div><h3>{group}</h3><p>{live ? 'Develop your essay and receive AI practice feedback.' : 'Questions for this section are being prepared.'}</p></div>{live ? <Link className="studio-primary" href="/ai-ielts-essay-practice">Start practice <ArrowUpRight size={16} /></Link> : <span className="studio-soon">Coming soon</span>}</section>; })}</div>}
       <section className="studio-types"><h2>What you’ll practise</h2><div>{types?.map(type => <span key={type}>{type}</span>)}</div><p>These are the planned practice categories. Question collections will appear here as they become available.</p></section>
-      {skill.id !== 'writing' && !(skill.id === 'reading' && !isGeneral) && <section className="studio-empty"><Sparkles size={24} /><h2>Your next practice collection is on its way.</h2><p>While we prepare these questions, you can start building your writing confidence.</p><Link href="/ai-ielts-essay-practice">Try Writing Task 2 <ArrowRight size={17} /></Link></section>}
+      {skill.id !== 'writing' && !books && <section className="studio-empty"><Sparkles size={24} /><h2>Your next practice collection is on its way.</h2><p>While we prepare these questions, you can start building your writing confidence.</p><Link href="/ai-ielts-essay-practice">Try Writing Task 2 <ArrowRight size={17} /></Link></section>}
     </> : <section className="studio-empty studio-mock"><Clock3 size={38} /><p className="studio-eyebrow">IELTS MOCK TESTS</p><h1>Bring your skills together.</h1><p>Timed section tests and full practice tests are being prepared. They’ll appear here when the questions and review tools are ready.</p><span className="studio-soon">Coming soon</span><Link href="/dashboard/ielts/writing">Explore writing practice <ArrowRight size={17} /></Link></section>}
     <footer className="studio-footer"><span>SMARTLABS · IELTS STUDIO</span><span>Your pace. Your progress. Your next chapter.</span></footer>
   </div>;

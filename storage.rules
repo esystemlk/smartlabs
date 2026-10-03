@@ -60,6 +60,14 @@ service firebase.storage {
                    && underMB(15);
     }
 
+    // IELTS Listening audio — public read (played in the listening trainer).
+    // Uploaded by staff via the Firebase console / an authenticated upload path;
+    // the recordings are referenced by URL from each listening test.
+    match /ielts-listening/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthed() && request.resource.contentType.matches('audio/.*') && underMB(60);
+    }
+
     // Anything else: no public access.
     match /{allPaths=**} {
       allow read, write: if false;

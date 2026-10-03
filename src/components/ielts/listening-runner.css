@@ -1,0 +1,33 @@
+/* IELTS Listening — audio player (extends reading-test.css + reading-runner.css). */
+
+.listening-player {
+  margin: 0.5rem 0 1.25rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid #ecdfe2;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fff6f7, #ffffff);
+}
+.listening-player-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 800;
+  color: var(--ielts-midnight, #16203a);
+  margin-bottom: 0.75rem;
+}
+.listening-player-head svg { color: var(--ielts-crimson, #b3122f); }
+.listening-audio {
+  width: 100%;
+  height: 44px;
+}
+.listening-player-note {
+  margin-top: 0.6rem;
+  font-size: 0.78rem;
+  color: #8a7a7d;
+  line-height: 1.5;
+}
+
+/* On listening, the questions span the full width (there is no passage column). */
+.listening-test .listening-questions {
+  max-width: none;
+}
