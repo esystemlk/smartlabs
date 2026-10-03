@@ -79,6 +79,7 @@ const cambridgeListeningBooks: ReadingBook[] = [
   { book: 11, tests: [
     { n: 1, title: 'Test 1', desc: 'Four parts · 40 questions · notes completion, map labelling and multiple choice · audio + answer review' },
     { n: 2, title: 'Test 2', desc: 'Four parts · 40 questions · notes completion, choose-two, plan labelling and multiple choice · audio + answer review' },
+    { n: 3, title: 'Test 3', desc: 'Four parts · 40 questions · multiple choice, sentence and table completion, and matching · audio + answer review' },
   ] },
 ];
 let visitTrack = 'academic';
