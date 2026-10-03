@@ -4,10 +4,10 @@
   "version": 1,
   "endpoint": "/api/ielts-listening/cambridge-11-test-1",
   "sections": [
-    { "part": 1, "title": "Part 1", "subtitle": "Hiring a public room", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-11%2Ftest-1%2Fpart-1.mp3?alt=media" },
-    { "part": 2, "title": "Part 2", "subtitle": "Fiddy Working Heritage Farm", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-11%2Ftest-1%2Fpart-2.mp3?alt=media" },
-    { "part": 3, "title": "Part 3", "subtitle": "Study on Gender in Physics", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-11%2Ftest-1%2Fpart-3.mp3?alt=media" },
-    { "part": 4, "title": "Part 4", "subtitle": "Ocean Biodiversity", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-11%2Ftest-1%2Fpart-4.mp3?alt=media" }
+    { "part": 1, "title": "Part 1", "subtitle": "Hiring a public room", "audio": "/audio/ielts/listening/cambridge-11/test-1/part-1.mp3" },
+    { "part": 2, "title": "Part 2", "subtitle": "Fiddy Working Heritage Farm", "audio": "/audio/ielts/listening/cambridge-11/test-1/part-2.mp3" },
+    { "part": 3, "title": "Part 3", "subtitle": "Study on Gender in Physics", "audio": "/audio/ielts/listening/cambridge-11/test-1/part-3.mp3" },
+    { "part": 4, "title": "Part 4", "subtitle": "Ocean Biodiversity", "audio": "/audio/ielts/listening/cambridge-11/test-1/part-4.mp3" }
   ],
   "groups": {
     "1": { "title": "Questions 1–10 · Notes completion", "instructions": "Complete the notes below. Write ONE WORD AND/OR A NUMBER for each answer.  Example: the Main Hall — seats 200." },
