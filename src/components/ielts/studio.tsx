@@ -79,6 +79,7 @@ const cambridgeListeningBooks: ReadingBook[] = [
   { book: 12, tests: [
     { n: 1, title: 'Test 1', desc: 'Four parts · 40 questions · notes completion, matching, choose-two and multiple choice · audio + answer review' },
     { n: 2, title: 'Test 2', desc: 'Four parts · 40 questions · notes completion, multiple choice, matching and flow-chart completion · audio + answer review' },
+    { n: 3, title: 'Test 3', desc: 'Four parts · 40 questions · notes and table completion, choose-two, multiple choice and flow-chart completion · audio + answer review' },
   ] },
   { book: 11, tests: [
     { n: 1, title: 'Test 1', desc: 'Four parts · 40 questions · notes completion, map labelling and multiple choice · audio + answer review' },
