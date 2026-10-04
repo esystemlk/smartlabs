@@ -4,10 +4,10 @@
   "version": 1,
   "endpoint": "/api/ielts-listening/cambridge-11-test-3",
   "sections": [
-    { "part": 1, "title": "Part 1", "subtitle": "Free activities in the Burnham area", "audio": "/audio/ielts/listening/cambridge-11/test-3/part-1.mp3" },
-    { "part": 2, "title": "Part 2", "subtitle": "Changes in Barford", "audio": "/audio/ielts/listening/cambridge-11/test-3/part-2.mp3" },
-    { "part": 3, "title": "Part 3", "subtitle": "Illustrations project", "audio": "/audio/ielts/listening/cambridge-11/test-3/part-3.mp3" },
-    { "part": 4, "title": "Part 4", "subtitle": "Ethnography in business", "audio": "/audio/ielts/listening/cambridge-11/test-3/part-4.mp3" }
+    { "part": 1, "title": "Part 1", "subtitle": "Free activities in the Burnham area", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-11%2Ftest-3%2Fpart-1.mp3?alt=media" },
+    { "part": 2, "title": "Part 2", "subtitle": "Changes in Barford", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-11%2Ftest-3%2Fpart-2.mp3?alt=media" },
+    { "part": 3, "title": "Part 3", "subtitle": "Illustrations project", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-11%2Ftest-3%2Fpart-3.mp3?alt=media" },
+    { "part": 4, "title": "Part 4", "subtitle": "Ethnography in business", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-11%2Ftest-3%2Fpart-4.mp3?alt=media" }
   ],
   "groups": {
     "1": { "title": "Questions 1–6 · Multiple choice", "instructions": "Choose the correct letter, A, B or C. (Free activities in the Burnham area)" },

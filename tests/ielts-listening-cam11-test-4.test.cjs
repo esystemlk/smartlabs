@@ -36,5 +36,5 @@ test('Listening Test 4 marking, map block and audio files', () => {
   const map = data.blocks.find(b => b.type === 'map');
   assert.equal(map.startId, 17); assert.equal(map.endId, 20);
   assert.ok(fs.existsSync(path.join(__dirname, '..', map.image.replace(/^\//, 'public/'))));
-  for (const s of data.sections) assert.ok(fs.existsSync(path.join(__dirname, '..', 'public', s.audio.replace(/^\//, ''))), `missing audio: ${s.audio}`);
+  for (const s of data.sections) assert.match(s.audio, /^https:\/\/firebasestorage\.googleapis\.com\/.+\?alt=media$/);
 });

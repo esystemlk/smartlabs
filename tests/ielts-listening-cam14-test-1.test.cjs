@@ -32,8 +32,5 @@ test('Cambridge 14 Test 1 marking and audio files (mixed mp3/m4a)', () => {
   assert.equal(gradeReadingAnswer('blonde', answerKey[9], 2), true);
   assert.equal(gradeReadingAnswer('c', answerKey[11], 2), true);
   assert.equal(gradeReadingAnswer('wrong', answerKey[1], 2), false);
-  for (const s of data.sections) {
-    assert.match(s.audio, /part-\d\.(mp3|m4a)$/);
-    assert.ok(fs.existsSync(path.join(__dirname, '..', 'public', s.audio.replace(/^\//, ''))), `missing audio: ${s.audio}`);
-  }
+  for (const s of data.sections) assert.match(s.audio, /^https:\/\/firebasestorage\.googleapis\.com\/.+\?alt=media$/);
 });

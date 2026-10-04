@@ -32,5 +32,5 @@ test('Cambridge 13 Test 3 marking and audio files', () => {
   assert.equal(gradeReadingAnswer('tongues', answerKey[31], 1), true);
   assert.equal(gradeReadingAnswer('c', answerKey[17], 2), true);
   assert.equal(gradeReadingAnswer('wrong', answerKey[1], 2), false);
-  for (const s of data.sections) assert.ok(fs.existsSync(path.join(__dirname, '..', 'public', s.audio.replace(/^\//, ''))), `missing audio: ${s.audio}`);
+  for (const s of data.sections) assert.match(s.audio, /^https:\/\/firebasestorage\.googleapis\.com\/.+\?alt=media$/);
 });

@@ -39,8 +39,5 @@ test('Listening marking accepts variants/casing and the map block covers 15–20
 });
 
 test('Every section has an audio file that exists in the build', () => {
-  for (const s of data.sections) {
-    assert.match(s.audio, /part-\d\.mp3$/);
-    assert.ok(fs.existsSync(path.join(__dirname, '..', 'public', s.audio.replace(/^\//, ''))), `missing audio: ${s.audio}`);
-  }
+  for (const s of data.sections) assert.match(s.audio, /^https:\/\/firebasestorage\.googleapis\.com\/.+\?alt=media$/);
 });

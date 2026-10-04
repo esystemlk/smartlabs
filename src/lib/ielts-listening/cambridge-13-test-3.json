@@ -4,10 +4,10 @@
   "version": 1,
   "endpoint": "/api/ielts-listening/cambridge-13-test-3",
   "sections": [
-    { "part": 1, "title": "Part 1", "subtitle": "Moving to Banford City", "audio": "/audio/ielts/listening/cambridge-13/test-3/part-1.mp3" },
-    { "part": 2, "title": "Part 2", "subtitle": "Physical activities", "audio": "/audio/ielts/listening/cambridge-13/test-3/part-2.mp3" },
-    { "part": 3, "title": "Part 3", "subtitle": "Natural dyes project", "audio": "/audio/ielts/listening/cambridge-13/test-3/part-3.mp3" },
-    { "part": 4, "title": "Part 4", "subtitle": "The sleepy lizard", "audio": "/audio/ielts/listening/cambridge-13/test-3/part-4.mp3" }
+    { "part": 1, "title": "Part 1", "subtitle": "Moving to Banford City", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-13%2Ftest-3%2Fpart-1.mp3?alt=media" },
+    { "part": 2, "title": "Part 2", "subtitle": "Physical activities", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-13%2Ftest-3%2Fpart-2.mp3?alt=media" },
+    { "part": 3, "title": "Part 3", "subtitle": "Natural dyes project", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-13%2Ftest-3%2Fpart-3.mp3?alt=media" },
+    { "part": 4, "title": "Part 4", "subtitle": "The sleepy lizard", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-13%2Ftest-3%2Fpart-4.mp3?alt=media" }
   ],
   "groups": {
     "1": { "title": "Questions 1–10 · Notes completion", "instructions": "Complete the notes below (Moving to Banford City). Write ONE WORD AND/OR A NUMBER for each answer.  Example: recommended suburb — Dalton." },

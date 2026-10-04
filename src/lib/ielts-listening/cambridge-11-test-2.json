@@ -4,10 +4,10 @@
   "version": 1,
   "endpoint": "/api/ielts-listening/cambridge-11-test-2",
   "sections": [
-    { "part": 1, "title": "Part 1", "subtitle": "Joining the Youth Council", "audio": "/audio/ielts/listening/cambridge-11/test-2/part-1.mp3" },
-    { "part": 2, "title": "Part 2", "subtitle": "Theatre refurbishment", "audio": "/audio/ielts/listening/cambridge-11/test-2/part-2.mp3" },
-    { "part": 3, "title": "Part 3", "subtitle": "Rocky Bay field trip", "audio": "/audio/ielts/listening/cambridge-11/test-2/part-3.mp3" },
-    { "part": 4, "title": "Part 4", "subtitle": "The Taylor Concert Hall", "audio": "/audio/ielts/listening/cambridge-11/test-2/part-4.mp3" }
+    { "part": 1, "title": "Part 1", "subtitle": "Joining the Youth Council", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-11%2Ftest-2%2Fpart-1.mp3?alt=media" },
+    { "part": 2, "title": "Part 2", "subtitle": "Theatre refurbishment", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-11%2Ftest-2%2Fpart-2.mp3?alt=media" },
+    { "part": 3, "title": "Part 3", "subtitle": "Rocky Bay field trip", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-11%2Ftest-2%2Fpart-3.mp3?alt=media" },
+    { "part": 4, "title": "Part 4", "subtitle": "The Taylor Concert Hall", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-11%2Ftest-2%2Fpart-4.mp3?alt=media" }
   ],
   "groups": {
     "1": { "title": "Questions 1–10 · Notes completion", "instructions": "Complete the notes below (Enquiry about joining the Youth Council). Write ONE WORD AND/OR A NUMBER for each answer.  Example: Name — Roger Brown." },

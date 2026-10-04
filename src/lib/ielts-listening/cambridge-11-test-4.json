@@ -4,10 +4,10 @@
   "version": 1,
   "endpoint": "/api/ielts-listening/cambridge-11-test-4",
   "sections": [
-    { "part": 1, "title": "Part 1", "subtitle": "Stretton Festival", "audio": "/audio/ielts/listening/cambridge-11/test-4/part-1.mp3" },
-    { "part": 2, "title": "Part 2", "subtitle": "Museum collections & plan", "audio": "/audio/ielts/listening/cambridge-11/test-4/part-2.mp3" },
-    { "part": 3, "title": "Part 3", "subtitle": "Study on performers' dress", "audio": "/audio/ielts/listening/cambridge-11/test-4/part-3.mp3" },
-    { "part": 4, "title": "Part 4", "subtitle": "Soil and carbon dioxide", "audio": "/audio/ielts/listening/cambridge-11/test-4/part-4.mp3" }
+    { "part": 1, "title": "Part 1", "subtitle": "Stretton Festival", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-11%2Ftest-4%2Fpart-1.mp3?alt=media" },
+    { "part": 2, "title": "Part 2", "subtitle": "Museum collections & plan", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-11%2Ftest-4%2Fpart-2.mp3?alt=media" },
+    { "part": 3, "title": "Part 3", "subtitle": "Study on performers' dress", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-11%2Ftest-4%2Fpart-3.mp3?alt=media" },
+    { "part": 4, "title": "Part 4", "subtitle": "Soil and carbon dioxide", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-11%2Ftest-4%2Fpart-4.mp3?alt=media" }
   ],
   "groups": {
     "1": { "title": "Questions 1–7 · Table completion", "instructions": "Complete the table below (Stretton Festival). Write ONE WORD AND/OR A NUMBER for each answer.  Example: Jazz band tickets — £15." },

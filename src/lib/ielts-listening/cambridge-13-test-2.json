@@ -4,10 +4,10 @@
   "version": 1,
   "endpoint": "/api/ielts-listening/cambridge-13-test-2",
   "sections": [
-    { "part": 1, "title": "Part 1", "subtitle": "South City Cycling Club", "audio": "/audio/ielts/listening/cambridge-13/test-2/part-1.mp3" },
-    { "part": 2, "title": "Part 2", "subtitle": "Company volunteering projects", "audio": "/audio/ielts/listening/cambridge-13/test-2/part-2.mp3" },
-    { "part": 3, "title": "Part 3", "subtitle": "Presentation on nanotechnology", "audio": "/audio/ielts/listening/cambridge-13/test-2/part-3.mp3" },
-    { "part": 4, "title": "Part 4", "subtitle": "Episodic memory", "audio": "/audio/ielts/listening/cambridge-13/test-2/part-4.mp3" }
+    { "part": 1, "title": "Part 1", "subtitle": "South City Cycling Club", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-13%2Ftest-2%2Fpart-1.mp3?alt=media" },
+    { "part": 2, "title": "Part 2", "subtitle": "Company volunteering projects", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-13%2Ftest-2%2Fpart-2.mp3?alt=media" },
+    { "part": 3, "title": "Part 3", "subtitle": "Presentation on nanotechnology", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-13%2Ftest-2%2Fpart-3.mp3?alt=media" },
+    { "part": 4, "title": "Part 4", "subtitle": "Episodic memory", "audio": "https://firebasestorage.googleapis.com/v0/b/smart-labs-ekk8j.firebasestorage.app/o/ielts-listening%2Fcambridge-13%2Ftest-2%2Fpart-4.mp3?alt=media" }
   ],
   "groups": {
     "1": { "title": "Questions 1–10 · Notes completion", "instructions": "Complete the notes below (South City Cycling Club). Write ONE WORD AND/OR A NUMBER for each answer.  Example: Club secretary — Jim Hunter." },

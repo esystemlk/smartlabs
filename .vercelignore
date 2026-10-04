@@ -1,0 +1,10 @@
+# Keep the Vercel deployment small — these are not part of the Next.js website.
+
+# The Expo/React Native mobile app (built separately with EAS, never on Vercel).
+smartlabs-app/
+
+# Scratch / source material.
+tmp/
+
+# IELTS listening audio is hosted on Firebase Storage, not deployed with the site.
+public/audio/

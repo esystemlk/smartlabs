@@ -57,3 +57,6 @@ smartlabs-app/credentials.json
 
 # Scratch / source material (never commit)
 tmp/
+
+# IELTS listening audio is hosted on Firebase Storage, not in the repo.
+/public/audio/
