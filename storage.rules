@@ -27,8 +27,7 @@ service firebase.storage {
       allow write: if isAuthed() && isImage() && underMB(10);
     }
 
-    // Summarize Spoken Text lecture audio — public read (played in the trainer),
-    // signed-in upload of an audio file up to 20 MB.
+    // Summarize Spoken Text lecture audio — public read (played in the trainer).
     match /sst-audio/{fileName} {
       allow read: if true;
       allow write: if isAuthed()
@@ -36,14 +35,11 @@ service firebase.storage {
                    && underMB(20);
     }
 
-    // Describe Image question images — public read (shown in the trainer),
-    // signed-in upload of an image up to 8 MB.
     match /describe-image/{fileName} {
       allow read: if true;
       allow write: if isAuthed() && isImage() && underMB(8);
     }
 
-    // General bucket for any PTE question images uploaded from the admin.
     match /pte-images/{fileName} {
       allow read: if true;
       allow write: if isAuthed() && isImage() && underMB(8);
@@ -61,11 +57,13 @@ service firebase.storage {
     }
 
     // IELTS Listening audio — public read (played in the listening trainer).
-    // Uploaded by staff via the Firebase console / an authenticated upload path;
-    // the recordings are referenced by URL from each listening test.
+    // Uploaded by the admin SDK (scripts/upload-ielts-audio.mjs), which bypasses
+    // these rules; the write rule only guards any client-side upload.
     match /ielts-listening/{allPaths=**} {
       allow read: if true;
-      allow write: if isAuthed() && request.resource.contentType.matches('audio/.*') && underMB(60);
+      allow write: if isAuthed()
+                   && request.resource.contentType.matches('audio/.*')
+                   && underMB(60);
     }
 
     // Anything else: no public access.
