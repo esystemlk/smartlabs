@@ -12,12 +12,13 @@ import './listening-runner.css';
 type Choice = { letter: string; text: string };
 type Question = { id: number; part: number; kind: 'text' | 'choice' | 'unavailable'; prompt?: string; options?: string[]; choices?: Choice[]; wordLimit?: number };
 type Section = { part: number; title: string; subtitle?: string; audio: string };
+type Group = { title: string; instructions: string; matchOptions?: Choice[] };
 type Block =
   | { type: 'map'; startId: number; endId: number; image: string; alt: string; caption?: string }
   | { type: 'summary'; startId: number; endId: number; title?: string; text: string };
 type TestData = {
   id: string; title: string; version: number; endpoint: string;
-  sections: Section[]; groups: Record<string, { title: string; instructions: string }>;
+  sections: Section[]; groups: Record<string, Group>;
   blocks?: Block[]; questions: Question[];
 };
 type Answers = Record<string, string>;
@@ -37,13 +38,28 @@ export function ListeningRunner({ data }: { data: TestData }) {
   const [error, setError] = useState('');
   const [saveStatus, setSaveStatus] = useState('');
   const [loaded, setLoaded] = useState('');
+  const [picked, setPicked] = useState<string | null>(null); // a tapped matching option, waiting to be placed
   const started = useRef(0);
   const elapsedBase = useRef(0);
 
   const total = data.questions.filter(q => q.kind !== 'unavailable').length;
-  const parts = data.sections.map(s => s.part);
   const blockByStart = useMemo(() => { const m: Record<number, Block> = {}; (data.blocks ?? []).forEach(b => { m[b.startId] = b; }); return m; }, [data.blocks]);
   const blockIds = useMemo(() => { const s = new Set<number>(); (data.blocks ?? []).forEach(b => { for (let i = b.startId; i <= b.endId; i++) s.add(i); }); return s; }, [data.blocks]);
+  // Matching groups (a box of lettered options assigned to each item) rendered as drag-and-drop.
+  const matchGroups = useMemo(() => {
+    const starts = Object.keys(data.groups).map(Number).sort((a, b) => a - b);
+    const byStart: Record<number, { options: Choice[]; memberIds: number[] }> = {};
+    const consumed = new Set<number>();
+    starts.forEach((start, i) => {
+      const g = data.groups[start];
+      if (!g.matchOptions || g.matchOptions.length === 0) return;
+      const next = starts[i + 1] ?? Infinity;
+      const memberIds = data.questions.filter(q => q.id >= start && q.id < next && q.kind !== 'unavailable').map(q => q.id);
+      byStart[start] = { options: g.matchOptions, memberIds };
+      memberIds.forEach(id => consumed.add(id));
+    });
+    return { byStart, consumed };
+  }, [data.groups, data.questions]);
   const section = data.sections.find(s => s.part === part) ?? data.sections[0];
 
   useEffect(() => {
@@ -103,12 +119,65 @@ export function ListeningRunner({ data }: { data: TestData }) {
     </div>;
   }
 
+  // Map / plan labelling: image + a row of tap-able letter buttons per question.
   function mapBlock(block: Extract<Block, { type: 'map' }>) {
     const ids: number[] = []; for (let i = block.startId; i <= block.endId; i++) ids.push(i);
     return <div className="reading-diagram" key={`map-${block.startId}`}>
       <a href={block.image} target="_blank" rel="noreferrer"><Image src={block.image} alt={block.alt} width={900} height={1024} /><span>Open full-size map</span></a>
       {block.caption && <p className="reading-diagram-caption">{block.caption}</p>}
-      <div className="reading-diagram-labels">{ids.map(id => { const q = data.questions.find(x => x.id === id)!; return <div className="reading-diagram-label" id={`question-${id}`} key={id}><label htmlFor={`answer-${id}`}><b>{id}</b> {q.prompt}</label>{input(id)}</div>; })}</div>
+      <div className="map-rows">{ids.map(id => {
+        const q = data.questions.find(x => x.id === id)!;
+        const sel = answers[id];
+        const result = review?.results.find(r => r.id === id);
+        return <div className="map-row" id={`question-${id}`} key={id}>
+          <div className="map-row-label"><b>{id}</b> {q.prompt}</div>
+          <div className="map-letters" role="group" aria-label={`Answer ${id}`}>{(q.options ?? []).map(o => {
+            const isSel = sel === o;
+            const tone = result ? (result.accepted.includes(o) ? 'is-correct-letter' : isSel ? 'is-wrong-letter' : '') : (isSel ? 'is-selected' : '');
+            return <button key={o} type="button" className={`map-letter ${tone}`} disabled={!!review || busy} aria-pressed={isSel}
+              onClick={() => setAnswers(a => ({ ...a, [id]: o }))}>{o}</button>;
+          })}</div>
+          {result && <p className={result.correct ? 'reading-correct' : 'reading-incorrect'}>{result.correct ? 'Correct' : `Accepted: ${result.accepted.join(' / ')}`} · Your answer: {result.answer || 'Unanswered'}</p>}
+        </div>;
+      })}</div>
+    </div>;
+  }
+
+  // Matching: drag an option onto a slot (desktop), or tap an option then tap a slot (mobile).
+  function matchBox(startId: number, options: Choice[], memberIds: number[]) {
+    const assign = (id: number, letter: string) => { if (review || busy) return; setAnswers(a => ({ ...a, [id]: letter })); };
+    return <div className="listening-matchbox" key={`mb-${startId}`}>
+      <div className="matchbox-slots">{memberIds.map(id => {
+        const q = data.questions.find(x => x.id === id)!;
+        const sel = answers[id];
+        const selOpt = options.find(o => o.letter === sel);
+        const result = review?.results.find(r => r.id === id);
+        return <div className="matchbox-row" id={`question-${id}`} key={id}>
+          <div className="matchbox-prompt">
+            <span><b>{id}</b> {q.prompt}</span>
+            <button title={`Flag question ${id} for review`} aria-label={`Flag question ${id} for review`} aria-pressed={flags.includes(id)} onClick={() => setFlags(f => f.includes(id) ? f.filter(n => n !== id) : [...f, id])}><Flag size={15} /></button>
+          </div>
+          <div
+            className={`matchbox-drop ${selOpt ? 'is-filled' : ''} ${picked && !review ? 'is-armed' : ''} ${result ? (result.correct ? 'is-correct' : 'is-wrong') : ''}`}
+            role="button" tabIndex={0} aria-label={`Answer ${id}`}
+            onDragOver={e => { if (!review) e.preventDefault(); }}
+            onDrop={e => { e.preventDefault(); const l = e.dataTransfer.getData('text/plain'); if (l) assign(id, l); }}
+            onClick={() => { if (picked) { assign(id, picked); setPicked(null); } }}>
+            {selOpt
+              ? <span className="matchbox-chip"><b>{selOpt.letter}</b> {selOpt.text}{!review && <button className="matchbox-clear" aria-label={`Clear answer ${id}`} onClick={e => { e.stopPropagation(); setAnswers(a => ({ ...a, [id]: '' })); }}>×</button>}</span>
+              : <span className="matchbox-placeholder">{picked ? `Tap to place ${picked}` : 'Drag or tap an option'}</span>}
+          </div>
+          {result && !result.correct && <p className="reading-incorrect">Accepted: {result.accepted.join(' / ')}</p>}
+        </div>;
+      })}</div>
+      <div className="matchbox-options" aria-label="Options to choose from">{options.map(o => (
+        <button key={o.letter} type="button" className={`matchbox-option ${picked === o.letter ? 'is-picked' : ''}`} disabled={!!review || busy}
+          draggable={!review && !busy}
+          onDragStart={e => e.dataTransfer.setData('text/plain', o.letter)}
+          onClick={() => setPicked(p => (p === o.letter ? null : o.letter))}>
+          <b>{o.letter}</b> {o.text}
+        </button>
+      ))}</div>
     </div>;
   }
 
@@ -144,9 +213,14 @@ export function ListeningRunner({ data }: { data: TestData }) {
 
     <section className="reading-questions listening-questions" aria-label="Questions">{data.questions.filter(q => q.part === part).map(q => {
       if (blockIds.has(q.id) && !blockByStart[q.id]) return null;
-      const header = data.groups[q.id] ? <header className="reading-group" key={`g-${q.id}`}><h3>{data.groups[q.id].title}</h3><p>{data.groups[q.id].instructions}</p></header> : null;
+      if (matchGroups.consumed.has(q.id) && !matchGroups.byStart[q.id]) return null;
+      const g = data.groups[q.id];
+      const header = g ? <header className="reading-group" key={`g-${q.id}`}><h3>{g.title}</h3><p>{g.instructions}</p></header> : null;
+      const mg = matchGroups.byStart[q.id];
       const block = blockByStart[q.id];
-      const body = block && block.type === 'map' ? mapBlock(block) : normalQuestion(q);
+      const body = mg ? matchBox(q.id, mg.options, mg.memberIds)
+        : block && block.type === 'map' ? mapBlock(block)
+        : normalQuestion(q);
       return <div key={q.id}>{header}{body}</div>;
     })}</section>
 

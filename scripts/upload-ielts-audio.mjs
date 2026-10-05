@@ -53,8 +53,14 @@ async function main() {
   const bucket = admin.storage().bucket();
 
   if (!fs.existsSync(LOCAL_DIR)) { console.error('❌ No local audio at', LOCAL_DIR); process.exit(1); }
-  const files = walk(LOCAL_DIR);
-  console.log(`Uploading ${files.length} file(s) to gs://${BUCKET}/ielts-listening/ …\n`);
+  // Optional CLI arg: upload only files under this sub-path (e.g. "cambridge-14/test-2").
+  const only = process.argv[2];
+  let files = walk(LOCAL_DIR);
+  if (only) {
+    const prefix = path.join(LOCAL_DIR, only.split('/').join(path.sep));
+    files = files.filter((f) => f.startsWith(prefix));
+  }
+  console.log(`Uploading ${files.length} file(s)${only ? ` from ${only}` : ''} to gs://${BUCKET}/ielts-listening/ …\n`);
 
   let ok = 0;
   for (const file of files) {
