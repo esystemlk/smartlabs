@@ -41,15 +41,18 @@ export function ReadingTest() {
     // Restore a browser draft after hydration, scoped to the signed-in account.
     const restore = window.setTimeout(() => {
       setAnswers({}); setFlags([]); setSeconds(0); setPassage(0); setReview(null); setRunning(false);
+      let restoredSeconds = 0;
       try {
         const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
         if (saved) {
           if (saved.answers && typeof saved.answers === 'object') setAnswers(Object.fromEntries(Object.entries(saved.answers).filter(([key, value]) => /^([1-9]|[1-3][0-9]|40)$/.test(key) && typeof value === 'string' && value.length <= 200)) as Answers);
           if (Array.isArray(saved.flags)) setFlags(saved.flags.filter((n: unknown) => Number.isInteger(n) && Number(n) >= 1 && Number(n) <= 40));
-          if (Number.isFinite(saved.seconds)) setSeconds(Math.max(0, saved.seconds));
+          if (Number.isFinite(saved.seconds)) { restoredSeconds = Math.max(0, saved.seconds); setSeconds(restoredSeconds); }
           if ([0, 1, 2].includes(saved.passage)) setPassage(saved.passage);
         }
       } catch { setSaveStatus('Device storage is unavailable. Keep this page open to retain your answers.'); }
+      // Start the timer automatically as soon as the test loads.
+      elapsedBase.current = restoredSeconds; started.current = Date.now(); setRunning(true);
       setLoaded(storageKey);
     }, 0);
     return () => window.clearTimeout(restore);
