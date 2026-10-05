@@ -43,7 +43,7 @@ export async function POST(request: Request) {
 
     // First ever sign-in → one-time congratulations welcome.
     if (!u.welcomeEmailSentAt) {
-      await userRef.set({ welcomeEmailSentAt: now, lastWelcomeBackAt: now, updatedAt: now }, { merge: true });
+      await userRef.set({ welcomeEmailSentAt: now, lastWelcomeBackAt: now, lastLogin: now, updatedAt: now }, { merge: true });
       try {
         await sendMail({
           to: email, replyTo: CONTACT,
@@ -54,12 +54,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true, sent: 'welcome' });
     }
 
-    // Returning user → welcome-back, but opt-out aware and throttled to once/day.
-    if (u.emailOptOut) return NextResponse.json({ ok: true, sent: 'skipped_optout' });
+    // Always record this sign-in (drives the 60-day inactivity win-back).
     const last = u.lastWelcomeBackAt?.toDate?.()?.getTime() ?? 0;
-    if (Date.now() - last < WELCOME_BACK_THROTTLE_MS) return NextResponse.json({ ok: true, sent: 'skipped_throttle' });
+    const throttled = Date.now() - last < WELCOME_BACK_THROTTLE_MS;
+    if (u.emailOptOut || throttled) {
+      await userRef.set({ lastLogin: now, updatedAt: now }, { merge: true });
+      return NextResponse.json({ ok: true, sent: u.emailOptOut ? 'skipped_optout' : 'skipped_throttle' });
+    }
 
-    await userRef.set({ lastWelcomeBackAt: now, updatedAt: now }, { merge: true });
+    await userRef.set({ lastWelcomeBackAt: now, lastLogin: now, updatedAt: now }, { merge: true });
     const signedInAt = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
     try {
       await sendMail({
