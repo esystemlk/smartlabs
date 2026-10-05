@@ -14,7 +14,7 @@
     "11": { "title": "Questions 11–13 · Multiple choice", "instructions": "Choose the correct letter, A, B or C. (Traffic changes in Granford)" },
     "14": { "title": "Questions 14–20 · Map labelling", "instructions": "Label the map below (Proposed traffic changes in Granford). Write the correct letter, A–I, next to each feature." },
     "21": { "title": "Questions 21–25 · Multiple choice", "instructions": "Choose the correct letter, A, B or C. (Seed germination)" },
-    "26": { "title": "Questions 26–30 · Flow-chart", "instructions": "Complete the flow-chart (Stages in the experiment). Choose FIVE answers from the box and write the correct letter, A–H, for each step.  A: container · B: soil · C: weight · D: condition · E: height · F: colour · G: types · H: depths." },
+    "26": { "title": "Questions 26–30 · Flow-chart", "instructions": "Complete the flow-chart (Stages in the experiment). Choose FIVE answers from the box and write the correct letter, A–H, for each step.", "matchOptions": [{ "letter": "A", "text": "container" }, { "letter": "B", "text": "soil" }, { "letter": "C", "text": "weight" }, { "letter": "D", "text": "condition" }, { "letter": "E", "text": "height" }, { "letter": "F", "text": "colour" }, { "letter": "G", "text": "types" }, { "letter": "H", "text": "depths" }] },
     "31": { "title": "Questions 31–40 · Notes completion", "instructions": "Complete the notes below (Effects of urban environments on animals). Write ONE WORD ONLY for each answer." }
   },
   "blocks": [
