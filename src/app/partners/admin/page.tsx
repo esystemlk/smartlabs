@@ -79,6 +79,7 @@ function Applications({ getToken, firestore }: { getToken: () => Promise<string>
   const [filter, setFilter] = useState<'all' | 'pending' | 'needs_info' | 'approved' | 'rejected' | 'withdrawn'>('pending');
   const [q, setQ] = useState('');
   const [busyRef, setBusyRef] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
@@ -114,6 +115,22 @@ function Applications({ getToken, firestore }: { getToken: () => Promise<string>
     finally { setBusyRef(null); }
   };
 
+  const verifyEmail = async (uid: string, name: string) => {
+    if (!window.confirm(`Verify the email for ${name} and grant access? Use this only when you've confirmed the address is theirs.`)) return;
+    setVerifying(uid);
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/partners/admin/verify-email', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ uid }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || 'Failed.'); return; }
+      setApps((prev) => prev.map((a) => (a.uid === uid ? { ...a, emailVerified: true } : a)));
+    } catch { alert('Network error.'); }
+    finally { setVerifying(null); }
+  };
+
   const term = q.trim().toLowerCase();
   const shown = apps.filter((a) => (filter === 'all' || a.reviewStatus === filter) &&
     (!term || (a.ref ?? '').toLowerCase().includes(term) || (a.fullName ?? '').toLowerCase().includes(term) || (a.email ?? '').toLowerCase().includes(term) || (a.businessName ?? '').toLowerCase().includes(term)));
@@ -146,7 +163,9 @@ function Applications({ getToken, firestore }: { getToken: () => Promise<string>
                       <span className="font-black text-slate-900">{a.fullName || '—'}</span>
                       <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase text-slate-500">{a.partnerType}</span>
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${STATUS_TONE[a.reviewStatus] ?? STATUS_TONE.pending}`}>{STATUS_LABEL[a.reviewStatus] ?? a.reviewStatus}</span>
-                      {a.emailVerified ? <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-600"><MailCheck size={11} /> verified</span> : <span className="inline-flex items-center gap-1 text-[10px] font-black text-slate-400"><MailX size={11} /> unverified</span>}
+                      {a.emailVerified
+                        ? <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-600"><MailCheck size={11} /> verified</span>
+                        : <button disabled={verifying === a.uid} onClick={() => verifyEmail(a.uid, a.fullName || a.email)} className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-700 hover:bg-amber-200 disabled:opacity-50">{verifying === a.uid ? <Loader2 size={11} className="animate-spin" /> : <MailX size={11} />} Verify email</button>}
                     </div>
                     <p className="mt-1 text-xs text-slate-500">
                       {a.ref} · {a.email} · {a.phone} · {a.location}{a.businessName ? ` · ${a.businessName}` : ''} · {fmtDate(a.createdAt)}
@@ -189,6 +208,7 @@ function Partners({ getToken, firestore }: { getToken: () => Promise<string>; fi
   const [filter, setFilter] = useState<'all' | 'active' | 'suspended' | 'deactivated' | 'banned' | 'pending_activation'>('all');
   const [q, setQ] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
@@ -226,6 +246,22 @@ function Partners({ getToken, firestore }: { getToken: () => Promise<string>; fi
       setRows((prev) => prev.map((r) => (r.uid === uid ? { ...r, accountState: data.accountState, stateReason: reason || null } : r)));
     } catch { alert('Network error.'); }
     finally { setBusy(null); }
+  };
+
+  const verifyEmail = async (uid: string, name: string) => {
+    if (!window.confirm(`Verify the email for ${name} and grant access? Use this only when you've confirmed the address is theirs.`)) return;
+    setVerifying(uid);
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/partners/admin/verify-email', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ uid }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || 'Failed.'); return; }
+      setRows((prev) => prev.map((r) => (r.uid === uid ? { ...r, emailVerified: true, accountState: data.accountState ?? r.accountState } : r)));
+    } catch { alert('Network error.'); }
+    finally { setVerifying(null); }
   };
 
   const term = q.trim().toLowerCase();
@@ -266,6 +302,9 @@ function Partners({ getToken, firestore }: { getToken: () => Promise<string>; fi
                       <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase text-slate-500">{r.partnerType}</span>
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${STATE_TONE[state] ?? STATE_TONE.pending_activation}`}>{STATE_LABEL[state] ?? state}</span>
                       {r.reviewStatus === 'approved' && <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-600">approved</span>}
+                      {r.emailVerified
+                        ? <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-600"><MailCheck size={11} /> verified</span>
+                        : <button disabled={verifying === r.uid} onClick={() => verifyEmail(r.uid, r.fullName || r.email)} className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-700 hover:bg-amber-200 disabled:opacity-50">{verifying === r.uid ? <Loader2 size={11} className="animate-spin" /> : <MailX size={11} />} Verify email</button>}
                     </div>
                     <p className="mt-1 text-xs text-slate-500">
                       @{r.username} · {r.email} · {r.phone}{r.businessName ? ` · ${r.businessName}` : ''} · {r.ref}
