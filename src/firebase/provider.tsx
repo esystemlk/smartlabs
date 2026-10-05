@@ -94,6 +94,19 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     return () => unsubscribe(); // Cleanup
   }, [auth]); // Depends on the auth instance
 
+  // After sign-in, let the server send a welcome / welcome-back email.
+  // Fires once per browser session per user; the server throttles further.
+  useEffect(() => {
+    const user = userAuthState.user;
+    if (!user) return;
+    const key = `sl-login-notified:${user.uid}`;
+    try { if (sessionStorage.getItem(key)) return; } catch { /* storage may be unavailable */ }
+    try { sessionStorage.setItem(key, '1'); } catch { /* ignore */ }
+    user.getIdToken()
+      .then((token) => fetch('/api/auth/login-notify', { method: 'POST', headers: { Authorization: `Bearer ${token}` } }))
+      .catch(() => { /* non-critical: never block the app on the welcome email */ });
+  }, [userAuthState.user]);
+
   // Memoize the context value
   const contextValue = useMemo((): FirebaseContextState => {
     const servicesAvailable = !!(firebaseApp && firestore && auth && storage);
