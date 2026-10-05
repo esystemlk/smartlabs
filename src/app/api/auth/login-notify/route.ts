@@ -40,10 +40,15 @@ export async function POST(request: Request) {
     if (!email) return NextResponse.json({ ok: false, reason: 'no_email' });
 
     const now = FieldValue.serverTimestamp();
+    // Always carry the identity fields so this merge never creates a partial
+    // user doc (one without email/displayName would break admin user lists).
+    const realName = (u.displayName || tokenName || '').trim();
+    const base: Record<string, FieldValue | string> = { email, lastLogin: now, updatedAt: now };
+    if (realName) base.displayName = realName;
 
     // First ever sign-in → one-time congratulations welcome.
     if (!u.welcomeEmailSentAt) {
-      await userRef.set({ welcomeEmailSentAt: now, lastWelcomeBackAt: now, lastLogin: now, updatedAt: now }, { merge: true });
+      await userRef.set({ ...base, welcomeEmailSentAt: now, lastWelcomeBackAt: now }, { merge: true });
       try {
         await sendMail({
           to: email, replyTo: CONTACT,
@@ -58,11 +63,11 @@ export async function POST(request: Request) {
     const last = u.lastWelcomeBackAt?.toDate?.()?.getTime() ?? 0;
     const throttled = Date.now() - last < WELCOME_BACK_THROTTLE_MS;
     if (u.emailOptOut || throttled) {
-      await userRef.set({ lastLogin: now, updatedAt: now }, { merge: true });
+      await userRef.set(base, { merge: true });
       return NextResponse.json({ ok: true, sent: u.emailOptOut ? 'skipped_optout' : 'skipped_throttle' });
     }
 
-    await userRef.set({ lastWelcomeBackAt: now, lastLogin: now, updatedAt: now }, { merge: true });
+    await userRef.set({ ...base, lastWelcomeBackAt: now }, { merge: true });
     const signedInAt = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
     try {
       await sendMail({

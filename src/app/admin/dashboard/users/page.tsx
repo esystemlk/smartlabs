@@ -138,7 +138,7 @@ export default function UserManagementPage() {
                                     <div className="flex items-center gap-3">
                                         <Avatar className="hidden h-9 w-9 sm:flex">
                                             <AvatarImage src={user.photoURL || `https://picsum.photos/seed/${user.id}/100/100`} alt="Avatar" />
-                                            <AvatarFallback>{user.displayName?.charAt(0) || user.email.charAt(0)}</AvatarFallback>
+                                            <AvatarFallback>{user.displayName?.charAt(0) || user.email?.charAt(0) || '?'}</AvatarFallback>
                                         </Avatar>
                                         <div className="grid gap-1">
                                             <p className="text-sm font-medium leading-none">{user.displayName || 'No Name'}</p>
