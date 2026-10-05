@@ -24,7 +24,7 @@ const contactInfo = [
   {
     icon: Phone,
     title: "Call Us",
-    details: ["076 691 4650", "077 453 3233"],
+    details: ["076 691 4650", "077 453 3233", "070 691 4652 (Support)"],
   },
   {
     icon: Mail,

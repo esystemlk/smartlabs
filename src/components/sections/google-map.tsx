@@ -67,7 +67,7 @@ export function GoogleMap() {
                 <div>
                   <h3 className="font-black text-lg">Phone</h3>
                   <p className="text-muted-foreground text-sm mt-1">
-                    077 453 3233
+                    077 453 3233 · 070 691 4652
                   </p>
                 </div>
               </div>
