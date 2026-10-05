@@ -8,6 +8,7 @@ import { useUser, useFirestore, useAuth } from '@/firebase';
 import {
   ArrowLeft, Loader2, Plus, Trash2, Save, CheckCircle2, Coins, Users, XCircle,
   ShieldAlert, MailCheck, MailX, Search, RefreshCw, Ban, Pause, Play, Send, Megaphone, Power,
+  GraduationCap, Phone, Undo2,
 } from 'lucide-react';
 import type { CommissionRate, CommissionSettings } from '@/components/partners/earnings';
 
@@ -29,7 +30,7 @@ export default function PartnersAdminPage() {
   const router = useRouter();
 
   const [allowed, setAllowed] = useState<boolean | null>(null);
-  const [tab, setTab] = useState<'applications' | 'partners' | 'broadcast' | 'commission'>('applications');
+  const [tab, setTab] = useState<'applications' | 'partners' | 'referrals' | 'broadcast' | 'commission'>('applications');
 
   useEffect(() => {
     if (isUserLoading) return;
@@ -52,16 +53,17 @@ export default function PartnersAdminPage() {
       <h1 className="mt-3 flex items-center gap-2 text-2xl font-black"><Users size={22} className="text-blue-600" /> Referral Partners</h1>
 
       <div className="mt-4 inline-flex flex-wrap rounded-xl border border-slate-200 bg-slate-50 p-1">
-        {(['applications', 'partners', 'broadcast', 'commission'] as const).map((t) => (
+        {(['applications', 'partners', 'referrals', 'broadcast', 'commission'] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
             className={`rounded-lg px-4 py-1.5 text-sm font-black capitalize transition-colors ${tab === t ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-900'}`}>
-            {t === 'applications' ? 'Applications' : t === 'partners' ? 'Partners' : t === 'broadcast' ? 'Broadcast' : 'Commission'}
+            {t === 'applications' ? 'Applications' : t === 'partners' ? 'Partners' : t === 'referrals' ? 'Referrals' : t === 'broadcast' ? 'Broadcast' : 'Commission'}
           </button>
         ))}
       </div>
 
       {tab === 'applications' && <Applications getToken={() => user!.getIdToken()} firestore={firestore} />}
       {tab === 'partners' && <Partners getToken={() => user!.getIdToken()} firestore={firestore} />}
+      {tab === 'referrals' && <Referrals getToken={() => user!.getIdToken()} firestore={firestore} />}
       {tab === 'broadcast' && <Broadcast getToken={() => user!.getIdToken()} firestore={firestore} />}
       {tab === 'commission' && <Commission firestore={firestore} />}
     </div>
@@ -283,6 +285,138 @@ function Partners({ getToken, firestore }: { getToken: () => Promise<string>; fi
                     )}
                     {state !== 'banned' && (
                       <button disabled={busy === r.uid} onClick={() => act(r.uid, 'ban', r.fullName)} className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-black text-white hover:bg-red-700 disabled:opacity-50"><Ban size={13} /> Ban</button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+      </div>
+    </div>
+  );
+}
+
+/* ── Referrals (referred students + mark enrolled) ──────────────────────────── */
+const REF_TONE: Record<string, string> = {
+  new: 'bg-slate-100 text-slate-600', contacted: 'bg-blue-100 text-blue-700',
+  enrolled: 'bg-emerald-100 text-emerald-700', paid: 'bg-teal-100 text-teal-700',
+  rewarded: 'bg-violet-100 text-violet-700', rejected: 'bg-red-100 text-red-700',
+};
+const REF_LABEL: Record<string, string> = {
+  new: 'New', contacted: 'Contacted', enrolled: 'Enrolled', paid: 'Paid', rewarded: 'Rewarded', rejected: 'Not proceeded',
+};
+const REF_ENROLLED = ['enrolled', 'paid', 'rewarded'];
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function Referrals({ getToken, firestore }: { getToken: () => Promise<string>; firestore: any }) {
+  const [rows, setRows] = useState<App[]>([]);
+  const [partners, setPartners] = useState<Record<string, { fullName?: string; username?: string; ref?: string }>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [filter, setFilter] = useState<'all' | 'new' | 'contacted' | 'enrolled' | 'paid' | 'rewarded' | 'rejected'>('all');
+  const [q, setQ] = useState('');
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true); setError('');
+    try {
+      const [refSnap, partSnap] = await Promise.all([
+        getDocs(query(collection(firestore, 'referrals'), orderBy('createdAt', 'desc'))),
+        getDocs(collection(firestore, 'partners')),
+      ]);
+      const pmap: Record<string, { fullName?: string; username?: string; ref?: string }> = {};
+      partSnap.docs.forEach((d) => { const v = d.data(); pmap[d.id] = { fullName: v.fullName, username: v.username, ref: v.ref }; });
+      setPartners(pmap);
+      setRows(refSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    } catch (e) {
+      setError('Could not load referrals. Make sure the partner Firestore rules are published.');
+      console.error(e);
+    } finally { setLoading(false); }
+  }, [firestore]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const setStatus = async (id: string, status: string, name: string) => {
+    if (status === 'rejected' && !window.confirm(`Mark “${name}” as not proceeded?`)) return;
+    setBusy(id);
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/partners/admin/referral-status', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ id, status }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || 'Failed.'); return; }
+      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
+    } catch { alert('Network error.'); }
+    finally { setBusy(null); }
+  };
+
+  const term = q.trim().toLowerCase();
+  const counts: Record<string, number> = {};
+  rows.forEach((r) => { const s = r.status ?? 'new'; counts[s] = (counts[s] ?? 0) + 1; });
+  const shown = rows.filter((r) => {
+    const p = partners[r.partnerUid] ?? {};
+    const status = r.status ?? 'new';
+    const hay = `${r.studentName ?? ''} ${r.studentContact ?? ''} ${p.fullName ?? ''} ${p.username ?? ''}`.toLowerCase();
+    return (filter === 'all' || status === filter) && (!term || hay.includes(term));
+  });
+
+  return (
+    <div className="mt-5">
+      <p className="mb-3 text-sm text-slate-600">Students referred by partners. Mark a student as <b>Enrolled</b> once they sign up with SmartLabs — this credits the partner and counts toward their monthly commission tier.</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[180px]">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search student, contact, partner…" className="w-full rounded-xl border border-slate-200 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none" />
+        </div>
+        <select value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} className="rounded-xl border border-slate-200 px-3 py-2 text-sm">
+          {(['all', 'new', 'contacted', 'enrolled', 'paid', 'rewarded', 'rejected'] as const).map((s) => (
+            <option key={s} value={s}>{s === 'all' ? `All (${rows.length})` : `${REF_LABEL[s]} (${counts[s] ?? 0})`}</option>
+          ))}
+        </select>
+        <button onClick={load} className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50"><RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh</button>
+      </div>
+
+      {error && <p className="mt-3 text-sm font-semibold text-red-600">{error}</p>}
+
+      <div className="mt-4 space-y-3">
+        {loading ? <div className="flex items-center gap-2 py-8 text-slate-400"><Loader2 size={16} className="animate-spin" /> Loading…</div>
+          : shown.length === 0 ? <p className="py-8 text-center text-sm text-slate-400">No referrals{filter !== 'all' ? ` (${REF_LABEL[filter]})` : ''}.</p>
+          : shown.map((r) => {
+            const status = r.status ?? 'new';
+            const p = partners[r.partnerUid] ?? {};
+            const isEnrolled = REF_ENROLLED.includes(status);
+            const working = busy === r.id;
+            return (
+              <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-black text-slate-900">{r.studentName || '—'}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${REF_TONE[status] ?? REF_TONE.new}`}>{REF_LABEL[status] ?? status}</span>
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase text-slate-500">{r.source ?? 'manual'}</span>
+                    </div>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {r.studentContact ? `${r.studentContact} · ` : ''}by {p.fullName ?? 'Unknown partner'}{p.username ? ` (@${p.username})` : ''} · {fmtDate(r.createdAt)}
+                    </p>
+                    {r.note ? <p className="mt-1 text-xs text-slate-500 line-clamp-2">“{r.note}”</p> : null}
+                  </div>
+                  <div className="flex shrink-0 flex-wrap gap-1.5">
+                    {status === 'new' && (
+                      <button disabled={working} onClick={() => setStatus(r.id, 'contacted', r.studentName)} className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-black text-white hover:bg-blue-700 disabled:opacity-50"><Phone size={13} /> Contacted</button>
+                    )}
+                    {!isEnrolled && (
+                      <button disabled={working} onClick={() => setStatus(r.id, 'enrolled', r.studentName)} className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-black text-white hover:bg-emerald-700 disabled:opacity-50">{working ? <Loader2 size={13} className="animate-spin" /> : <GraduationCap size={13} />} Mark enrolled</button>
+                    )}
+                    {!isEnrolled && status !== 'rejected' && (
+                      <button disabled={working} onClick={() => setStatus(r.id, 'rejected', r.studentName)} className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-600 hover:bg-slate-200 disabled:opacity-50"><XCircle size={13} /> Not proceeded</button>
+                    )}
+                    {isEnrolled && (
+                      <button disabled={working} onClick={() => setStatus(r.id, 'contacted', r.studentName)} className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-600 hover:bg-slate-200 disabled:opacity-50"><Undo2 size={13} /> Undo enrolment</button>
+                    )}
+                    {status === 'rejected' && (
+                      <button disabled={working} onClick={() => setStatus(r.id, 'new', r.studentName)} className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-600 hover:bg-slate-200 disabled:opacity-50"><Undo2 size={13} /> Reopen</button>
                     )}
                   </div>
                 </div>
