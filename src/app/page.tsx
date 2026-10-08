@@ -1369,6 +1369,35 @@ export default function Home() {
         </div>
       </section>
 
+      {/* PTE Exam Guide Banner */}
+      <section className="relative py-12 sm:py-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="relative overflow-hidden rounded-3xl bg-[#0D1B35] p-8 text-white sm:p-10"
+          >
+            <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-500/20 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-24 -left-16 h-56 w-56 rounded-full bg-amber-400/10 blur-3xl" />
+            <div className="relative flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="max-w-2xl">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-black uppercase tracking-widest text-amber-300">
+                  <Video className="h-3.5 w-3.5" /> Free PTE exam guide
+                </div>
+                <h2 className="mt-4 text-2xl font-black sm:text-3xl">New to PTE? Watch before your exam day</h2>
+                <p className="mt-2 text-sm text-white/70 sm:text-base">
+                  Short videos on the test centre, IELTS vs PTE, booking your exam and creating your MyPTE account — everything you need to walk in with confidence.
+                </p>
+              </div>
+              <Link href="/pte-exam-guide" className="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-amber-400 px-6 py-3.5 text-sm font-black text-slate-900 transition-colors hover:bg-amber-300">
+                <Play className="h-4 w-4" /> Watch the guide <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Learning Methods Section - Advanced Grid */}
       <section className="relative py-24 sm:py-32 overflow-hidden bg-white dark:bg-slate-950">
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-accent-3/5 blur-[160px] rounded-full -z-10" />
