@@ -125,7 +125,7 @@ function RegistrationInner() {
 
   // Reset a batch that stops being valid for the chosen package.
   useEffect(() => {
-    if (selectedBatch && !availableBatches.some(b => b.id === selectedBatch)) setSelectedBatch('');
+    if (selectedBatch && selectedBatch !== '__upcoming__' && !availableBatches.some(b => b.id === selectedBatch)) setSelectedBatch('');
   }, [availableBatches, selectedBatch]);
 
   // Prefill name once we know the user.
@@ -365,12 +365,22 @@ function RegistrationInner() {
               <p className="text-sm font-semibold flex items-center gap-2 mb-3"><CalendarDays className="h-4 w-4 text-primary" /> 2. Choose your batch</p>
               {batchesLoading ? (
                 <p className="text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Loading available batches…</p>
-              ) : availableBatches.length === 0 ? (
-                <div className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
-                  {selectedPkg ? 'No open batches for this package right now.' : 'No open batches right now.'} Please check back soon or contact us on <b>077 453 3233</b>.
-                </div>
               ) : (
                 <div className="grid gap-3">
+                  {/* Upcoming batch — always selectable, even with no dated batch yet */}
+                  <button onClick={() => setSelectedBatch('__upcoming__')}
+                    className={`w-full rounded-xl border p-4 text-left transition-colors ${selectedBatch === '__upcoming__' ? 'border-primary ring-2 ring-primary/30 bg-primary/5' : 'hover:border-primary/40'}`}>
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="font-semibold text-sm">Upcoming batch</span>
+                      <span className="text-xs rounded-full px-2 py-0.5 bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">Date to be announced</span>
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">Reserve your place now — we&rsquo;ll confirm your start date, schedule and WhatsApp group by email &amp; WhatsApp.</p>
+                  </button>
+
+                  {availableBatches.length === 0 && (
+                    <p className="px-1 text-xs text-muted-foreground">No dated batches are open right now — choose <b>Upcoming batch</b> above to reserve your place.</p>
+                  )}
+
                   {availableBatches.map(b => {
                     const left = seatsLeft(b);
                     const full = left === 0;

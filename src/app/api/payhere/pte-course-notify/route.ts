@@ -85,6 +85,7 @@ export async function POST(request: NextRequest) {
           packageName: orderData.packageName ?? pkg?.name ?? '',
           batchId: orderData.batchId ?? '',
           batchName: orderData.batchName ?? '',
+          batchStatus: orderData.batchStatus ?? 'enrolled',
           fullName: orderData.fullName ?? '',
           phone: orderData.phone ?? '',
           phoneKey: phoneKey(orderData.phone),

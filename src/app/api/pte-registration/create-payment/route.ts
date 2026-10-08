@@ -41,23 +41,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Please enter your full name.' }, { status: 400 });
     }
 
-    // ── Validate the batch: exists, open, offers this package, has a seat ──
-    const batchSnap = await adminDb.collection('pte_batches').doc(String(batchId)).get();
-    if (!batchSnap.exists) {
-      return NextResponse.json({ error: 'That batch no longer exists.' }, { status: 404 });
-    }
-    const batch = batchSnap.data()!;
-    if (batch.status !== 'open') {
-      return NextResponse.json({ error: 'This batch is closed for registration.' }, { status: 409 });
-    }
-    const offered: string[] = Array.isArray(batch.packageIds) ? batch.packageIds : [];
-    if (offered.length && !offered.includes(pkg.id)) {
-      return NextResponse.json({ error: 'This package is not offered in the selected batch.' }, { status: 409 });
-    }
-    const seats = Number(batch.seats ?? 0);
-    const filled = Number(batch.seatsFilled ?? 0);
-    if (seats > 0 && filled >= seats) {
-      return NextResponse.json({ error: 'This batch is full. Please choose another.' }, { status: 409 });
+    // "Upcoming batch" lets students reserve a seat before a dated batch is
+    // published — no batch doc; an admin assigns the real batch later.
+    const isUpcoming = String(batchId) === '__upcoming__';
+    let storedBatchId = '';
+    let batchName = 'Upcoming batch (date to be announced)';
+
+    if (!isUpcoming) {
+      // ── Validate the batch: exists, open, offers this package, has a seat ──
+      const batchSnap = await adminDb.collection('pte_batches').doc(String(batchId)).get();
+      if (!batchSnap.exists) {
+        return NextResponse.json({ error: 'That batch no longer exists.' }, { status: 404 });
+      }
+      const batch = batchSnap.data()!;
+      if (batch.status !== 'open') {
+        return NextResponse.json({ error: 'This batch is closed for registration.' }, { status: 409 });
+      }
+      const offered: string[] = Array.isArray(batch.packageIds) ? batch.packageIds : [];
+      if (offered.length && !offered.includes(pkg.id)) {
+        return NextResponse.json({ error: 'This package is not offered in the selected batch.' }, { status: 409 });
+      }
+      const seats = Number(batch.seats ?? 0);
+      const filled = Number(batch.seatsFilled ?? 0);
+      if (seats > 0 && filled >= seats) {
+        return NextResponse.json({ error: 'This batch is full. Please choose another.' }, { status: 409 });
+      }
+      storedBatchId = String(batchId);
+      batchName = (batch.name as string) ?? '';
     }
 
     const merchantId     = process.env.NEXT_PUBLIC_PAYHERE_MERCHANT_ID;
@@ -86,8 +96,9 @@ export async function POST(request: NextRequest) {
       packageName: pkg.name,
       addOnIds: selectedAddOns,
       addOnLabels,
-      batchId: String(batchId),
-      batchName: (batch.name as string) ?? '',
+      batchId: storedBatchId,
+      batchName,
+      batchStatus: isUpcoming ? 'awaiting_batch' : 'enrolled',
       fullName: name,
       phone: cleanPhone,
       email,
@@ -102,7 +113,7 @@ export async function POST(request: NextRequest) {
       cancel_url:  `${appUrl}/pte-registration?payment=cancelled`,
       notify_url:  `${appUrl}/api/payhere/pte-course-notify`,
       order_id:    orderId,
-      items:       `Smart Labs PTE — ${pkg.name} (${(batch.name as string) ?? 'Batch'})`,
+      items:       `Smart Labs PTE — ${pkg.name} (${batchName})`,
       amount,
       currency,
       first_name:  nameParts[0] || 'Student',
