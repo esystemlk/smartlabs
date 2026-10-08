@@ -355,6 +355,9 @@ function Referrals({ getToken, firestore }: { getToken: () => Promise<string>; f
   const [filter, setFilter] = useState<'all' | 'new' | 'contacted' | 'enrolled' | 'paid' | 'rewarded' | 'rejected'>('all');
   const [q, setQ] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
+  const [payoutFor, setPayoutFor] = useState<string | null>(null);
+  const [payoutForm, setPayoutForm] = useState({ courseFee: '', commissionPercent: '' });
+  const [payoutBusy, setPayoutBusy] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
@@ -389,6 +392,46 @@ function Referrals({ getToken, firestore }: { getToken: () => Promise<string>; f
       setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
     } catch { alert('Network error.'); }
     finally { setBusy(null); }
+  };
+
+  // The partner's commission rate this month: 10% (1–10 enrolments), 12% (11–20), 15% (20+).
+  const monthTier = (partnerUid: string): number => {
+    const now = new Date();
+    const n = rows.filter((r) => r.partnerUid === partnerUid && REF_ENROLLED.includes(r.status ?? '') && (() => {
+      try { const d = r.createdAt?.toDate?.(); return !!d && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth(); } catch { return false; }
+    })()).length;
+    return n > 20 ? 15 : n > 10 ? 12 : 10;
+  };
+
+  const openPayout = (r: App) => {
+    setPayoutFor(r.id);
+    const ex = r.payout;
+    setPayoutForm({
+      courseFee: ex?.courseFee ? String(ex.courseFee) : '',
+      commissionPercent: String(ex?.commissionPercent ?? monthTier(r.partnerUid)),
+    });
+  };
+
+  const sendPayout = async (r: App) => {
+    const fee = Number(payoutForm.courseFee), pct = Number(payoutForm.commissionPercent);
+    if (!fee || fee <= 0) { alert('Enter the course fee.'); return; }
+    if (!pct || pct <= 0 || pct > 100) { alert('Enter a valid commission %.'); return; }
+    const amount = Math.round(fee * pct / 100);
+    if (!window.confirm(`Send ${partners[r.partnerUid]?.fullName ?? 'the partner'} a commission payout of LKR ${amount.toLocaleString('en-LK')} for ${r.studentName}? This emails the partner (and a copy to us).`)) return;
+    setPayoutBusy(true);
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/partners/admin/payout', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ referralId: r.id, courseFee: fee, commissionPercent: pct }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || 'Failed.'); return; }
+      setRows((prev) => prev.map((x) => (x.id === r.id ? { ...x, status: 'rewarded', payout: { courseFee: fee, commissionPercent: pct, amount } } : x)));
+      setPayoutFor(null);
+      alert(data.emailed === false ? 'Payout recorded, but the email could not be sent.' : `Payout email sent — LKR ${amount.toLocaleString('en-LK')}.`);
+    } catch { alert('Network error.'); }
+    finally { setPayoutBusy(false); }
   };
 
   const term = q.trim().toLowerCase();
@@ -454,11 +497,34 @@ function Referrals({ getToken, firestore }: { getToken: () => Promise<string>; f
                     {isEnrolled && (
                       <button disabled={working} onClick={() => setStatus(r.id, 'contacted', r.studentName)} className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-600 hover:bg-slate-200 disabled:opacity-50"><Undo2 size={13} /> Undo enrolment</button>
                     )}
+                    {isEnrolled && (
+                      <button onClick={() => (payoutFor === r.id ? setPayoutFor(null) : openPayout(r))} className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-black text-white ${status === 'rewarded' ? 'bg-violet-600 hover:bg-violet-700' : 'bg-amber-500 hover:bg-amber-600'}`}><Coins size={13} /> {status === 'rewarded' ? 'Payout sent' : 'Send payout'}</button>
+                    )}
                     {status === 'rejected' && (
                       <button disabled={working} onClick={() => setStatus(r.id, 'new', r.studentName)} className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-600 hover:bg-slate-200 disabled:opacity-50"><Undo2 size={13} /> Reopen</button>
                     )}
                   </div>
                 </div>
+
+                {payoutFor === r.id && (() => {
+                  const fee = Number(payoutForm.courseFee) || 0, pct = Number(payoutForm.commissionPercent) || 0;
+                  const amount = Math.round(fee * pct / 100);
+                  return (
+                    <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                      <p className="mb-2 text-xs font-black uppercase tracking-wide text-amber-700">Commission payout to {partners[r.partnerUid]?.fullName ?? 'partner'}</p>
+                      <div className="grid gap-2 sm:grid-cols-3">
+                        <label className="block"><span className="text-[11px] font-bold text-slate-500">Course fee (LKR)</span><input type="number" value={payoutForm.courseFee} onChange={(e) => setPayoutForm((f) => ({ ...f, courseFee: e.target.value }))} placeholder="e.g. 35000" className="mt-0.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label>
+                        <label className="block"><span className="text-[11px] font-bold text-slate-500">Commission %</span><input type="number" value={payoutForm.commissionPercent} onChange={(e) => setPayoutForm((f) => ({ ...f, commissionPercent: e.target.value }))} placeholder="e.g. 10" className="mt-0.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label>
+                        <div className="flex flex-col justify-end"><span className="text-[11px] font-bold text-slate-500">Payout amount</span><span className="mt-0.5 rounded-lg bg-white px-3 py-2 text-sm font-black text-emerald-700">LKR {amount.toLocaleString('en-LK')}</span></div>
+                      </div>
+                      <div className="mt-2 flex items-center gap-2">
+                        <button disabled={payoutBusy} onClick={() => sendPayout(r)} className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-black text-white hover:bg-emerald-700 disabled:opacity-50">{payoutBusy ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />} Send payout email</button>
+                        <button onClick={() => setPayoutFor(null)} className="rounded-lg px-3 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100">Cancel</button>
+                        <span className="text-[11px] text-slate-500">Emails the partner + a copy to contact@smartlabs.lk · suggested % is their current tier.</span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             );
           })}
