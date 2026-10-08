@@ -4,6 +4,7 @@ import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { sendMail } from '@/lib/mail';
 import { formatLkr } from '@/types/recorded-package';
+import { renderAdminPaymentAlert } from '@/lib/admin-payment-email';
 
 export const runtime = 'nodejs';
 
@@ -124,6 +125,22 @@ export async function POST(request: NextRequest) {
           });
         }
       } catch (e) { console.error('[recpkg-notify] receipt email failed:', e); }
+
+      // Admin alert with student details (best-effort).
+      try {
+        await sendMail({
+          to: 'contact@smartlabs.lk',
+          subject: `New recordings purchase — ${orderData.fullName ?? userEmail ?? 'Student'} (${paid})`,
+          html: renderAdminPaymentAlert({
+            course: `Recordings — ${packageTitle ?? 'package'} (${accessMonths} month${accessMonths === 1 ? '' : 's'})`,
+            amount: paid,
+            fullName: String(orderData.fullName ?? ''),
+            phone: String(orderData.phone ?? ''),
+            email: String(userEmail ?? orderData.email ?? ''),
+            orderId: String(order_id), paymentId: String(payment_id),
+          }),
+        });
+      } catch (e) { console.error('[recpkg-notify] admin alert failed:', e); }
 
     } else if (sc === '-1') {
       await orderDoc.ref.update({ paymentStatus: 'cancelled', updatedAt: FieldValue.serverTimestamp() });

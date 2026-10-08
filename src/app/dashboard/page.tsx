@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirebase, useCollection, useMemoFirebase } from '@/firebase';
+import { MyPayments } from '@/components/dashboard/my-payments';
 import { useUserActivity } from '@/hooks/use-user-activity';
 import { doc, getDoc, collection } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
@@ -544,6 +545,9 @@ export default function DashboardPage() {
           </div>
         </div>
       </motion.div>
+
+      {/* ─── My Payments ────────────────────────────────────────────────────── */}
+      <MyPayments />
 
       {/* ─── Admin Panel Banner ─────────────────────────────────────────────── */}
       {isAdminOrDev && (

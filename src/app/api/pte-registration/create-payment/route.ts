@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
-import { getPtePackage } from '@/lib/pte-packages';
+import { getPtePackage, sumPteAddOns } from '@/lib/pte-packages';
 
 export const runtime = 'nodejs';
 
@@ -20,12 +20,16 @@ export async function POST(request: NextRequest) {
     const uid = decoded.uid;
 
     const body = await request.json();
-    const { packageId, batchId, fullName, phone } = body as {
-      packageId?: string; batchId?: string; fullName?: string; phone?: string;
+    const { packageId, batchId, fullName, phone, addOnIds } = body as {
+      packageId?: string; batchId?: string; fullName?: string; phone?: string; addOnIds?: string[];
     };
 
     const pkg = getPtePackage(String(packageId));
     if (!pkg) return NextResponse.json({ error: 'Invalid course package.' }, { status: 400 });
+    const selectedAddOns = Array.isArray(addOnIds) ? addOnIds : [];
+    const addOnTotal = sumPteAddOns(pkg, selectedAddOns);
+    const addOnLabels = (pkg.addOns ?? []).filter((a) => selectedAddOns.includes(a.id)).map((a) => a.label);
+    const finalAmount = pkg.price + addOnTotal;
 
     if (!batchId) return NextResponse.json({ error: 'Please select a batch.' }, { status: 400 });
     const cleanPhone = String(phone ?? '').replace(/[^0-9+]/g, '');
@@ -70,7 +74,7 @@ export async function POST(request: NextRequest) {
     const nameParts = name.split(' ');
 
     const orderId = `pte_${uid.slice(0, 8)}_${Date.now()}`;
-    const amount = pkg.price.toFixed(2);
+    const amount = finalAmount.toFixed(2);
     const currency = 'LKR';
     const hash = md5(`${merchantId}${orderId}${amount}${currency}${md5(merchantSecret)}`);
 
@@ -80,12 +84,14 @@ export async function POST(request: NextRequest) {
       type: 'pte_course',
       packageId: pkg.id,
       packageName: pkg.name,
+      addOnIds: selectedAddOns,
+      addOnLabels,
       batchId: String(batchId),
       batchName: (batch.name as string) ?? '',
       fullName: name,
       phone: cleanPhone,
       email,
-      paymentAmount: pkg.price,
+      paymentAmount: finalAmount,
       paymentStatus: 'pending',
       createdAt: new Date(),
     });

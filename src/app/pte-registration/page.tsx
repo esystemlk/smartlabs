@@ -106,6 +106,7 @@ function RegistrationInner() {
   const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [payhereParams, setPayhereParams] = useState<Record<string, string> | null>(null);
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
   const payhereFormRef = useRef<HTMLFormElement>(null);
 
   // ── Open batches ──────────────────────────────────────────────────────────
@@ -139,7 +140,17 @@ function RegistrationInner() {
 
   useEffect(() => { if (payhereParams && payhereFormRef.current) payhereFormRef.current.submit(); }, [payhereParams]);
 
+  // Preselect a package from ?package= (links from the /courses catalog).
+  useEffect(() => {
+    const pid = searchParams?.get('package');
+    if (pid && PTE_PACKAGES.some(p => p.id === pid)) setSelectedPkg(pid as PtePackage['id']);
+  }, [searchParams]); // eslint-disable-line
+  // Clear add-ons whenever the package changes.
+  useEffect(() => { setSelectedAddOns([]); }, [selectedPkg]);
+
   const chosenPkg = selectedPkg ? PTE_PACKAGES.find(p => p.id === selectedPkg)! : null;
+  const addOnTotal = (chosenPkg?.addOns ?? []).filter(a => selectedAddOns.includes(a.id)).reduce((t, a) => t + a.price, 0);
+  const payableTotal = (chosenPkg?.price ?? 0) + addOnTotal;
 
   const handleRegister = async () => {
     if (!user) { router.push('/login?redirect=/pte-registration'); return; }
@@ -155,7 +166,7 @@ function RegistrationInner() {
       const res = await fetch('/api/pte-registration/create-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ packageId: selectedPkg, batchId: selectedBatch, fullName: fullName.trim(), phone }),
+        body: JSON.stringify({ packageId: selectedPkg, batchId: selectedBatch, fullName: fullName.trim(), phone, addOnIds: selectedAddOns }),
       });
       const d = await res.json();
       if (!res.ok || !d.params) { toast({ variant: 'destructive', title: d.error || 'Could not start payment.' }); return; }
@@ -406,11 +417,29 @@ function RegistrationInner() {
               </span>
             </label>
 
+            {/* Optional add-ons */}
+            {chosenPkg?.addOns?.length ? (
+              <div className="rounded-xl border-2 border-slate-100 p-4 dark:border-slate-800">
+                <p className="mb-2 text-xs font-black uppercase tracking-wide text-muted-foreground">Optional add-ons</p>
+                <div className="space-y-2">
+                  {chosenPkg.addOns.map(a => (
+                    <label key={a.id} className="flex cursor-pointer items-start gap-3 rounded-lg p-1">
+                      <input type="checkbox" checked={selectedAddOns.includes(a.id)} onChange={e => setSelectedAddOns(prev => e.target.checked ? [...prev, a.id] : prev.filter(x => x !== a.id))} className="mt-0.5 h-4 w-4 accent-primary" />
+                      <span className="text-sm"><b className="text-foreground">{a.label}</b> — +{formatLkr(a.price)}{a.detail ? <span className="block text-xs text-muted-foreground">{a.detail}</span> : null}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
             {/* Summary + pay */}
             {chosenPkg && (
-              <div className="flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3">
-                <span className="text-sm text-muted-foreground">Total — {chosenPkg.name}</span>
-                <span className="text-lg font-bold">{formatLkr(chosenPkg.price)}</span>
+              <div className="rounded-xl bg-muted/50 px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Total — {chosenPkg.name}</span>
+                  <span className="text-lg font-bold">{formatLkr(payableTotal)}</span>
+                </div>
+                {addOnTotal > 0 && <div className="mt-1 text-right text-xs text-muted-foreground">{formatLkr(chosenPkg.price)} course + {formatLkr(addOnTotal)} add-ons</div>}
               </div>
             )}
 

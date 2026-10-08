@@ -3,8 +3,9 @@ import { createHash } from 'crypto';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { sendMail } from '@/lib/mail';
-import { getPtePackage, formatLkr } from '@/lib/pte-packages';
+import { getPtePackage } from '@/lib/pte-packages';
 import { renderPteReceiptEmail } from '@/lib/pte-receipt-email';
+import { renderAdminPaymentAlert } from '@/lib/admin-payment-email';
 import { phoneKey } from '@/lib/utils';
 
 // Needs node crypto (MD5 signature) + firebase-admin — not available on edge.
@@ -119,21 +120,19 @@ export async function POST(request: NextRequest) {
         }
       } catch (e) { console.error('[pte-notify] receipt email failed:', e); }
 
-      // ── Notify admin ──
+      // ── Notify admin (student details for the team) ──
       try {
-        const adminEmail = process.env.NOTIFICATION_EMAIL || process.env.GMAIL_USER || '';
-        if (adminEmail) {
-          await sendMail({
-            to: adminEmail,
-            subject: `New PTE Enrollment — ${orderData.fullName} (${orderData.packageName})`,
-            html: `<div style="font-family:Arial,sans-serif;font-size:14px;">
-              <h2 style="margin:0 0 12px;">New PTE Course Enrollment</h2>
-              <p><b>${orderData.fullName}</b> just paid ${formatLkr(paid)} for <b>${orderData.packageName}</b>.</p>
-              <p>Batch: <b>${orderData.batchName || '—'}</b><br/>Phone: ${orderData.phone}<br/>Email: ${orderData.email}<br/>Order: ${order_id}</p>
-              <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/dashboard/pte-batches">Open Batch Manager →</a></p>
-            </div>`,
-          });
-        }
+        await sendMail({
+          to: 'contact@smartlabs.lk',
+          subject: `New PTE enrolment — ${orderData.fullName ?? 'Student'} (${orderData.packageName ?? 'PTE'})`,
+          html: renderAdminPaymentAlert({
+            course: String(orderData.packageName ?? 'PTE Course'), amount: paid,
+            fullName: String(orderData.fullName ?? ''), phone: String(orderData.phone ?? ''), email: String(orderData.email ?? ''),
+            orderId: String(order_id), paymentId: String(payment_id),
+            batchName: String(orderData.batchName ?? ''),
+            addOns: Array.isArray(orderData.addOnLabels) ? orderData.addOnLabels : [],
+          }),
+        });
       } catch (e) { console.error('[pte-notify] admin email failed:', e); }
 
     } else if (sc === '-1') {
