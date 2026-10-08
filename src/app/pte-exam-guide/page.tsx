@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
-  Building2, Scale, Target, CalendarCheck, UserPlus, Youtube,
+  Building2, Scale, Target, CalendarCheck, UserPlus,
   GraduationCap, ShieldCheck, Phone, Globe, ArrowRight, PlayCircle, Lightbulb,
 } from 'lucide-react';
 
@@ -60,25 +60,25 @@ export default function PteExamGuidePage() {
   return (
     <div className="w-full">
       {/* ── Hero ───────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#0D1B35] text-white">
-        <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-blue-500/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-amber-400/10 blur-3xl" />
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary/5 via-background to-background">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-72 w-72 rounded-full bg-primary/10 blur-[120px]" />
+        <div className="pointer-events-none absolute -left-16 bottom-0 h-72 w-72 rounded-full bg-amber-400/10 blur-[120px]" />
         <div className="relative mx-auto max-w-5xl px-5 py-14 sm:px-6 sm:py-20">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-black uppercase tracking-widest text-amber-300">
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
             <GraduationCap size={14} /> Smart Labs · PTE Exam Preparation
-          </div>
-          <h1 className="mt-4 max-w-3xl text-balance text-3xl font-black leading-tight sm:text-5xl">
-            Get familiar with your PTE exam <span className="text-amber-300">before test day</span>
+          </span>
+          <h1 className="mt-4 max-w-3xl text-balance text-3xl font-black leading-tight text-foreground sm:text-5xl">
+            Get familiar with your PTE exam <span className="gradient-text">before test day</span>
           </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/75 sm:text-base">
+          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
             Preparation isn&rsquo;t just about practising questions — it&rsquo;s about knowing what to expect. Watch these
             short videos to understand the test environment, the exam procedure, and how to register with confidence.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <a href="#videos" className="inline-flex items-center gap-2 rounded-2xl bg-amber-400 px-5 py-3 text-sm font-black text-slate-900 transition-colors hover:bg-amber-300">
+            <a href="#videos" className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-black text-primary-foreground transition-colors hover:bg-primary/90">
               <PlayCircle size={18} /> Start watching
             </a>
-            <Link href="/courses" className="inline-flex items-center gap-2 rounded-2xl border border-white/20 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-white/10">
+            <Link href="/courses" className="inline-flex items-center gap-2 rounded-2xl border border-border px-5 py-3 text-sm font-black text-foreground transition-colors hover:bg-muted">
               Explore our PTE courses <ArrowRight size={16} />
             </Link>
           </div>
@@ -148,16 +148,18 @@ export default function PteExamGuidePage() {
       </section>
 
       {/* ── CTA / contact ──────────────────────────────────────────────────── */}
-      <section className="bg-[#0D1B35] text-white">
-        <div className="mx-auto flex max-w-4xl flex-col items-center gap-4 px-5 py-12 text-center sm:px-6">
-          <GraduationCap size={30} className="text-amber-300" />
-          <h2 className="text-2xl font-black">Ready to start your PTE journey?</h2>
-          <p className="max-w-xl text-sm text-white/70">Join a Smart Labs PTE class and get expert guidance, strategies and feedback all the way to test day.</p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link href="/courses" className="inline-flex items-center gap-2 rounded-2xl bg-amber-400 px-5 py-3 text-sm font-black text-slate-900 hover:bg-amber-300">View PTE courses <ArrowRight size={16} /></Link>
-            <a href="tel:0706914652" className="inline-flex items-center gap-2 rounded-2xl border border-white/20 px-5 py-3 text-sm font-black text-white hover:bg-white/10"><Phone size={16} /> 070 691 4652</a>
+      <section className="py-12 sm:py-16">
+        <div className="mx-auto max-w-4xl px-5 sm:px-6">
+          <div className="mx-auto overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-purple-600 p-8 text-center text-white sm:p-12">
+            <GraduationCap size={30} className="mx-auto text-white/90" />
+            <h2 className="mt-3 text-2xl font-black">Ready to start your PTE journey?</h2>
+            <p className="mx-auto mt-2 max-w-xl text-sm text-white/80">Join a Smart Labs PTE class and get expert guidance, strategies and feedback all the way to test day.</p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+              <Link href="/courses" className="inline-flex items-center gap-2 rounded-2xl bg-white px-6 py-3 text-sm font-black text-primary hover:bg-white/90">View PTE courses <ArrowRight size={16} /></Link>
+              <a href="tel:0706914652" className="inline-flex items-center gap-2 rounded-2xl border border-white/30 px-6 py-3 text-sm font-black text-white hover:bg-white/10"><Phone size={16} /> 070 691 4652</a>
+            </div>
+            <p className="mt-4 flex items-center justify-center gap-2 text-xs text-white/70"><Globe size={13} /> www.smartlabs.lk · Smarter English. Brighter Futures.</p>
           </div>
-          <p className="mt-2 flex items-center gap-2 text-xs text-white/50"><Globe size={13} /> www.smartlabs.lk · <Youtube size={13} /> Smarter English. Brighter Futures.</p>
         </div>
       </section>
     </div>
