@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/firebase';
@@ -14,7 +14,7 @@ import {
 
 const CRIMSON = '#dc2626';
 
-export default function IeltsMockCatalog() {
+function IeltsMockCatalogInner() {
   const router = useRouter();
   const params = useSearchParams();
   const { user, isUserLoading } = useUser();
@@ -145,5 +145,13 @@ export default function IeltsMockCatalog() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function IeltsMockCatalog() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="h-6 w-6 animate-spin text-slate-400" /></div>}>
+      <IeltsMockCatalogInner />
+    </Suspense>
   );
 }
