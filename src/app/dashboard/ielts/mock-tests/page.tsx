@@ -3,23 +3,30 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useUser } from '@/firebase';
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { useUser, useFirestore } from '@/firebase';
 import { payhereUrls } from '@/lib/payhere';
 import { IELTS_MOCKS } from '@/lib/ielts-mock/mocks';
 import { IELTS_MOCK_PACKAGES } from '@/lib/ielts-mock-packages';
+import type { IeltsMockResult } from '@/lib/ielts-mock/types';
 import {
   ArrowLeft, ArrowRight, Headphones, BookOpen, PenLine, Loader2, CreditCard,
-  X, Check, Clock, Ticket,
+  X, Check, Clock, Ticket, FileDown, History,
 } from 'lucide-react';
 
 const CRIMSON = '#dc2626';
+
+interface HistoryItem { id: string; result: IeltsMockResult; completedAt: Date | null }
 
 function IeltsMockCatalogInner() {
   const router = useRouter();
   const params = useSearchParams();
   const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
 
   const [credits, setCredits] = useState<{ unlimited: boolean; remaining: number } | null>(null);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [pdfBusy, setPdfBusy] = useState<string | null>(null);
   const [showBuy, setShowBuy] = useState(false);
   const [buying, setBuying] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +41,47 @@ function IeltsMockCatalogInner() {
       if (res.ok) setCredits(await res.json());
     } catch { /* ignore */ }
   };
-  useEffect(() => { if (user) void load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [user]);
+  const loadHistory = async () => {
+    if (!user || !firestore) return;
+    try {
+      // orderBy completedAt already excludes in-progress attempts (they have no
+      // completedAt), so no composite index is needed.
+      const q = query(
+        collection(firestore, 'users', user.uid, 'ielts_mock_attempts'),
+        orderBy('completedAt', 'desc'), limit(20),
+      );
+      const snap = await getDocs(q);
+      const rows: HistoryItem[] = [];
+      snap.forEach(d => {
+        const data = d.data();
+        if (data.result) rows.push({ id: d.id, result: data.result as IeltsMockResult, completedAt: data.completedAt?.toDate?.() ?? null });
+      });
+      setHistory(rows);
+    } catch { /* index may be building; ignore */ }
+  };
+  useEffect(() => { if (user) { void load(); void loadHistory(); } /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [user, firestore]);
+
+  async function downloadHistoryPdf(item: HistoryItem) {
+    setPdfBusy(item.id);
+    try {
+      const [{ pdf }, { IeltsMockScorePDF }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/components/ielts/IeltsMockScorePDF'),
+      ]);
+      const meta = {
+        studentName: user?.displayName || 'Student',
+        studentEmail: user?.email || undefined,
+        date: (item.completedAt ?? new Date()).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }),
+      };
+      const blob = await pdf(<IeltsMockScorePDF meta={meta} result={item.result} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `SmartLabs_IELTS_Mock_${item.result.title.replace(/[^a-z0-9]+/gi, '_')}.pdf`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) { console.error('history PDF failed', e); } finally { setPdfBusy(null); }
+  }
   useEffect(() => { if (params.get('payment') === 'success') { void load(); } /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [params]);
   useEffect(() => { if (payhereParams && formRef.current) formRef.current.submit(); }, [payhereParams]);
 
@@ -111,6 +158,38 @@ function IeltsMockCatalogInner() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Your results — saved to your profile */}
+        {user && history.length > 0 && (
+          <div className="mt-10">
+            <div className="flex items-center gap-2 mb-3">
+              <History size={16} style={{ color: CRIMSON }} />
+              <h2 className="text-sm font-black uppercase tracking-wider text-slate-700">Your results</h2>
+            </div>
+            <div className="space-y-2.5">
+              {history.map(item => (
+                <div key={item.id} className="rounded-2xl border border-slate-200 bg-white p-3.5 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-black text-slate-900 truncate">{item.result.title}</p>
+                    <p className="text-[12px] text-slate-500">
+                      {item.completedAt ? item.completedAt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                      {' · '}L {item.result.listening.band} · R {item.result.reading.band} · W {item.result.writing.band}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="text-right">
+                      <p className="text-[9px] font-black uppercase tracking-wider text-slate-400 leading-none">Overall</p>
+                      <p className="text-xl font-black leading-tight" style={{ color: CRIMSON }}>{item.result.overall}</p>
+                    </div>
+                    <button onClick={() => downloadHistoryPdf(item)} disabled={pdfBusy === item.id} className="inline-flex items-center gap-1.5 text-xs font-black text-white px-3 py-2 rounded-xl disabled:opacity-60" style={{ backgroundColor: '#0F172A' }}>
+                      {pdfBusy === item.id ? <Loader2 size={13} className="animate-spin" /> : <FileDown size={13} />} PDF
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

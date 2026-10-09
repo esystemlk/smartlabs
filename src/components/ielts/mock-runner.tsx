@@ -9,9 +9,10 @@ import { useUser, useFirestore } from '@/firebase';
 import { IeltsEssayResultView } from '@/components/ielts-essay/IeltsEssayResult';
 import type { IeltsEssayResult } from '@/types/ielts-essay';
 import { READING_MINUTES, WRITING_MINUTES, LISTENING_PART_GAP_SECONDS, type IeltsMockDef } from '@/lib/ielts-mock/mocks';
+import type { IeltsMockResult } from '@/lib/ielts-mock/types';
 import {
   Loader2, Headphones, BookOpen, PenLine, Volume2, Clock, ShieldAlert,
-  CheckCircle2, ArrowRight, CreditCard, Lock, Wand2, FastForward, Bug,
+  CheckCircle2, ArrowRight, CreditCard, Lock, Wand2, FastForward, Bug, FileDown,
 } from 'lucide-react';
 
 // Canned developer sample responses so the Writing AI scorer can run quickly.
@@ -101,7 +102,7 @@ export function IeltsMockRunner({ mock, listening, reading, writing }: { mock: I
   const [t1, setT1] = useState('');
   const [t2, setT2] = useState('');
   const [result, setResult] = useState<IeltsEssayResult | null>(null);
-  const [mockResult, setMockResult] = useState<MockResult | null>(null);
+  const [mockResult, setMockResult] = useState<IeltsMockResult | null>(null);
 
   // ── Developer debug tools (role === developer/admin) ──
   useEffect(() => {
@@ -158,7 +159,7 @@ export function IeltsMockRunner({ mock, listening, reading, writing }: { mock: I
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Could not score the mock.');
-      setMockResult(data as MockResult);
+      setMockResult(data as IeltsMockResult);
       setResult(null);
       setPhase('result');
     } catch (e) {
@@ -205,7 +206,7 @@ export function IeltsMockRunner({ mock, listening, reading, writing }: { mock: I
             <p className="text-xs text-slate-400 mt-1">Writing is scored by AI; this can take up to a minute.</p>
           </div>
         )}
-        {phase === 'result' && mockResult && <MockResultView r={mockResult} />}
+        {phase === 'result' && mockResult && <MockResultView r={mockResult} studentName={user?.displayName || 'Student'} studentEmail={user?.email || undefined} />}
       </div>
     </div>
   );
@@ -513,13 +514,6 @@ function WritingPhase({ writing, t1, setT1, t2, setT2, onSubmit, error, dev, onD
 }
 
 // ─────────────────────────── Result ───────────────────────────
-interface SkillBreakdown { band: number; raw?: number; total?: number; label: string; }
-interface MockResult {
-  title: string; overall: number; overallLabel: string;
-  listening: SkillBreakdown; reading: SkillBreakdown;
-  writing: SkillBreakdown & { task1Band: number; task2Band: number; task1: IeltsEssayResult; task2: IeltsEssayResult };
-}
-
 function BandDonut({ band, label, sub }: { band: number; label: string; sub?: string }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 text-center">
@@ -532,8 +526,30 @@ function BandDonut({ band, label, sub }: { band: number; label: string; sub?: st
   );
 }
 
-function MockResultView({ r }: { r: MockResult }) {
+function MockResultView({ r, studentName, studentEmail }: { r: IeltsMockResult; studentName: string; studentEmail?: string }) {
   const [open, setOpen] = useState<'none' | 't1' | 't2'>('none');
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  async function downloadPdf() {
+    setPdfLoading(true);
+    try {
+      const [{ pdf }, { IeltsMockScorePDF }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/components/ielts/IeltsMockScorePDF'),
+      ]);
+      const meta = { studentName, studentEmail, date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) };
+      const blob = await pdf(<IeltsMockScorePDF meta={meta} result={r} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `SmartLabs_IELTS_Mock_${r.title.replace(/[^a-z0-9]+/gi, '_')}_${studentName.replace(/[^a-z0-9]+/gi, '_')}.pdf`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Mock PDF failed', e);
+    } finally { setPdfLoading(false); }
+  }
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="rounded-3xl border border-slate-200 bg-white shadow-sm p-7 text-center">
@@ -560,6 +576,9 @@ function MockResultView({ r }: { r: MockResult }) {
       {open === 't2' && <IeltsEssayResultView result={r.writing.task2} />}
 
       <div className="flex flex-wrap gap-3 justify-center">
+        <button onClick={downloadPdf} disabled={pdfLoading} className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-black text-sm disabled:opacity-60" style={{ backgroundColor: '#0F172A' }}>
+          {pdfLoading ? <Loader2 size={15} className="animate-spin" /> : <FileDown size={15} />} {pdfLoading ? 'Preparing PDF…' : 'Download PDF'}
+        </button>
         <Link href="/dashboard/ielts/mock-tests" className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-black text-sm" style={{ backgroundColor: CRIMSON }}>More mock tests</Link>
         <Link href="/dashboard/ielts" className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-white border border-slate-200 text-slate-700 font-black text-sm">IELTS dashboard</Link>
       </div>

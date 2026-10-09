@@ -107,6 +107,8 @@ export async function POST(request: Request) {
       overall, listeningBand: lBand, readingBand: rBand, writingBand: wBand,
       listeningRaw: lGrade.raw, readingRaw: rGrade.raw,
       writingTask1Band: t1Result.overallBand, writingTask2Band: t2Result.overallBand,
+      // Full result so the student can re-view and download the PDF later.
+      result,
     }, { merge: true });
 
     return NextResponse.json(result);
