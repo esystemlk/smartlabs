@@ -4,14 +4,21 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { useUser, useFirestore } from '@/firebase';
 import { IeltsEssayResultView } from '@/components/ielts-essay/IeltsEssayResult';
 import type { IeltsEssayResult } from '@/types/ielts-essay';
 import { READING_MINUTES, WRITING_MINUTES, LISTENING_PART_GAP_SECONDS, type IeltsMockDef } from '@/lib/ielts-mock/mocks';
 import {
   Loader2, Headphones, BookOpen, PenLine, Volume2, Clock, ShieldAlert,
-  CheckCircle2, ArrowRight, CreditCard, Lock,
+  CheckCircle2, ArrowRight, CreditCard, Lock, Wand2, FastForward, Bug,
 } from 'lucide-react';
+
+// Canned developer sample responses so the Writing AI scorer can run quickly.
+const DEV_SAMPLE_T1 = 'The chart provides an overview of the data shown, and several clear trends can be identified. Overall, there are notable differences between the categories, with some rising steadily while others decline over the period in question. The highest figures are found in one category, which increases markedly, whereas the lowest remain broadly stable throughout. In the first part of the period, the values begin at comparable levels before diverging significantly. By the end, the gap between the largest and smallest figures has widened considerably. These contrasts, taken together, highlight the main movements and comparisons that the visual presents to the reader in summary form.';
+const DEV_SAMPLE_T2 = 'In recent years this topic has generated considerable debate. While some people firmly support the view expressed in the statement, others disagree, and this essay will examine both perspectives before giving my own opinion. On the one hand, there are compelling reasons to agree. Supporters argue that the benefits are substantial and that the approach addresses a genuine need in modern society, improving outcomes for a large number of people. For example, careful planning can reduce costs and increase efficiency. On the other hand, critics raise valid concerns. They point out that the drawbacks are often underestimated and that unintended consequences can outweigh the advantages if the policy is applied without sufficient safeguards. In my view, a balanced approach is the most sensible. Although the advantages are significant, they can only be realised when accompanied by appropriate regulation and support. In conclusion, both sides of the argument have merit, but on balance I believe the benefits outweigh the disadvantages provided that the issues raised by critics are properly managed.';
+
+type DevAnswers = { listening: Record<number, string>; reading: Record<number, string> };
 
 const CRIMSON = '#dc2626';
 
@@ -77,7 +84,11 @@ function QuestionField({ q, value, onChange }: { q: Question; value: string; onC
 export function IeltsMockRunner({ mock, listening, reading, writing }: { mock: IeltsMockDef; listening: ListeningData; reading: ReadingData; writing: WritingData; }) {
   const router = useRouter();
   const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
   const redirect = `/dashboard/ielts/mock-tests/${mock.id}`;
+
+  const [isDev, setIsDev] = useState(false);
+  const [devAns, setDevAns] = useState<DevAnswers | null>(null);
 
   const [phase, setPhase] = useState<Phase>('intro');
   const [attemptId, setAttemptId] = useState<string | null>(null);
@@ -91,6 +102,27 @@ export function IeltsMockRunner({ mock, listening, reading, writing }: { mock: I
   const [t2, setT2] = useState('');
   const [result, setResult] = useState<IeltsEssayResult | null>(null);
   const [mockResult, setMockResult] = useState<MockResult | null>(null);
+
+  // ── Developer debug tools (role === developer/admin) ──
+  useEffect(() => {
+    if (!user || !firestore) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const snap = await getDoc(doc(firestore, 'users', user.uid));
+        const role = snap.data()?.role as string | undefined;
+        if (!cancelled && (role === 'developer' || role === 'admin')) {
+          setIsDev(true);
+          const idToken = await user.getIdToken();
+          const res = await fetch(`/api/ielts-mock/dev-answers?mockId=${mock.id}`, { headers: { Authorization: `Bearer ${idToken}` } });
+          if (res.ok && !cancelled) setDevAns(await res.json());
+        }
+      } catch { /* non-fatal */ }
+    })();
+    return () => { cancelled = true; };
+  }, [user, firestore, mock.id]);
+
+  const devFillWriting = useCallback(() => { setT1(DEV_SAMPLE_T1); setT2(DEV_SAMPLE_T2); }, []);
 
   // ── Start (spends a credit) ──
   async function start() {
@@ -158,13 +190,13 @@ export function IeltsMockRunner({ mock, listening, reading, writing }: { mock: I
           <IntroCard mock={mock} onStart={start} starting={starting} error={error} needCredits={needCredits} onBuy={() => router.push('/dashboard/ielts/mock-tests')} />
         )}
         {phase === 'listening' && (
-          <ListeningPhase data={listening} answers={lAns} setAnswers={setLAns} onDone={() => setPhase('reading')} />
+          <ListeningPhase data={listening} answers={lAns} setAnswers={setLAns} onDone={() => setPhase('reading')} dev={isDev} devAnswers={devAns?.listening} />
         )}
         {phase === 'reading' && (
-          <ReadingPhase data={reading} answers={rAns} setAnswers={setRAns} onDone={() => setPhase('writing')} />
+          <ReadingPhase data={reading} answers={rAns} setAnswers={setRAns} onDone={() => setPhase('writing')} dev={isDev} devAnswers={devAns?.reading} />
         )}
         {phase === 'writing' && (
-          <WritingPhase writing={writing} t1={t1} setT1={setT1} t2={t2} setT2={setT2} onSubmit={submitMock} error={error} />
+          <WritingPhase writing={writing} t1={t1} setT1={setT1} t2={t2} setT2={setT2} onSubmit={submitMock} error={error} dev={isDev} onDevFill={devFillWriting} />
         )}
         {phase === 'submitting' && (
           <div className="py-28 flex flex-col items-center text-center">
@@ -243,8 +275,25 @@ function IntroCard({ mock, onStart, starting, error, needCredits, onBuy }: { moc
   );
 }
 
+// ─────────────────────────── Developer tools ───────────────────────────
+function DevStrip({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2 mb-4 rounded-2xl border border-dashed border-violet-300 bg-violet-50 px-3 py-2">
+      <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-violet-700"><Bug size={12} /> Dev</span>
+      {children}
+    </div>
+  );
+}
+function DevButton({ icon, label, onClick, disabled }: { icon: React.ReactNode; label: string; onClick: () => void; disabled?: boolean }) {
+  return (
+    <button type="button" onClick={onClick} disabled={disabled} className="inline-flex items-center gap-1.5 text-[12px] font-bold px-2.5 py-1 rounded-lg bg-white border border-violet-200 text-violet-700 hover:bg-violet-100 disabled:opacity-40">
+      {icon} {label}
+    </button>
+  );
+}
+
 // ─────────────────────────── Listening ───────────────────────────
-function ListeningPhase({ data, answers, setAnswers, onDone }: { data: ListeningData; answers: Answers; setAnswers: React.Dispatch<React.SetStateAction<Answers>>; onDone: () => void; }) {
+function ListeningPhase({ data, answers, setAnswers, onDone, dev, devAnswers }: { data: ListeningData; answers: Answers; setAnswers: React.Dispatch<React.SetStateAction<Answers>>; onDone: () => void; dev?: boolean; devAnswers?: Record<number, string>; }) {
   const [partIdx, setPartIdx] = useState(0);
   const [gap, setGap] = useState<number | null>(null); // seconds left in the 15s gap after audio ends
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -291,6 +340,13 @@ function ListeningPhase({ data, answers, setAnswers, onDone }: { data: Listening
         <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600"><Volume2 size={14} style={{ color: CRIMSON }} /> Plays once · no pause</span>
       </div>
 
+      {dev && (
+        <DevStrip>
+          <DevButton icon={<Wand2 size={13} />} label="Fill this part" onClick={() => setAnswers(a => { const next = { ...a }; for (const q of qs) if (devAnswers?.[q.id] != null) next[q.id] = devAnswers[q.id]; return next; })} disabled={!devAnswers} />
+          <DevButton icon={<FastForward size={13} />} label={partIdx + 1 < data.sections.length ? 'Skip audio → next part' : 'Skip audio → Reading'} onClick={() => { setGap(null); advance(); }} />
+        </DevStrip>
+      )}
+
       {/* Hidden-control audio: autoplay, not pausable by the student */}
       <div className="rounded-2xl border border-slate-200 bg-white p-4 mb-4">
         <audio ref={audioRef} src={section.audio} autoPlay onEnded={() => setGap(LISTENING_PART_GAP_SECONDS)} className="hidden" />
@@ -324,7 +380,7 @@ function ListeningPhase({ data, answers, setAnswers, onDone }: { data: Listening
 }
 
 // ─────────────────────────── Reading ───────────────────────────
-function ReadingPhase({ data, answers, setAnswers, onDone }: { data: ReadingData; answers: Answers; setAnswers: React.Dispatch<React.SetStateAction<Answers>>; onDone: () => void; }) {
+function ReadingPhase({ data, answers, setAnswers, onDone, dev, devAnswers }: { data: ReadingData; answers: Answers; setAnswers: React.Dispatch<React.SetStateAction<Answers>>; onDone: () => void; dev?: boolean; devAnswers?: Record<number, string>; }) {
   const [left, setLeft] = useState(READING_MINUTES * 60);
   const [pIdx, setPIdx] = useState(0);
   const doneRef = useRef(onDone);
@@ -349,6 +405,13 @@ function ReadingPhase({ data, answers, setAnswers, onDone }: { data: ReadingData
         <h2 className="text-lg font-black text-slate-900">Reading · Passage {pIdx + 1} <span className="text-slate-400 font-bold">of {data.passages.length}</span></h2>
         <span className={`inline-flex items-center gap-1.5 text-sm font-black px-3 py-1 rounded-full ${low ? 'bg-red-100 text-red-700' : 'bg-slate-900 text-white'}`}><Clock size={14} /> {fmt(left)}</span>
       </div>
+
+      {dev && (
+        <DevStrip>
+          <DevButton icon={<Wand2 size={13} />} label="Fill all reading answers" onClick={() => setAnswers(a => ({ ...a, ...(devAnswers ?? {}) }))} disabled={!devAnswers} />
+          <DevButton icon={<FastForward size={13} />} label="Skip to Writing" onClick={onDone} />
+        </DevStrip>
+      )}
 
       <div className="flex gap-1.5 mb-4">
         {data.passages.map((p, i) => (
@@ -390,7 +453,7 @@ function ReadingPhase({ data, answers, setAnswers, onDone }: { data: ReadingData
 
 // ─────────────────────────── Writing ───────────────────────────
 const wordsOf = (s: string) => (s.trim() ? s.trim().split(/\s+/).length : 0);
-function WritingPhase({ writing, t1, setT1, t2, setT2, onSubmit, error }: { writing: WritingData; t1: string; setT1: (s: string) => void; t2: string; setT2: (s: string) => void; onSubmit: () => void; error: string | null; }) {
+function WritingPhase({ writing, t1, setT1, t2, setT2, onSubmit, error, dev, onDevFill }: { writing: WritingData; t1: string; setT1: (s: string) => void; t2: string; setT2: (s: string) => void; onSubmit: () => void; error: string | null; dev?: boolean; onDevFill?: () => void; }) {
   const [left, setLeft] = useState(WRITING_MINUTES * 60);
   const [tab, setTab] = useState<'t1' | 't2'>('t1');
   const submitRef = useRef(onSubmit);
@@ -407,6 +470,13 @@ function WritingPhase({ writing, t1, setT1, t2, setT2, onSubmit, error }: { writ
         <h2 className="text-lg font-black text-slate-900">Writing</h2>
         <span className={`inline-flex items-center gap-1.5 text-sm font-black px-3 py-1 rounded-full ${low ? 'bg-red-100 text-red-700' : 'bg-slate-900 text-white'}`}><Clock size={14} /> {fmt(left)}</span>
       </div>
+
+      {dev && (
+        <DevStrip>
+          <DevButton icon={<Wand2 size={13} />} label="Fill sample Task 1 + Task 2" onClick={() => onDevFill?.()} />
+          <span className="text-[11px] text-slate-500 self-center">then press Submit ↓</span>
+        </DevStrip>
+      )}
 
       <div className="flex gap-2 mb-4">
         {([['t1', 'Task 1 · Report', wordsOf(t1), 150], ['t2', 'Task 2 · Essay', wordsOf(t2), 250]] as const).map(([id, label, w, min]) => (
