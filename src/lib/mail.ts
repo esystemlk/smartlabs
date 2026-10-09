@@ -10,7 +10,13 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-export async function sendMail({ to, subject, html, replyTo }: { to: string; subject: string; html: string; replyTo?: string }) {
+export interface MailAttachment {
+    filename: string;
+    content: Buffer | string;
+    contentType?: string;
+}
+
+export async function sendMail({ to, subject, html, replyTo, attachments }: { to: string; subject: string; html: string; replyTo?: string; attachments?: MailAttachment[] }) {
     if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
         throw new Error('GMAIL_USER or GMAIL_PASS environment variables are not set.');
     }
@@ -21,6 +27,7 @@ export async function sendMail({ to, subject, html, replyTo }: { to: string; sub
         subject,
         html,
         ...(replyTo ? { replyTo } : {}),
+        ...(attachments?.length ? { attachments } : {}),
     });
     return info;
 }

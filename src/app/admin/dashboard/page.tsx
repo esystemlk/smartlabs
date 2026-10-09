@@ -297,6 +297,7 @@ export default function AdminDashboardPage() {
                 { title: 'Partners', desc: 'Referral programme — commission rates & partner management', icon: Handshake, href: '/partners/admin', badge: 'New', badgeColor: 'bg-violet-500/20 text-violet-600', accent: 'bg-blue-500/10' },
                 { title: 'Email Campaign', desc: 'Send the re-engagement email to registered users', icon: Megaphone, href: '/admin/campaign', badge: 'New', badgeColor: 'bg-emerald-500/20 text-emerald-600', accent: 'bg-emerald-500/10' },
                 { title: 'IELTS Enrolments', desc: 'Assign paid IELTS students to a batch · email + WhatsApp', icon: GraduationCap, href: '/admin/dashboard/ielts-enrollments', badge: 'New', badgeColor: 'bg-blue-500/20 text-blue-600', accent: 'bg-blue-500/10' },
+                { title: 'IELTS Mock Results', desc: 'Search a student by email · view & download their mock results', icon: FileText, href: '/admin/dashboard/ielts-mocks', badge: 'New', badgeColor: 'bg-blue-500/20 text-blue-600', accent: 'bg-blue-500/10' },
             ],
         },
         {

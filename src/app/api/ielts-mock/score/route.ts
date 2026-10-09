@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import React from 'react';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { internalHeaders } from '@/lib/internal-auth';
@@ -6,7 +7,36 @@ import { getMock } from '@/lib/ielts-mock/mocks';
 import { getCambridge21WritingTest } from '@/lib/ielts-writing/cambridge-21';
 import { getListeningBundle, getReadingBundle, gradeTest } from '@/lib/ielts-mock/registry.server';
 import { listeningBand, academicReadingBand, writingBand, overallMockBand, bandLabel } from '@/lib/ielts-mock/bands';
+import { IeltsMockScorePDF } from '@/components/ielts/IeltsMockScorePDF';
+import { mockResultEmail } from '@/lib/email/mock-result-email';
+import { sendMail } from '@/lib/mail';
 import type { IeltsEssayResult } from '@/types/ielts-essay';
+import type { IeltsMockResult } from '@/lib/ielts-mock/types';
+
+// Generate the result PDF server-side and email it to the student (best-effort).
+async function emailResult(uid: string, result: IeltsMockResult) {
+  try {
+    if (!adminAuth) return;
+    const userRec = await adminAuth.getUser(uid);
+    const to = userRec.email;
+    if (!to) return;
+    const studentName = userRec.displayName || 'Student';
+    const dateLabel = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    const { renderToBuffer } = await import('@react-pdf/renderer');
+    const pdf = await renderToBuffer(
+      React.createElement(IeltsMockScorePDF, { meta: { studentName, studentEmail: to, date: dateLabel }, result }) as React.ReactElement<import('@react-pdf/renderer').DocumentProps>,
+    );
+
+    const { subject, html } = mockResultEmail(studentName, result, dateLabel);
+    await sendMail({
+      to, subject, html,
+      attachments: [{ filename: `SmartLabs_IELTS_Mock_${result.title.replace(/[^a-z0-9]+/gi, '_')}.pdf`, content: pdf, contentType: 'application/pdf' }],
+    });
+  } catch (e) {
+    console.warn('[ielts-mock/score] result email failed (non-fatal):', e);
+  }
+}
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -91,7 +121,7 @@ export async function POST(request: Request) {
     const wBand = writingBand(t1Result.overallBand, t2Result.overallBand);
     const overall = overallMockBand(lBand, rBand, wBand);
 
-    const result = {
+    const result: IeltsMockResult = {
       mockId: mock.id,
       title: mock.title,
       overall, overallLabel: bandLabel(overall),
@@ -110,6 +140,10 @@ export async function POST(request: Request) {
       // Full result so the student can re-view and download the PDF later.
       result,
     }, { merge: true });
+
+    // Email the student their result with the PDF attached (awaited but
+    // self-contained — a mail failure never fails the scoring response).
+    await emailResult(uid, result);
 
     return NextResponse.json(result);
   } catch (error) {
