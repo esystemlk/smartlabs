@@ -13,28 +13,46 @@ import { sendMail } from '@/lib/mail';
 import type { IeltsEssayResult } from '@/types/ielts-essay';
 import type { IeltsMockResult } from '@/lib/ielts-mock/types';
 
-// Generate the result PDF server-side and email it to the student (best-effort).
-async function emailResult(uid: string, result: IeltsMockResult) {
-  try {
-    if (!adminAuth) return;
-    const userRec = await adminAuth.getUser(uid);
-    const to = userRec.email;
-    if (!to) return;
-    const studentName = userRec.displayName || 'Student';
-    const dateLabel = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+// Email the student their result (best-effort). The PDF attachment is built
+// separately so that if PDF rendering fails, the result email still goes out.
+// Returns a status string for diagnostics (surfaced in the response).
+async function emailResult(uid: string, result: IeltsMockResult): Promise<{ sent: boolean; detail: string }> {
+  if (!adminAuth) return { sent: false, detail: 'no-admin' };
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) return { sent: false, detail: 'mail-not-configured' };
 
+  let to: string | undefined;
+  let studentName = 'Student';
+  try {
+    const userRec = await adminAuth.getUser(uid);
+    to = userRec.email ?? undefined;
+    studentName = userRec.displayName || 'Student';
+  } catch (e) {
+    console.error('[ielts-mock/score] getUser failed:', e);
+    return { sent: false, detail: 'getUser-failed' };
+  }
+  if (!to) return { sent: false, detail: 'no-email' };
+
+  const dateLabel = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+
+  // Build the PDF, but don't let a rendering failure block the email.
+  let attachments: { filename: string; content: Buffer; contentType: string }[] | undefined;
+  try {
     const { renderToBuffer } = await import('@react-pdf/renderer');
     const pdf = await renderToBuffer(
       React.createElement(IeltsMockScorePDF, { meta: { studentName, studentEmail: to, date: dateLabel }, result }) as React.ReactElement<import('@react-pdf/renderer').DocumentProps>,
     );
-
-    const { subject, html } = mockResultEmail(studentName, result, dateLabel);
-    await sendMail({
-      to, subject, html,
-      attachments: [{ filename: `SmartLabs_IELTS_Mock_${result.title.replace(/[^a-z0-9]+/gi, '_')}.pdf`, content: pdf, contentType: 'application/pdf' }],
-    });
+    attachments = [{ filename: `SmartLabs_IELTS_Mock_${result.title.replace(/[^a-z0-9]+/gi, '_')}.pdf`, content: pdf, contentType: 'application/pdf' }];
   } catch (e) {
-    console.warn('[ielts-mock/score] result email failed (non-fatal):', e);
+    console.error('[ielts-mock/score] PDF render failed, sending email without attachment:', e);
+  }
+
+  try {
+    const { subject, html } = mockResultEmail(studentName, result, dateLabel);
+    await sendMail({ to, subject, html, attachments });
+    return { sent: true, detail: attachments ? 'sent-with-pdf' : 'sent-no-pdf' };
+  } catch (e) {
+    console.error('[ielts-mock/score] sendMail failed:', e);
+    return { sent: false, detail: 'send-failed' };
   }
 }
 
@@ -143,9 +161,9 @@ export async function POST(request: Request) {
 
     // Email the student their result with the PDF attached (awaited but
     // self-contained — a mail failure never fails the scoring response).
-    await emailResult(uid, result);
+    const emailStatus = await emailResult(uid, result);
 
-    return NextResponse.json(result);
+    return NextResponse.json({ ...result, emailStatus });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('[ielts-mock/score]', error);

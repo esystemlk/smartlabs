@@ -557,6 +557,7 @@ function MockResultView({ r, studentName, studentEmail }: { r: IeltsMockResult; 
         <p className="text-6xl font-black my-1" style={{ color: CRIMSON }}>{r.overall}</p>
         <p className="text-base font-black text-slate-700">{r.overallLabel}</p>
         <p className="text-xs text-slate-400 mt-2">(Listening {r.listening.band} + Reading {r.reading.band} + Writing {r.writing.band}) ÷ 3 · Speaking is assessed in person.</p>
+        {r.emailStatus?.sent && <p className="text-xs text-emerald-600 font-bold mt-2 inline-flex items-center gap-1"><CheckCircle2 size={13} /> A copy of this result has been emailed to you.</p>}
       </div>
 
       <div className="grid grid-cols-3 gap-3">

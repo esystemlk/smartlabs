@@ -24,4 +24,6 @@ export interface IeltsMockResult {
     task2: IeltsEssayResult;
   };
   scoredAt?: string;
+  /** Set by the score route: whether the result email was sent, for display. */
+  emailStatus?: { sent: boolean; detail: string };
 }
