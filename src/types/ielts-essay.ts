@@ -6,7 +6,8 @@
 // rounded to the nearest half band. This mirrors the shape of the PTE essay
 // types (src/types/essay.ts) but on the IELTS scale.
 
-export type IeltsCriterionCode = 'TR' | 'CC' | 'LR' | 'GRA';
+// TR = Task Response (Task 2 essays) · TA = Task Achievement (Task 1 reports).
+export type IeltsCriterionCode = 'TR' | 'TA' | 'CC' | 'LR' | 'GRA';
 
 /** One of the four official criteria. Extra fields are per-criterion. */
 export interface IeltsCriterion {

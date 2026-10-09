@@ -119,6 +119,14 @@ const cambridgeListeningBooks: ReadingBook[] = [
     { n: 4, title: 'Test 4', desc: 'Four parts · 40 questions · table completion, matching, plan labelling, choose-two and multiple choice · audio + answer review' },
   ] },
 ];
+const cambridgeWritingBooks: ReadingBook[] = [
+  { book: 21, tests: [
+    { n: 1, title: 'Test 1', desc: 'Task 1: line graph (US jobs by sector) · Task 2: agree/disagree (tall apartment blocks) · AI band scoring on all four criteria' },
+    { n: 2, title: 'Test 2', desc: 'Task 1: plans (college café redesign) · Task 2: discussion (theatres & cinemas in the digital age) · AI band scoring on all four criteria' },
+    { n: 3, title: 'Test 3', desc: 'Task 1: process (how a rain-shadow desert forms) · Task 2: advantages/disadvantages (study abroad / work placement) · AI band scoring' },
+    { n: 4, title: 'Test 4', desc: 'Task 1: pie chart & table (library users survey) · Task 2: double question (formal learning vs play in primary school) · AI band scoring' },
+  ] },
+];
 let visitTrack = 'academic';
 function readTrack() { try { return localStorage.getItem('ielts-track') || visitTrack; } catch { return visitTrack; } }
 function subscribeTrack(callback: () => void) { window.addEventListener('storage', callback); window.addEventListener('ielts-track-change', callback); return () => { window.removeEventListener('storage', callback); window.removeEventListener('ielts-track-change', callback); }; }
@@ -131,8 +139,8 @@ export function IeltsStudio({ section }: { section?: string }) {
   const isGeneral = track === 'general';
   const groups = skill?.id === 'writing' && isGeneral ? ['Task 1 · Letter', 'Task 2 · Essay'] : skill?.id === 'reading' && isGeneral ? ['Section 1 · Everyday reading', 'Section 2 · Workplace reading', 'Section 3 · Extended reading'] : skill?.groups;
   const types = skill?.id === 'writing' && isGeneral ? ['Formal letters', 'Semi-formal letters', 'Informal letters', 'Opinion essays', 'Discussion essays', 'Multi-part essays'] : skill?.types;
-  const books = skill?.id === 'reading' && !isGeneral ? cambridgeReadingBooks : skill?.id === 'listening' ? cambridgeListeningBooks : null;
-  const bookLabel = skill?.id === 'listening' ? 'Listening' : 'Academic Reading';
+  const books = skill?.id === 'reading' && !isGeneral ? cambridgeReadingBooks : skill?.id === 'listening' ? cambridgeListeningBooks : skill?.id === 'writing' && !isGeneral ? cambridgeWritingBooks : null;
+  const bookLabel = skill?.id === 'listening' ? 'Listening' : skill?.id === 'writing' ? 'Academic Writing' : 'Academic Reading';
   return <div className="studio-wrap">
     <div className="studio-top"><Link href="/dashboard/ielts" className="studio-wordmark">IELTS <span>STUDIO</span><i /></Link><span className="studio-top-note">A little practice. A world of possibility.</span></div>
     <nav className="studio-nav" aria-label="IELTS sections">{[{ id: '', title: 'Overview' }, ...ieltsSkills, { id: 'mock-tests', title: 'Mock tests' }].map(item => <Link key={item.id} aria-current={(section || '') === item.id ? 'page' : undefined} href={`/dashboard/ielts${item.id ? `/${item.id}` : ''}`}>{item.title}</Link>)}</nav>
