@@ -37,8 +37,31 @@ export function ReadingRunner({ data }: { data: TestData }) {
   const [error, setError] = useState('');
   const [saveStatus, setSaveStatus] = useState('');
   const [loaded, setLoaded] = useState('');
+  const [explanations, setExplanations] = useState<Record<number, { loading?: boolean; text?: string; error?: string }>>({});
   const started = useRef(0);
   const elapsedBase = useRef(0);
+
+  async function requestExplain(id: number) {
+    const q = data.questions.find(x => x.id === id);
+    const r = review?.results.find(x => x.id === id);
+    if (!q || !r) return;
+    if (!user) { setExplanations(e => ({ ...e, [id]: { error: 'Please sign in to see explanations.' } })); return; }
+    setExplanations(e => ({ ...e, [id]: { loading: true } }));
+    try {
+      const passage = data.passages[q.passage];
+      const passageText = `${passage.title}\n${passage.intro ?? ''}\n${passage.paragraphs.map(p => (p.ref ? p.ref + ' ' : '') + p.text).join('\n')}`;
+      const idToken = await user.getIdToken();
+      const res = await fetch('/api/ielts-reading/explain', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ testId: data.id, questionId: id, passage: passageText, question: q.prompt || '', accepted: r.accepted, number: id }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Could not explain.');
+      setExplanations(e => ({ ...e, [id]: { text: d.explanation } }));
+    } catch (err) {
+      setExplanations(e => ({ ...e, [id]: { error: err instanceof Error ? err.message : 'Could not explain.' } }));
+    }
+  }
 
   const total = data.questions.filter(q => q.kind !== 'unavailable').length;
   const blockByStart = useMemo(() => { const m: Record<number, Block> = {}; (data.blocks ?? []).forEach(b => { m[b.startId] = b; }); return m; }, [data.blocks]);
@@ -90,6 +113,15 @@ export function ReadingRunner({ data }: { data: TestData }) {
         ? <select id={`answer-${id}`} value={answers[id] || ''} disabled={!!review || busy} onChange={e => setAnswers(a => ({ ...a, [id]: e.target.value }))}><option value="">Choose</option>{q.options!.map(o => <option key={o} value={o}>{o}</option>)}</select>
         : <input id={`answer-${id}`} autoComplete="off" spellCheck={false} maxLength={200} value={answers[id] || ''} disabled={!!review || busy} placeholder={`${q.wordLimit} word${q.wordLimit === 1 ? '' : 's'} max`} onChange={e => setAnswers(a => ({ ...a, [id]: e.target.value }))} />}
       {result && <p className={result.correct ? 'reading-correct' : 'reading-incorrect'}>{result.correct ? 'Correct' : `Accepted: ${result.accepted.join(' / ')}`} · Your answer: {result.answer || 'Unanswered'}</p>}
+      {result && (() => {
+        const ex = explanations[id];
+        return <div className="reading-explain">
+          {!ex && <button type="button" className="reading-explain-btn" onClick={() => requestExplain(id)}>Explain this answer</button>}
+          {ex?.loading && <p className="reading-explain-loading">Explaining…</p>}
+          {ex?.error && <p className="reading-explain-error">{ex.error}</p>}
+          {ex?.text && <div className="reading-explain-box"><strong>How to get it</strong><p>{ex.text}</p></div>}
+        </div>;
+      })()}
     </div>;
   }
 
