@@ -188,6 +188,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [pathname]);
 
   const isDesktopClient = isElectron && !isMac;
+  // "Exam mode": while a student is doing a test, hide the sidebar (burger only)
+  // so the questions get the full width — on desktop as well as mobile.
+  const isExam = /^\/dashboard\/ielts\/(listening|reading|writing)\/cambridge-/.test(pathname)
+    || /^\/dashboard\/ielts\/mock-tests\/mock-/.test(pathname);
 
   return (
     <div className={cn('min-h-screen bg-muted/20', isDesktopClient && 'pt-8')}
@@ -198,34 +202,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         '--border': '0 0% 88%', '--accent': '358 100% 97%',
         '--accent-foreground': '0 0% 13%', '--ring': '358 79% 47%',
       } as CSSProperties : undefined}>
-      {/* Mobile overlay */}
+      {/* Overlay behind the drawer (also on desktop in exam mode) */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+          className={cn('fixed inset-0 z-40 bg-black/60 backdrop-blur-sm', !isExam && 'lg:hidden')}
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Desktop Sidebar — always visible */}
-      <aside className="fixed inset-y-0 left-0 z-50 hidden lg:flex lg:flex-col w-64 bg-background/98 backdrop-blur-xl border-r border-border/60 shadow-xl">
-        <SidebarContent />
-      </aside>
+      {/* Desktop Sidebar — hidden during a test so the questions get full width */}
+      {!isExam && (
+        <aside className="fixed inset-y-0 left-0 z-50 hidden lg:flex lg:flex-col w-64 bg-background/98 backdrop-blur-xl border-r border-border/60 shadow-xl">
+          <SidebarContent />
+        </aside>
+      )}
 
-      {/* Mobile Sidebar — drawer */}
+      {/* Sidebar drawer — mobile always; desktop too in exam mode */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex flex-col w-72 bg-background border-r border-border/60 shadow-2xl lg:hidden transition-transform duration-300 ease-in-out',
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          'fixed inset-y-0 left-0 z-50 flex flex-col w-72 bg-background border-r border-border/60 shadow-2xl transition-transform duration-300 ease-in-out',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+          !isExam && 'lg:hidden'
         )}
       >
         <SidebarContent onClose={() => setSidebarOpen(false)} />
       </aside>
 
-      {/* Mobile Top Header */}
+      {/* Top header with burger — mobile always; desktop too in exam mode */}
       <header
         className={cn(
-          'sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/90 px-4 backdrop-blur-lg lg:hidden',
-          isDesktopClient ? 'top-8' : 'top-0'
+          'sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/90 px-4 backdrop-blur-lg',
+          isDesktopClient ? 'top-8' : 'top-0',
+          !isExam && 'lg:hidden'
         )}
       >
         <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => setSidebarOpen(true)}>
@@ -243,8 +251,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </Avatar>
       </header>
 
-      {/* Main content area — offset by sidebar width on desktop */}
-      <main className="lg:ml-64 min-h-screen">
+      {/* Main content — offset by sidebar width, except in exam mode (full width) */}
+      <main className={cn('min-h-screen', !isExam && 'lg:ml-64')}>
         <div className="p-4 sm:p-6 lg:p-8">{children}</div>
       </main>
     </div>
