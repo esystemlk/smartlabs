@@ -23,6 +23,14 @@ export type TestData = {
 type Answers = Record<string, string>;
 type Review = { score: number; total: number; results: { id: number; answer: string; accepted: string[]; correct: boolean }[] };
 
+// Render a completion prompt, turning each "…" gap into a clearly marked blank
+// so students see where the answer they type below belongs.
+function gapify(text?: string) {
+  if (!text || !text.includes('…')) return text;
+  return text.split('…').flatMap((part, i) =>
+    i === 0 ? [part] : [<span className="reading-gap" key={i} aria-label="blank — type your answer in the box below">______</span>, part]);
+}
+
 export function ReadingRunner({ data }: { data: TestData }) {
   const { user } = useUser();
   const storageKey = `ielts-reading:${user?.uid ?? 'guest'}:${data.id}:v${data.version}`;
@@ -134,7 +142,7 @@ export function ReadingRunner({ data }: { data: TestData }) {
   function normalQuestion(q: Question) {
     return <div className="reading-question" id={`question-${q.id}`} key={q.id}>
       <div className="reading-question-label">
-        <label htmlFor={`answer-${q.id}`}><b>{q.id}</b> {q.prompt}</label>
+        <label htmlFor={`answer-${q.id}`}><b>{q.id}</b> {gapify(q.prompt)}</label>
         <button title={`Flag question ${q.id} for review`} aria-label={`Flag question ${q.id} for review`} aria-pressed={flags.includes(q.id)} onClick={() => setFlags(f => f.includes(q.id) ? f.filter(n => n !== q.id) : [...f, q.id])}><Flag size={16} /></button>
       </div>
       {q.choices && <ul className="reading-choices">{q.choices.map(c => <li key={c.letter}><b>{c.letter}</b> {c.text}</li>)}</ul>}
@@ -147,7 +155,7 @@ export function ReadingRunner({ data }: { data: TestData }) {
     return <div className="reading-diagram" key={`diagram-${block.startId}`}>
       <a href={block.image} target="_blank" rel="noreferrer"><Image src={block.image} alt={block.alt} width={956} height={1024} /><span>Open full-size diagram</span></a>
       {block.caption && <p className="reading-diagram-caption">{block.caption}</p>}
-      <div className="reading-diagram-labels">{ids.map(id => { const q = data.questions.find(x => x.id === id)!; return <div className="reading-diagram-label" id={`question-${id}`} key={id}><label htmlFor={`answer-${id}`}><b>{id}</b> {q.prompt}</label>{input(id)}</div>; })}</div>
+      <div className="reading-diagram-labels">{ids.map(id => { const q = data.questions.find(x => x.id === id)!; return <div className="reading-diagram-label" id={`question-${id}`} key={id}><label htmlFor={`answer-${id}`}><b>{id}</b> {gapify(q.prompt)}</label>{input(id)}</div>; })}</div>
     </div>;
   }
 

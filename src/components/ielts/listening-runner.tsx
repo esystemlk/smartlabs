@@ -24,6 +24,13 @@ type TestData = {
 type Answers = Record<string, string>;
 type Review = { score: number; total: number; results: { id: number; answer: string; accepted: string[]; correct: boolean }[] };
 
+// Turn each "…" gap in a completion prompt into a clearly marked blank.
+function gapify(text?: string) {
+  if (!text || !text.includes('…')) return text;
+  return text.split('…').flatMap((part, i) =>
+    i === 0 ? [part] : [<span className="reading-gap" key={i} aria-label="blank — type your answer in the box below">______</span>, part]);
+}
+
 export function ListeningRunner({ data }: { data: TestData }) {
   const { user } = useUser();
   const storageKey = `ielts-listening:${user?.uid ?? 'guest'}:${data.id}:v${data.version}`;
@@ -114,7 +121,7 @@ export function ListeningRunner({ data }: { data: TestData }) {
   function normalQuestion(q: Question) {
     return <div className="reading-question" id={`question-${q.id}`} key={q.id}>
       <div className="reading-question-label">
-        <label htmlFor={`answer-${q.id}`}><b>{q.id}</b> {q.prompt}</label>
+        <label htmlFor={`answer-${q.id}`}><b>{q.id}</b> {gapify(q.prompt)}</label>
         <button title={`Flag question ${q.id} for review`} aria-label={`Flag question ${q.id} for review`} aria-pressed={flags.includes(q.id)} onClick={() => setFlags(f => f.includes(q.id) ? f.filter(n => n !== q.id) : [...f, q.id])}><Flag size={16} /></button>
       </div>
       {q.choices && <ul className="reading-choices">{q.choices.map(c => <li key={c.letter}><b>{c.letter}</b> {c.text}</li>)}</ul>}
@@ -133,7 +140,7 @@ export function ListeningRunner({ data }: { data: TestData }) {
         const sel = answers[id];
         const result = review?.results.find(r => r.id === id);
         return <div className="map-row" id={`question-${id}`} key={id}>
-          <div className="map-row-label"><b>{id}</b> {q.prompt}</div>
+          <div className="map-row-label"><b>{id}</b> {gapify(q.prompt)}</div>
           <div className="map-letters" role="group" aria-label={`Answer ${id}`}>{(q.options ?? []).map(o => {
             const isSel = sel === o;
             const tone = result ? (result.accepted.includes(o) ? 'is-correct-letter' : isSel ? 'is-wrong-letter' : '') : (isSel ? 'is-selected' : '');
@@ -157,7 +164,7 @@ export function ListeningRunner({ data }: { data: TestData }) {
         const result = review?.results.find(r => r.id === id);
         return <div className="matchbox-row" id={`question-${id}`} key={id}>
           <div className="matchbox-prompt">
-            <span><b>{id}</b> {q.prompt}</span>
+            <span><b>{id}</b> {gapify(q.prompt)}</span>
             <button title={`Flag question ${id} for review`} aria-label={`Flag question ${id} for review`} aria-pressed={flags.includes(id)} onClick={() => setFlags(f => f.includes(id) ? f.filter(n => n !== id) : [...f, id])}><Flag size={15} /></button>
           </div>
           <div
