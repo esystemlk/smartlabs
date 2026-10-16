@@ -177,11 +177,31 @@ export default function AiSettingsPage() {
   const [isLoadingUsage, setIsLoadingUsage] = useState(false);
   const [search, setSearch]             = useState('');
 
+  // Live AI key health check (pings each env key + a concurrency burst).
+  type KeyHealth = { label: string; present: boolean; ok?: boolean; latencyMs?: number; error?: string };
+  type HealthReport = { checkedAt: string; model: string; configuredKeys: number; workingKeys: number; healthy: boolean; keys: KeyHealth[]; load: { attempted: number; succeeded: number; avgLatencyMs: number } | null };
+  const [health, setHealth]             = useState<HealthReport | null>(null);
+  const [healthChecking, setHealthChecking] = useState(false);
+  const [healthError, setHealthError]   = useState('');
+
   // ─── Token helper ─────────────────────────────────────────────────────────
   const getToken = useCallback(async () => {
     if (!currentUser) throw new Error('Not authenticated');
     return currentUser.getIdToken();
   }, [currentUser]);
+
+  const runHealthCheck = useCallback(async () => {
+    setHealthChecking(true); setHealthError(''); setHealth(null);
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/admin/ai-health', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Health check failed.');
+      setHealth(data as HealthReport);
+    } catch (e) {
+      setHealthError(e instanceof Error ? e.message : 'Health check failed.');
+    } finally { setHealthChecking(false); }
+  }, [getToken]);
 
   // ─── Load config ──────────────────────────────────────────────────────────
   const loadConfig = useCallback(async () => {
@@ -765,6 +785,55 @@ export default function AiSettingsPage() {
           ════════════════════════════════════════ */}
           {activeTab === 'keys' && (
             <div className="space-y-6">
+              {/* ── Live API health check ── */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                      <CardTitle className="text-base flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-primary" /> Live AI key check</CardTitle>
+                      <p className="text-xs text-muted-foreground mt-1">Sends a tiny prompt through each key and a burst of parallel requests to confirm the AI works for everyone right now.</p>
+                    </div>
+                    <Button onClick={runHealthCheck} disabled={healthChecking} className="gap-2">
+                      {healthChecking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Key className="h-4 w-4" />}
+                      {healthChecking ? 'Checking…' : 'Check AI keys'}
+                    </Button>
+                  </div>
+                </CardHeader>
+                {(health || healthError) && (
+                  <CardContent className="space-y-3">
+                    {healthError && <p className="text-sm font-semibold text-red-600 flex items-center gap-1.5"><ShieldAlert className="h-4 w-4" /> {healthError}</p>}
+                    {health && (<>
+                      <div className="flex flex-wrap items-center gap-2 text-sm">
+                        <Badge className={health.healthy ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-red-100 text-red-700 border-red-300'}>
+                          {health.healthy ? 'AI is working' : 'AI is DOWN'}
+                        </Badge>
+                        <span className="text-muted-foreground">{health.workingKeys}/{health.configuredKeys} keys working · model {health.model}</span>
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                        {health.keys.map(k => (
+                          <div key={k.label} className={`rounded-lg border px-3 py-2 text-sm flex items-center justify-between gap-2 ${!k.present ? 'bg-muted/40 border-muted text-muted-foreground' : k.ok ? 'border-emerald-200 bg-emerald-50/40' : 'border-red-200 bg-red-50/40'}`}>
+                            <span className="font-mono font-bold">{k.label}</span>
+                            {!k.present ? <span className="text-xs">not set</span>
+                              : k.ok ? <span className="text-emerald-700 text-xs font-semibold">✓ OK · {k.latencyMs}ms</span>
+                              : <span className="text-red-600 text-xs font-semibold" title={k.error}>✗ {k.error?.slice(0, 40)}</span>}
+                          </div>
+                        ))}
+                      </div>
+                      {health.load && (
+                        <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm">
+                          <span className="font-semibold">Load test:</span> {health.load.succeeded}/{health.load.attempted} parallel requests succeeded
+                          {health.load.succeeded > 0 && <> · avg {health.load.avgLatencyMs}ms</>}
+                          {health.load.succeeded === health.load.attempted
+                            ? <span className="text-emerald-700 font-semibold"> — handles concurrent use ✓</span>
+                            : <span className="text-orange-600 font-semibold"> — some requests failed under load</span>}
+                        </div>
+                      )}
+                      <p className="text-[11px] text-muted-foreground">Checked {new Date(health.checkedAt).toLocaleString()}</p>
+                    </>)}
+                  </CardContent>
+                )}
+              </Card>
+
               {isLoadingUsage ? (
                 <div className="py-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
               ) : (<>
