@@ -114,3 +114,7 @@
 
 /* Obvious "fill-in" blank marker inside a completion question's text. */
 .reading-gap { display: inline-block; min-width: 3.4em; text-align: center; color: #b3122f; font-weight: 800; letter-spacing: 1px; background: #fff1cc; border-bottom: 2px solid #b3122f; border-radius: 4px; padding: 0 0.35em; margin: 0 0.15em; vertical-align: baseline; }
+
+/* Larger passage text for easier reading. */
+.reading-passage p:not(.studio-eyebrow) { font-size: 18px; line-height: 2; }
+.reading-passage h2 { font-size: 30px; }
