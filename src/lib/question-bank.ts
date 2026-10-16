@@ -18,15 +18,29 @@ import { pteRespondToSituationData } from '@/lib/pte-speaking-respond-to-situati
 
 import { pteSummarizeWrittenTextData } from '@/lib/pte-writing-summarize-written-text-data';
 import { pteEssayTopics } from '@/lib/pte-essay-topics';
+import { PREDICTIONS as PTE_ESSAY_PREDICTIONS } from '@/lib/essay-topics-data';
 
 // The built-in essay topics, shaped like the app trainer expects (topic field).
-// Same list the website essay page shows, so the app matches it.
-const pteWriteEssayBank = pteEssayTopics.map((t) => ({
-  id: `topic-${t.id}`,
-  title: `Topic ${t.id}`,
-  topic: t.text,
-  category: t.category,
-}));
+// Same lists the website essay page shows, so the app matches it. Predictions
+// carry group:'prediction' + no so the app can show its Predictions tab; listed
+// first so they win text-dedup over any plain topic with the same wording.
+const pteWriteEssayBank = [
+  ...PTE_ESSAY_PREDICTIONS.map((t) => ({
+    id: `pred-${t.id}`,
+    title: `Prediction ${t.no ?? ''}`.trim(),
+    topic: t.text,
+    category: t.category,
+    group: 'prediction',
+    no: t.no,
+  })),
+  ...pteEssayTopics.map((t) => ({
+    id: `topic-${t.id}`,
+    title: `Topic ${t.id}`,
+    topic: t.text,
+    category: t.category,
+    group: 'topic',
+  })),
+];
 
 import { pteReadingFillInBlanksDropdownData } from '@/lib/pte-reading-fill-in-blanks-dropdown-data';
 import { pteReadingMultipleChoiceMultipleAnswerData } from '@/lib/pte-reading-multiple-choice-multiple-answer-data';
