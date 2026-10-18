@@ -924,89 +924,52 @@ export default function Home() {
               Score your PTE essay <span className="text-primary">in seconds</span>
             </h2>
             <p className="mt-4 text-base sm:text-lg text-muted-foreground">
-              Paste an essay on the topic below and our AI gives you an official-style band breakdown instantly — the same engine our students use to hit 79+.
+              Write an essay on a real exam topic and our AI returns an official-style band breakdown in seconds — the same engine our students use to hit 79+.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 items-start">
-            {/* Input side */}
-            <div className="rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-xl p-6 sm:p-8">
-              <div className="flex items-center justify-between gap-3 mb-3">
-                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Essay Topic</span>
-                <button
-                  type="button"
-                  onClick={() => { setTopic(sampleTopics[Math.floor(Math.random() * sampleTopics.length)]); }}
-                  className="text-xs font-bold text-primary hover:underline"
-                >
-                  Try another topic
-                </button>
-              </div>
-              <p className="text-sm sm:text-base font-medium leading-relaxed mb-5 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+          <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 items-stretch">
+            {/* Sample topic */}
+            <div className="rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-xl p-6 sm:p-8 flex flex-col">
+              <span className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-3">Sample Essay Topic</span>
+              <p className="text-base sm:text-lg font-medium leading-relaxed p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex-1">
                 {topic}
               </p>
-              <Textarea
-                value={aiText}
-                onChange={(e) => setAiText(e.target.value)}
-                placeholder="Write or paste your essay here (aim for 200–300 words)…"
-                className="min-h-[180px] text-base"
-                disabled={isAnalyzing}
-              />
-              <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                <span>{aiText.trim() ? aiText.trim().split(/\s+/).length : 0} words</span>
-                {user && usageCount !== null && (
-                  <span>{Math.max(0, 5 - usageCount)} free scores left</span>
-                )}
-              </div>
-              <Button onClick={handleAnalyze} disabled={isAnalyzing} size="lg" className="w-full mt-4 text-base font-bold">
-                {isAnalyzing ? 'Scoring your essay…' : user ? 'Score my essay' : 'Log in to score free'}
-                {!isAnalyzing && <ArrowRight className="ml-2 h-4 w-4" />}
-              </Button>
-              {isAnalyzing && <Progress value={progress} className="mt-4 h-2" />}
+              <p className="mt-4 text-sm text-muted-foreground">Recommended length: <span className="font-bold text-foreground">200–300 words</span>, written in 20 minutes — just like the real PTE Write Essay task.</p>
             </div>
 
-            {/* Result side */}
-            <div className="rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-xl p-6 sm:p-8 min-h-[320px] flex flex-col">
-              {analysisComplete && aiResult ? (
-                <>
-                  <div className="flex items-center justify-between mb-6">
-                    <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Your Result</span>
-                    <div className="text-right">
-                      <div className="text-4xl font-black text-primary leading-none">{aiResult.overallScore}<span className="text-lg text-muted-foreground">/13</span></div>
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Overall</div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 mb-6">
-                    {[
-                      { label: 'Content', v: aiResult.contentScore, max: 3 },
-                      { label: 'Form', v: aiResult.formScore, max: 2 },
-                      { label: 'Structure', v: aiResult.structureScore, max: 2 },
-                      { label: 'Grammar', v: aiResult.grammarScore, max: 2 },
-                      { label: 'Vocabulary', v: aiResult.vocabularyScore, max: 2 },
-                      { label: 'Spelling', v: aiResult.spellingScore, max: 2 },
-                    ].map((s) => (
-                      <div key={s.label} className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{s.label}</div>
-                        <div className="text-lg font-black">{s.v}<span className="text-xs text-muted-foreground">/{s.max}</span></div>
-                      </div>
-                    ))}
-                  </div>
-                  {aiResult.feedback && (
-                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line flex-1">{aiResult.feedback}</p>
-                  )}
-                  <Button asChild variant="outline" className="mt-5 w-full font-bold">
-                    <Link href="/ai-essay-practice">Practise more essays <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                  </Button>
-                </>
-              ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-center text-muted-foreground">
-                  <div className="p-4 rounded-2xl bg-primary/10 text-primary mb-4">
-                    <Brain className="h-8 w-8" />
-                  </div>
-                  <p className="font-bold text-foreground">Your band breakdown appears here</p>
-                  <p className="text-sm mt-1">Content, structure, grammar, vocabulary, spelling &amp; an overall score — with written feedback.</p>
+            {/* What the AI grades */}
+            <div className="rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-xl p-6 sm:p-8 flex flex-col">
+              <div className="flex items-center justify-between mb-5">
+                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">What the AI Grades</span>
+                <div className="text-right">
+                  <div className="text-3xl font-black text-primary leading-none">/13</div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Overall</div>
                 </div>
-              )}
+              </div>
+              <div className="grid grid-cols-2 gap-3 flex-1">
+                {[
+                  { label: 'Content', max: 3 },
+                  { label: 'Form', max: 2 },
+                  { label: 'Structure', max: 2 },
+                  { label: 'Grammar', max: 2 },
+                  { label: 'Vocabulary', max: 2 },
+                  { label: 'Spelling', max: 2 },
+                ].map((s) => (
+                  <div key={s.label} className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{s.label}</div>
+                    <div className="text-lg font-black">0–{s.max}</div>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-4 text-sm text-muted-foreground">Plus written feedback on every criterion and how to improve.</p>
             </div>
+          </div>
+
+          <div className="mt-8 text-center">
+            <Button asChild size="lg" className="text-base font-bold px-8">
+              <Link href="/ai-essay-practice">Start practising <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            </Button>
           </div>
         </div>
       </section>
