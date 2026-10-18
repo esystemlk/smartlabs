@@ -12,11 +12,29 @@ import { Skeleton } from '@/components/ui/skeleton';
 function BatchCard({ enrollment }: { enrollment: any }) {
     const { firestore } = useFirebase();
     
+    // Only build the ref when both ids exist — a student awaiting batch
+    // assignment has no batchId, and doc(..., undefined) throws.
     const batchQuery = useMemoFirebase(
-        () => (firestore ? doc(firestore, `courses/${enrollment.courseId}/batches`, enrollment.batchId) : null),
+        () => (firestore && enrollment?.courseId && enrollment?.batchId
+            ? doc(firestore, `courses/${enrollment.courseId}/batches`, enrollment.batchId) : null),
         [firestore, enrollment]
     );
     const { data: batch, isLoading } = useDoc(batchQuery);
+
+    // No batch assigned yet (e.g. "upcoming batch" enrolment).
+    if (!enrollment?.batchId) {
+        return (
+            <Card className="shadow-lg">
+                <CardHeader>
+                    <CardTitle>{enrollment?.courseName || enrollment?.courseId || 'Your course'}</CardTitle>
+                    <CardDescription>Batch to be announced</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground">You&apos;re enrolled. We&apos;ll email and message you the schedule and class link as soon as your batch is confirmed.</p>
+                </CardContent>
+            </Card>
+        );
+    }
 
     if (isLoading) {
         return <Skeleton className="h-40 w-full" />;
