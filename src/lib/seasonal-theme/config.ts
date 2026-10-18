@@ -1,5 +1,17 @@
 import { z } from 'zod';
 
+export const halloweenCharacters = [
+  { id: 'ghost', name: 'Ghost scholar', src: '/seasonal/halloween/ghost.webp' },
+  { id: 'wizard-owl', name: 'Wizard owl', src: '/seasonal/halloween/wizard-owl.webp' },
+  { id: 'witch-cat', name: 'Witch kitten', src: '/seasonal/halloween/witch-cat.webp' },
+  { id: 'book-bat', name: 'Book bat', src: '/seasonal/halloween/book-bat.webp' },
+] as const;
+
+export const bundledSeasonalAssetPaths: readonly string[] = [
+  '/seasonal/halloween/hero.webp', '/seasonal/halloween/hero-mobile.webp',
+  '/seasonal/halloween/footer.webp', ...halloweenCharacters.map(character => character.src),
+];
+
 const colour = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 const asset = z.string().max(600).refine(value => {
   if (!value) return true;

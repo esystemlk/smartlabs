@@ -50,7 +50,7 @@ function admin(tab) {
 }
 http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost:9014');
-  const asset = /^\/seasonal\/halloween\/(hero|hero-mobile|ghost|footer)\.webp$/.test(url.pathname);
+  const asset = configModule.bundledSeasonalAssetPaths.includes(url.pathname);
   if (asset) { res.setHeader('Content-Type', 'image/webp'); res.end(fs.readFileSync(path.join(root, 'public', url.pathname))); return; }
   if (url.pathname === '/styles.css') { res.setHeader('Content-Type', 'text/css'); res.end(css); return; }
   const tab = url.searchParams.get('tab') || 'Overview';

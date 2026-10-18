@@ -11,7 +11,7 @@ The nine tabs cover Overview, Schedule, Appearance, Hero & footer, Motion & soun
 ## First use
 
 1. Leave the mode Off while customising the design.
-2. Use the bundled desktop hero, mobile crop, transparent ghost/pumpkin character and footer panorama, or upload replacements.
+2. Use the bundled desktop hero, mobile crop and footer panorama, or upload replacements. The character collection offers the original ghost scholar, wizard owl, witch kitten and book bat. Choose one under Hero & footer, Popup or Assets; it is used by the hero and seasonal popup after publication.
 3. Adjust the headline, greeting, description, CTA labels/internal destinations, overlay and character placement under Hero & footer.
 4. Choose public-page colours. The panel shows text/background, text/card and button contrast; publish rejects combinations below 4.5:1.
 5. Use Preview Draft. It creates an authenticated, five-minute preview, forcing the theme on eligible pages without changing published mode. Select different page/viewports and refresh the preview. Normal visitors cannot activate it with a query string.
@@ -48,6 +48,9 @@ The theme does not alter course data, pricing, scoring, payments, forms, real re
 | `/seasonal/halloween/hero.webp` | 120,886 bytes | Desktop hero and default popup background |
 | `/seasonal/halloween/hero-mobile.webp` | 89,892 bytes | Responsive mobile crop |
 | `/seasonal/halloween/ghost.webp` | 61,566 bytes | True alpha ghost scholar with pumpkin/books |
+| `/seasonal/halloween/wizard-owl.webp` | 55,512 bytes | True alpha owl scholar in a wizard hat |
+| `/seasonal/halloween/witch-cat.webp` | 67,340 bytes | True alpha witch kitten with pumpkin/book |
+| `/seasonal/halloween/book-bat.webp` | 46,790 bytes | True alpha lavender bat with study book |
 | `/seasonal/halloween/footer.webp` | 72,290 bytes | Footer panorama |
 
 These images were made with the built-in image generation tool. The production prompt set and original PNG masters are recorded with this update. Generated originals should be kept outside `public` where possible; served images use optimised WebP. No paid image library or new runtime package is required.
@@ -74,7 +77,7 @@ The read-only visual fixture in `scripts/preview-seasonal-theme.cjs` renders act
 
 Saved visual references: `halloween-hero-preview.png`, `halloween-mobile-preview.png`, `halloween-admin-preview.png`. The admin screenshot uses synthetic data; the actual local homepage was also inspected with the feature Off.
 
-The 20 focused tests pass (12 schema/calendar/route tests and 8 authorization/publishing tests). The final production build passes, including TypeScript checking and all 332 static pages. Existing dependency/Tailwind warnings remain; build-time lint is disabled by the existing project configuration. Against the built local server, the public runtime returned HTTP 200 with mode Off and private/no-store caching. Unauthenticated admin GET/POST and an invalid token all returned HTTP 401. The real Firebase connection was used for the read-only runtime check.
+The original feature passed 20 focused tests and a production build, including TypeScript checking and all 332 static pages. The character expansion passes 21 tests (12 schema/calendar/route tests and 9 authorization/publishing tests), including validation of every bundled character and rejection of unknown local media paths. TypeScript and generated styles are checked again for the expansion. Existing dependency/Tailwind warnings remain; build-time lint is disabled by the existing project configuration. Against the original built local server, the public runtime returned HTTP 200 with mode Off and private/no-store caching. Unauthenticated admin GET/POST and an invalid token all returned HTTP 401. The real Firebase connection was used for the read-only runtime check.
 
 Live signed-in publishing, real custom uploads, all-route active-theme visual review, audio-device behaviour and Electron integration still require an administrator staging session. This checkout initially lacked Firebase Admin configuration; that connection is now locally configured and verified. No real Firebase documents were created or edited for testing. Custom upload testing also requires the existing Bunny storage settings. Complete those checks before seasonal activation on production.
 

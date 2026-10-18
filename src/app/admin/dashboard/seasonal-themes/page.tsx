@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useAuth, useUser } from '@/firebase';
-import { contrastRatio, defaultTheme, occurrences, resolveTheme, themeSchema, type SeasonalTheme } from '@/lib/seasonal-theme/config';
+import { contrastRatio, defaultTheme, halloweenCharacters, occurrences, resolveTheme, themeSchema, type SeasonalTheme } from '@/lib/seasonal-theme/config';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, CheckCircle2, Ghost, ImageIcon, Loader2, Palette, Play, RotateCcw, Save, ShieldCheck } from 'lucide-react';
 
@@ -18,6 +18,23 @@ function Field({ label, help, children }: { label: string; help?: string; childr
 }
 function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return <section className="rounded-2xl border bg-card p-5 sm:p-7 space-y-5"><div><h2 className="text-lg font-semibold">{title}</h2>{description && <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{description}</p>}</div>{children}</section>;
+}
+
+function CharacterPicker({ selected, onSelect, disabled }: { selected: string; onSelect: (src: string) => void; disabled: boolean }) {
+  return <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    {halloweenCharacters.map(character => <button
+      key={character.id} type="button" disabled={disabled}
+      aria-pressed={selected === character.src}
+      aria-label={`Use ${character.name}`}
+      onClick={() => onSelect(character.src)}
+      className={`rounded-xl border-2 overflow-hidden text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60 ${selected === character.src ? 'border-orange-500 bg-orange-500/5' : 'border-border hover:border-orange-400'}`}
+    >
+      <span className="block h-40 bg-[#261A38] p-3">
+        <img src={character.src} alt="" width={640} height={585} loading="lazy" className="h-full w-full object-contain" />
+      </span>
+      <span className="block p-3"><span className="block text-sm font-semibold">{character.name}</span><span className="block mt-1 text-xs text-muted-foreground">{selected === character.src ? 'Selected in draft' : 'Use this character'}</span></span>
+    </button>)}
+  </div>;
 }
 
 export default function SeasonalThemesAdmin() {
@@ -133,6 +150,10 @@ export default function SeasonalThemesAdmin() {
       {message && <div role="status" className="border border-green-500/30 bg-green-500/10 p-4 rounded-xl mb-5 text-sm flex gap-2"><CheckCircle2 className="h-5 w-5 shrink-0" />{message}</div>}
       <nav aria-label="Theme settings" className="flex gap-2 overflow-x-auto pb-5 mb-2">{tabs.map(name => <button key={name} onClick={() => setTab(name)} aria-current={tab === name ? 'page' : undefined} className={`rounded-lg px-4 py-2.5 text-sm whitespace-nowrap border ${tab === name ? 'bg-primary text-primary-foreground border-primary' : 'bg-card hover:bg-muted'}`}>{name}</button>)}</nav>
       <div className="space-y-6">
+        {(['Hero & footer', 'Popup', 'Assets'] as readonly string[]).includes(tab) && <Section title="Halloween character collection" description="Choose a transparent companion for the homepage hero and Halloween popup. Selecting a character changes only your draft; preview and publish when ready.">
+          <CharacterPicker selected={config.media.character} onSelect={src => update('media.character', src)} disabled={!!busy} />
+          <p className="text-xs text-muted-foreground">Character visibility, size, corner position and gentle animation remain under your existing controls. Custom character uploads are still supported.</p>
+        </Section>}
         {tab === 'Overview' && <>
           <Section title="A seasonal layer you can switch off" description="Your regular website stays underneath. Drafts, previews and seasonal assets are kept separate from existing courses, payments and content.">
             <div className="grid sm:grid-cols-2 gap-5">{text('Theme name', 'name', config.name)}<Field label="Activation mode" help="Off disarms the schedule. Automatic follows the yearly calendar. Manual mode ends at its expiry and returns to Off."><select className={fieldClass} value={config.mode} onChange={e => update('mode', e.target.value)}><option value="off">Off — standard appearance</option><option value="automatic">Automatic schedule</option><option value="manual">Manual on until expiry</option></select></Field></div>

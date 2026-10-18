@@ -72,6 +72,16 @@ test('unsafe media hosts, invalid contrast and expired manual activation cannot 
     assert.equal(records.get('draft/halloween').revision, revision);
   }
 });
+test('all four bundled characters pass publishing validation without allowing unknown local files', () => {
+  assert.equal(cfg.halloweenCharacters.length, 4);
+  for (const character of cfg.halloweenCharacters) {
+    const c = fresh(); c.media.character = character.src;
+    assert.equal(server.validatePublishedMedia(c), null, character.name);
+    assert.ok(fs.existsSync(path.join(__dirname, '../public', character.src)), character.name);
+  }
+  const c = fresh(); c.media.character = '/seasonal/halloween/unlisted.webp';
+  assert.ok(server.validatePublishedMedia(c));
+});
 test('preview returns a private cookie without publishing or changing the saved draft', async () => {
   const snapshot = JSON.stringify([...records]);
   const response = await post({ action: 'preview', config: fresh() });
