@@ -2,6 +2,14 @@ import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { logAiCall } from '@/lib/services/ai-usage.service';
 import { isInternalRequest } from '@/lib/internal-auth';
 import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
+import { generateWithFailover, AiBusyError } from '@/lib/gemini-fetch';
+
+const extractJson = (text: string): string => {
+  let c = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+  const s = c.indexOf('{'); const e = c.lastIndexOf('}');
+  if (s !== -1 && e !== -1) c = c.slice(s, e + 1);
+  return c;
+};
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -232,12 +240,6 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Passage and summary are required.' }, { status: 400 });
     }
 
-    const apiKeyResult = getApiKey();
-    if (!apiKeyResult) {
-      return Response.json({ error: 'No GOOGLE_GENAI_API_KEY_1..5 keys found on the server.' }, { status: 500 });
-    }
-    const { key: apiKey, label: apiKeyLabel, keyIndex: apiKeyIndex } = apiKeyResult;
-
     const form = scoreForm(summary);
 
     const userMessage = `SOURCE PASSAGE:
@@ -252,82 +254,26 @@ ${summary}
 
 The system has already scored FORM = ${form.form}/1 (${form.reasons.join(' ')}). Evaluate Content, Grammar and Vocabulary, and provide full teaching feedback. Return only valid JSON.`;
 
+    // Fail over across all keys (priority order) + models within a time budget.
     let responseText = '';
-    const errorLog: string[] = [];
-
-    for (const { name, api } of MODELS) {
-      const generationConfig: Record<string, unknown> = { temperature: 0.2, maxOutputTokens: 8192 };
-      if (name.includes('flash')) generationConfig.thinkingConfig = { thinkingBudget: 0 };
-
-      let modelSucceeded = false;
-
-      for (let attempt = 0; attempt <= MAX_MODEL_RETRIES; attempt++) {
-        try {
-          const url = `https://generativelanguage.googleapis.com/${api}/models/${name}:generateContent?key=${apiKey}`;
-          const res = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-              systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-              generationConfig,
-            }),
-          });
-          if (!res.ok) {
-            const t = await res.text().catch(() => '');
-            const msg = `HTTP ${res.status} ${t.slice(0, 200)}`;
-            const isQuota = res.status === 429;
-            if (!isQuota && isTransient(res.status, t) && attempt < MAX_MODEL_RETRIES) {
-              console.warn(`[score-swt] ${name} transient error, retrying (${attempt + 1})…`);
-              await sleep(1500 * (attempt + 1));
-              continue;
-            }
-            errorLog.push(`${name}: ${msg}`);
-            trackModelUsage(name, false, res.status === 429 ? 'QUOTA_EXCEEDED' : `HTTP_${res.status}`).catch(() => {});
-            break;
-          }
-          const data = await res.json();
-          const text = data.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text).filter(Boolean).join('') ?? '';
-          if (!text) {
-            if (attempt < MAX_MODEL_RETRIES) { await sleep(1500 * (attempt + 1)); continue; }
-            errorLog.push(`${name}: empty`);
-            trackModelUsage(name, false, 'EMPTY_RESPONSE').catch(() => {});
-            break;
-          }
-          let cleaned = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
-          const start = cleaned.indexOf('{');
-          const end = cleaned.lastIndexOf('}');
-          if (start !== -1 && end !== -1) cleaned = cleaned.slice(start, end + 1);
-          JSON.parse(cleaned); // validate
-          responseText = cleaned;
-          trackModelUsage(name, true).catch(() => {});
-          modelSucceeded = true;
-          break;
-        } catch (e) {
-          const msg = e instanceof Error ? e.message : String(e);
-          if (isTransient(0, msg) && attempt < MAX_MODEL_RETRIES) {
-            console.warn(`[score-swt] ${name} exception, retrying (${attempt + 1}): ${msg}`);
-            await sleep(1500 * (attempt + 1));
-            continue;
-          }
-          errorLog.push(`${name}: ${msg}`);
-          trackModelUsage(name, false, 'EXCEPTION').catch(() => {});
-          break;
-        }
+    try {
+      const r = await generateWithFailover({
+        contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        generationConfig: { temperature: 0.2, maxOutputTokens: 8192 },
+        validate: (t) => { try { JSON.parse(extractJson(t)); return true; } catch { return false; } },
+      });
+      responseText = extractJson(r.text);
+      trackModelUsage(r.model, true).catch(() => {});
+      logAiCall({ userId: uid, email: userEmail, ip, task: 'swt', keyLabel: r.keyLabel, keyIndex: r.keyIndex, model: r.model, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
+    } catch (err) {
+      if (err instanceof Error && err.message === 'NO_KEYS') {
+        return Response.json({ error: 'No GOOGLE_GENAI_API_KEY_1..5 keys found on the server.' }, { status: 500 });
       }
-
-      if (modelSucceeded) break;
+      const busy = err instanceof AiBusyError;
+      logAiCall({ userId: uid, email: userEmail, ip, task: 'swt', keyLabel: 'FAILOVER', keyIndex: 0, model: null, success: false, isRateLimit: busy, error: busy ? 'AI_BUSY' : (err instanceof Error ? err.message : String(err)), timestamp: new Date() }).catch(() => {});
+      return Response.json({ error: 'The AI is very busy right now — please wait a moment and try again.', code: 'AI_BUSY', retryable: true }, { status: 503 });
     }
-
-    // find which model succeeded (last model whose errorLog doesn't include it)
-    const usedModel = MODELS.find(m => !errorLog.some(e => e.startsWith(m.name + ':')))?.name ?? null;
-
-    if (!responseText) {
-      console.error('[score-swt] all models failed:', errorLog);
-      logAiCall({ userId: uid, email: userEmail, ip, task: 'swt', keyLabel: apiKeyLabel, keyIndex: apiKeyIndex, model: null, success: false, isRateLimit: errorLog.some(e => e.includes('429') || e.includes('quota')), error: errorLog.join(' | '), timestamp: new Date() }).catch(() => {});
-      return Response.json({ error: 'AI scoring failed. Please try again.', details: errorLog }, { status: 502 });
-    }
-    logAiCall({ userId: uid, email: userEmail, ip, task: 'swt', keyLabel: apiKeyLabel, keyIndex: apiKeyIndex, model: usedModel, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
 
     const parsed = JSON.parse(responseText);
     const content = Math.max(0, Math.min(4, Number(parsed?.scores?.content ?? 0)));

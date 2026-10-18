@@ -4,6 +4,7 @@ import { logAiCall } from '@/lib/services/ai-usage.service';
 import { isInternalRequest } from '@/lib/internal-auth';
 import { ieltsOverallBand, ieltsBandLabel } from '@/types/ielts-essay';
 import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
+import { generateWithFailover, AiBusyError } from '@/lib/gemini-fetch';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -196,13 +197,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Topic and essay content are required.' }, { status: 400 });
     }
 
-    const apiKeyResult = getApiKey();
-    if (!apiKeyResult) {
-      console.error('[score-ielts-essay] No GOOGLE_GENAI_API_KEY_1..5 configured.');
-      return NextResponse.json({ error: 'AI keys not configured on the server.' }, { status: 500 });
-    }
-    const { key: apiKey, label: apiKeyLabel, keyIndex: apiKeyIndex } = apiKeyResult;
-
     let userMessage = `IELTS Writing Task 2 question:\n${topic}\n\nStudent essay (${wordCount ?? 'unknown'} words):\n${essay}\n\nEvaluate this essay strictly using the four IELTS criteria. Return ONLY valid JSON in the required shape.`;
 
     if (typeof targetBand === 'number') {
@@ -220,68 +214,29 @@ The "achieved" and "gap" fields are corrected server-side — focus on accurate 
       userMessage += `\n\nNo target band set. Set "targetBandAnalysis" to null.`;
     }
 
+    // Try all keys (priority order) + models within a time budget. A failing
+    // key is skipped automatically, so a student only sees an error if nothing
+    // works for ~55s — and then it's a soft "try again", not a dead end.
     let responseText = '';
     let usedModel = '';
-    const errorLog: string[] = [];
-
-    for (const { name: model, api } of MODELS) {
-      let ok = false;
-      for (let attempt = 0; attempt <= MAX_MODEL_RETRIES; attempt++) {
-        try {
-          const url = `https://generativelanguage.googleapis.com/${api}/models/${model}:generateContent?key=${apiKey}`;
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-              systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-              generationConfig: { maxOutputTokens: 32768, temperature: 0.1 },
-            }),
-          });
-
-          if (!response.ok) {
-            const body = await response.text();
-            let msg = `HTTP ${response.status}`;
-            try { msg = JSON.parse(body)?.error?.message || msg; } catch { /* ignore */ }
-            const isQuota = response.status === 429;
-            if (!isQuota && isTransient(response.status, msg) && attempt < MAX_MODEL_RETRIES) {
-              await sleep(1500 * (attempt + 1)); continue;
-            }
-            errorLog.push(`${model}: ${msg}`);
-            break;
-          }
-
-          const data = await response.json();
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (!text) {
-            const reason = data.candidates?.[0]?.finishReason || 'no text';
-            if (isTransient(0, reason) && attempt < MAX_MODEL_RETRIES) { await sleep(1500 * (attempt + 1)); continue; }
-            errorLog.push(`${model}: empty (${reason})`);
-            break;
-          }
-
-          const jsonStr = extractJson(text);
-          JSON.parse(jsonStr); // validate
-          responseText = jsonStr;
-          usedModel = model;
-          ok = true;
-          break;
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : String(err);
-          if (isTransient(0, msg) && attempt < MAX_MODEL_RETRIES) { await sleep(1500 * (attempt + 1)); continue; }
-          errorLog.push(`${model}: ${msg}`);
-          break;
-        }
+    try {
+      const r = await generateWithFailover({
+        contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        generationConfig: { maxOutputTokens: 32768, temperature: 0.1 },
+        validate: (t) => { try { JSON.parse(extractJson(t)); return true; } catch { return false; } },
+      });
+      responseText = extractJson(r.text);
+      usedModel = r.model;
+      logAiCall({ userId: uid, email: userEmail, ip, task: 'ielts-essay', keyLabel: r.keyLabel, keyIndex: r.keyIndex, model: r.model, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
+    } catch (err) {
+      if (err instanceof Error && err.message === 'NO_KEYS') {
+        return NextResponse.json({ error: 'AI keys not configured on the server.' }, { status: 500 });
       }
-      if (ok) break;
+      const busy = err instanceof AiBusyError;
+      logAiCall({ userId: uid, email: userEmail, ip, task: 'ielts-essay', keyLabel: 'FAILOVER', keyIndex: 0, model: null, success: false, isRateLimit: busy, error: busy ? 'AI_BUSY' : (err instanceof Error ? err.message : String(err)), timestamp: new Date() }).catch(() => {});
+      return NextResponse.json({ error: 'The AI is very busy right now — please wait a moment and try again.', code: 'AI_BUSY', retryable: true }, { status: 503 });
     }
-
-    if (!responseText) {
-      console.error('[score-ielts-essay] all models exhausted:', errorLog);
-      logAiCall({ userId: uid, email: userEmail, ip, task: 'ielts-essay', keyLabel: apiKeyLabel, keyIndex: apiKeyIndex, model: null, success: false, isRateLimit: errorLog.some(e => /429|QUOTA/.test(e)), error: errorLog.join(' | '), timestamp: new Date() }).catch(() => {});
-      return NextResponse.json({ error: 'All AI models failed to score the essay. Please try again in a moment.', details: errorLog }, { status: 502 });
-    }
-    logAiCall({ userId: uid, email: userEmail, ip, task: 'ielts-essay', keyLabel: apiKeyLabel, keyIndex: apiKeyIndex, model: usedModel, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
 
     const parsed = JSON.parse(responseText);
 

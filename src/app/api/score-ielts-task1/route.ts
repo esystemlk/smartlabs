@@ -4,6 +4,7 @@ import { logAiCall } from '@/lib/services/ai-usage.service';
 import { isInternalRequest } from '@/lib/internal-auth';
 import { ieltsOverallBand, ieltsBandLabel } from '@/types/ielts-essay';
 import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
+import { generateWithFailover, AiBusyError } from '@/lib/gemini-fetch';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -183,12 +184,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'The task image is too large to score.' }, { status: 413 });
     }
 
-    const apiKeyResult = getApiKey();
-    if (!apiKeyResult) {
-      console.error('[score-ielts-task1] No GOOGLE_GENAI_API_KEY_1..5 configured.');
-      return NextResponse.json({ error: 'AI keys not configured on the server.' }, { status: 500 });
-    }
-    const { key: apiKey, label: apiKeyLabel, keyIndex: apiKeyIndex } = apiKeyResult;
 
     let userMessage = `IELTS Academic Writing Task 1 prompt:\n${prompt}\n`;
     if (visualType) userMessage += `\nVisual type: ${visualType}`;
@@ -218,68 +213,28 @@ The "achieved" and "gap" fields are corrected server-side — focus on accurate 
       parts.push({ inlineData: { mimeType: imageMime || 'image/png', data: imageBase64 } });
     }
 
+    // Fail over across all keys (priority order) + models within a time budget,
+    // so a bad/rate-limited key never dead-ends the student.
     let responseText = '';
     let usedModel = '';
-    const errorLog: string[] = [];
-
-    for (const { name: model, api } of MODELS) {
-      let ok = false;
-      for (let attempt = 0; attempt <= MAX_MODEL_RETRIES; attempt++) {
-        try {
-          const url = `https://generativelanguage.googleapis.com/${api}/models/${model}:generateContent?key=${apiKey}`;
-          const res = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ role: 'user', parts }],
-              systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-              generationConfig: { maxOutputTokens: 32768, temperature: 0.1 },
-            }),
-          });
-
-          if (!res.ok) {
-            const body = await res.text();
-            let msg = `HTTP ${res.status}`;
-            try { msg = JSON.parse(body)?.error?.message || msg; } catch { /* ignore */ }
-            const isQuota = res.status === 429;
-            if (!isQuota && isTransient(res.status, msg) && attempt < MAX_MODEL_RETRIES) {
-              await sleep(1500 * (attempt + 1)); continue;
-            }
-            errorLog.push(`${model}: ${msg}`);
-            break;
-          }
-
-          const data = await res.json();
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (!text) {
-            const reason = data.candidates?.[0]?.finishReason || 'no text';
-            if (isTransient(0, reason) && attempt < MAX_MODEL_RETRIES) { await sleep(1500 * (attempt + 1)); continue; }
-            errorLog.push(`${model}: empty (${reason})`);
-            break;
-          }
-
-          const jsonStr = extractJson(text);
-          JSON.parse(jsonStr); // validate
-          responseText = jsonStr;
-          usedModel = model;
-          ok = true;
-          break;
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : String(err);
-          if (isTransient(0, msg) && attempt < MAX_MODEL_RETRIES) { await sleep(1500 * (attempt + 1)); continue; }
-          errorLog.push(`${model}: ${msg}`);
-          break;
-        }
+    try {
+      const r = await generateWithFailover({
+        contents: [{ role: 'user', parts }],
+        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        generationConfig: { maxOutputTokens: 32768, temperature: 0.1 },
+        validate: (t) => { try { JSON.parse(extractJson(t)); return true; } catch { return false; } },
+      });
+      responseText = extractJson(r.text);
+      usedModel = r.model;
+      logAiCall({ userId: uid, email: userEmail, ip, task: 'ielts-task1', keyLabel: r.keyLabel, keyIndex: r.keyIndex, model: r.model, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
+    } catch (err) {
+      if (err instanceof Error && err.message === 'NO_KEYS') {
+        return NextResponse.json({ error: 'AI keys not configured on the server.' }, { status: 500 });
       }
-      if (ok) break;
+      const busy = err instanceof AiBusyError;
+      logAiCall({ userId: uid, email: userEmail, ip, task: 'ielts-task1', keyLabel: 'FAILOVER', keyIndex: 0, model: null, success: false, isRateLimit: busy, error: busy ? 'AI_BUSY' : (err instanceof Error ? err.message : String(err)), timestamp: new Date() }).catch(() => {});
+      return NextResponse.json({ error: 'The AI is very busy right now — please wait a moment and try again.', code: 'AI_BUSY', retryable: true }, { status: 503 });
     }
-
-    if (!responseText) {
-      console.error('[score-ielts-task1] all models exhausted:', errorLog);
-      logAiCall({ userId: uid, email: userEmail, ip, task: 'ielts-task1', keyLabel: apiKeyLabel, keyIndex: apiKeyIndex, model: null, success: false, isRateLimit: errorLog.some(e => /429|QUOTA/.test(e)), error: errorLog.join(' | '), timestamp: new Date() }).catch(() => {});
-      return NextResponse.json({ error: 'All AI models failed to score the response. Please try again in a moment.', details: errorLog }, { status: 502 });
-    }
-    logAiCall({ userId: uid, email: userEmail, ip, task: 'ielts-task1', keyLabel: apiKeyLabel, keyIndex: apiKeyIndex, model: usedModel, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
 
     const parsed = JSON.parse(responseText);
 

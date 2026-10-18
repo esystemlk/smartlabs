@@ -4,6 +4,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { logAiCall } from '@/lib/services/ai-usage.service';
 import { isInternalRequest } from '@/lib/internal-auth';
 import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
+import { generateWithFailover, AiBusyError } from '@/lib/gemini-fetch';
 
 // ─── Retry helpers ────────────────────────────────────────────────────────────
 const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
@@ -687,16 +688,6 @@ export async function POST(request: Request) {
       );
     }
 
-    const apiKeyResult = getApiKey();
-    if (!apiKeyResult) {
-      console.error('[score-essay] No GOOGLE_GENAI_API_KEY_1..5 keys found in environment.');
-      return NextResponse.json(
-        { error: 'AI keys not configured on the server.' },
-        { status: 500 }
-      );
-    }
-    const { key: apiKey, label: apiKeyLabel, keyIndex: apiKeyIndex } = apiKeyResult;
-
     let userMessage = `Essay Topic: ${topic}
 
 Student Essay (${wordCount} words):
@@ -745,99 +736,29 @@ Note: Only list criteria in criteriaGaps that are actually below the required th
       userMessage += `\n\nNo target score set. Set "targetScoreAnalysis" to null in your JSON response.`;
     }
 
+    // Fail over across all keys (priority order) + models within a time budget,
+    // so a bad/rate-limited key never dead-ends the student.
     let responseText = '';
     let usedModel    = '';
-    const errorLog: string[] = [];
-
-    for (const { name: model, api } of MODELS) {
-      let modelSucceeded = false;
-
-      for (let attempt = 0; attempt <= MAX_MODEL_RETRIES; attempt++) {
-        const isRetry = attempt > 0;
-        if (isRetry) console.log(`[score-essay] Retrying ${model} (attempt ${attempt + 1})…`);
-        else console.log(`[score-essay] Trying model: ${model} (${api})`);
-
-        try {
-          const url = `https://generativelanguage.googleapis.com/${api}/models/${model}:generateContent?key=${apiKey}`;
-          const response = await fetch(url, {
-            method : 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body   : JSON.stringify({
-              contents         : [{ role: 'user', parts: [{ text: userMessage }] }],
-              systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-              generationConfig : { maxOutputTokens: 65536, temperature: 0.1 },
-            }),
-          });
-
-          if (!response.ok) {
-            const errorBody = await response.text();
-            let msg = `HTTP ${response.status}`;
-            try { msg = JSON.parse(errorBody)?.error?.message || msg; } catch { /* ignore */ }
-            const isQuota = response.status === 429;
-            console.warn(`[score-essay] ${model} attempt ${attempt + 1}: ${msg}`);
-
-            if (!isQuota && isTransient(response.status, msg) && attempt < MAX_MODEL_RETRIES) {
-              await sleep(1500 * (attempt + 1));
-              continue;
-            }
-
-            errorLog.push(`${model}: ${msg}`);
-            trackModelUsage(model, false, isQuota ? 'QUOTA_EXCEEDED' : `HTTP_${response.status}`).catch(() => {});
-            break; // move to next model
-          }
-
-          const data = await response.json();
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-          if (!text) {
-            const reason = data.candidates?.[0]?.finishReason || 'no text returned';
-            if (isTransient(0, reason) && attempt < MAX_MODEL_RETRIES) {
-              await sleep(1500 * (attempt + 1));
-              continue;
-            }
-            errorLog.push(`${model}: empty response (${reason})`);
-            trackModelUsage(model, false, `EMPTY_${reason}`).catch(() => {});
-            break;
-          }
-
-          const jsonStr = extractJson(text);
-          JSON.parse(jsonStr); // validate
-          responseText = jsonStr;
-          usedModel    = model;
-          console.log(`[score-essay] ✓ Success with model: ${model}${isRetry ? ` (after ${attempt} retries)` : ''}`);
-          trackModelUsage(model, true).catch(() => {});
-          modelSucceeded = true;
-          break;
-
-        } catch (err: unknown) {
-          const msg = err instanceof Error ? err.message : String(err);
-          if (isTransient(0, msg) && attempt < MAX_MODEL_RETRIES) {
-            console.warn(`[score-essay] ${model} transient error, retrying: ${msg}`);
-            await sleep(1500 * (attempt + 1));
-            continue;
-          }
-          errorLog.push(`${model}: ${msg}`);
-          console.warn(`[score-essay] ${model} failed: ${msg}`);
-          trackModelUsage(model, false, 'EXCEPTION').catch(() => {});
-          break;
-        }
+    try {
+      const r = await generateWithFailover({
+        contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        generationConfig: { maxOutputTokens: 65536, temperature: 0.1 },
+        validate: (t) => { try { JSON.parse(extractJson(t)); return true; } catch { return false; } },
+      });
+      responseText = extractJson(r.text);
+      usedModel = r.model;
+      trackModelUsage(r.model, true).catch(() => {});
+      logAiCall({ userId: uid, email: userEmail, ip, task: 'essay', keyLabel: r.keyLabel, keyIndex: r.keyIndex, model: r.model, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
+    } catch (err) {
+      if (err instanceof Error && err.message === 'NO_KEYS') {
+        return NextResponse.json({ error: 'AI keys not configured on the server.' }, { status: 500 });
       }
-
-      if (modelSucceeded) break;
+      const busy = err instanceof AiBusyError;
+      logAiCall({ userId: uid, email: userEmail, ip, task: 'essay', keyLabel: 'FAILOVER', keyIndex: 0, model: null, success: false, isRateLimit: busy, error: busy ? 'AI_BUSY' : (err instanceof Error ? err.message : String(err)), timestamp: new Date() }).catch(() => {});
+      return NextResponse.json({ error: 'The AI is very busy right now — please wait a moment and try again.', code: 'AI_BUSY', retryable: true }, { status: 503 });
     }
-
-    if (!responseText) {
-      console.error('[score-essay] All models exhausted:', errorLog);
-      logAiCall({ userId: uid, email: userEmail, ip, task: 'essay', keyLabel: apiKeyLabel, keyIndex: apiKeyIndex, model: null, success: false, isRateLimit: errorLog.some(e => e.includes('429') || e.includes('QUOTA')), error: errorLog.join(' | '), timestamp: new Date() }).catch(() => {});
-      return NextResponse.json(
-        {
-          error  : 'All AI models failed to score the essay. Please try again in a moment.',
-          details: errorLog,
-        },
-        { status: 502 }
-      );
-    }
-    logAiCall({ userId: uid, email: userEmail, ip, task: 'essay', keyLabel: apiKeyLabel, keyIndex: apiKeyIndex, model: usedModel ?? null, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
 
     const parsed = JSON.parse(responseText);
 
