@@ -40,6 +40,14 @@ service cloud.firestore {
       return request.resource.data.diff(resource.data).affectedKeys().hasAny(protectedUserFields());
     }
 
+    // Collection-group reads: the admin Enrollments page runs
+    // collectionGroup('enrollments'), which lists both /enrollments and every
+    // users/{uid}/enrollments together. That needs a recursive-wildcard rule;
+    // the path-scoped rules below don't apply to group queries. Staff only.
+    match /{path=**}/enrollments/{id} {
+      allow read: if isStaff();
+    }
+
     // ─── Users ──────────────────────────────────────────────────────────────
     match /users/{userId} {
       // Only the owner or staff can read a profile (emails/phones/addresses live here).
