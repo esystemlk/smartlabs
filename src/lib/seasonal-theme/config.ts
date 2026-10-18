@@ -45,6 +45,7 @@ export const themeSchema = z.object({
   media: z.object({ hero: asset, mobileHero: asset, character: asset, footer: asset, popup: asset, audio: asset }),
   hero: z.object({ greeting: z.string().max(80), title: z.string().trim().min(1).max(120), body: z.string().max(350), primaryLabel: z.string().trim().min(1).max(40), primaryHref: path, secondaryLabel: z.string().trim().min(1).max(40), secondaryHref: path, overlay: z.number().min(0.15).max(0.9), characterSize: z.number().min(80).max(280), characterPosition: z.enum(['left', 'right']) }),
   motion: z.enum(['low', 'medium']),
+  effects: z.object({ heroMotion: z.boolean(), bats: z.boolean(), batScope: z.enum(['hero', 'home', 'site']), mobile: z.boolean() }).default({ heroMotion: true, bats: true, batScope: 'hero', mobile: false }),
   volume: z.number().min(0).max(0.25),
   popup: z.object({ title: z.string().trim().min(1).max(100), body: z.string().max(400), button: z.string().max(40), href: path, delay: z.number().int().min(12).max(120), frequency: z.enum(['session', 'daily', 'occurrence']), expiresAt: z.string().max(40).refine(value => !value || Number.isFinite(Date.parse(value)), 'Choose a valid expiry') }),
   routes: z.object({ excluded: z.array(path).max(50), homeOnly: z.boolean() }),
@@ -71,6 +72,7 @@ export const defaultTheme: SeasonalTheme = {
   media: { hero: '/seasonal/halloween/hero.webp', mobileHero: '/seasonal/halloween/hero-mobile.webp', character: '/seasonal/halloween/ghost.webp', footer: '/seasonal/halloween/footer.webp', popup: '/seasonal/halloween/hero.webp', audio: '' },
   hero: { greeting: 'A little magic for your learning journey', title: 'Big dreams.\nA little learning magic.', body: 'Build your confidence in English with expert-led PTE, IELTS and Cambridge preparation, plus AI-powered practice.', primaryLabel: 'Explore PTE courses', primaryHref: '/pte-registration', secondaryLabel: 'Find our courses', secondaryHref: '/courses', overlay: 0.65, characterSize: 160, characterPosition: 'right' },
   motion: 'low', volume: 0.08,
+  effects: { heroMotion: true, bats: true, batScope: 'hero', mobile: false },
   popup: { title: 'A little Halloween learning magic', body: 'Keep your goals glowing. Explore Smart Labs courses this Halloween.', button: 'Explore courses', href: '/courses', delay: 12, frequency: 'occurrence', expiresAt: '' },
   routes: { excluded: [], homeOnly: false },
 };

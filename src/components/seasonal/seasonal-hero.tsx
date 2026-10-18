@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useSeasonalTheme } from './seasonal-theme-provider';
+import { SeasonalFlight } from './seasonal-flight';
 
 export function SeasonalHero() {
   const { config, active, paused } = useSeasonalTheme();
@@ -15,12 +16,14 @@ export function SeasonalHero() {
     return () => observer.disconnect();
   }, [active, config.areas.hero]);
   if (!active || !config.areas.hero) return null;
-  return <section ref={sectionRef} className={`seasonal-hero ${paused || !onscreen || !config.areas.animations ? 'seasonal-static' : ''}`} aria-label="Smart Labs Halloween season">
+  return <section ref={sectionRef} className={`seasonal-hero ${config.effects.heroMotion && config.areas.animations ? 'seasonal-hero-animated' : ''} ${config.effects.mobile ? '' : 'seasonal-hero-desktop-motion'} ${paused || !onscreen || !config.areas.animations ? 'seasonal-static' : ''}`} aria-label="Smart Labs Halloween season">
     {config.media.hero && <picture className="seasonal-hero-picture">
       {config.media.mobileHero && <source media="(max-width: 767px)" srcSet={config.media.mobileHero} />}
       <img src={config.media.hero} alt="" fetchPriority="high" onError={e => { e.currentTarget.style.visibility = 'hidden'; }} />
     </picture>}
     <div className="seasonal-hero-shade" style={{ background: `linear-gradient(90deg, rgba(22,15,36,${Math.min(.95, Math.max(.72, config.hero.overlay + .08))}) 0%, rgba(22,15,36,${Math.max(.65, config.hero.overlay)}) 65%, rgba(22,15,36,0.25) 100%)` }} />
+    {config.effects.heroMotion && config.areas.animations && <div className="seasonal-hero-atmosphere" aria-hidden="true"><i /><i /><i /><i /><i /></div>}
+    <SeasonalFlight hero />
     <div className="seasonal-hero-copy">
       <p className="seasonal-eyebrow">Halloween at Smart Labs</p>
       <h1>{config.hero.title.split('\n').map((line, index) => <span key={index} className={index === 0 ? 'seasonal-hero-first-line' : undefined}>{index > 0 && <br />}{line}</span>)}</h1>

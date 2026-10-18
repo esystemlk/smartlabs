@@ -100,3 +100,17 @@ test('existing published configurations keep their mode and media while gaining 
   assert.equal(migrated.characterPlacements.homeCourses, true);
   assert.equal(migrated.branding.logo, '/seasonal/halloween/logo-halloween.webp');
 });
+
+test('older themes gain bounded hero animation without changing activation or mobile defaults', () => {
+  const old = config(); delete old.effects;
+  const migrated = themeSchema.parse(old);
+  assert.equal(migrated.mode, 'off');
+  assert.equal(migrated.effects.batScope, 'hero');
+  assert.equal(migrated.effects.mobile, false);
+  for (const scope of ['hero', 'home', 'site']) {
+    migrated.effects.batScope = scope;
+    assert.equal(themeSchema.safeParse(migrated).success, true);
+  }
+  migrated.effects.batScope = 'everywhere-including-admin';
+  assert.equal(themeSchema.safeParse(migrated).success, false);
+});

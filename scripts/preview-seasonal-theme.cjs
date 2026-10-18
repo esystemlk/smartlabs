@@ -25,10 +25,18 @@ const cssFolder = path.join(root, '.next/static/css');
 const fixtureCss = path.join(root, 'tmp/seasonal-visual.css');
 const utilityCss = fs.existsSync(fixtureCss) ? fs.readFileSync(fixtureCss, 'utf8') : fs.existsSync(cssFolder) ? fs.readdirSync(cssFolder).filter(p => p.endsWith('.css')).map(p => fs.readFileSync(path.join(cssFolder, p), 'utf8')).join('\n') : '';
 const css = utilityCss + '\n' + fs.readFileSync(path.join(root, 'src/app/seasonal.css'), 'utf8');
-function hero() {
+function flight(hero, previewConfig = config, pathname = '/') {
+  const component = load('src/components/seasonal/seasonal-flight.tsx', {
+    react: React, 'next/navigation': { usePathname: () => pathname },
+    './seasonal-theme-provider': { useSeasonalTheme: () => ({ config: previewConfig, active: true, paused: false }) },
+  });
+  return React.createElement(component.SeasonalFlight, { hero });
+}
+function hero(previewConfig = config) {
   const component = load('src/components/seasonal/seasonal-hero.tsx', {
     react: React, 'next/link': anchor,
-    './seasonal-theme-provider': { useSeasonalTheme: () => ({ config, active: true, paused: true, preview: true }) },
+    './seasonal-theme-provider': { useSeasonalTheme: () => ({ config: previewConfig, active: true, paused: false, preview: true }) },
+    './seasonal-flight': { SeasonalFlight: () => flight(true, previewConfig) },
   });
   return renderToStaticMarkup(React.createElement(component.SeasonalHero));
 }
@@ -108,6 +116,10 @@ http.createServer(async (req, res) => {
   }
   const tab = url.searchParams.get('tab') || 'Overview';
   const isAdmin = url.pathname === '/admin';
+  const previewConfig = structuredClone(config);
+  if (['hero', 'home', 'site'].includes(url.searchParams.get('flight'))) previewConfig.effects.batScope = url.searchParams.get('flight');
+  previewConfig.effects.mobile = url.searchParams.get('mobile') === '1';
+  const motionPreview = hero(previewConfig) + renderToStaticMarkup(flight(false, previewConfig));
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.end(`<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Halloween isolated visual test</title><link rel="stylesheet" href="/styles.css"><style>body{font-family:Arial,sans-serif}.fixture-note{padding:12px 24px;background:#fff7ed;color:#7c2d12;font:12px Arial}.fixture-note a{margin-right:18px;text-decoration:underline}</style></head><body style="--seasonal-accent:#FF9A3D"><div class="fixture-note">Read-only visual fixture · synthetic data · no publishing or Firebase connection<br><a href="/">Hero</a><a href="/admin">Admin overview</a><a href="/admin?tab=Schedule">Schedule</a><a href="/admin?tab=Hero%20%26%20footer">Artwork controls</a><a href="/admin?tab=Assets">Assets</a></div>${isAdmin ? admin(tab) : hero()}</body></html>`);
+  res.end(`<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Halloween isolated visual test</title><link rel="stylesheet" href="/styles.css"><style>body{font-family:Arial,sans-serif}.fixture-note{padding:12px 24px;background:#fff7ed;color:#7c2d12;font:12px Arial}.fixture-note a{margin-right:18px;text-decoration:underline}</style></head><body style="--seasonal-accent:#FF9A3D"><div class="fixture-note">Read-only visual fixture · synthetic data · no publishing or Firebase connection<br><a href="/">Hero</a><a href="/admin">Admin overview</a><a href="/admin?tab=Schedule">Schedule</a><a href="/admin?tab=Hero%20%26%20footer">Artwork controls</a><a href="/admin?tab=Assets">Assets</a><button onclick="document.body.classList.toggle('seasonal-static')">Pause / resume preview</button></div>${isAdmin ? admin(tab) : motionPreview}</body></html>`);
 }).listen(9014, '127.0.0.1', () => console.log('Read-only visual fixture: http://localhost:9014'));

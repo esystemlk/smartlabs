@@ -33,6 +33,30 @@ body[data-seasonal-palette] :where(.transition-all,.transition-colors),body[data
 .seasonal-hero-picture,.seasonal-hero-shade { position: absolute; inset: 0; z-index: -1; }
 .seasonal-hero-picture img { width: 100%; height: 100%; object-fit: cover; object-position: right center; }
 .seasonal-hero-copy { max-width: 670px; }
+.seasonal-hero-copy { position: relative; z-index: 2; }
+.seasonal-hero-animated .seasonal-hero-picture img { animation: seasonal-hero-drift 28s ease-in-out infinite alternate; }
+.seasonal-hero-atmosphere { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.seasonal-hero-atmosphere i { position: absolute; left: 72%; bottom: 10%; width: 5px; height: 5px; background: #ffc983; border-radius: 50%; box-shadow: 0 0 14px 4px #ff9a3d55; animation: seasonal-ember 13s linear infinite; }
+.seasonal-hero-atmosphere i:nth-child(2) { left: 88%; bottom: 15%; animation-delay: -4s; animation-duration: 17s; }
+.seasonal-hero-atmosphere i:nth-child(3) { left: 62%; bottom: 26%; animation-delay: -8s; }
+.seasonal-hero-atmosphere i:nth-child(4) { left: 94%; bottom: 35%; animation-delay: -2s; animation-duration: 19s; }
+.seasonal-hero-atmosphere i:nth-child(5) { left: 80%; bottom: 7%; animation-delay: -10s; }
+.seasonal-flight { pointer-events: none; overflow: hidden; contain: layout paint; }
+.seasonal-flight-hero { position: absolute; inset: 0; z-index: 1; }
+.seasonal-flight-screen { position: fixed; inset: 80px 0 0; z-index: 29; }
+.seasonal-flying-bat { position: absolute; top: var(--bat-y); left: -70px; width: var(--bat-size); color: #b99ace; opacity: 0; animation: seasonal-bat-cross var(--bat-duration) linear var(--bat-delay) infinite; }
+.seasonal-flying-bat svg { width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 2px 3px #160f2499); }
+.seasonal-bat-reverse { animation-name: seasonal-bat-return; }
+.seasonal-bat-wing { transform-box: view-box; transform-origin: 50px 25px; animation: seasonal-wing .7s ease-in-out infinite alternate; }
+.seasonal-bat-wing-right { animation-direction: alternate-reverse; }
+.seasonal-static :is(.seasonal-flying-bat,.seasonal-bat-wing,.seasonal-hero-atmosphere i,.seasonal-hero-picture img),body[data-seasonal-paused] :is(.seasonal-flying-bat,.seasonal-bat-wing,.seasonal-hero-atmosphere i,.seasonal-hero-picture img) { animation-play-state: paused; }
+@keyframes seasonal-hero-drift { from { transform: scale(1.02) translateX(0); } to { transform: scale(1.09) translateX(-1%); } }
+@keyframes seasonal-ember { 0% { transform: translate(0,0); opacity: 0; } 20%,65% { opacity: .6; } 100% { transform: translate(-35px,-250px); opacity: 0; } }
+@keyframes seasonal-bat-cross { 0% { transform: translate(0,15px) rotate(-8deg); opacity: 0; } 8%,85% { opacity: .45; } 35% { transform: translate(38vw,-28px) rotate(6deg); } 65% { transform: translate(72vw,24px) rotate(-5deg); } 100% { transform: translate(calc(100vw + 140px),-30px) rotate(8deg); opacity: 0; } }
+@keyframes seasonal-bat-return { 0% { transform: translate(calc(100vw + 140px),-20px) scaleX(-1); opacity: 0; } 8%,85% { opacity: .4; } 40% { transform: translate(65vw,30px) scaleX(-1) rotate(7deg); } 70% { transform: translate(32vw,-25px) scaleX(-1) rotate(-6deg); } 100% { transform: translate(0,10px) scaleX(-1); opacity: 0; } }
+@keyframes seasonal-wing { from { transform: scaleY(.55); } to { transform: scaleY(1); } }
+@media(max-width:767px) { .seasonal-effect-desktop { display: none; } .seasonal-hero-desktop-motion .seasonal-hero-picture img { animation: none; } .seasonal-hero-desktop-motion .seasonal-hero-atmosphere { display: none; } .seasonal-flying-bat:nth-child(n+3) { display: none; } }
+@media(prefers-reduced-motion:reduce) { .seasonal-flight,.seasonal-hero-atmosphere { display: none !important; } .seasonal-hero-animated .seasonal-hero-picture img { animation: none !important; } }
 .seasonal-eyebrow { color: #ffb66d; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; font-weight: 700; }
 .seasonal-hero h1 { font-size: clamp(44px,5.6vw,82px); line-height: 1.08; letter-spacing: -.045em; font-weight: 800; margin: 24px 0; color: #fff6e8; }
 .seasonal-hero h1 span { color: #ffb66d; }

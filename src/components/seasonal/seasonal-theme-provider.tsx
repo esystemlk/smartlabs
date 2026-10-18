@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { defaultTheme, eligibleRoute, resolveTheme, themeSchema, type SeasonalTheme } from '@/lib/seasonal-theme/config';
 import { installSeasonalContrast } from '@/lib/seasonal-theme/contrast';
+import { SeasonalFlight } from './seasonal-flight';
 
 type ThemeState = { config: SeasonalTheme; active: boolean; paused: boolean; preview: boolean };
 const ThemeContext = createContext<ThemeState>({ config: defaultTheme, active: false, paused: false, preview: false });
@@ -116,6 +117,7 @@ export function SeasonalThemeProvider({ children }: { children: React.ReactNode 
 
   return <ThemeContext.Provider value={{ config, active, paused: paused || hidden, preview }}>
     {children}
+    <SeasonalFlight />
     {available && <div className="seasonal-controls" aria-label="Halloween appearance controls">
       {preview && <span>Private preview</span>}
       <button onClick={() => { setStandard(!standard); if (!preview) remember('sl-seasonal-standard', String(!standard)); }}>{standard ? 'Halloween appearance' : 'Standard appearance'}</button>
