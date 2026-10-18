@@ -21,7 +21,8 @@ Changing, publishing, previewing or disabling one preset does not overwrite the 
 - Separate desktop/mobile hero, footer and popup artwork; familiar existing course links and content remain.
 - All seven Christmas companions distributed across three homepage scenes and the footer. Other eligible public pages receive small rotating pairs. Every placement and mobile character visibility can be switched separately.
 - Slow hero background drift, floating warm lights and soft gold glow. Hero motion pauses when its section is offscreen.
-- Snowfall: Off, hero only, homepage screen or eligible public website pages. Low uses 12 flakes; Medium uses 24. Optional sleigh is an occasional homepage-hero pass and starts disabled.
+- Snowfall defaults to **eligible public website pages**, covering the full screen on every public page during Christmas. Admins can switch it off or restrict it to the hero/homepage. Low uses 12 flakes; Medium uses 24. Optional sleigh is an occasional homepage-hero pass and starts disabled. Protected tools/payment/admin pages and visitor preferences still take priority.
+- Decorative snow/flight/light layers are excluded from legacy card-surface colour adaptation, preserving white snowflakes instead of tinting them to the page surface.
 - Mobile effects start disabled. Opt-in mobile motion shows at most six flakes. The character artwork remains static on mobile as before.
 - Animation master, visitor Pause effects and hidden-tab state pause all seasonal animation, including the glow pseudo-element. Reduced-motion CSS removes snow/sleigh/glow and keeps the background still. Decorations cannot intercept clicks; screen effects sit below navigation/dialogs.
 - Sound and popup start disabled. Sound is opt-in, homepage-only and silent on load; the bundled option is the existing original synthesized ambience. Owned/licensed recordings can be uploaded. Other website media takes priority.

@@ -18,7 +18,7 @@ test('two seasons select independently; manual, priority and stable ID resolve o
  h.priority=c.priority;c.mode='automatic';assert.equal(selectTheme([h,c],at('2026-12-25')).id,selectTheme([c,h],at('2026-12-25')).id);
 });
 test('Christmas schema defaults stay Off with silent audio, bounded effects and the same seven identities',()=>{
- const c=themeSchema.parse(christmasTheme);assert.equal(c.mode,'off');assert.equal(c.areas.sound,false);assert.equal(c.effects.mobile,false);assert.equal(c.effects.snow,true);assert.equal(c.effects.bats,false);assert.equal(c.effects.sleigh,false);assert.equal(cfg.christmasCharacters.map(c=>c.id).join(),cfg.halloweenCharacters.map(c=>c.id).join());assert.equal(themeSchema.safeParse({...c,priority:101}).success,false);
+ const c=themeSchema.parse(christmasTheme);assert.equal(c.mode,'off');assert.equal(c.areas.sound,false);assert.equal(c.effects.mobile,false);assert.equal(c.effects.snow,true);assert.equal(c.effects.snowScope,'site');assert.equal(c.routes.homeOnly,false);assert.equal(c.effects.bats,false);assert.equal(c.effects.sleigh,false);assert.equal(cfg.christmasCharacters.map(c=>c.id).join(),cfg.halloweenCharacters.map(c=>c.id).join());assert.equal(themeSchema.safeParse({...c,priority:101}).success,false);
  for(const pathname of ['/admin/dashboard','/payment','/dashboard','/ai-essay-practice','/login','/mock-tests'])assert.equal(eligibleRoute(pathname,c),false);assert.equal(eligibleRoute('/courses',c),true);
  assert.match(occurrences(c,at('2026-12-25')).find(o=>o.start<=at('2026-12-25')&&o.end>at('2026-12-25')).id,/christmas-2026/);
 });

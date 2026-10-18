@@ -56,7 +56,7 @@ export function installSeasonalContrast(root: HTMLElement, eligible: (element: H
     if (stopped || document.hidden) return;
     restore();
     const elements = [root, ...root.querySelectorAll<HTMLElement>('*')].filter(element => eligible(element)
-      && !element.closest('script,style,noscript,svg,img,video,canvas,iframe,.sr-only') && element.getClientRects().length);
+      && !element.closest('script,style,noscript,svg,img,video,canvas,iframe,.sr-only,.seasonal-snow,.seasonal-flight,.seasonal-hero-atmosphere') && element.getClientRects().length);
     // Convert legacy paper surfaces before measuring their text. Saturated
     // action/status colours are deliberately excluded from this conversion.
     const surfaceCandidates = elements.filter(element => {

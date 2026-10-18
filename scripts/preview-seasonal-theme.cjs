@@ -59,7 +59,7 @@ function companions(placement, pathname = '/') {
 }
 const contrastSource = ts.transpileModule(fs.readFileSync(path.join(root, 'src/lib/seasonal-theme/contrast.ts'), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
 function realSiteBootstrap(pathname) {
-  const artwork = { intro: companions(pathname === '/' ? 'homeIntro' : 'pageIntro', pathname), courses: companions('homeCourses'), support: companions('homeSupport'), end: pathname === '/' ? '' : companions('pageEnd', pathname), footer: companions('footer', pathname), hero: hero() };
+  const artwork = { intro: companions(pathname === '/' ? 'homeIntro' : 'pageIntro', pathname), courses: companions('homeCourses'), support: companions('homeSupport'), end: pathname === '/' ? '' : companions('pageEnd', pathname), footer: companions('footer', pathname), hero: hero(), screen: renderToStaticMarkup(flight(false, config, pathname)) + renderToStaticMarkup(snow(false, config, pathname)) };
   return `<script>(function(){const exports={};${contrastSource}\n
     const config=${JSON.stringify(config)}, art=${JSON.stringify(artwork)};
     const body=document.body, main=document.querySelector('body > main');
@@ -76,9 +76,10 @@ function realSiteBootstrap(pathname) {
       insert(heading?.closest('section'),'beforebegin',art.support);
     }else{insert(main,'afterbegin',art.intro);insert(main,'beforeend',art.end);}
     insert(document.querySelector('body > footer'),'beforebegin',art.footer);
+    insert(main,'beforeend',art.screen);
     const hsl=hex=>{const [r,g,b]=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255);const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min,l=(max+min)/2;let h=0;if(d)h=max===r?((g-b)/d)%6:max===g?(b-r)/d+2:(r-g)/d+4;return ((h*60+360)%360)+' '+(d?d/(1-Math.abs(2*l-1))*100:0)+'% '+l*100+'%';};
     let stop=()=>{};
-    function enable(){body.dataset.seasonal=config.id;['palette','header','hero','footer'].forEach(key=>body.setAttribute('data-seasonal-'+key,'true'));body.dataset.seasonalPaused='true';
+    function enable(){body.dataset.seasonal=config.id;['palette','header','hero','footer'].forEach(key=>body.setAttribute('data-seasonal-'+key,'true'));
       Object.entries({background:config.colours.background,surface:config.colours.surface,text:config.colours.text,accent:config.colours.accent,secondary:config.colours.secondary}).forEach(([key,value])=>body.style.setProperty('--seasonal-'+key,value));
       body.style.setProperty('--seasonal-footer-image','url("'+config.media.footer+'")');
       const pairs={background:config.colours.background,card:config.colours.surface,popover:config.colours.surface,foreground:config.colours.text,'card-foreground':config.colours.text,'popover-foreground':config.colours.text,primary:config.colours.accent,'primary-foreground':'#160F24',secondary:config.colours.surface,'secondary-foreground':config.colours.text,muted:config.colours.surface,'muted-foreground':'#D0C4DB',accent:config.colours.secondary,'accent-foreground':'#160F24',border:'#5C456D',input:'#5C456D',ring:config.colours.accent,'accent-1':config.colours.accent,'accent-2':'#80D9B1','accent-3':config.colours.secondary,'accent-4':config.colours.accent};

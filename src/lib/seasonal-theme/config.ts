@@ -98,7 +98,7 @@ export const christmasTheme: SeasonalTheme = {
   branding: { enabled: true, logo: '/seasonal/christmas/logo-christmas.webp' },
   media: { hero: '/seasonal/christmas/hero.webp', mobileHero: '/seasonal/christmas/hero-mobile.webp', character: '/seasonal/christmas/ghost.webp', footer: '/seasonal/christmas/footer.webp', popup: '/seasonal/christmas/popup.webp', audio: '' },
   hero: { ...defaultTheme.hero, title: 'Bright minds.\nA season of possibility.', greeting: 'A little Christmas magic for your learning journey' },
-  effects: { heroMotion: true, bats: false, batScope: 'hero', mobile: false, snow: true, snowScope: 'hero', sleigh: false },
+  effects: { heroMotion: true, bats: false, batScope: 'hero', mobile: false, snow: true, snowScope: 'site', sleigh: false },
   popup: { ...defaultTheme.popup, title: 'Give your goals a bright new chapter', body: 'Keep learning this Christmas. Explore expert-led courses and smart practice at Smart Labs.' },
 };
 export const presetFor = (id: ThemeId) => structuredClone(id === 'christmas' ? christmasTheme : defaultTheme);
