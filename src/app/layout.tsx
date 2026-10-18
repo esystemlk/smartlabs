@@ -13,6 +13,8 @@ import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import { FirebaseClientProvider } from '@/firebase';
 import './globals.css';
+import './seasonal.css';
+import { SeasonalThemeProvider } from '@/components/seasonal/seasonal-theme-provider';
 import { LayoutManager } from '@/components/layout/layout-manager';
 import { WindowControls } from '@/components/layout/window-controls';
 import { LayoutExtras } from '@/components/layout/layout-extras';
@@ -80,6 +82,7 @@ export default function RootLayout({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd()) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(HOME_FAQS)) }} />
         <FirebaseClientProvider>
+          <SeasonalThemeProvider>
           <WindowControls />
           <LayoutManager />
           <Header />
@@ -88,6 +91,7 @@ export default function RootLayout({
           <Toaster />
           <CookieBanner />
           <LayoutExtras />
+          </SeasonalThemeProvider>
         </FirebaseClientProvider>
       </body>
     </html>

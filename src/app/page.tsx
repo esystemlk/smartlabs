@@ -1,5 +1,6 @@
 'use client';
 import Link from "next/link";
+import { SeasonalHero } from '@/components/seasonal/seasonal-hero';
 import Script from "next/script";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import React, { useState, useEffect } from "react";
@@ -633,7 +634,8 @@ export default function Home() {
 
 
       {/* Hero Section — Diagonal Split (animations defined in globals.css) */}
-      <section className="relative overflow-hidden">
+      <SeasonalHero />
+      <section className="relative overflow-hidden standard-home-hero">
         {/* Top accent gradient line */}
         <div className="absolute top-0 left-0 right-0 h-[3px] origin-left z-50"
              style={{ background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent-3)), hsl(var(--accent-1)))', animation: 'accent-line 1.2s cubic-bezier(0.16,1,0.3,1) 0.1s both' }} />

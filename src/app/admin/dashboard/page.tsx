@@ -341,6 +341,7 @@ export default function AdminDashboardPage() {
             label: 'System',
             icon: Settings,
             items: [
+                { title: 'Seasonal Themes', desc: 'Halloween visuals, yearly schedule, sound and preview', icon: Gift, href: '/admin/dashboard/seasonal-themes', accent: 'bg-orange-500/10' },
                 {
                     title: 'AI API Settings',
                     desc: currentUserRole === 'developer' ? 'Gemini API key, model status & usage' : 'Developer-only access',
