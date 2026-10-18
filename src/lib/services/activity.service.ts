@@ -1,5 +1,6 @@
 import { db } from '@/lib/firebase';
 import { collection, addDoc, query, where, orderBy, limit, getDocs, Timestamp } from 'firebase/firestore';
+import { testResultService } from './test-results.service';
 
 export interface UserActivity {
     id?: string;
@@ -119,6 +120,36 @@ export async function logLessonCompletion(
         `Completed lesson in ${course}`,
         { course }
     );
+}
+
+/**
+ * Record a finished practice attempt: logs it to the activity feed (drives
+ * Day Streak / Today / Total Practice) and to test_results (drives Skill
+ * Mastery / Avg Score). Never throws — scoring UX must not depend on this.
+ */
+export async function recordPracticeResult(
+    userId: string,
+    opts: {
+        title: string;
+        category: 'Reading' | 'Writing' | 'Speaking' | 'Listening';
+        testType?: string; // 'PTE Academic' | 'IELTS'
+        score: number;
+        maxScore: number;
+        testId?: string;
+    }
+): Promise<void> {
+    const { title, category, testType = 'PTE Academic', score, maxScore, testId } = opts;
+    await Promise.allSettled([
+        logTestCompletion(userId, title, score, testType),
+        testResultService.saveTestResult({
+            userId,
+            testId: testId ?? title,
+            testType,
+            category,
+            score,
+            maxScore,
+        }),
+    ]);
 }
 
 /**
