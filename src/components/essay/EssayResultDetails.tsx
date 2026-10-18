@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Markdown } from '@/components/ui/markdown';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 import type { AIResponse } from '@/types/essay';
 
 /**
@@ -464,7 +465,7 @@ export function EssayResultDetails({
           <Card>
             <div
               className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap"
-              dangerouslySetInnerHTML={{ __html: result.reviewedEssayHtml }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(result.reviewedEssayHtml) }}
             />
           </Card>
         </div>

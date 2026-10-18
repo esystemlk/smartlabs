@@ -19,7 +19,8 @@ export async function POST(request: Request) {
     const authHeader = request.headers.get('Authorization');
     if (!adminAuth) return NextResponse.json({ error: 'Server not configured.' }, { status: 500 });
     if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ error: 'Please sign in.' }, { status: 401 });
-    try { await adminAuth.verifyIdToken(authHeader.slice(7)); }
+    let uid: string;
+    try { uid = (await adminAuth.verifyIdToken(authHeader.slice(7))).uid; }
     catch { return NextResponse.json({ error: 'Session expired.' }, { status: 401 }); }
 
     const { testId, questionId, passage, question, accepted, number } = await request.json();
@@ -36,6 +37,23 @@ export async function POST(request: Request) {
       const hit = await cacheRef.get();
       const cached = hit.data()?.explanation;
       if (typeof cached === 'string' && cached) return NextResponse.json({ explanation: cached, cached: true });
+    }
+
+    // Cache miss = a real AI call. Cap new generations per user/hour so the
+    // endpoint can't be scripted to burn Gemini quota. Fail open on any error
+    // so normal use is never blocked.
+    if (adminDb) {
+      try {
+        const rlRef = adminDb.collection('ai_rate_limits').doc(uid);
+        const now = Date.now();
+        const rl = (await rlRef.get()).data()?.explain as { count?: number; windowStart?: number } | undefined;
+        const fresh = rl?.windowStart && now - rl.windowStart < 3_600_000;
+        const count = fresh ? (rl!.count ?? 0) : 0;
+        if (count >= 150) {
+          return NextResponse.json({ error: 'Too many explanations in a short time — please wait a little and try again.' }, { status: 429 });
+        }
+        await rlRef.set({ explain: { count: count + 1, windowStart: fresh ? rl!.windowStart : now } }, { merge: true });
+      } catch { /* fail open */ }
     }
 
     const userMsg = `PASSAGE:\n${passage.slice(0, 9000)}\n\nQUESTION ${number ?? ''}: ${question || '(gap to complete)'}\nCORRECT ANSWER(S): ${accepted.join(' / ')}\n\nExplain how to arrive at this answer for a student.`;

@@ -71,6 +71,12 @@ service cloud.firestore {
       match /ielts_essay_sessions/{docId} {
         allow read, write: if isOwner(userId) || isStaff();
       }
+      // Practice-completion log (drives Day Streak / Today / Total Practice).
+      match /activities/{docId} {
+        allow read: if isOwner(userId) || isStaff();
+        allow create: if isOwner(userId);
+        allow update, delete: if isStaff();
+      }
       match /{sub=**} {
         allow read: if isOwner(userId) || isStaff();
         allow write: if isStaff();
@@ -164,7 +170,13 @@ service cloud.firestore {
 
     // Homepage vanity stats — public read; the signup counter increment needs an
     // authed write (best-effort, wrapped in try/catch on the client).
-    match /site_stats/{id} { allow read: if true; allow write: if isAuthed(); }
+    match /site_stats/{id} {
+      allow read: if true;
+      allow create, delete: if isStaff();
+      // Staff edit freely; a signing-up user may only bump the student counter.
+      allow update: if isStaff()
+                    || (isAuthed() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['studentsCount', 'lastUpdated']));
+    }
 
     // AI tutor course guides — content shown to signed-in students, staff-managed.
     match /ai_tutor_courses/{id} {

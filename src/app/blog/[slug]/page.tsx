@@ -3,6 +3,7 @@
 import { use } from 'react';
 import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -97,7 +98,7 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
                         
                         <div
                             className="prose prose-lg dark:prose-invert max-w-none prose-h2:font-display prose-p:text-muted-foreground prose-a:text-primary"
-                            dangerouslySetInnerHTML={{ __html: post.content }}
+                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
                         />
                     </article>
                     )}

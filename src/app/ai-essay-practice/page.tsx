@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CreditsPill } from '@/components/pte/credits-pill';
 import { payhereUrls } from '@/lib/payhere';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import type { AIResponse } from '@/types/essay';
 import { saveEssaySession } from '@/lib/services/essay-session.service';
+import { recordPracticeResult } from '@/lib/services/activity.service';
 import { listQuestions } from '@/lib/services/pte-questions.service';
 import { WalkingLoader } from '@/components/ui/walking-loader';
 import { AiRetryDialog } from '@/components/ui/ai-retry-dialog';
@@ -588,6 +590,10 @@ function AIEssayPracticeInner() {
       setShowResults(true);
       setSavedSessionId(null);
       showToast("Evaluation complete! View your Band Score below.", "success");
+
+      if (user) {
+        recordPracticeResult(user.uid, { title: 'Write Essay', category: 'Writing', score: result.overallBand, maxScore: 90 });
+      }
 
       // Persist the scored session so it can be re-opened with the AI Tutor.
       // Non-blocking: must never break the scoring UX if the write fails.
@@ -2363,7 +2369,7 @@ function AIEssayPracticeInner() {
                 </div>
                 <div
                   className="text-slate-700 text-sm leading-relaxed whitespace-pre-line bg-white p-6 rounded-2xl border border-slate-200 custom-scrollbar max-h-[350px] overflow-y-auto"
-                  dangerouslySetInnerHTML={{ __html: aiResult.reviewedEssayHtml }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(aiResult.reviewedEssayHtml) }}
                 />
               </div>
             )}

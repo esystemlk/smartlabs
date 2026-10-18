@@ -2,6 +2,7 @@
 import { use } from 'react';
 import { useFirebase, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -75,7 +76,7 @@ export default function ResourceContentPage({ params }: { params: Promise<{ reso
                     <CardContent>
                         <div
                             className="prose prose-lg dark:prose-invert max-w-none"
-                            dangerouslySetInnerHTML={{ __html: resource.htmlContent || '' }}
+                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(resource.htmlContent) }}
                         />
                     </CardContent>
                 </Card>
