@@ -9,7 +9,7 @@ export function SeasonalFlight({ hero = false }: { hero?: boolean }) {
   const { active, config, paused } = useSeasonalTheme();
   const pathname = usePathname();
   const { effects } = config;
-  if (!active || !config.areas.animations || !effects.bats) return null;
+  if (!active || config.id === 'christmas' || !config.areas.animations || !effects.bats) return null;
   if (hero ? effects.batScope !== 'hero' : effects.batScope === 'hero' || (effects.batScope === 'home' && pathname !== '/')) return null;
   const count = config.motion === 'medium' ? 6 : 3;
   return <div aria-hidden="true" className={`seasonal-flight ${hero ? 'seasonal-flight-hero' : 'seasonal-flight-screen'} ${paused ? 'seasonal-static' : ''} ${effects.mobile ? '' : 'seasonal-effect-desktop'}`}>

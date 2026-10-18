@@ -28,7 +28,7 @@ const server = load('src/lib/seasonal-theme/server.ts', {
 });
 const api = load('src/app/api/admin/seasonal-themes/route.ts', {
   '@/lib/firebase-admin': { adminDb: database, adminAuth: { createSessionCookie: async () => 'isolated-test-cookie' } },
-  '@/lib/seasonal-theme/server': { ...server, themeRefs: () => refs }, '@/lib/seasonal-theme/config': cfg,
+  '@/lib/seasonal-theme/server': { ...server, themeRefs: (id = 'halloween') => ({ ...refs, draft: ref(`draft/${id}`) }) }, '@/lib/seasonal-theme/config': cfg,
 });
 const post = body => api.POST(new Request('http://localhost/api/admin/seasonal-themes', { method: 'POST', headers: { Authorization: 'Bearer isolated-test-token', 'Content-Type': 'application/json' }, body: JSON.stringify(body) }));
 const fresh = () => structuredClone(cfg.defaultTheme);
@@ -108,4 +108,53 @@ test('restoring a previous version changes only the draft', async () => {
   assert.equal(response.status, 200);
   assert.equal(records.get('draft/halloween').config.mode, 'automatic');
   assert.equal(JSON.stringify(records.get('runtime/current')), live);
+});
+
+test('publishing Christmas preserves the legacy Halloween schedule and independent draft', async () => {
+  const h = fresh(); h.mode = 'automatic';
+  assert.equal((await post({ action: 'publish', config: h, revision: records.get('draft/halloween').revision })).status, 200);
+  const before = JSON.stringify(records.get('runtime/current').themes.halloween);
+  const draftBefore = JSON.stringify(records.get('draft/halloween'));
+  const c = structuredClone(cfg.christmasTheme); c.mode = 'automatic';
+  assert.equal((await post({ action: 'publish', themeId: 'christmas', config: c, revision: records.get('draft/christmas')?.revision ?? 0 })).status, 200);
+  const live = records.get('runtime/current');
+  assert.equal(JSON.stringify(live.themes.halloween), before);
+  assert.equal(JSON.stringify(records.get('draft/halloween')), draftBefore);
+  assert.equal(live.themes.christmas.config.schedule.startMonth, 12);
+  assert.equal(live.config.id, 'halloween');
+  assert.equal(cfg.selectTheme(Object.values(live.themes).map(e => e.config), Date.parse('2026-12-25T12:00:00+05:30')).id, 'christmas');
+});
+
+test('cross-theme media, draft mismatches and version restores are rejected without writes', async () => {
+  const before = JSON.stringify([...records]);
+  const c = structuredClone(cfg.christmasTheme); c.media.hero = fresh().media.hero;
+  assert.equal((await post({ action: 'publish', themeId: 'christmas', config: c, revision: 1 })).status, 400);
+  assert.equal((await post({ action: 'save', themeId: 'christmas', config: fresh(), revision: 1 })).status, 400);
+  const old = [...records].find(([key,value]) => key.startsWith('versions/') && value.config.id === 'halloween');
+  assert.equal((await post({ action: 'restore', themeId: 'christmas', versionId: old[0].split('/')[1], revision: 1 })).status, 400);
+  assert.equal((await post({ action: 'save', themeId: 'unknown', config: c, revision: 1 })).status, 400);
+  assert.equal(JSON.stringify([...records]), before);
+});
+
+test('selected-theme disabling preserves Halloween and global restore disarms both drafts', async () => {
+  const before = JSON.stringify(records.get('runtime/current').themes.halloween);
+  assert.equal((await post({ action: 'disable', themeId: 'christmas', revision: records.get('draft/christmas').revision })).status, 200);
+  assert.equal(records.get('runtime/current').themes.christmas.config.mode, 'off');
+  assert.equal(JSON.stringify(records.get('runtime/current').themes.halloween), before);
+  assert.equal(records.get('draft/christmas').config.mode, 'off');
+  assert.equal((await post({ action: 'off', themeId: 'christmas', revision: -1 })).status, 200);
+  for (const id of cfg.themeIds) {
+    assert.equal(records.get('runtime/current').themes[id].config.mode, 'off');
+    assert.equal(records.get(`draft/${id}`).config.mode, 'off');
+  }
+});
+
+test('all Christmas bundled media are scoped, present and publishable', () => {
+  const c = structuredClone(cfg.christmasTheme);
+  for (const character of cfg.christmasCharacters) {
+    c.media.character = character.src;
+    assert.equal(server.validatePublishedMedia(c), null);
+    assert.ok(fs.existsSync(path.join(__dirname, '../public', character.src)));
+  }
+  for (const file of Object.values(c.media).filter(Boolean).concat(c.branding.logo)) assert.ok(fs.existsSync(path.join(__dirname, '../public', file)), file);
 });

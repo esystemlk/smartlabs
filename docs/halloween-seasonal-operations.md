@@ -1,5 +1,7 @@
 # Halloween theme — implementation and admin guide
 
+The manager now also supports Christmas. Select Halloween in the shared Season library to edit this preset. **Disable Halloween** affects Halloween only; **Restore standard — all seasons** disarms both annual schedules and drafts. Existing Halloween settings/history and media are preserved. See `christmas-seasonal-operations.md` for the versioned runtime manifest, independent previews and multi-season workflow.
+
 Updated 18 October 2026. The feature defaults to **Off**. No live settings have been published by this update.
 
 ## Open the controls

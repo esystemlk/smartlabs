@@ -1,12 +1,12 @@
 import 'server-only';
 import { adminDb } from '@/lib/firebase-admin';
 import { verifyAuthed } from '@/lib/api-auth';
-import { bundledSeasonalAssetPaths, contrastRatio, defaultTheme, themeSchema, type SeasonalTheme } from './config';
+import { bundledSeasonalAssetPaths, contrastRatio, presetFor, themeSchema, type SeasonalTheme, type ThemeId } from './config';
 
-export const themeRefs = () => ({
-  draft: adminDb!.collection('seasonalThemeDrafts').doc('halloween'),
+export const themeRefs = (id: ThemeId = 'halloween') => ({
+  draft: adminDb!.collection('seasonalThemeDrafts').doc(id),
   runtime: adminDb!.collection('seasonalThemeRuntime').doc('current'),
-  versions: adminDb!.collection('seasonalThemeVersions'),
+  versions: adminDb!.collection(id === 'halloween' ? 'seasonalThemeVersions' : 'seasonalThemeVersionsChristmas'),
 });
 export async function verifyThemeAdmin(request: Request) {
   const auth = await verifyAuthed(request);
@@ -14,9 +14,9 @@ export async function verifyThemeAdmin(request: Request) {
   if (!['admin', 'developer'].includes(auth.role)) return { ok: false as const, status: 403, error: 'Administrator access required.' };
   return auth;
 }
-export function readTheme(value: unknown) {
+export function readTheme(value: unknown, id: ThemeId = 'halloween') {
   const result = themeSchema.safeParse(value);
-  return result.success ? result.data : structuredClone(defaultTheme);
+  return result.success && result.data.id === id ? result.data : presetFor(id);
 }
 
 export function validatePublishedMedia(config: SeasonalTheme) {
@@ -28,10 +28,10 @@ export function validatePublishedMedia(config: SeasonalTheme) {
     if (!extension.test(url)) return `Unsupported ${kind} asset format.`;
     if (url.startsWith('https://')) {
       const parsed = new URL(url);
-      if (!cdnHost || parsed.hostname !== cdnHost || !parsed.pathname.startsWith('/images/seasonal/halloween/')) return 'Custom media must come from the seasonal uploader on your configured CDN.';
-    } else if (!bundledSeasonalAssetPaths.includes(url)) return 'Choose a bundled asset or upload a new file.';
+      if (!cdnHost || parsed.hostname !== cdnHost || !parsed.pathname.startsWith(`/images/seasonal/${config.id}/`)) return 'Custom media must come from this theme’s seasonal uploader on your configured CDN.';
+    } else if (!bundledSeasonalAssetPaths.includes(url) || !url.startsWith(`/seasonal/${config.id}/`)) return 'Choose a bundled asset for this theme or upload a new file.';
   }
-  if (config.branding.logo && !bundledSeasonalAssetPaths.includes(config.branding.logo)) return 'Use the bundled seasonal logo.';
+  if (config.branding.logo && (!bundledSeasonalAssetPaths.includes(config.branding.logo) || !config.branding.logo.startsWith(`/seasonal/${config.id}/`))) return 'Use this theme’s bundled seasonal logo.';
   if (config.areas.hero && (!config.media.hero || (config.areas.mobile && !config.media.mobileHero))) return 'Choose desktop and mobile hero artwork before publishing.';
   if (config.areas.palette && [contrastRatio(config.colours.text, config.colours.background), contrastRatio(config.colours.text, config.colours.surface), contrastRatio('#160F24', config.colours.accent)].some(ratio => ratio < 4.5)) return 'Increase the text/background, text/surface, or button contrast to at least 4.5:1.';
   return null;

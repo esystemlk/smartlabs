@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyThemeAdmin } from '@/lib/seasonal-theme/server';
+import { themeIds, type ThemeId } from '@/lib/seasonal-theme/config';
 
 export const runtime = 'nodejs';
 export async function POST(request: NextRequest) {
@@ -9,6 +10,8 @@ export async function POST(request: NextRequest) {
   if (Number(request.headers.get('content-length')) > maxBytes + 20_000) return NextResponse.json({ error: 'Choose a file smaller than 3 MB.' }, { status: 413 });
   try {
     const data = await request.formData();
+    const id = data.get('themeId') ?? 'halloween';
+    if (!themeIds.includes(id as ThemeId)) return NextResponse.json({ error: 'Unknown theme.' }, { status: 400 });
     const file = data.get('file');
     if (!(file instanceof File) || file.size > maxBytes || file.size < 12) return NextResponse.json({ error: 'Choose an image or sound file smaller than 3 MB.' }, { status: 400 });
     const bytes = Buffer.from(await file.arrayBuffer());
@@ -23,8 +26,8 @@ export async function POST(request: NextRequest) {
     const secret = process.env.BUNNY_STORAGE_API_KEY;
     const hostname = process.env.BUNNY_STORAGE_HOSTNAME;
     const cdn = process.env.NEXT_PUBLIC_BUNNY_HOSTNAME;
-    if (!zone || !secret || !hostname || !cdn) return NextResponse.json({ error: 'Media storage is not configured. The bundled Halloween images remain available.' }, { status: 503 });
-    const key = `images/seasonal/halloween/${crypto.randomUUID()}.${extension}`;
+    if (!zone || !secret || !hostname || !cdn) return NextResponse.json({ error: 'Media storage is not configured. The bundled seasonal images remain available.' }, { status: 503 });
+    const key = `images/seasonal/${id}/${crypto.randomUUID()}.${extension}`;
     const uploaded = await fetch(`https://${hostname}/${zone}/${key}`, { method: 'PUT', headers: { AccessKey: secret, 'Content-Type': mime }, body: new Uint8Array(bytes), signal: AbortSignal.timeout(20_000) });
     if (!uploaded.ok) throw new Error('Upload failed');
     const cdnBase = cdn.startsWith('https://') ? cdn : `https://${cdn}`;

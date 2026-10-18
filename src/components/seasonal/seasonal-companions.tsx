@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { halloweenCharacters } from '@/lib/seasonal-theme/config';
+import { charactersFor, themeLabel } from '@/lib/seasonal-theme/config';
 import { useSeasonalTheme } from './seasonal-theme-provider';
 
 export type CharacterPlacement = 'homeIntro' | 'homeCourses' | 'homeSupport' | 'pageIntro' | 'pageEnd' | 'footer';
@@ -15,6 +15,7 @@ const scenes = {
 export function SeasonalCompanions({ placement }: { placement: CharacterPlacement }) {
   const { active, config, paused } = useSeasonalTheme();
   const pathname = usePathname();
+  const halloweenCharacters = charactersFor(config.id);
   const ref = useRef<HTMLDivElement>(null);
   const [onscreen, setOnscreen] = useState(true);
   const eligible = active && config.areas.characters && config.characterPlacements[placement]
@@ -35,7 +36,7 @@ export function SeasonalCompanions({ placement }: { placement: CharacterPlacemen
   return <div ref={ref} data-seasonal-placement={placement} aria-hidden="true"
     className={`seasonal-companions seasonal-companions-${placement} ${paused || !onscreen || !config.areas.animations ? 'seasonal-static' : ''} ${config.characterPlacements.mobile ? '' : 'seasonal-companions-desktop'}`}>
     <div className="seasonal-companions-inner">
-      {scene && <div className="seasonal-companions-copy"><span className="seasonal-eyebrow">Halloween at Smart Labs</span><p className="seasonal-companions-title">{scene.title}</p><p>{scene.body}</p></div>}
+      {scene && <div className="seasonal-companions-copy"><span className="seasonal-eyebrow">{themeLabel(config.id)} at Smart Labs</span><p className="seasonal-companions-title">{config.id === 'christmas' && placement === 'homeIntro' ? 'Bright minds. A season of possibility.' : scene.title}</p><p>{placement === 'homeIntro' ? `Your learning companions are here for the ${themeLabel(config.id)} season.` : scene.body}</p></div>}
       <div className="seasonal-companions-cast">{cast.map((character, index) => <img key={character.id} src={character.src} alt="" width={640} height={585} loading="lazy" decoding="async"
         style={{ animationDelay: `${index * -.8}s` }} onError={event => { event.currentTarget.style.visibility = 'hidden'; }} />)}</div>
     </div>

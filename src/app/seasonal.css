@@ -1,4 +1,29 @@
 /* Every visual rule is gated by seasonal state. Standard styles remain untouched. */
+body[data-seasonal="christmas"] { --seasonal-outline: #628b82; }
+body[data-seasonal="christmas"][data-seasonal-header] > header,body[data-seasonal="christmas"][data-seasonal-footer] > footer { --foreground: 39 100% 95%; --muted-foreground: 153 20% 80%; --background: 174 41% 12%; --card: 174 41% 12%; --secondary: 174 41% 12%; border-color: #628b82; }
+body[data-seasonal="christmas"][data-seasonal-footer] > footer { background-image: linear-gradient(#0c2020e6,#0c2020dc),var(--seasonal-footer-image); }
+body[data-seasonal="christmas"] .seasonal-companions { background: var(--seasonal-background); }
+body[data-seasonal="christmas"] .seasonal-companions-inner { background: linear-gradient(120deg,#163532,#0c2020); border-color: #628b8266; }
+body[data-seasonal="christmas"] .seasonal-companions-pageIntro .seasonal-companions-inner,body[data-seasonal="christmas"] .seasonal-companions-pageEnd .seasonal-companions-inner { background: transparent; }
+body[data-seasonal="christmas"] :is(.seasonal-controls,.seasonal-popup) { background-color: #163532; border-color: #628b82; }
+body[data-seasonal="christmas"] .seasonal-controls button:hover { background: #254c44; }
+body[data-seasonal="christmas"] .seasonal-cta-outline { background: #0c2020a6; border-color: #a9dce8; }
+body[data-seasonal="christmas"] .seasonal-eyebrow,body[data-seasonal="christmas"] .seasonal-hero h1 span:not(.seasonal-hero-first-line) { color: #f6c66a; }
+body[data-seasonal="christmas"] [data-seasonal-text-backplate] { background-color: #0c2020 !important; }
+.seasonal-snow { overflow: hidden; pointer-events: none; contain: layout paint; }
+.seasonal-snow-hero { position: absolute; inset: 0; z-index: 1; }
+.seasonal-snow-screen { position: fixed; inset: 80px 0 0; z-index: 29; }
+.seasonal-snowflake { position: absolute; left: var(--snow-x); top: -15px; width: var(--snow-size); height: var(--snow-size); background: #fff7e8; border-radius: 50%; opacity: .35; animation: seasonal-snowfall var(--snow-time) linear var(--snow-delay) infinite; }
+.seasonal-sleigh { position: absolute; top: 12%; left: -180px; width: 150px; color: #f6c66a; opacity: 0; animation: seasonal-sleigh-pass 45s linear infinite; }
+.seasonal-sleigh svg { width: 100%; height: auto; }
+.seasonal-hero-animated[data-seasonal-hero-theme="christmas"] .seasonal-hero-atmosphere::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 88% 50%,#f6c66a24,transparent 50%); animation: seasonal-gold-glow 9s ease-in-out infinite alternate; }
+.seasonal-static .seasonal-hero-atmosphere::before,body[data-seasonal-paused] .seasonal-hero-atmosphere::before { animation-play-state: paused !important; }
+@keyframes seasonal-gold-glow { from { opacity: .3; } to { opacity: .8; } }
+.seasonal-static :is(.seasonal-snowflake,.seasonal-sleigh),body[data-seasonal-paused] :is(.seasonal-snowflake,.seasonal-sleigh) { animation-play-state: paused; }
+@keyframes seasonal-snowfall { from { transform: translate3d(0,-20px,0); } to { transform: translate3d(var(--snow-drift),100vh,0); } }
+@keyframes seasonal-sleigh-pass { 0% { transform: translateX(0) rotate(-5deg); opacity: 0; } 2%,25% { opacity: .45; } 28%,100% { transform: translateX(calc(100vw + 360px)) rotate(4deg); opacity: 0; } }
+@media(max-width:767px) { .seasonal-snowflake:nth-child(n+7) { display: none; } .seasonal-sleigh { width: 100px; } body[data-seasonal="christmas"] .seasonal-hero-shade { background: #0c2020b8 !important; } }
+@media(prefers-reduced-motion:reduce) { .seasonal-snow { display: none !important; } }
 body[data-seasonal-palette] {
   --background: var(--seasonal-token-background); --foreground: var(--seasonal-token-foreground);
   --card: var(--seasonal-token-card); --card-foreground: var(--seasonal-token-card-foreground);

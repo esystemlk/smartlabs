@@ -16,7 +16,7 @@ function load(file, imports) {
   return exports;
 }
 const configModule = load('src/lib/seasonal-theme/config.ts', {});
-const config = configModule.defaultTheme;
+const config = configModule.presetFor(process.env.SEASONAL_FIXTURE_THEME === 'christmas' ? 'christmas' : 'halloween');
 // Read the distributed CJS directly: the installed package marks .js as ESM.
 const icons = {};
 vm.runInNewContext(`(function(exports,require){${fs.readFileSync(require.resolve('lucide-react'), 'utf8')}\n})`, {})(icons, require);
@@ -37,8 +37,17 @@ function hero(previewConfig = config) {
     react: React, 'next/link': anchor,
     './seasonal-theme-provider': { useSeasonalTheme: () => ({ config: previewConfig, active: true, paused: false, preview: true }) },
     './seasonal-flight': { SeasonalFlight: () => flight(true, previewConfig) },
+    './seasonal-snow': { SeasonalSnow: () => snow(true, previewConfig) },
+    '@/lib/seasonal-theme/config': configModule,
   });
   return renderToStaticMarkup(React.createElement(component.SeasonalHero));
+}
+function snow(hero, previewConfig = config, pathname = '/') {
+  const component = load('src/components/seasonal/seasonal-snow.tsx', {
+    react: React, 'next/navigation': { usePathname: () => pathname },
+    './seasonal-theme-provider': { useSeasonalTheme: () => ({ config: previewConfig, active: true, paused: false }) },
+  });
+  return React.createElement(component.SeasonalSnow, { hero });
 }
 function companions(placement, pathname = '/') {
   const component = load('src/components/seasonal/seasonal-companions.tsx', {
@@ -69,7 +78,7 @@ function realSiteBootstrap(pathname) {
     insert(document.querySelector('body > footer'),'beforebegin',art.footer);
     const hsl=hex=>{const [r,g,b]=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255);const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min,l=(max+min)/2;let h=0;if(d)h=max===r?((g-b)/d)%6:max===g?(b-r)/d+2:(r-g)/d+4;return ((h*60+360)%360)+' '+(d?d/(1-Math.abs(2*l-1))*100:0)+'% '+l*100+'%';};
     let stop=()=>{};
-    function enable(){body.dataset.seasonal='halloween';['palette','header','hero','footer'].forEach(key=>body.setAttribute('data-seasonal-'+key,'true'));body.dataset.seasonalPaused='true';
+    function enable(){body.dataset.seasonal=config.id;['palette','header','hero','footer'].forEach(key=>body.setAttribute('data-seasonal-'+key,'true'));body.dataset.seasonalPaused='true';
       Object.entries({background:config.colours.background,surface:config.colours.surface,text:config.colours.text,accent:config.colours.accent,secondary:config.colours.secondary}).forEach(([key,value])=>body.style.setProperty('--seasonal-'+key,value));
       body.style.setProperty('--seasonal-footer-image','url("'+config.media.footer+'")');
       const pairs={background:config.colours.background,card:config.colours.surface,popover:config.colours.surface,foreground:config.colours.text,'card-foreground':config.colours.text,'popover-foreground':config.colours.text,primary:config.colours.accent,'primary-foreground':'#160F24',secondary:config.colours.surface,'secondary-foreground':config.colours.text,muted:config.colours.surface,'muted-foreground':'#D0C4DB',accent:config.colours.secondary,'accent-foreground':'#160F24',border:'#5C456D',input:'#5C456D',ring:config.colours.accent,'accent-1':config.colours.accent,'accent-2':'#80D9B1','accent-3':config.colours.secondary,'accent-4':config.colours.accent};
@@ -82,7 +91,7 @@ function admin(tab) {
   let stateIndex = 0;
   const mockReact = { ...React, useEffect: () => {}, useCallback: fn => fn, useState: initial => {
     const index = stateIndex++;
-    const override = { 1: JSON.stringify(config), 5: tab, 6: false, 7: true };
+    const override = { 0: config, 1: config.id, 3: JSON.stringify(config), 7: tab, 8: false, 9: true };
     return [index in override ? override[index] : typeof initial === 'function' ? initial() : initial, () => {}];
   } };
   const Button = ({ children, variant, size, asChild, ...props }) => React.createElement('button', { ...props, disabled: true, className: `inline-flex items-center rounded-lg border px-4 py-2 text-sm ${variant === 'destructive' ? 'bg-red-600 text-white' : 'bg-card'} ${props.className || ''}` }, children);
@@ -106,7 +115,7 @@ http.createServer(async (req, res) => {
     try {
       const upstream = await fetch('http://localhost:9002' + pathname);
       let html = (await upstream.text()).replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
-      html = html.replace('</head>', '<link rel="stylesheet" href="/styles.css"><style>body{padding-top:80px!important}.fixture-note{position:relative;z-index:60;padding:12px;background:#fff7ed;color:#160f24;font:12px Arial}.fixture-note a{margin-left:12px;text-decoration:underline}[style*="opacity:0"],[style*="opacity: 0"]{opacity:1!important;transform:none!important}</style></head>');
+      html = html.replace('</head>', '<link rel="stylesheet" href="/styles.css"><style>body{padding-top:80px!important;font-family:Arial,sans-serif!important}.fixture-note{position:relative;z-index:60;padding:12px;background:#fff7ed;color:#160f24;font:12px Arial}.fixture-note a{margin-left:12px;text-decoration:underline}[style*="opacity:0"],[style*="opacity: 0"]{opacity:1!important;transform:none!important}</style></head>');
       html = html.replace('</body>', realSiteBootstrap(pathname) + '</body>');
       res.setHeader('Content-Type', 'text/html; charset=utf-8');res.end(html);return;
     } catch { res.writeHead(503);res.end('Start the ordinary local website on port 9002 first.');return; }
@@ -118,8 +127,10 @@ http.createServer(async (req, res) => {
   const isAdmin = url.pathname === '/admin';
   const previewConfig = structuredClone(config);
   if (['hero', 'home', 'site'].includes(url.searchParams.get('flight'))) previewConfig.effects.batScope = url.searchParams.get('flight');
+  if (['hero', 'home', 'site'].includes(url.searchParams.get('snow'))) previewConfig.effects.snowScope = url.searchParams.get('snow');
+  previewConfig.effects.sleigh = url.searchParams.get('sleigh') === '1';
   previewConfig.effects.mobile = url.searchParams.get('mobile') === '1';
-  const motionPreview = hero(previewConfig) + renderToStaticMarkup(flight(false, previewConfig));
+  const motionPreview = hero(previewConfig) + renderToStaticMarkup(flight(false, previewConfig)) + renderToStaticMarkup(snow(false, previewConfig));
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.end(`<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Halloween isolated visual test</title><link rel="stylesheet" href="/styles.css"><style>body{font-family:Arial,sans-serif}.fixture-note{padding:12px 24px;background:#fff7ed;color:#7c2d12;font:12px Arial}.fixture-note a{margin-right:18px;text-decoration:underline}</style></head><body style="--seasonal-accent:#FF9A3D"><div class="fixture-note">Read-only visual fixture · synthetic data · no publishing or Firebase connection<br><a href="/">Hero</a><a href="/admin">Admin overview</a><a href="/admin?tab=Schedule">Schedule</a><a href="/admin?tab=Hero%20%26%20footer">Artwork controls</a><a href="/admin?tab=Assets">Assets</a><button onclick="document.body.classList.toggle('seasonal-static')">Pause / resume preview</button></div>${isAdmin ? admin(tab) : motionPreview}</body></html>`);
+  res.end(`<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>${configModule.themeLabel(config.id)} isolated visual test</title><link rel="stylesheet" href="/styles.css"><style>body{font-family:Arial,sans-serif}.fixture-note{padding:12px 24px;background:#fff7ed;color:#7c2d12;font:12px Arial}.fixture-note a{margin-right:18px;text-decoration:underline}</style></head><body data-seasonal="${config.id}" style="--seasonal-accent:${config.colours.accent}"><div class="fixture-note">Read-only visual fixture · synthetic data · no publishing or Firebase connection<br><a href="/">Hero</a><a href="/admin">Admin overview</a><a href="/admin?tab=Schedule">Schedule</a><a href="/admin?tab=Hero%20%26%20footer">Artwork controls</a><a href="/admin?tab=Assets">Assets</a><button onclick="document.body.classList.toggle('seasonal-static')">Pause / resume preview</button></div>${isAdmin ? admin(tab) : motionPreview}</body></html>`);
 }).listen(9014, '127.0.0.1', () => console.log('Read-only visual fixture: http://localhost:9014'));

@@ -4,9 +4,10 @@ import React, { createContext, useContext, useEffect, useLayoutEffect, useRef, u
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
-import { defaultTheme, eligibleRoute, resolveTheme, themeSchema, type SeasonalTheme } from '@/lib/seasonal-theme/config';
+import { defaultTheme, eligibleRoute, resolveTheme, selectTheme, themeLabel, themeSchema, type SeasonalTheme } from '@/lib/seasonal-theme/config';
 import { installSeasonalContrast } from '@/lib/seasonal-theme/contrast';
 import { SeasonalFlight } from './seasonal-flight';
+import { SeasonalSnow } from './seasonal-snow';
 
 type ThemeState = { config: SeasonalTheme; active: boolean; paused: boolean; preview: boolean };
 const ThemeContext = createContext<ThemeState>({ config: defaultTheme, active: false, paused: false, preview: false });
@@ -24,7 +25,8 @@ function hsl(hex: string) {
 
 export function SeasonalThemeProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [config, setConfig] = useState(defaultTheme);
+  const [fallback, setFallback] = useState(defaultTheme);
+  const [configs, setConfigs] = useState<SeasonalTheme[]>([]);
   const [preview, setPreview] = useState(false);
   const [clock, setClock] = useState({ server: 0, received: 0 });
   const [tick, setTick] = useState(0);
@@ -58,12 +60,14 @@ export function SeasonalThemeProvider({ children }: { children: React.ReactNode 
       abort = controller;
       const timeout = setTimeout(() => controller.abort(), 8000);
       try {
-        const response = await fetch(`/api/seasonal-theme${isPreview ? '?preview=1' : ''}`, { cache: 'no-store', signal: controller.signal });
+        const previewTheme = new URLSearchParams(location.search).get('theme') ?? 'halloween';
+        const response = await fetch(`/api/seasonal-theme${isPreview ? `?preview=1&theme=${encodeURIComponent(previewTheme)}` : ''}`, { cache: 'no-store', signal: controller.signal });
         if (!response.ok) throw new Error('Theme unavailable');
         const data = await response.json();
         const parsed = themeSchema.safeParse(data.config);
         if (!parsed.success || !Number.isFinite(data.serverNow)) throw new Error('Invalid theme');
-        if (!stopped) { setConfig(current => JSON.stringify(current) === JSON.stringify(parsed.data) ? current : parsed.data); setPreview(data.preview === true); setClock({ server: data.serverNow, received: performance.now() }); }
+        const candidates = data.preview === true ? [parsed.data] : data.configs === undefined ? [parsed.data] : themeSchema.array().max(2).parse(data.configs);
+        if (!stopped) { setFallback(current => JSON.stringify(current) === JSON.stringify(parsed.data) ? current : parsed.data); setConfigs(current => JSON.stringify(current) === JSON.stringify(candidates) ? current : candidates); setPreview(data.preview === true); setClock({ server: data.serverNow, received: performance.now() }); }
       } catch { /* A failed refresh never renews the 60-second validity lease. */ }
       finally { clearTimeout(timeout); inFlight = false; }
     };
@@ -76,6 +80,7 @@ export function SeasonalThemeProvider({ children }: { children: React.ReactNode 
   }, [pathname]);
 
   const now = clock.server ? clock.server + (typeof performance === 'undefined' ? 0 : performance.now() - clock.received) : 0;
+  const config = preview ? fallback : selectTheme(configs, now);
   const resolved = resolveTheme(config, now, preview);
   const valid = clock.server > 0 && performance.now() - clock.received < 60_000;
   const available = valid && resolved.active && eligibleRoute(pathname, config) && (!mobile || config.areas.mobile);
@@ -90,7 +95,7 @@ export function SeasonalThemeProvider({ children }: { children: React.ReactNode 
   useLayoutEffect(() => {
     const body = document.body;
     if (!active) return;
-    body.dataset.seasonal = 'halloween';
+    body.dataset.seasonal = config.id;
     for (const key of ['palette', 'header', 'hero', 'footer'] as const) if (config.areas[key]) body.setAttribute(`data-seasonal-${key}`, 'true');
     if (paused || hidden || !config.areas.animations) body.dataset.seasonalPaused = 'true';
     body.style.setProperty('--seasonal-background', config.colours.background);
@@ -118,13 +123,14 @@ export function SeasonalThemeProvider({ children }: { children: React.ReactNode 
   return <ThemeContext.Provider value={{ config, active, paused: paused || hidden, preview }}>
     {children}
     <SeasonalFlight />
-    {available && <div className="seasonal-controls" aria-label="Halloween appearance controls">
+    <SeasonalSnow />
+    {available && <div className="seasonal-controls" aria-label={`${themeLabel(config.id)} appearance controls`}>
       {preview && <span>Private preview</span>}
-      <button onClick={() => { setStandard(!standard); if (!preview) remember('sl-seasonal-standard', String(!standard)); }}>{standard ? 'Halloween appearance' : 'Standard appearance'}</button>
+      <button onClick={() => { setStandard(!standard); if (!preview) remember('sl-seasonal-standard', String(!standard)); }}>{standard ? `${themeLabel(config.id)} appearance` : 'Standard appearance'}</button>
       {active && <button aria-pressed={paused} onClick={() => { setPaused(!paused); remember('sl-seasonal-paused', String(!paused)); }}>{paused ? 'Resume effects' : 'Pause effects'}</button>}
       {active && config.areas.sound && pathname === '/' && <SeasonalAudio config={config} paused={paused || hidden} />}
     </div>}
-    {active && config.areas.popup && (!config.popup.expiresAt || now < Date.parse(config.popup.expiresAt)) && <SeasonalPopup key={`${pathname}-${resolved.id}`} config={config} occurrence={resolved.id} preview={preview} />}
+    {active && config.areas.popup && (!config.popup.expiresAt || now < Date.parse(config.popup.expiresAt)) && <SeasonalPopup key={`${config.id}-${pathname}-${resolved.id}`} config={config} occurrence={resolved.id} preview={preview} />}
   </ThemeContext.Provider>;
 }
 
@@ -164,14 +170,14 @@ function SeasonalAudio({ config, paused }: { config: SeasonalTheme; paused: bool
       setPlaying(true);
     } catch { stop(); setError('Sound unavailable'); }
   };
-  return <button onClick={() => void start()} aria-pressed={playing} disabled={paused} title={error || 'Sound starts only when you choose it'}>{error || (playing ? 'Mute Halloween sound' : 'Enable Halloween sound')}</button>;
+  return <button onClick={() => void start()} aria-pressed={playing} disabled={paused} title={error || 'Sound starts only when you choose it'}>{error || (playing ? `Mute ${themeLabel(config.id)} sound` : `Enable ${themeLabel(config.id)} sound`)}</button>;
 }
 
 function SeasonalPopup({ config, occurrence, preview }: { config: SeasonalTheme; occurrence: string; preview: boolean }) {
   const [open, setOpen] = useState(false);
   const lastFocused = useRef<HTMLElement | null>(null);
   const day = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
-  const key = `sl-halloween-popup-${occurrence}-${config.popup.frequency === 'daily' ? day : config.popup.frequency}`;
+  const key = `sl-${config.id}-popup-${occurrence}-${config.popup.frequency === 'daily' ? day : config.popup.frequency}`;
   const storage = () => config.popup.frequency === 'session' ? sessionStorage : localStorage;
   const close = () => { setOpen(false); try { storage().setItem(key, 'seen'); } catch { /* Private browsing. */ } };
   useEffect(() => {
@@ -199,7 +205,7 @@ function SeasonalPopup({ config, occurrence, preview }: { config: SeasonalTheme;
     <DialogContent data-seasonal-popup className="seasonal-popup" onCloseAutoFocus={event => { event.preventDefault(); lastFocused.current?.focus(); }}>
       {config.media.popup && <img src={config.media.popup} alt="" className="seasonal-popup-background" onError={e => { e.currentTarget.style.display = 'none'; }} />}
       {config.areas.characters && config.media.character && <img src={config.media.character} alt="" className="seasonal-popup-character" onError={e => { e.currentTarget.style.display = 'none'; }} />}
-      <div className="relative z-10"><p className="seasonal-eyebrow">Halloween at Smart Labs</p><DialogTitle className="text-3xl font-bold my-4">{config.popup.title}</DialogTitle><DialogDescription className="!text-[#FFF6E8] leading-relaxed">{config.popup.body}</DialogDescription>
+      <div className="relative z-10"><p className="seasonal-eyebrow">{themeLabel(config.id)} at Smart Labs</p><DialogTitle className="text-3xl font-bold my-4">{config.popup.title}</DialogTitle><DialogDescription className="!text-[#FFF6E8] leading-relaxed">{config.popup.body}</DialogDescription>
         <Link className="seasonal-cta mt-6 inline-flex" href={config.popup.href} onClick={close}>{config.popup.button || 'Explore courses'}</Link>
       </div>
     </DialogContent>
