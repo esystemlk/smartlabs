@@ -32,7 +32,7 @@ function EnrollmentRow({ enrollment: initialEnrollment }: { enrollment: Enrollme
   const [enrollment, setEnrollment] = useState(initialEnrollment);
 
   const userQuery = useMemoFirebase(() =>
-    firestore ? doc(firestore, 'users', enrollment.userId) : null,
+    firestore && enrollment.userId ? doc(firestore, 'users', enrollment.userId) : null,
     [firestore, enrollment.userId]
   );
   const { data: user, isLoading: userLoading } = useDoc(userQuery);
