@@ -1,6 +1,6 @@
 # Halloween generated assets
 
-Created 18 October 2026 with the built-in image generation tool, using six separate requests including the expanded character collection. No reference photos were used. New characters used the original ghost illustration as a style reference. The mobile crop and delivery formats were optimised locally from the generated masters.
+Created 18 October 2026 with the built-in image generation tool, using nine separate requests including the expanded character collection. No reference photos were used. New characters used the original ghost illustration as a style reference. The mobile crop and delivery formats were optimised locally from the generated masters.
 
 ## Hero prompt
 
@@ -41,3 +41,19 @@ Each request used this prompt template, substituting the subject listed below:
 All three delivered images are 640 × 585, have verified alpha channels, and were visually inspected for matching style and complete silhouettes. Original PNG masters are in `docs/seasonal-asset-sources/` using the corresponding base filenames. The bat illustration holds its book against its body; it remains a suitable readable silhouette at small sizes.
 
 The shared catalogue in `src/lib/seasonal-theme/config.ts` drives both the admin character picker and the server's bundled-media allowlist. The picker is available under Hero & footer, Popup, and Assets. Selecting a character edits only the draft and reuses existing placement, visibility, animation, preview and publication controls.
+
+## Second character expansion
+
+Added Pumpkin robot, Witch fox and Mummy bunny, bringing the selectable collection to seven characters. All were generated with the built-in tool, true transparency enabled, and the original ghost used only as a style reference.
+
+Each new request used this template:
+
+> Use case: stylized-concept. Production Halloween website character cutout for Smart Labs English learning. Reference image is STYLE REFERENCE ONLY: match its premium rounded 3D storybook rendering, friendly proportions, plum/lavender shadows, warm orange light and welcoming education mood. Generate a NEW character: {subject} Isolated complete silhouette centered with generous transparent margin. Genuinely transparent background, no floor, no scenery, no shadow backdrop, no text, no letters, no logo, no watermark, no gore. Distinct companion to the ghost scholar, not another ghost.
+
+| Character | Subject substituted into the prompt | Delivery asset | Size |
+|---|---|---|---:|
+| Pumpkin robot | One friendly little learning robot with a glowing smiling pumpkin head, rounded plum metal body, lavender joints and boots, holding a closed purple study book. Full body visible. | `public/seasonal/halloween/pumpkin-robot.webp` | 53,290 bytes |
+| Witch fox | One friendly fluffy orange fox with large kind eyes, a plum witch hat and lavender scarf, holding a closed study book. Full bushy tail, ears and paws visible. | `public/seasonal/halloween/witch-fox.webp` | 60,936 bytes |
+| Mummy bunny | One friendly round white bunny in a loose cute ivory mummy costume with a lavender bow, holding a tiny closed purple study book. Kind amber eyes, full ears and feet visible. No injuries, no frightening features. | `public/seasonal/halloween/mummy-bunny.webp` | 52,788 bytes |
+
+All three delivery assets are 640 × 585, have verified alpha channels, and were visually inspected. Matching original PNG masters are preserved in `docs/seasonal-asset-sources/`. Default character selection and theme activation settings are unchanged.

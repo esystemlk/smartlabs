@@ -72,8 +72,10 @@ test('unsafe media hosts, invalid contrast and expired manual activation cannot 
     assert.equal(records.get('draft/halloween').revision, revision);
   }
 });
-test('all four bundled characters pass publishing validation without allowing unknown local files', () => {
-  assert.equal(cfg.halloweenCharacters.length, 4);
+test('all seven distinct bundled characters pass publishing validation without allowing unknown local files', () => {
+  assert.equal(cfg.halloweenCharacters.length, 7);
+  assert.equal(new Set(cfg.halloweenCharacters.map(c => c.id)).size, cfg.halloweenCharacters.length);
+  assert.equal(new Set(cfg.halloweenCharacters.map(c => c.src)).size, cfg.halloweenCharacters.length);
   for (const character of cfg.halloweenCharacters) {
     const c = fresh(); c.media.character = character.src;
     assert.equal(server.validatePublishedMedia(c), null, character.name);

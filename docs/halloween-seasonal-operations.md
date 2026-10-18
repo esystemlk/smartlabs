@@ -11,7 +11,7 @@ The nine tabs cover Overview, Schedule, Appearance, Hero & footer, Motion & soun
 ## First use
 
 1. Leave the mode Off while customising the design.
-2. Use the bundled desktop hero, mobile crop and footer panorama, or upload replacements. The character collection offers the original ghost scholar, wizard owl, witch kitten and book bat. Choose one under Hero & footer, Popup or Assets; it is used by the hero and seasonal popup after publication.
+2. Use the bundled desktop hero, mobile crop and footer panorama, or upload replacements. The seven-character collection offers Ghost scholar, Wizard owl, Witch kitten, Book bat, Pumpkin robot, Witch fox and Mummy bunny. Choose one under Hero & footer, Popup or Assets; it is used by the hero and seasonal popup after publication.
 3. Adjust the headline, greeting, description, CTA labels/internal destinations, overlay and character placement under Hero & footer.
 4. Choose public-page colours. The panel shows text/background, text/card and button contrast; publish rejects combinations below 4.5:1.
 5. Use Preview Draft. It creates an authenticated, five-minute preview, forcing the theme on eligible pages without changing published mode. Select different page/viewports and refresh the preview. Normal visitors cannot activate it with a query string.
@@ -51,6 +51,9 @@ The theme does not alter course data, pricing, scoring, payments, forms, real re
 | `/seasonal/halloween/wizard-owl.webp` | 55,512 bytes | True alpha owl scholar in a wizard hat |
 | `/seasonal/halloween/witch-cat.webp` | 67,340 bytes | True alpha witch kitten with pumpkin/book |
 | `/seasonal/halloween/book-bat.webp` | 46,790 bytes | True alpha lavender bat with study book |
+| `/seasonal/halloween/pumpkin-robot.webp` | 53,290 bytes | True alpha smiling pumpkin learning robot |
+| `/seasonal/halloween/witch-fox.webp` | 60,936 bytes | True alpha orange fox with witch hat/book |
+| `/seasonal/halloween/mummy-bunny.webp` | 52,788 bytes | True alpha friendly bunny in an ivory mummy costume |
 | `/seasonal/halloween/footer.webp` | 72,290 bytes | Footer panorama |
 
 These images were made with the built-in image generation tool. The production prompt set and original PNG masters are recorded with this update. Generated originals should be kept outside `public` where possible; served images use optimised WebP. No paid image library or new runtime package is required.

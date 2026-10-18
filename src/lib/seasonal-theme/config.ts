@@ -5,6 +5,9 @@ export const halloweenCharacters = [
   { id: 'wizard-owl', name: 'Wizard owl', src: '/seasonal/halloween/wizard-owl.webp' },
   { id: 'witch-cat', name: 'Witch kitten', src: '/seasonal/halloween/witch-cat.webp' },
   { id: 'book-bat', name: 'Book bat', src: '/seasonal/halloween/book-bat.webp' },
+  { id: 'pumpkin-robot', name: 'Pumpkin robot', src: '/seasonal/halloween/pumpkin-robot.webp' },
+  { id: 'witch-fox', name: 'Witch fox', src: '/seasonal/halloween/witch-fox.webp' },
+  { id: 'mummy-bunny', name: 'Mummy bunny', src: '/seasonal/halloween/mummy-bunny.webp' },
 ] as const;
 
 export const bundledSeasonalAssetPaths: readonly string[] = [
