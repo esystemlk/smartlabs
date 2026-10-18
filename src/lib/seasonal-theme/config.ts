@@ -13,6 +13,7 @@ export const halloweenCharacters = [
 export const bundledSeasonalAssetPaths: readonly string[] = [
   '/seasonal/halloween/hero.webp', '/seasonal/halloween/hero-mobile.webp',
   '/seasonal/halloween/footer.webp', ...halloweenCharacters.map(character => character.src),
+  '/seasonal/halloween/logo-halloween.webp',
 ];
 
 const colour = z.string().regex(/^#[0-9a-fA-F]{6}$/);
@@ -22,6 +23,10 @@ const asset = z.string().max(600).refine(value => {
   return /^https:\/\/[a-zA-Z0-9.-]+\/[a-zA-Z0-9/_.%-]+$/.test(value);
 }, 'Use a seasonal asset or an HTTPS media URL');
 const path = z.string().max(180).regex(/^\/(?!\/)[a-zA-Z0-9/_-]*$/, 'Choose an internal website path');
+export const defaultCharacterPlacements = {
+  homeIntro: true, homeCourses: true, homeSupport: true,
+  pageIntro: true, pageEnd: true, footer: true, mobile: true,
+};
 export const themeSchema = z.object({
   name: z.string().trim().min(1).max(80),
   mode: z.enum(['off', 'automatic', 'manual']),
@@ -35,6 +40,8 @@ export const themeSchema = z.object({
   }),
   colours: z.object({ background: colour, surface: colour, text: colour, accent: colour, secondary: colour }),
   areas: z.object({ palette: z.boolean(), header: z.boolean(), hero: z.boolean(), footer: z.boolean(), characters: z.boolean(), animations: z.boolean(), popup: z.boolean(), sound: z.boolean(), mobile: z.boolean() }),
+  characterPlacements: z.object({ homeIntro: z.boolean(), homeCourses: z.boolean(), homeSupport: z.boolean(), pageIntro: z.boolean(), pageEnd: z.boolean(), footer: z.boolean(), mobile: z.boolean() }).default(defaultCharacterPlacements),
+  branding: z.object({ enabled: z.boolean(), logo: asset }).default({ enabled: true, logo: '/seasonal/halloween/logo-halloween.webp' }),
   media: z.object({ hero: asset, mobileHero: asset, character: asset, footer: asset, popup: asset, audio: asset }),
   hero: z.object({ greeting: z.string().max(80), title: z.string().trim().min(1).max(120), body: z.string().max(350), primaryLabel: z.string().trim().min(1).max(40), primaryHref: path, secondaryLabel: z.string().trim().min(1).max(40), secondaryHref: path, overlay: z.number().min(0.15).max(0.9), characterSize: z.number().min(80).max(280), characterPosition: z.enum(['left', 'right']) }),
   motion: z.enum(['low', 'medium']),
@@ -59,6 +66,8 @@ export const defaultTheme: SeasonalTheme = {
   schedule: { annual: true, year: 2026, startMonth: 10, startDay: 25, endMonth: 11, endDay: 1, startTime: '00:00', endTime: '00:00', excludedYears: [] },
   colours: { background: '#160F24', surface: '#261A38', text: '#FFF6E8', accent: '#FF9A3D', secondary: '#C7A6FF' },
   areas: { palette: true, header: true, hero: true, footer: true, characters: true, animations: true, popup: false, sound: false, mobile: true },
+  characterPlacements: { ...defaultCharacterPlacements },
+  branding: { enabled: true, logo: '/seasonal/halloween/logo-halloween.webp' },
   media: { hero: '/seasonal/halloween/hero.webp', mobileHero: '/seasonal/halloween/hero-mobile.webp', character: '/seasonal/halloween/ghost.webp', footer: '/seasonal/halloween/footer.webp', popup: '/seasonal/halloween/hero.webp', audio: '' },
   hero: { greeting: 'A little magic for your learning journey', title: 'Big dreams.\nA little learning magic.', body: 'Build your confidence in English with expert-led PTE, IELTS and Cambridge preparation, plus AI-powered practice.', primaryLabel: 'Explore PTE courses', primaryHref: '/pte-registration', secondaryLabel: 'Find our courses', secondaryHref: '/courses', overlay: 0.65, characterSize: 160, characterPosition: 'right' },
   motion: 'low', volume: 0.08,

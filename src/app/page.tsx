@@ -1,6 +1,7 @@
 'use client';
 import Link from "next/link";
 import { SeasonalHero } from '@/components/seasonal/seasonal-hero';
+import { SeasonalCompanions } from '@/components/seasonal/seasonal-companions';
 import Script from "next/script";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import React, { useState, useEffect } from "react";
@@ -635,6 +636,7 @@ export default function Home() {
 
       {/* Hero Section — Diagonal Split (animations defined in globals.css) */}
       <SeasonalHero />
+      <SeasonalCompanions placement="homeIntro" />
       <section className="relative overflow-hidden standard-home-hero">
         {/* Top accent gradient line */}
         <div className="absolute top-0 left-0 right-0 h-[3px] origin-left z-50"
@@ -1336,6 +1338,7 @@ export default function Home() {
       </section>
 
       {/* Courses Section - Premium Design */}
+      <SeasonalCompanions placement="homeCourses" />
       <section id="courses" className="relative py-24 sm:py-32 overflow-hidden bg-slate-50 dark:bg-[#020617]">
         {/* Advanced Background Effects */}
         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_0%_0%,rgba(79,70,229,0.05),transparent_50%),radial-gradient(circle_at_100%_100%,rgba(6,182,212,0.05),transparent_50%)]" />
@@ -1538,6 +1541,7 @@ export default function Home() {
       </section>
 
       {/* Grammar Clinic - Advanced Detail Section */}
+      <SeasonalCompanions placement="homeSupport" />
       <section className="py-24 sm:py-32 bg-slate-50 dark:bg-slate-900/50 relative overflow-hidden">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-[64px] overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-[0_80px_160px_rgba(0,0,0,0.1)] relative">

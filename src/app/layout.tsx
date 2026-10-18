@@ -15,6 +15,7 @@ import { FirebaseClientProvider } from '@/firebase';
 import './globals.css';
 import './seasonal.css';
 import { SeasonalThemeProvider } from '@/components/seasonal/seasonal-theme-provider';
+import { SeasonalCompanions } from '@/components/seasonal/seasonal-companions';
 import { LayoutManager } from '@/components/layout/layout-manager';
 import { WindowControls } from '@/components/layout/window-controls';
 import { LayoutExtras } from '@/components/layout/layout-extras';
@@ -86,7 +87,8 @@ export default function RootLayout({
           <WindowControls />
           <LayoutManager />
           <Header />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1"><SeasonalCompanions placement="pageIntro" />{children}<SeasonalCompanions placement="pageEnd" /></main>
+          <SeasonalCompanions placement="footer" />
           <Footer />
           <Toaster />
           <CookieBanner />

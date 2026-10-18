@@ -154,6 +154,15 @@ export default function SeasonalThemesAdmin() {
           <CharacterPicker selected={config.media.character} onSelect={src => update('media.character', src)} disabled={!!busy} />
           <p className="text-xs text-muted-foreground">Character visibility, size, corner position and gentle animation remain under your existing controls. Custom character uploads are still supported.</p>
         </Section>}
+        {(tab === 'Hero & footer' || tab === 'Pages & devices') && <Section title="Characters around the website" description="Use all seven companions in dedicated spaces without covering text, buttons or forms. The original picker still controls the hero and popup character.">
+          <div className="grid sm:grid-cols-2 gap-3">
+            {Object.entries({ homeIntro: 'Homepage welcome — ghost, owl and bat', homeCourses: 'Homepage courses — kitten and fox', homeSupport: 'Homepage learning section — robot and bunny', pageIntro: 'Public-page headings — rotating pairs', pageEnd: 'Public-page closing — different rotating pairs', footer: 'Footer gathering — all seven characters', mobile: 'Show these placements on mobile' }).map(([key, label]) => <React.Fragment key={key}>{toggle(label, `characterPlacements.${key}`, config.characterPlacements[key as keyof SeasonalTheme['characterPlacements']])}</React.Fragment>)}
+          </div><p className="text-xs text-muted-foreground">The master Characters switch controls every placement. Footer art follows the Footer switch. Protected learning, payment and admin routes remain excluded. All placement changes stay in the draft until published.</p>
+        </Section>}
+        {(tab === 'Hero & footer' || tab === 'Assets') && <Section title="Halloween logo" description="The seasonal logo keeps the Smart Labs lettering with a witch hat, bat and warm Halloween colours. The original logo returns automatically when the theme is off.">
+          {toggle('Use Halloween logo in header and footer', 'branding.enabled', config.branding.enabled)}
+          <div className="rounded-xl bg-[#160F24] p-6"><img src={config.branding.logo || '/seasonal/halloween/logo-halloween.webp'} alt="Smart Labs Halloween logo preview" width={800} height={204} className="max-w-sm w-full h-auto mx-auto" /></div>
+        </Section>}
         {tab === 'Overview' && <>
           <Section title="A seasonal layer you can switch off" description="Your regular website stays underneath. Drafts, previews and seasonal assets are kept separate from existing courses, payments and content.">
             <div className="grid sm:grid-cols-2 gap-5">{text('Theme name', 'name', config.name)}<Field label="Activation mode" help="Off disarms the schedule. Automatic follows the yearly calendar. Manual mode ends at its expiry and returns to Off."><select className={fieldClass} value={config.mode} onChange={e => update('mode', e.target.value)}><option value="off">Off — standard appearance</option><option value="automatic">Automatic schedule</option><option value="manual">Manual on until expiry</option></select></Field></div>

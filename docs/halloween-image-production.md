@@ -57,3 +57,11 @@ Each new request used this template:
 | Mummy bunny | One friendly round white bunny in a loose cute ivory mummy costume with a lavender bow, holding a tiny closed purple study book. Kind amber eyes, full ears and feet visible. No injuries, no frightening features. | `public/seasonal/halloween/mummy-bunny.webp` | 52,788 bytes |
 
 All three delivery assets are 640 × 585, have verified alpha channels, and were visually inspected. Matching original PNG masters are preserved in `docs/seasonal-asset-sources/`. Default character selection and theme activation settings are unchanged.
+
+## Halloween logo
+
+Generated with the built-in image tool using `public/logo.png` as the edit reference and transparency enabled. Master: `docs/seasonal-asset-sources/logo-halloween.png`. Delivery: `public/seasonal/halloween/logo-halloween.webp`, 800 × 204, 77,874 bytes, verified alpha channel. Visually reviewed at website header size. Original logo remains unchanged.
+
+Prompt:
+
+> Use case: precise-object-edit / seasonal brand adaptation. Edit target is the provided Smart Labs logo. Recreate a polished Halloween edition while preserving its recognizable futuristic rounded letter shapes, exact SMART over spaced LABS layout, triangular A with centre dot, and the two horizontal rules beside LABS. Exact visible text: SMART and LABS; no other text. Keep all letters sharply legible at small website-header size. Replace blue strokes with warm ivory and subtle lavender, keep the A and LABS warm pumpkin orange. Add a small tasteful plum witch hat resting above the left S/M area and one tiny friendly bat near the far right; decorations must not obscure any letter. Add a restrained warm glow but crisp solid letter edges. Wide horizontal logo lockup, complete mark and decorations, minimal transparent padding rather than a tall canvas. Genuinely transparent background; no scenery, floor, card, texture, frame, watermark or mockup. Premium friendly Halloween, no frightening faces. This is a usable seasonal website logo asset, not a presentation.

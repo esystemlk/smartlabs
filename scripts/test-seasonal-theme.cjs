@@ -91,3 +91,12 @@ test('upcoming occurrence lookup continues past several skipped years', () => {
   const upcoming = occurrences(c, time('2026-10-18')).filter(o => o.end > time('2026-10-18')).slice(0, 3);
   assert.equal(upcoming.length, 3); assert.equal(upcoming[0].id, 'halloween-2031');
 });
+test('existing published configurations keep their mode and media while gaining placement and logo controls', () => {
+  const old = config(); old.mode = 'automatic';
+  delete old.characterPlacements; delete old.branding;
+  const migrated = themeSchema.parse(old);
+  assert.equal(migrated.mode, 'automatic');
+  assert.equal(migrated.media.character, old.media.character);
+  assert.equal(migrated.characterPlacements.homeCourses, true);
+  assert.equal(migrated.branding.logo, '/seasonal/halloween/logo-halloween.webp');
+});

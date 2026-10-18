@@ -31,6 +31,7 @@ export function validatePublishedMedia(config: SeasonalTheme) {
       if (!cdnHost || parsed.hostname !== cdnHost || !parsed.pathname.startsWith('/images/seasonal/halloween/')) return 'Custom media must come from the seasonal uploader on your configured CDN.';
     } else if (!bundledSeasonalAssetPaths.includes(url)) return 'Choose a bundled asset or upload a new file.';
   }
+  if (config.branding.logo && !bundledSeasonalAssetPaths.includes(config.branding.logo)) return 'Use the bundled seasonal logo.';
   if (config.areas.hero && (!config.media.hero || (config.areas.mobile && !config.media.mobileHero))) return 'Choose desktop and mobile hero artwork before publishing.';
   if (config.areas.palette && [contrastRatio(config.colours.text, config.colours.background), contrastRatio(config.colours.text, config.colours.surface), contrastRatio('#160F24', config.colours.accent)].some(ratio => ratio < 4.5)) return 'Increase the text/background, text/surface, or button contrast to at least 4.5:1.';
   return null;

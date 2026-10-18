@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { defaultTheme, eligibleRoute, resolveTheme, themeSchema, type SeasonalTheme } from '@/lib/seasonal-theme/config';
+import { installSeasonalContrast } from '@/lib/seasonal-theme/contrast';
 
 type ThemeState = { config: SeasonalTheme; active: boolean; paused: boolean; preview: boolean };
 const ThemeContext = createContext<ThemeState>({ config: defaultTheme, active: false, paused: false, preview: false });
@@ -97,7 +98,7 @@ export function SeasonalThemeProvider({ children }: { children: React.ReactNode 
     body.style.setProperty('--seasonal-accent', config.colours.accent);
     body.style.setProperty('--seasonal-secondary', config.colours.secondary);
     body.style.setProperty('--seasonal-footer-image', config.media.footer ? `url("${config.media.footer}")` : 'none');
-    const pairs = { background: config.colours.background, card: config.colours.surface, popover: config.colours.surface, foreground: config.colours.text, 'card-foreground': config.colours.text, 'popover-foreground': config.colours.text, primary: config.colours.accent, 'primary-foreground': '#160F24', secondary: config.colours.surface, 'secondary-foreground': config.colours.text, muted: config.colours.surface, 'muted-foreground': '#D0C4DB', border: '#5C456D', input: '#5C456D', ring: config.colours.accent, 'accent-1': config.colours.accent, 'accent-3': config.colours.secondary };
+    const pairs = { background: config.colours.background, card: config.colours.surface, popover: config.colours.surface, foreground: config.colours.text, 'card-foreground': config.colours.text, 'popover-foreground': config.colours.text, primary: config.colours.accent, 'primary-foreground': '#160F24', secondary: config.colours.surface, 'secondary-foreground': config.colours.text, muted: config.colours.surface, 'muted-foreground': '#D0C4DB', accent: config.colours.secondary, 'accent-foreground': '#160F24', border: '#5C456D', input: '#5C456D', ring: config.colours.accent, 'accent-1': config.colours.accent, 'accent-2': '#80D9B1', 'accent-3': config.colours.secondary, 'accent-4': config.colours.accent };
     // Use prefixed variables in CSS instead of overwriting standard inline values.
     if (config.areas.palette) Object.entries(pairs).forEach(([key, value]) => body.style.setProperty(`--seasonal-token-${key}`, hsl(value)));
     return () => {
@@ -105,6 +106,13 @@ export function SeasonalThemeProvider({ children }: { children: React.ReactNode 
       for (const name of [...body.style].filter(n => n.startsWith('--seasonal-'))) body.style.removeProperty(name);
     };
   }, [active, config, paused, hidden]);
+
+  useLayoutEffect(() => {
+    if (!active || (!config.areas.palette && !config.areas.header && !config.areas.footer)) return;
+    return installSeasonalContrast(document.body, element => config.areas.palette
+      || !!(config.areas.header && element.closest('body > header'))
+      || !!(config.areas.footer && element.closest('body > footer')));
+  }, [active, config, pathname]);
 
   return <ThemeContext.Provider value={{ config, active, paused: paused || hidden, preview }}>
     {children}

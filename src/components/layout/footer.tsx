@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { SeasonalLogo } from '@/components/seasonal/seasonal-logo';
 import { Youtube, Mail, Phone, MapPin } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { DEV_CONSOLE_PATH } from "@/lib/site-mode";
@@ -53,7 +54,7 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <Image src="/logo.png" alt="Smart Labs Logo" width={180} height={64} style={{ width: 'auto', height: 'auto', maxHeight: '64px' }} />
+              <SeasonalLogo area="footer" />
             </Link>
             <p className="text-muted-foreground mb-6 max-w-sm">
               Empowering learners worldwide with expert-led exam preparation and professional development courses.

@@ -8,7 +8,7 @@ import { Menu, X, ChevronDown, LayoutDashboard, LogOut, Target, Globe, Zap, Spar
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth } from "@/firebase";
-import Image from "next/image";
+import { SeasonalLogo } from '@/components/seasonal/seasonal-logo';
 import { signOut } from "firebase/auth";
 import {
   DropdownMenu,
@@ -324,13 +324,9 @@ export default function Header() {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center group shrink-0">
-            <Image
-              src="/logo.png"
-              alt="Smart Labs Logo"
-              width={180}
-              height={64}
+            <SeasonalLogo
+              area="header"
               className="relative z-10 transition-transform group-hover:scale-105"
-              style={{ width: 'auto', height: 'auto', maxHeight: '64px' }}
               priority
             />
           </Link>

@@ -20,7 +20,7 @@ export function SeasonalHero() {
       {config.media.mobileHero && <source media="(max-width: 767px)" srcSet={config.media.mobileHero} />}
       <img src={config.media.hero} alt="" fetchPriority="high" onError={e => { e.currentTarget.style.visibility = 'hidden'; }} />
     </picture>}
-    <div className="seasonal-hero-shade" style={{ background: `linear-gradient(90deg, rgba(22,15,36,${config.hero.overlay + 0.08}) 0%, rgba(22,15,36,${config.hero.overlay}) 55%, rgba(22,15,36,0.15) 100%)` }} />
+    <div className="seasonal-hero-shade" style={{ background: `linear-gradient(90deg, rgba(22,15,36,${Math.min(.95, Math.max(.72, config.hero.overlay + .08))}) 0%, rgba(22,15,36,${Math.max(.65, config.hero.overlay)}) 65%, rgba(22,15,36,0.25) 100%)` }} />
     <div className="seasonal-hero-copy">
       <p className="seasonal-eyebrow">Halloween at Smart Labs</p>
       <h1>{config.hero.title.split('\n').map((line, index) => <span key={index} className={index === 0 ? 'seasonal-hero-first-line' : undefined}>{index > 0 && <br />}{line}</span>)}</h1>
