@@ -267,9 +267,10 @@ export function AccessibilityWidget() {
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
-                    "fixed z-[10001] transition-all active:scale-95 group overflow-hidden",
+                    "smartlabs-accessibility-launcher fixed z-[10001] transition-all active:scale-95 group overflow-hidden",
                     settings.magnifier ? "top-4 right-4 w-20 h-20 bg-red-600 rounded-2xl shadow-[0_0_50px_rgba(220,38,38,0.5)] border-4 border-white" : "bottom-6 right-6 w-14 h-14 bg-gradient-to-tr from-blue-700 to-blue-500 rounded-full shadow-[0_10px_40px_rgba(37,99,235,0.4)] border-2 border-white/40"
                 )}
+                data-magnifier={settings.magnifier}
                 style={settings.magnifier ? { transform: 'scale(0.8)' } : {}}
                 aria-label={isOpen ? "Close accessibility options" : "Open accessibility options"}
             >
@@ -310,7 +311,7 @@ export function AccessibilityWidget() {
                         initial={{ opacity: 0, x: 200, scale: 0.9 }}
                         animate={{ opacity: 1, x: 0, scale: 1 }}
                         exit={{ opacity: 0, x: 200, scale: 0.9 }}
-                        className="fixed bottom-24 right-4 z-[10002] w-[95vw] sm:w-[500px] bg-background/95 backdrop-blur-3xl border border-border/50 rounded-[44px] shadow-[0_30px_90px_rgba(0,0,0,0.3)] flex flex-col max-h-[82vh] overflow-hidden border-blue-100/20"
+                        className="smartlabs-accessibility-panel fixed bottom-24 right-4 z-[10002] w-[95vw] sm:w-[500px] bg-background/95 backdrop-blur-3xl border border-border/50 rounded-[44px] shadow-[0_30px_90px_rgba(0,0,0,0.3)] flex flex-col max-h-[82vh] overflow-hidden border-blue-100/20"
                     >
                         {/* ... Modal Content Exactly As Before ... */}
                         <div className="p-8 border-b shrink-0 flex items-center justify-between bg-gradient-to-br from-blue-50/80 to-transparent">
