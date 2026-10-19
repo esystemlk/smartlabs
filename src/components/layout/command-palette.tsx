@@ -80,6 +80,7 @@ export function CommandPalette() {
 
                                 <Command.Group heading="Navigation" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/50 px-3 mb-2">
                                     <div className="grid grid-cols-2 gap-2 mt-2">
+                                        <SearchItem icon={Book} label="Website Guide" desc="How to use SmartLabs, step by step" onSelect={() => runCommand(() => router.push("/guide"))} />
                                         <SearchItem icon={Home} label="Home Page" onSelect={() => runCommand(() => router.push("/"))} />
                                         <SearchItem icon={LayoutDashboard} label="Practice Hub" desc="All PTE question types" onSelect={() => runCommand(() => router.push("/dashboard"))} />
                                     </div>

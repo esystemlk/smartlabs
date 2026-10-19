@@ -78,6 +78,7 @@ export default function SupportPage() {
         <Button asChild variant="ghost" className="mb-4">
             <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
         </Button>
+        <p className="mb-4 text-sm text-muted-foreground">Need help finding your way? <Link href="/dashboard/guide" className="font-semibold text-primary underline">Read the website guide</Link> for step-by-step instructions and screenshots.</p>
         <Card className="h-[75vh] flex flex-col">
         <CardHeader>
             <div className="flex items-center gap-4">

@@ -1,5 +1,5 @@
 {
   "note": "Static literal href audit. Dynamic links, access permissions and external links require separate verification. Findings may include intentional legacy links or endpoints.",
-  "routes": 216,
+  "routes": 218,
   "findings": []
 }

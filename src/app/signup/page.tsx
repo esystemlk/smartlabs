@@ -273,6 +273,7 @@ export default function SignupPage() {
                     Login
                   </Link>
                 </p>
+                <p className="mb-3"><Link href="/guide" className="font-semibold text-primary hover:underline">New here? Read the website guide</Link></p>
                 <Link href="/" className="hover:underline hover:text-primary">
                   <ArrowLeft className="inline-block mr-1 h-4 w-4" />
                   Back to Home

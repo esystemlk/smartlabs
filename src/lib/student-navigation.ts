@@ -26,6 +26,7 @@ export const legacyStudentDestinations: Record<string, string> = {
   '/dashboard/progress': '/dashboard/results',
 };
 export const studentSearchItems = [
+  { label: 'Website guide', context: 'Student help', href: '/dashboard/guide', aliases: 'how to use getting started new student instructions onboarding tutorial help' },
   ...PTE_CATALOG.flatMap(section => [
     { label: section.label, context: 'PTE Academic', href: `/dashboard/pte/${section.id}`, aliases: section.id },
     ...section.tasks.filter(task => taskHref(task)).map(task => ({ label: task.label, context: `PTE Academic · ${section.label}`, href: taskHref(task)!, aliases: `${task.taskType} ${task.slug} ${task.taskType === 'swt' ? 'SWT summarize written text' : task.taskType === 'wfd' ? 'WFD write from dictation' : task.taskType === 'sst' ? 'SST summarize spoken text' : task.taskType === 'read-aloud' ? 'RA' : ''}` })),

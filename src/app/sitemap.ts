@@ -5,6 +5,7 @@ import { SITE } from '@/lib/seo';
 // payment routes are intentionally excluded (see robots.ts).
 const ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]['changeFrequency'] }[] = [
   { path: '/', priority: 1.0, changeFrequency: 'weekly' },
+  { path: '/guide', priority: 0.6, changeFrequency: 'monthly' },
   { path: '/pte-registration', priority: 0.95, changeFrequency: 'weekly' },
   { path: '/feedback-club', priority: 0.8, changeFrequency: 'weekly' },
   { path: '/mock-tests', priority: 0.8, changeFrequency: 'weekly' },

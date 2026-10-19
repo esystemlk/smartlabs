@@ -25,6 +25,7 @@ const footerLinks = {
     { name: "Contact", href: "/contact" },
   ],
   support: [
+    { name: "Website Guide", href: "/guide" },
     { name: "Help Center", href: "/support" },
     { name: "Certificate", href: "/dashboard/certificate-request" },
     { name: "Contact Us", href: "/contact" },
