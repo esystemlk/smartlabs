@@ -1,0 +1,24 @@
+const fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript'),assert=require('node:assert/strict');
+function load(file,imports={}){const exports={};vm.runInNewContext(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText,{exports,Date,require:name=>imports[name]});return exports}
+const model=load('src/lib/student-credits.ts',{'./mock-packages':load('src/lib/mock-packages.ts'),'./ielts-mock-packages':load('src/lib/ielts-mock-packages.ts')});
+const now=1000000;
+const timestamp=ms=>({toDate:()=>new Date(ms)});
+const get=data=>model.studentCreditBalances(data,now);
+let result=get({universalPaidCredits:40,mockPaidCredits:3,ieltsMockPaidCredits:2,essayPaidCredits:7});
+assert.deepEqual(Array.from(result.main,x=>x.paid),[40,3,2]);
+assert.equal(result.additional[0].paid,7,'Legacy credits must not inflate the universal balance');
+assert.equal(get({universalPaidCredits:50}).main[0].paid,50,'A confirmed purchase must appear in the next account snapshot');
+assert.equal(get({universalPaidCredits:49}).main[0].paid,49,'Usage must appear in the next account snapshot');
+for(const expiry of [now+1,new Date(now+1),timestamp(now+1)])assert.equal(get({universalMonthlyExpiry:expiry}).main[0].unlimited,true);
+assert.equal(get({universalMonthlyExpiry:now}).main[0].unlimited,false,'A plan expires at its exact boundary');
+assert.equal(get({universalMonthlyExpiry:now-1,universalPaidCredits:8}).main[0].paid,8,'Expiring a plan must preserve paid credits');
+result=get({bundleExpiry:timestamp(now+100),mockMonthlyExpiry:timestamp(now+200)});
+assert.equal(result.main[0].unlimited,false,'A mock bundle must not invent universal AI access');
+assert.equal(result.main[1].expires,now+200);
+assert.equal(result.main[2].expires,now+100);
+assert.equal(get({role:'teacher'}).main.every(x=>x.unlimited),true);
+assert.equal(get({ieltsEssayMonthlyExpiry:now+50,essayGenCredits:4}).additional.length,2);
+assert.equal(get({swtMonthlyExpiry:timestamp(now-1)}).additional.length,0);
+assert.equal(get({universalPaidCredits:NaN,mockPaidCredits:-2,ieltsMockPaidCredits:Infinity}).main.every(x=>x.paid===0),true);
+assert.equal(get({}).main.every(x=>x.paid===0&&!x.unlimited),true);
+console.log('Passed: separate pools, purchase/usage snapshots, all AI expiry formats, expiry boundaries, retained balances, mock bundles, staff access and invalid values. No database or payment writes.');

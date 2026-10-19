@@ -1,4 +1,5 @@
 'use client';
+import { StudentCredits } from '@/components/dashboard/student-credits';
 import { StudentHomeView } from '@/components/dashboard/student-views';
 import { RegistrationRecords, PracticeResults } from '@/components/dashboard/student-data';
 
@@ -476,5 +477,5 @@ export default function DashboardPage() {
     );
   }
 
-  return <><MoodPrompt open={moodPromptOpen} onPick={handlePickMood} onDismiss={handleDismissMood} /><StudentHomeView name={user?.displayName ?? undefined} registrations={<RegistrationRecords compact />} results={<PracticeResults compact />} extra={isAdminOrDev ? <Link className="student-text-link" href="/admin/dashboard">Open administration →</Link> : undefined} /></>;
+  return <><MoodPrompt open={moodPromptOpen} onPick={handlePickMood} onDismiss={handleDismissMood} /><StudentHomeView credits={<StudentCredits/>} name={user?.displayName ?? undefined} registrations={<RegistrationRecords compact />} results={<PracticeResults compact />} extra={isAdminOrDev ? <Link className="student-text-link" href="/admin/dashboard">Open administration →</Link> : undefined} /></>;
 }
