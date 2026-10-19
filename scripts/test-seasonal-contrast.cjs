@@ -7,6 +7,16 @@ const ts = require('typescript');
 const exported = {};
 vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(__dirname, '../src/lib/seasonal-theme/contrast.ts'), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText, { exports: exported });
 const { parseColour: c, compositeColour: over, colourContrast: ratio, readableColour: readable, isLightNeutral } = exported;
+
+test('seasonal course pricing bands support readable text without dark backplates', () => {
+  const source=fs.readFileSync(path.join(__dirname,'../src/app/seasonal.css'),'utf8');
+  const band=source.match(/\.seasonal-course-band\{[^}]+\}/)[0];
+  const stops=[...band.matchAll(/#[0-9a-f]{6}/gi)].slice(0,2).map(match=>c(match[0]));
+  for(const text of [c('#FFFFFF'),c('rgba(255,255,255,0.7)'),c('rgba(255,255,255,0.85)')]){
+    const colour=readable(text,stops);assert.ok(colour,'The pricing band must not need a per-line backplate');
+    assert.ok(stops.every(stop=>ratio(colour,stop)>=4.5));
+  }
+});
 test('dark lettering on bright seasonal buttons is preserved', () => {
   const dark = c('#160F24'), orange = c('#FF9A3D');
   assert.equal(readable(dark, [orange]), dark);

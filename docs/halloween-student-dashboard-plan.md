@@ -1,6 +1,6 @@
 # Halloween for student dashboards
 
-Status: implementation plan. This document does not activate a theme or change a published setting.
+Status: implemented. Dashboard styling defaults to Off until an administrator enables it and publishes the seasonal settings. No live seasonal setting was changed during implementation.
 
 ## Result
 
@@ -60,7 +60,7 @@ Extend `/admin/dashboard/seasonal-themes` with a **Student dashboards** group fo
 | Enable on student dashboards | Separate master, default off for existing configurations |
 | Use annual season schedule | Inherits the existing Asia/Colombo date/time boundaries, including excluded years |
 | Page groups | Student Home; PTE selections; IELTS selections/catalog; account/records/help pages |
-| Dashboard palette | Background, card surface, main text, secondary text, accent and border, with contrast validation |
+| Dashboard palette | Background, card surface, main text, secondary text, accent and focus-ring colour, with contrast validation |
 | Home/PTE/IELTS banner media | Separate desktop/mobile images with preview and fallback |
 | Workspace background media | Separate desktop/mobile backgrounds; optional overlay strength |
 | Banner text | Short greeting and supporting sentence; keep functional page titles and exam labels intact |
@@ -135,3 +135,15 @@ Proposed starting tokens, to be checked in rendered screens before publishing:
 7. Run existing Halloween/Christmas runtime, publishing, scheduling and contrast checks plus the new route-policy tests, type check and production build. Do not change real published settings or create payments/attempts as part of visual QA.
 
 Delivery order: route/activation protection first; dedicated art and tokens second; dashboard presentation third; admin controls/private previews fourth; contrast, navigation and restoration checks before any real activation.
+
+## Implemented controls and resources
+
+Go to Admin → Seasonal Themes → Halloween → Student dashboards. Enable the dashboard switch, choose page groups, mobile display, banner companion and optional gentle animation. Edit the welcome message and colours, replace any of the eight images using its dedicated uploader, then use Preview & history to choose Student Home, PTE, IELTS or account pages. Save a draft before publishing. The existing Asia/Colombo annual calendar controls activation and expiry. Restore standard disarms the seasonal schedules.
+
+Eight generated WebP assets are in public/seasonal/halloween/dashboard. The prompt and source record is docs/halloween-dashboard-artwork.json. Standard exam art remains available. Dashboard theme rules use an exact allowlist, separate from public page styling. Trainers, attempts and unknown future dashboard routes stay excluded.
+
+Following the visual review, decorative pale outlines were removed from the Halloween search, banner, dock and panels. Keyboard focus remains visible. IELTS labels use red, with a lighter red over dark surfaces. White reading panels retain dark text and existing status colours.
+
+The admin workspace redesign is documented in docs/admin-workspace-redesign.md. Local presentation previews are read-only fixtures; they do not authenticate against production or change published settings.
+
+The PTE registration pricing headers use a consistent dark blue/teal gradient while the seasonal palette is active. This prevents the compatibility contrast helper from adding dark rectangles behind individual price/title lines on the original mixed-brightness gradient.

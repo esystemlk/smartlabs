@@ -233,7 +233,7 @@ function RegistrationInner() {
                   )}
 
                   {/* Coloured header band */}
-                  <div className={`relative bg-gradient-to-br ${t.band} px-6 pb-5 pt-6 text-white`}>
+                  <div className={`seasonal-course-band relative bg-gradient-to-br ${t.band} px-6 pb-5 pt-6 text-white`}>
                     <div className="pointer-events-none absolute -right-6 -top-8 h-28 w-28 rounded-full bg-white/10 blur-2xl" />
                     <p className="text-[10px] font-black uppercase tracking-[0.25em] text-white/70">Course Fee</p>
                     <h3 className="mt-0.5 text-2xl font-black leading-tight">{pkg.name}</h3>

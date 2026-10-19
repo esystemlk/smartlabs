@@ -1,4 +1,6 @@
 'use client';
+import {IeltsText} from '@/components/ielts/ielts-text';
+
 
 import { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -64,7 +66,7 @@ function IeltsRegistration() {
 
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-blue-600"><GraduationCap size={16} /> Smart Labs IELTS</div>
-        <h1 className="mt-2 text-3xl font-black text-slate-900">{IELTS_COURSE.name}</h1>
+        <h1 className="mt-2 text-3xl font-black text-slate-900"><IeltsText>{IELTS_COURSE.name}</IeltsText></h1>
         <p className="mt-1 text-sm text-slate-500">{IELTS_COURSE.tagline}</p>
 
         <div className="mt-5 flex flex-wrap items-center gap-4 rounded-2xl bg-slate-50 p-4">

@@ -1,0 +1,8 @@
+.ielts-brand-text{color:#c5162e;-webkit-text-fill-color:currentColor}
+.studio-wordmark>.ielts-brand-label,.studio-wordmark .ielts-brand-text{font:inherit;letter-spacing:inherit}
+body[data-seasonal-palette] .ielts-brand-text,.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .ielts-brand-text{color:#ff8995}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] :is(.student-panel,.student-credit-card,.student-exam-footer,.student-exam-badge,.studio-nav,.studio-skill) .ielts-brand-text{color:#c5162e}
+.standard-home-hero .ielts-brand-text,.dark .ielts-brand-text{color:#ff8995}
+.student-exam-ielts .student-button:has(.ielts-brand-text){background:#fff1f3;color:#a8152a}.student-button .ielts-brand-text{color:#a8152a}
+.student-dock-item[aria-current=page]:has(.ielts-brand-text){background:#ffe8ec;color:#a8152a}.student-dock-item[aria-current=page] .ielts-brand-text{color:#a8152a}.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .student-dock-item[aria-current=page] .ielts-brand-text{color:#951127}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .website-guide .ielts-brand-text{color:#c5162e}

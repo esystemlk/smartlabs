@@ -1,4 +1,5 @@
 'use client';
+import {IeltsText} from '@/components/ielts/ielts-text';
 import Link from "next/link";
 import { SeasonalHero } from '@/components/seasonal/seasonal-hero';
 import { SeasonalCompanions } from '@/components/seasonal/seasonal-companions';
@@ -86,7 +87,7 @@ function FindCoursesButton({ className, size = 'xl' as const }: { className?: st
           <DropdownMenuItem key={c.name} asChild className="cursor-pointer py-2.5">
             <Link href={c.href}>
               <div>
-                <div className="font-semibold">{c.name}</div>
+                <div className="font-semibold"><IeltsText>{c.name}</IeltsText></div>
                 <div className="text-xs text-muted-foreground">{c.blurb}</div>
               </div>
             </Link>
@@ -703,7 +704,7 @@ export default function Home() {
 
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 1.2 }}
               className="text-[10px] font-medium text-slate-400 tracking-[0.35em] uppercase mb-10">
-              PTE &nbsp;·&nbsp; IELTS &nbsp;·&nbsp; KET &nbsp;·&nbsp; PET
+              <IeltsText>PTE · IELTS · KET · PET</IeltsText>
             </motion.p>
 
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 1.4 }}
@@ -753,12 +754,12 @@ export default function Home() {
               className="flex flex-wrap gap-2 mb-8">
               {[
                 { name: 'PTE Academic', cls: 'bg-blue-500/10 text-blue-300 border-blue-500/25' },
-                { name: 'IELTS',        cls: 'bg-violet-500/10 text-violet-300 border-violet-500/25' },
+                { name: 'IELTS',        cls: 'bg-red-500/10 text-red-300 border-red-500/25' },
                 { name: 'KET Exam',     cls: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/25' },
                 { name: 'PET Exam',     cls: 'bg-amber-500/10 text-amber-300 border-amber-500/25' },
               ].map(c => (
                 <span key={c.name} className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border ${c.cls}`}>
-                  {c.name}
+                  <IeltsText>{c.name}</IeltsText>
                 </span>
               ))}
             </motion.div>
@@ -858,7 +859,7 @@ export default function Home() {
               </span>
             </p>
             <p className="hero-fade-in text-[10px] font-medium text-slate-400 tracking-[0.3em] uppercase mb-8" style={{ animationDelay: '0.35s' }}>
-              PTE · IELTS · KET · PET
+              <IeltsText>PTE · IELTS · KET · PET</IeltsText>
             </p>
             <div className="hero-fade-in flex flex-wrap gap-3" style={{ animationDelay: '0.45s' }}>
               <Button size="lg" className="h-12 px-8 rounded-2xl bg-slate-900 text-white font-black" asChild>
@@ -892,7 +893,7 @@ export default function Home() {
             </div>
             <div className="flex flex-wrap gap-2">
               {['PTE Academic', 'IELTS', 'KET Exam', 'PET Exam'].map(n => (
-                <span key={n} className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/5 text-slate-300 border border-white/10">{n}</span>
+                <span key={n} className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/5 text-slate-300 border border-white/10"><IeltsText>{n}</IeltsText></span>
               ))}
             </div>
           </div>
@@ -909,7 +910,7 @@ export default function Home() {
                   className={item === "·"
                     ? "mx-5 text-slate-200 select-none"
                     : "text-[11px] font-semibold text-slate-400 mx-4 whitespace-nowrap uppercase tracking-widest"}>
-                  {item}
+                  <IeltsText>{item}</IeltsText>
                 </span>
               ))
             )}
@@ -1025,7 +1026,7 @@ export default function Home() {
                         {item.badge}
                       </span>
                     </div>
-                    <h3 className="text-xl font-black mb-3 tracking-tight">{item.title}</h3>
+                    <h3 className="text-xl font-black mb-3 tracking-tight"><IeltsText>{item.title}</IeltsText></h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
                     <div className="mt-6 flex items-center gap-2 text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
                       <span>{item.href.startsWith('http') ? 'Register Now' : 'Try Practice Arena'}</span>
@@ -1365,10 +1366,10 @@ export default function Home() {
               {[
                 { label: "PTE Academic", color: "bg-blue-500/10 text-blue-600 border-blue-500/30" },
                 { label: "KET Exam", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30" },
-                { label: "IELTS", color: "bg-violet-500/10 text-violet-600 border-violet-500/30" },
+                { label: "IELTS", color: "bg-red-500/10 text-red-600 border-red-500/30" },
                 { label: "PET Exam", color: "bg-amber-500/10 text-amber-600 border-amber-500/30" },
               ].map(b => (
-                <span key={b.label} className={`px-4 py-1.5 rounded-full text-xs font-black border ${b.color}`}>{b.label}</span>
+                <span key={b.label} className={`px-4 py-1.5 rounded-full text-xs font-black border ${b.color}`}><IeltsText>{b.label}</IeltsText></span>
               ))}
             </div>
           </div>
@@ -1405,7 +1406,7 @@ export default function Home() {
                     {/* Content */}
                     <div className="space-y-4">
                       <h3 className="text-2xl font-black tracking-tight group-hover:text-primary transition-colors">
-                        {course.title}
+                        <IeltsText>{course.title}</IeltsText>
                       </h3>
                       <p className="text-muted-foreground leading-relaxed text-sm line-clamp-3">
                         {course.description}

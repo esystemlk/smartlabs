@@ -3,6 +3,8 @@ import '@/components/dashboard/student-workspace.css';
 import { searchStudentTasks } from '@/lib/student-navigation';
 
 import Link from 'next/link';
+import { DashboardSeasonalFrame, DashboardSeasonalBanner } from '@/components/dashboard/dashboard-seasonal';
+import { useSeasonalTheme } from '@/components/seasonal/seasonal-theme-provider';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useUser, useAuth } from '@/firebase';
@@ -15,6 +17,7 @@ import { StudentDock, StudentMoreMenu } from '@/components/dashboard/student-doc
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, isUserLoading } = useUser();
   const pathname = usePathname();
+  const {dashboardActive}=useSeasonalTheme();
   const router = useRouter();
   useEffect(()=>{if(!isUserLoading && !user)router.replace('/login?redirect='+encodeURIComponent(pathname));},[user,isUserLoading,router,pathname]);
   const [search, setSearch] = useState('');
@@ -41,8 +44,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if(isUserLoading || !user) return <div className="p-8" role="status">Loading your student space…</div>;
   return (
-    <div className={cn('student-workspace min-h-screen', isDesktopClient && 'pt-8')}
-      style={pathname.startsWith('/dashboard/ielts') ? {
+    <DashboardSeasonalFrame><div className={cn('student-workspace min-h-screen', isDesktopClient && 'pt-8')}
+      style={!dashboardActive && pathname.startsWith('/dashboard/ielts') ? {
         '--primary': '358 79% 47%', '--primary-foreground': '0 0% 100%',
         '--background': '0 0% 100%', '--foreground': '0 0% 13%',
         '--muted': '0 0% 95%', '--muted-foreground': '0 0% 38%',
@@ -56,9 +59,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Full-width content; reserve space for the floating dock outside exams. */}
       <main className={cn('min-h-screen', !isExam && 'student-dock-content')}>
-        <div className="p-4 sm:p-6 lg:p-8">{!isExam && <div className="student-search"><label className="sr-only" htmlFor="practice-search">Find PTE or IELTS practice</label><input id="practice-search" type="search" placeholder="Find practice: PTE writing, IELTS reading…" value={search} onChange={event=>setSearch(event.target.value)} onKeyDown={event=>{if(event.key==='Escape')setSearch('')}}/>{search.trim() && <div className="student-search-results">{searchStudentTasks(search).length ? searchStudentTasks(search).map(item=><Link key={item.href} href={item.href} onClick={()=>setSearch('')}>{item.label}<small>{item.context}</small></Link>):<p className="p-4 text-sm">No matching practice. Try an exam or skill name.</p>}</div>}</div>}{children}</div>
+        <div className="p-4 sm:p-6 lg:p-8">{!isExam && <div className="student-search"><label className="sr-only" htmlFor="practice-search">Find PTE or IELTS practice</label><input id="practice-search" type="search" placeholder="Find practice: PTE writing, IELTS reading…" value={search} onChange={event=>setSearch(event.target.value)} onKeyDown={event=>{if(event.key==='Escape')setSearch('')}}/>{search.trim() && <div className="student-search-results">{searchStudentTasks(search).length ? searchStudentTasks(search).map(item=><Link key={item.href} href={item.href} onClick={()=>setSearch('')}>{item.label}<small>{item.context}</small></Link>):<p className="p-4 text-sm">No matching practice. Try an exam or skill name.</p>}</div>}</div>}<DashboardSeasonalBanner/>{children}</div>
       </main>
       {!isExam && <StudentDock pathname={pathname} onSignOut={handleLogout}/>}
-    </div>
+    </div></DashboardSeasonalFrame>
   );
 }

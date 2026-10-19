@@ -1,4 +1,5 @@
 'use client';
+import {IeltsText} from '@/components/ielts/ielts-text';
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -414,7 +415,7 @@ export default function Header() {
                                   <item.icon className="h-4 w-4" />
                                 </div>
                                 <div>
-                                  <div className="font-bold text-xs">{item.name}</div>
+                                  <div className="font-bold text-xs"><IeltsText>{item.name}</IeltsText></div>
                                   <div className="text-[10px] text-muted-foreground">{item.description}</div>
                                 </div>
                               </div>
@@ -520,7 +521,7 @@ export default function Header() {
                 ieltsOpen ? "text-red-600 bg-red-500/5" : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}>
                 <GraduationCap className="h-4 w-4" />
-                IELTS
+                <IeltsText>IELTS</IeltsText>
                 <ChevronDown className={cn("h-4 w-4 transition-transform duration-300", ieltsOpen && "rotate-180")} />
               </button>
 
@@ -587,7 +588,7 @@ export default function Header() {
                                   <item.icon className="h-4 w-4" />
                                 </div>
                                 <div>
-                                  <div className="font-bold text-xs">{item.name}</div>
+                                  <div className="font-bold text-xs"><IeltsText>{item.name}</IeltsText></div>
                                   <div className="text-[10px] text-muted-foreground">{item.description}</div>
                                 </div>
                               </div>
@@ -912,7 +913,7 @@ export default function Header() {
               </div>
 
               <div className="pb-2 border-b border-border">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-4">IELTS Practice</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-4"><IeltsText>IELTS Practice</IeltsText></p>
                 {ieltsTools.map((tool) =>
                   tool.active ? (
                     <Link

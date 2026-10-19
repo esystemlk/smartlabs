@@ -1,0 +1,54 @@
+.student-exam-choice>picture{position:absolute;inset:0}.student-exam-choice>picture>img{position:absolute;width:100%;height:100%;object-fit:cover;inset:0}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween]{min-height:100vh;background:var(--ds-background);color:var(--ds-text)}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .student-workspace{background:var(--ds-workspace-background) center top/cover fixed,var(--ds-background);color:var(--ds-text);--background:266 41% 10%;--foreground:274 100% 97%;--card:270 35% 16%;--card-foreground:274 100% 97%;--muted:270 35% 16%;--muted-foreground:273 27% 82%;--border:270 22% 55%;--input:270 22% 55%}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] :is(.student-workspace-header,.student-dock){background:var(--ds-surface);border-color:transparent;color:var(--ds-text);box-shadow:0 14px 45px #0005}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] :is(.student-workspace-brand,.student-workspace-brand small,.student-page-heading h1,.student-page-heading p,.student-eyebrow,.student-breadcrumb,.student-breadcrumb a,.student-section-heading h2){color:var(--ds-text)}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] :is(.student-search input,.student-search-results){background:var(--ds-surface);color:var(--ds-text);border-color:transparent;box-shadow:0 8px 28px #0002}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .student-search input:focus-visible{outline:3px solid var(--ds-border);outline-offset:3px}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .student-search input::placeholder{color:var(--ds-muted)}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .student-search-results :is(a,small){color:var(--ds-text)}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .student-search-results a:hover{background:#3b2850}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .student-dock :is(a,button){color:var(--ds-muted)}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .student-dock [aria-current=page]{background:var(--ds-accent);color:#201327}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .student-exam-choice{background:var(--ds-surface);border-color:transparent;box-shadow:0 12px 35px #0003}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .student-exam-choice-copy{background:linear-gradient(90deg,#201327 12%,#201327e8 50%,#20132730);color:var(--ds-text)}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .student-exam-choice-copy :is(h2,p){color:var(--ds-text)}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .student-exam-choice>picture{position:absolute;inset:0}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .student-exam-hero{background-image:linear-gradient(90deg,#160f24f5,#160f24b0 50%,#160f2410),var(--ds-exam-image)!important;color:var(--ds-text)}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .student-hero-copy :is(h1,p,a){color:var(--ds-text)}
+/* Data, forms and status colours retain neutral reading surfaces. */
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] :is(.student-panel,.student-help-strip,.student-skill-card,.student-task-row,.student-credit-panel,.student-credit-card,.student-exam-footer){background-color:#fff;color:#1d2940;--foreground:221 38% 18%;--card:0 0% 100%;--card-foreground:221 38% 18%;--muted-foreground:215 25% 35%;--border:215 25% 85%}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] :is(.student-panel,.student-help-strip,.student-skill-card,.student-task-row,.student-credit-panel,.student-credit-card,.student-exam-footer) :is(.student-eyebrow,.student-section-heading h2){color:#334963}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .student-page>.student-section-heading .student-muted{color:var(--ds-muted)}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .studio-wrap{background:transparent;color:var(--ds-text)}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .ielts-studio{background:var(--ds-surface);color:var(--ds-text)}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] :is(.studio-skill,.studio-roadmap,.studio-types,.studio-book,.studio-part,.studio-empty){color:#202020;background:#fff}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .studio-hero{display:block}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .studio-hero-copy{max-width:65%}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .studio-art{display:none}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .studio-hero h1 em{color:var(--ds-accent)}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .studio-caption{color:var(--ds-muted)}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] :is(.studio-roadmap,.studio-types,.studio-empty) .studio-eyebrow{color:#606060}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .studio-detail-label{color:#202020}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] :is(.studio-top-note,.studio-track-row>span,.studio-section-title h2,.studio-eyebrow){color:var(--ds-muted)}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .studio-nav{background:#fff;color:#1d2940;border-radius:16px;padding:8px}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] :is(.studio-hero,.studio-detail-hero){background-image:linear-gradient(90deg,#160f24f5,#160f24ad 55%,#160f2420),var(--ds-exam-image)!important;background-size:cover;background-position:center;color:var(--ds-text)}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] :is(.studio-hero,.studio-detail-hero) :is(h1,p,a){color:var(--ds-text)}
+.dashboard-seasonal-banner{position:relative;margin:0 auto 26px;max-width:1200px;border-radius:24px;background:#281b38;color:#f7f1ff;overflow:hidden;border:0;box-shadow:0 12px 36px #0003}
+.dashboard-seasonal-banner-large{min-height:245px;isolation:isolate;background:var(--ds-surface)}
+.dashboard-seasonal-banner picture,.dashboard-seasonal-banner picture img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.dashboard-seasonal-banner-large:before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#160f24ec,#160f2480 60%,transparent);z-index:-1}
+.dashboard-seasonal-banner-copy{position:relative;max-width:70%;padding:24px 30px;z-index:1}
+.dashboard-seasonal-banner-copy>span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#ffce8c;font-weight:700}
+.dashboard-seasonal-banner-copy h2{font-size:clamp(25px,3vw,38px);line-height:1.2;font-weight:800;margin:12px 0;color:var(--ds-text)}
+.dashboard-seasonal-banner-copy p{font-size:14px;line-height:1.7;color:var(--ds-muted)}
+.dashboard-appearance-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}
+.dashboard-appearance-actions button{font-size:12px;border:0;border-radius:12px;padding:10px 13px;background:#46314f;color:#f7f1ff}
+.dashboard-appearance-actions button:focus-visible{outline:3px solid var(--ds-border,#ffb454);outline-offset:3px}
+.dashboard-seasonal-companion{position:absolute;right:22px;bottom:0;width:90px;max-height:110px;object-fit:contain;pointer-events:none}
+@media(prefers-reduced-motion:no-preference){[data-dashboard-motion=on] .dashboard-seasonal-companion{animation:dashboard-companion-bob 5s ease-in-out infinite}}
+@keyframes dashboard-companion-bob{50%{transform:translateY(-7px)}}
+@media(max-width:767px){.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .studio-hero-copy{max-width:100%}.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .student-workspace{background-image:var(--ds-workspace-background-mobile)}.dashboard-seasonal-banner-copy{max-width:100%;padding:22px}.dashboard-seasonal-banner-large{min-height:280px}.dashboard-seasonal-banner-large .dashboard-seasonal-banner-copy{padding-right:65px}.dashboard-seasonal-companion{right:0;width:65px}.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] .student-exam-hero,.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] :is(.studio-hero,.studio-detail-hero){background-image:linear-gradient(90deg,#160f24ee,#160f24a0),var(--ds-exam-mobile)!important}}
+
+@media(max-width:767px){.dashboard-seasonal-banner-large:before{background:linear-gradient(90deg,#160f24ee,#160f24b8)}}
+.dashboard-seasonal-frame[data-dashboard-seasonal=halloween] :is(.student-exam-hero,.studio-hero,.studio-detail-hero,.student-skill-card,.student-task-row,.student-panel,.student-help-strip,.student-credit-card,.student-exam-footer,.studio-nav,.studio-skill,.studio-book,.studio-part){border-color:transparent;box-shadow:0 10px 32px #0002}

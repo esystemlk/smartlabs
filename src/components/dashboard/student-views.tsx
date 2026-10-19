@@ -1,4 +1,6 @@
+import {IeltsText} from '@/components/ielts/ielts-text';
 import Link from 'next/link';
+import {DashboardExamArtwork} from './dashboard-seasonal';
 import type { ReactNode } from 'react';
 import { ArrowRight, BookOpen, Headphones, Mic, PenLine, HelpCircle, ReceiptText, BarChart3 } from 'lucide-react';
 import { PTE_CATALOG } from '@/lib/pte-catalog';
@@ -6,18 +8,18 @@ import { taskHref, type StudentExam } from '@/lib/student-navigation';
 
 const skillIcons = { speaking: Mic, writing: PenLine, reading: BookOpen, listening: Headphones };
 export function StudentBreadcrumb({ exam, skill }: { exam?: StudentExam; skill?: string }) {
-  return <nav className="student-breadcrumb" aria-label="Breadcrumb"><Link href="/dashboard">Home</Link>{exam && <><span aria-hidden="true">/</span><Link href={`/dashboard/${exam}`}>{exam === 'pte' ? 'PTE Academic' : 'IELTS'}</Link></>}{skill && <><span aria-hidden="true">/</span><span aria-current="page">{skill}</span></>}</nav>;
+  return <nav className="student-breadcrumb" aria-label="Breadcrumb"><Link href="/dashboard">Home</Link>{exam && <><span aria-hidden="true">/</span><Link href={`/dashboard/${exam}`}><IeltsText>{exam === 'pte' ? 'PTE Academic' : 'IELTS'}</IeltsText></Link></>}{skill && <><span aria-hidden="true">/</span><span aria-current="page">{skill}</span></>}</nav>;
 }
 export function ExamFooter({ exam }: { exam: StudentExam }) {
   return <footer className={`student-exam-footer student-exam-${exam}`} style={{ backgroundImage: `linear-gradient(90deg,rgba(255,255,255,.98),rgba(255,255,255,.65)),url('/images/student/${exam}-footer.webp')` }}>
     <div><span className="student-eyebrow">YOUR NEXT STEP</span><h2>A little practice. A clearer direction.</h2><p>Explore a skill, review your feedback, or find help with your registration.</p></div>
-    <div className="student-footer-links"><Link href={`/dashboard/${exam}`}>{exam === 'pte' ? 'PTE Academic' : 'IELTS'} overview <ArrowRight size={16} /></Link><Link href="/dashboard/results">Practice results</Link><Link href="/dashboard/registrations">My registrations</Link><Link href="/dashboard/support">Get help</Link></div>
+    <div className="student-footer-links"><Link href={`/dashboard/${exam}`}><IeltsText>{exam === 'pte' ? 'PTE Academic' : 'IELTS'}</IeltsText> overview <ArrowRight size={16} /></Link><Link href="/dashboard/results">Practice results</Link><Link href="/dashboard/registrations">My registrations</Link><Link href="/dashboard/support">Get help</Link></div>
   </footer>;
 }
 export function StudentHomeView({ name, registrations, results, extra, credits }: { name?: string; credits?: ReactNode; registrations?: ReactNode; results?: ReactNode; extra?: ReactNode }) {
   return <div className="student-page student-home"><div className="student-page-heading"><span className="student-eyebrow">YOUR STUDENT SPACE</span><h1>What would you like to practise?</h1><p>{name ? `Welcome, ${name.split(' ')[0]}. ` : ''}Choose your exam to find every practice section.</p></div>
     <section className="student-help-strip"><BookOpen size={25}/><div><h2>New to SmartLabs?</h2><p>Follow the website guide to find your exam, start practice and check your registrations.</p></div><Link className="student-button student-button-secondary" href="/dashboard/guide">Show me around <ArrowRight size={16}/></Link></section><div className="student-exam-choices" id="choose-exam">{(['pte', 'ielts'] as const).map(exam => <Link key={exam} href={`/dashboard/${exam}`} className={`student-exam-choice student-exam-${exam}`}>
-      <img src={`/images/student/${exam}-hero.webp`} alt="" loading="eager" width={800} height={450} /><div className="student-exam-choice-copy"><span className="student-exam-badge">{exam === 'pte' ? 'PTE' : 'IELTS'}</span><h2>{exam === 'pte' ? 'PTE Academic' : 'IELTS'}</h2><p>{exam === 'pte' ? 'Speaking · Writing · Reading · Listening' : 'Listening · Reading · Writing · Speaking'}</p><span className="student-button">Open {exam === 'pte' ? 'PTE' : 'IELTS'} dashboard <ArrowRight size={17} /></span></div>
+      <DashboardExamArtwork exam={exam}/><div className="student-exam-choice-copy"><span className="student-exam-badge"><IeltsText>{exam === 'pte' ? 'PTE' : 'IELTS'}</IeltsText></span><h2><IeltsText>{exam === 'pte' ? 'PTE Academic' : 'IELTS'}</IeltsText></h2><p>{exam === 'pte' ? 'Speaking · Writing · Reading · Listening' : 'Listening · Reading · Writing · Speaking'}</p><span className="student-button">Open <IeltsText>{exam === 'pte' ? 'PTE' : 'IELTS'}</IeltsText> dashboard <ArrowRight size={17} /></span></div>
     </Link>)}</div>{credits}
     <div className="student-two-column"><section className="student-panel"><div className="student-section-heading"><h2><ReceiptText size={21} /> My registrations</h2><Link href="/dashboard/registrations">View all <ArrowRight size={15} /></Link></div><p className="student-muted">Track your course registrations and payment status.</p>{registrations ?? <Link className="student-text-link" href="/dashboard/registrations">View my registrations <ArrowRight size={16} /></Link>}</section><section className="student-panel"><div className="student-section-heading"><h2><BarChart3 size={21} /> Recent practice results</h2><Link href="/dashboard/results">View all <ArrowRight size={15} /></Link></div>{results ?? <p className="student-muted">Your completed practice results will appear here.</p>}</section></div>
     <section className="student-help-strip"><HelpCircle size={25} /><div><h2>Not sure where to start?</h2><p>Choose an exam above, then a skill. Courses on this website are available for registration.</p></div><Link className="student-button student-button-secondary" href="/courses">Register for a course <ArrowRight size={16} /></Link></section>{extra}

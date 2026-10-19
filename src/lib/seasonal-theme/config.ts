@@ -20,6 +20,7 @@ export const christmasCharacters = halloweenCharacters.map((character, index) =>
 export const charactersFor = (id: ThemeId) => id === 'christmas' ? christmasCharacters : halloweenCharacters;
 
 export const bundledSeasonalAssetPaths: readonly string[] = [
+  ...['home-banner','home-banner-mobile','pte-banner','pte-banner-mobile','ielts-banner','ielts-banner-mobile','workspace-background','workspace-background-mobile'].map(name => `/seasonal/halloween/dashboard/${name}.webp`),
   '/seasonal/halloween/hero.webp', '/seasonal/halloween/hero-mobile.webp',
   '/seasonal/halloween/footer.webp', ...halloweenCharacters.map(character => character.src),
   '/seasonal/halloween/logo-halloween.webp',
@@ -38,7 +39,23 @@ export const defaultCharacterPlacements = {
   homeIntro: true, homeCourses: true, homeSupport: true,
   pageIntro: true, pageEnd: true, footer: true, mobile: true,
 };
+export const defaultDashboardTheme = {
+  enabled: false, mobile: true, characters: true, motion: false,
+  pages: { home: true, pte: true, ielts: true, account: true },
+  colours: { background: '#160F24', surface: '#281B38', text: '#F7F1FF', muted: '#D1C5DE', accent: '#FFB454', border: '#9279A8' },
+  greeting: 'Keep your goals glowing.', body: 'A little Halloween magic for your learning journey.',
+  character: '/seasonal/halloween/ghost.webp',
+  media: Object.fromEntries(['home-banner','home-banner-mobile','pte-banner','pte-banner-mobile','ielts-banner','ielts-banner-mobile','workspace-background','workspace-background-mobile'].map(name => [name, `/seasonal/halloween/dashboard/${name}.webp`])) as Record<'home-banner'|'home-banner-mobile'|'pte-banner'|'pte-banner-mobile'|'ielts-banner'|'ielts-banner-mobile'|'workspace-background'|'workspace-background-mobile', string>,
+};
+const dashboardSchema = z.object({
+  enabled: z.boolean(), mobile: z.boolean(), characters: z.boolean(), motion: z.boolean(),
+  pages: z.object({ home:z.boolean(), pte:z.boolean(), ielts:z.boolean(), account:z.boolean() }),
+  colours: z.object({ background:colour, surface:colour, text:colour, muted:colour, accent:colour, border:colour }),
+  greeting:z.string().trim().min(1).max(80),body:z.string().max(220),character:asset,
+  media:z.object({ 'home-banner':asset,'home-banner-mobile':asset,'pte-banner':asset,'pte-banner-mobile':asset,'ielts-banner':asset,'ielts-banner-mobile':asset,'workspace-background':asset,'workspace-background-mobile':asset }),
+});
 export const themeSchema = z.object({
+  dashboard: dashboardSchema.default(defaultDashboardTheme),
   id: z.enum(themeIds).default('halloween'),
   priority: z.number().int().min(0).max(100).default(10),
   name: z.string().trim().min(1).max(80),
@@ -63,6 +80,7 @@ export const themeSchema = z.object({
   popup: z.object({ title: z.string().trim().min(1).max(100), body: z.string().max(400), button: z.string().max(40), href: path, delay: z.number().int().min(12).max(120), frequency: z.enum(['session', 'daily', 'occurrence']), expiresAt: z.string().max(40).refine(value => !value || Number.isFinite(Date.parse(value)), 'Choose a valid expiry') }),
   routes: z.object({ excluded: z.array(path).max(50), homeOnly: z.boolean() }),
 }).superRefine((value, ctx) => {
+  if(value.dashboard.enabled && value.id !== 'halloween') ctx.addIssue({code:'custom',path:['dashboard','enabled'],message:'Student dashboard artwork is currently available for Halloween only.'});
   const s = value.schedule;
   const calendarKey = (month: number, day: number, time: string) => (month * 32 + day) * 1440 + Number(time.slice(0, 2)) * 60 + Number(time.slice(3));
   const endsNextYear = calendarKey(s.endMonth, s.endDay, s.endTime) <= calendarKey(s.startMonth, s.startDay, s.startTime);
@@ -76,6 +94,7 @@ export const themeSchema = z.object({
 });
 export type SeasonalTheme = z.infer<typeof themeSchema>;
 export const defaultTheme: SeasonalTheme = {
+  dashboard: structuredClone(defaultDashboardTheme),
   id: 'halloween', priority: 10,
   name: 'Enchanted Learning Lab', mode: 'off', manualUntil: '',
   schedule: { annual: true, year: 2026, startMonth: 10, startDay: 25, endMonth: 11, endDay: 1, startTime: '00:00', endTime: '00:00', excludedYears: [] },

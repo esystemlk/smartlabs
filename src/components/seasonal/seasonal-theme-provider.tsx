@@ -8,9 +8,10 @@ import { defaultTheme, eligibleRoute, resolveTheme, selectTheme, themeLabel, the
 import { installSeasonalContrast } from '@/lib/seasonal-theme/contrast';
 import { SeasonalFlight } from './seasonal-flight';
 import { SeasonalSnow } from './seasonal-snow';
+import { dashboardThemeGroup, eligibleDashboardRoute } from '@/lib/seasonal-theme/dashboard-routes';
 
-type ThemeState = { config: SeasonalTheme; active: boolean; paused: boolean; preview: boolean };
-const ThemeContext = createContext<ThemeState>({ config: defaultTheme, active: false, paused: false, preview: false });
+type ThemeState = { config: SeasonalTheme; active: boolean; paused: boolean; preview: boolean; dashboardAvailable: boolean; dashboardActive: boolean; toggleStandard: () => void; togglePause: () => void };
+const ThemeContext = createContext<ThemeState>({ config: defaultTheme, active: false, paused: false, preview: false, dashboardAvailable:false, dashboardActive:false, toggleStandard:()=>{}, togglePause:()=>{} });
 export const useSeasonalTheme = () => useContext(ThemeContext);
 const preference = (key: string) => { try { return localStorage.getItem(key); } catch { return null; } };
 const remember = (key: string, value: string) => { try { localStorage.setItem(key, value); } catch { /* Storage can be disabled. */ } };
@@ -48,7 +49,7 @@ export function SeasonalThemeProvider({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     // Protected tools do not even fetch seasonal configuration.
-    if (!eligibleRoute(pathname, defaultTheme)) return;
+    if (!eligibleRoute(pathname, defaultTheme) && !dashboardThemeGroup(pathname)) return;
     let stopped = false;
     let inFlight = false;
     let abort: AbortController | undefined;
@@ -85,12 +86,16 @@ export function SeasonalThemeProvider({ children }: { children: React.ReactNode 
   const valid = clock.server > 0 && performance.now() - clock.received < 60_000;
   const available = valid && resolved.active && eligibleRoute(pathname, config) && (!mobile || config.areas.mobile);
   const active = available && !standard;
+  const dashboardAvailable = valid && resolved.active && eligibleDashboardRoute(pathname, config) && (!mobile || (config.areas.mobile && config.dashboard.mobile));
+  const dashboardActive = dashboardAvailable && !standard;
+  const toggleStandard = () => { setStandard(!standard); if (!preview) remember('sl-seasonal-standard', String(!standard)); };
+  const togglePause = () => { setPaused(!paused); remember('sl-seasonal-paused', String(!paused)); };
 
   useEffect(() => {
-    if (!active || !resolved.end) return;
+    if ((!active && !dashboardActive) || !resolved.end) return;
     const timer = setTimeout(() => setTick(n => n + 1), Math.max(0, Math.min(resolved.end - now, 2_147_000_000)));
     return () => clearTimeout(timer);
-  }, [active, resolved.end, clock, tick]);
+  }, [active, dashboardActive, resolved.end, clock, tick]);
 
   useLayoutEffect(() => {
     const body = document.body;
@@ -120,7 +125,7 @@ export function SeasonalThemeProvider({ children }: { children: React.ReactNode 
       || !!(config.areas.footer && element.closest('body > footer')));
   }, [active, config, pathname]);
 
-  return <ThemeContext.Provider value={{ config, active, paused: paused || hidden, preview }}>
+  return <ThemeContext.Provider value={{ config, active, paused: paused || hidden, preview, dashboardAvailable, dashboardActive, toggleStandard, togglePause }}>
     {children}
     <SeasonalFlight />
     <SeasonalSnow />

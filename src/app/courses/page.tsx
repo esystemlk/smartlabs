@@ -1,3 +1,4 @@
+import {IeltsText} from '@/components/ielts/ielts-text';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { PTE_PACKAGES, formatLkr } from '@/lib/pte-packages';
@@ -44,7 +45,7 @@ export default function CoursesPage() {
   const CardTile = ({ c }: { c: Card }) => (
     <div className="relative flex flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
       {c.badge && <span className="absolute right-4 top-4 rounded-full bg-amber-400 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-slate-900">{c.badge}</span>}
-      <h3 className="pr-16 text-lg font-black text-slate-900">{c.name}</h3>
+      <h3 className="pr-16 text-lg font-black text-slate-900"><IeltsText>{c.name}</IeltsText></h3>
       <p className="mt-1 text-sm text-slate-500">{c.tagline}</p>
       <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs font-bold text-slate-500">
         {c.mode && <span className="inline-flex items-center gap-1"><ModeIcon mode={c.mode} /> {c.mode}</span>}
@@ -77,7 +78,7 @@ export default function CoursesPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-black uppercase tracking-wide text-slate-400">IELTS &amp; Recordings</h2>
+        <h2 className="mb-3 text-sm font-black uppercase tracking-wide text-slate-400"><IeltsText>IELTS &amp; Recordings</IeltsText></h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <CardTile c={ielts} />
           <CardTile c={recordings} />

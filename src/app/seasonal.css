@@ -122,3 +122,12 @@ body[data-seasonal-palette] :where(.transition-all,.transition-colors),body[data
 @media(max-width:767px) { .seasonal-hero { min-height: 700px; padding: 65px 24px 180px; } .seasonal-hero-character { right: 20px; bottom: 15px; max-width: 140px; animation: none; } .seasonal-hero-shade { background: #160f24a6 !important; } .seasonal-controls { font-size: 10px; } }
 @media(max-width:767px) { .seasonal-companions { --scene-size: 85px; padding: 16px; } .seasonal-companions-inner { flex-direction: column; gap: 16px; padding: 24px 16px; text-align: center; } .seasonal-companions-cast { gap: 5px; } .seasonal-companions-cast img { animation: none; } .seasonal-companions-footer { --scene-size: 70px; } .seasonal-companions-pageIntro,.seasonal-companions-pageEnd { --scene-size: 70px; padding: 8px 16px; } .seasonal-companions-pageIntro .seasonal-companions-inner,.seasonal-companions-pageEnd .seasonal-companions-inner { align-items: flex-end; padding: 0; } .seasonal-companions-desktop { display: none; } }
 @media(prefers-reduced-motion:reduce) { .seasonal-hero-character,.seasonal-companions-cast img { animation: none !important; } body[data-seasonal] { scroll-behavior: auto; } }
+
+/* Quiet decorative edges; focus rings remain deliberately visible. */
+body[data-seasonal="halloween"][data-seasonal-palette] main :where(.border,.border-2,.border-t,.border-b,.border-l,.border-r){border-color:#53345f55}
+body[data-seasonal="halloween"][data-seasonal-palette] main :where(input:not([type=checkbox]):not([type=radio]),textarea,select){border-color:transparent;box-shadow:0 8px 24px #0002}
+body[data-seasonal="halloween"] :is(.seasonal-controls,.seasonal-companions-inner){border-color:transparent;box-shadow:0 12px 32px #0003}
+body[data-seasonal="halloween"] .seasonal-cta-outline{border-color:transparent;background:#46314f}
+body[data-seasonal="halloween"][data-seasonal-palette] main :where(input,textarea,select):focus-visible{outline:3px solid var(--seasonal-accent);outline-offset:3px}
+/* Keep the complete pricing band readable, avoiding per-line dark backplates. */
+body[data-seasonal-palette] .seasonal-course-band{background-image:linear-gradient(120deg,#203e72,#18535f)!important;color:#fff6e8}
