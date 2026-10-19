@@ -1,6 +1,6 @@
 # Halloween for student dashboards
 
-Status: implemented. Dashboard styling defaults to Off until an administrator enables it and publishes the seasonal settings. No live seasonal setting was changed during implementation.
+Status: implemented. Dashboard styling follows the same activation mode and schedule as the homepage; there is no separate dashboard activation switch. No live seasonal setting was changed during implementation.
 
 ## Result
 
@@ -42,7 +42,7 @@ The public `/mock-tests` catalog keeps its existing protected treatment in this 
 
 Today, `src/lib/seasonal-theme/config.ts` deliberately protects the entire `/dashboard` prefix. Preserve that protection for the public theme. Do not delete it to obtain dashboard styling: that would also enable public effects on trainers and tests.
 
-1. Add a separate dashboard configuration object to the existing seasonal schema. Its master switch defaults to **off** when reading older published documents. Keep existing public settings unchanged.
+1. Add a separate dashboard configuration object to the existing seasonal schema. Activation inherits the homepage mode and schedule, including for existing published configurations.
 2. Add `src/lib/seasonal-theme/dashboard-routes.ts` with an exact allowlist and hard training exclusions. Unknown paths default to standard appearance. Existing administrator exclusions still win over the allowlist.
 3. Extend `SeasonalThemeProvider` with a separate dashboard eligibility signal, based on its already validated server clock, selected season, annual schedule, manual expiry, private preview, mobile preference and Standard appearance preference. The current public `active` signal remains unchanged. Do not resolve dashboard activation independently with an untrusted browser clock or bypass the stale-manifest protection.
 4. A new `DashboardSeasonalFrame` wraps the existing dashboard layout and applies `data-dashboard-seasonal="halloween"` only on eligible pages. Leaving a selection page for a trainer removes the frame's tokens, imagery and motion before the trainer is shown. Use the existing layout effect pattern to avoid a themed-frame flash in tests.
@@ -57,7 +57,7 @@ Extend `/admin/dashboard/seasonal-themes` with a **Student dashboards** group fo
 
 | Control | Behaviour |
 | --- | --- |
-| Enable on student dashboards | Separate master, default off for existing configurations |
+| Activation | Shared homepage theme changer: Off, Automatic schedule or Manual with expiry |
 | Use annual season schedule | Inherits the existing Asia/Colombo date/time boundaries, including excluded years |
 | Page groups | Student Home; PTE selections; IELTS selections/catalog; account/records/help pages |
 | Dashboard palette | Background, card surface, main text, secondary text, accent and focus-ring colour, with contrast validation |
@@ -138,7 +138,7 @@ Delivery order: route/activation protection first; dedicated art and tokens seco
 
 ## Implemented controls and resources
 
-Go to Admin → Seasonal Themes → Halloween → Student dashboards. Enable the dashboard switch, choose page groups, mobile display, banner companion and optional gentle animation. Edit the welcome message and colours, replace any of the eight images using its dedicated uploader, then use Preview & history to choose Student Home, PTE, IELTS or account pages. Save a draft before publishing. The existing Asia/Colombo annual calendar controls activation and expiry. Restore standard disarms the seasonal schedules.
+Go to Admin → Seasonal Themes → Halloween → Student dashboards. Choose page groups, mobile display, banner companion and optional gentle animation. Edit the welcome message and colours, replace any of the eight images using its dedicated uploader, then use Preview & history to choose Student Home, PTE, IELTS or account pages. Save a draft before publishing. The existing Asia/Colombo annual calendar controls activation and expiry. Restore standard disarms the seasonal schedules.
 
 Eight generated WebP assets are in public/seasonal/halloween/dashboard. The prompt and source record is docs/halloween-dashboard-artwork.json. Standard exam art remains available. Dashboard theme rules use an exact allowlist, separate from public page styling. Trainers, attempts and unknown future dashboard routes stay excluded.
 

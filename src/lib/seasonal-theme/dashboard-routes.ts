@@ -10,5 +10,5 @@ export function dashboardThemeGroup(pathname:string):DashboardThemeGroup|null {
 }
 export function eligibleDashboardRoute(pathname:string,config:SeasonalTheme){
   const group=dashboardThemeGroup(pathname);
-  return config.id==='halloween' && config.dashboard.enabled && group!==null && config.dashboard.pages[group] && !config.routes.excluded.some(path=>path==='/'||matchesPath(pathname,path));
+  return config.id==='halloween' && group!==null && config.dashboard.pages[group] && !config.routes.excluded.some(path=>path==='/'||matchesPath(pathname,path));
 }

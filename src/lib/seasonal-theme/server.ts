@@ -22,7 +22,7 @@ export function readTheme(value: unknown, id: ThemeId = 'halloween') {
 export function validatePublishedMedia(config: SeasonalTheme) {
   const rawCdn = process.env.NEXT_PUBLIC_BUNNY_HOSTNAME;
   const cdnHost = rawCdn ? new URL(rawCdn.startsWith('https://') ? rawCdn : `https://${rawCdn}`).hostname : '';
-  for (const [kind, url] of Object.entries({...config.media, ...(config.dashboard.enabled ? {...Object.fromEntries(Object.entries(config.dashboard.media).map(([key,value])=>[`dashboard-${key}`,value])),dashboardCharacter:config.dashboard.character}: {})})) {
+  for (const [kind, url] of Object.entries({...config.media, ...(config.id==='halloween' ? {...Object.fromEntries(Object.entries(config.dashboard.media).map(([key,value])=>[`dashboard-${key}`,value])),dashboardCharacter:config.dashboard.character}: {})})) {
     if (!url) continue;
     const extension = kind === 'audio' ? /\.(mp3|ogg)$/i : /\.(png|jpe?g|webp)$/i;
     if (!extension.test(url)) return `Unsupported ${kind} asset format.`;
@@ -34,7 +34,7 @@ export function validatePublishedMedia(config: SeasonalTheme) {
   if (config.branding.logo && (!bundledSeasonalAssetPaths.includes(config.branding.logo) || !config.branding.logo.startsWith(`/seasonal/${config.id}/`))) return 'Use this theme’s bundled seasonal logo.';
   if (config.areas.hero && (!config.media.hero || (config.areas.mobile && !config.media.mobileHero))) return 'Choose desktop and mobile hero artwork before publishing.';
   if (config.areas.palette && [contrastRatio(config.colours.text, config.colours.background), contrastRatio(config.colours.text, config.colours.surface), contrastRatio('#160F24', config.colours.accent)].some(ratio => ratio < 4.5)) return 'Increase the text/background, text/surface, or button contrast to at least 4.5:1.';
-  if(config.dashboard.enabled){
+  if(config.id==='halloween'){
     const c=config.dashboard.colours;
     if([c.background,c.surface].some(value=>contrastRatio('#FFFFFF',value)<7))return 'Choose dark dashboard background and card colours to keep illustrated banners readable.';
     if([contrastRatio(c.text,c.background),contrastRatio(c.text,c.surface),contrastRatio(c.muted,c.background),contrastRatio(c.muted,c.surface),contrastRatio('#201327',c.accent)].some(value=>value<4.5))return 'Dashboard text, secondary text and buttons require contrast of at least 4.5:1.';

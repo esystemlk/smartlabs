@@ -10,7 +10,7 @@ const anchor=({href,children,...props})=>React.createElement('a',{href,...props}
 const seasonalConfig=load('src/lib/seasonal-theme/config.ts');
 const dashboardRoutes=load('src/lib/seasonal-theme/dashboard-routes.ts',{'./config':seasonalConfig});
 let fixturePath='/dashboard',fixtureSeasonal=false;
-const fixtureConfig=structuredClone(seasonalConfig.defaultTheme);fixtureConfig.dashboard.enabled=true;
+const fixtureConfig=structuredClone(seasonalConfig.defaultTheme);
 const seasonalView=load('src/components/dashboard/dashboard-seasonal.tsx',{'next/navigation':{usePathname:()=>fixturePath},'@/lib/seasonal-theme/dashboard-routes':dashboardRoutes,'@/components/seasonal/seasonal-theme-provider':{useSeasonalTheme:()=>({config:fixtureConfig,dashboardActive:fixtureSeasonal&&dashboardRoutes.eligibleDashboardRoute(fixturePath,fixtureConfig),dashboardAvailable:fixtureSeasonal&&dashboardRoutes.eligibleDashboardRoute(fixturePath,fixtureConfig),preview:true,paused:true,toggleStandard:()=>{},togglePause:()=>{}})},'./dashboard-seasonal.css':{}});
 const views=load('src/components/dashboard/student-views.tsx',{'./dashboard-seasonal':seasonalView,'next/link':anchor,'lucide-react':icons,'@/lib/pte-catalog':catalog,'@/lib/student-navigation':nav});
 const ieltsCatalog=load('src/lib/ielts-catalog.ts');
