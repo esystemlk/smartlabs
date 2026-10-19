@@ -150,7 +150,7 @@ export default function WfdPracticePage() {
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-bold text-slate-600">
             <Link href="/" className="flex items-center gap-1.5 hover:text-slate-900"><Home size={15} /> Home</Link>
-            <Link href="/dashboard" className="flex items-center gap-1.5 hover:text-slate-900"><LayoutDashboard size={15} /> Dashboard</Link>
+            <Link href="/dashboard/pte/listening" className="flex items-center gap-1.5 hover:text-slate-900"><LayoutDashboard size={15} /> Dashboard</Link>
             <span className="flex items-center gap-1.5 text-blue-600"><Headphones size={15} /> Dictation AI</span>
           </div>
           <button onClick={() => setMobileNavOpen(v => !v)} className="md:hidden w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center"><Menu size={18} /></button>
@@ -158,7 +158,7 @@ export default function WfdPracticePage() {
         {mobileNavOpen && (
           <div className="md:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-1 text-sm font-bold text-slate-700">
             <Link href="/" className="block py-2" onClick={() => setMobileNavOpen(false)}>Home</Link>
-            <Link href="/dashboard" className="block py-2" onClick={() => setMobileNavOpen(false)}>Dashboard</Link>
+            <Link href="/dashboard/pte/listening" className="block py-2" onClick={() => setMobileNavOpen(false)}>Dashboard</Link>
           </div>
         )}
       </nav>

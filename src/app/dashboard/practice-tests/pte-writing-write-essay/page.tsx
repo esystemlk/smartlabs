@@ -75,8 +75,8 @@ export default function PteWriteEssayPage() {
       />
       <div className="mx-auto max-w-4xl space-y-4">
         <Button asChild variant="ghost">
-          <Link href="/dashboard/practice-tests">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Practice Tests
+          <Link href="/dashboard/pte/writing">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Writing practice
           </Link>
         </Button>
         <Card>

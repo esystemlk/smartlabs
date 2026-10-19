@@ -8,8 +8,8 @@ export const LMS_URL = process.env.NEXT_PUBLIC_LMS_URL || 'https://lms.smartlabs
 
 export const NAV_LINKS: NavLink[] = [
   { href: '/', label: 'Home' },
-  { href: '/pte', label: 'PTE' },
-  { href: '/celpip', label: 'CELPIP' },
+  { href: '/courses', label: 'PTE' },
+  { href: '/courses', label: 'CELPIP' },
   { href: '/corporate-training', label: 'Corporate Training' },
   { href: '/contact', label: 'Contact' },
 ];

@@ -159,7 +159,7 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
       {/* Header */}
       <div className="mb-5 flex items-start justify-between gap-3">
         <div>
-          <Link href="/dashboard" className="mb-2 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Practice Hub</Link>
+          <Link href="/dashboard/pte/speaking" className="mb-2 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Speaking practice</Link>
           <h1 className={`text-2xl md:text-3xl font-black tracking-tight ${t.text}`}>{p.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{p.subtitle}</p>
         </div>

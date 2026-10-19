@@ -344,7 +344,7 @@ export default function IeltsEssayPractice() {
               <button onClick={reset} className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-black text-sm" style={{ backgroundColor: CRIMSON }}>
                 <RotateCcw size={15} /> New essay
               </button>
-              <Link href="/dashboard" className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-white border border-slate-200 text-slate-700 font-black text-sm">
+              <Link href="/dashboard/ielts/writing" className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-white border border-slate-200 text-slate-700 font-black text-sm">
                 Dashboard
               </Link>
             </div>

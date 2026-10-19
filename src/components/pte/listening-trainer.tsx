@@ -78,7 +78,7 @@ export function ListeningTrainer(p: Props) {
   if (!question) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10 text-center text-muted-foreground">
-        <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm font-semibold hover:text-foreground"><ArrowLeft size={15} /> Dashboard</Link>
+        <Link href="/dashboard/pte/listening" className="inline-flex items-center gap-1.5 text-sm font-semibold hover:text-foreground"><ArrowLeft size={15} /> Dashboard</Link>
         <p className="mt-6">No questions available yet for this task.</p>
       </div>
     );
@@ -89,7 +89,7 @@ export function ListeningTrainer(p: Props) {
       {/* Header */}
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"><ArrowLeft size={15} /> Dashboard</Link>
+          <Link href="/dashboard/pte/listening" className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"><ArrowLeft size={15} /> Dashboard</Link>
           <h1 className={cn('mt-1 text-2xl font-black tracking-tight md:text-3xl', t.text)}>{p.title}</h1>
           <p className="text-sm text-muted-foreground">{p.subtitle}</p>
         </div>

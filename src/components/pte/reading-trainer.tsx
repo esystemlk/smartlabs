@@ -132,8 +132,8 @@ export function ReadingTrainer(p: Props) {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-3 sm:px-5">
-      <Link href="/dashboard" className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> Practice Hub
+      <Link href="/dashboard/pte/reading" className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+        <ArrowLeft className="h-4 w-4" /> Reading practice
       </Link>
 
       {/* Hero header */}

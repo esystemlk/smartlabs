@@ -276,7 +276,7 @@ function SSTInner() {
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-bold text-slate-600">
             <Link href="/" className="flex items-center gap-1.5 hover:text-slate-900"><Home size={15} /> Home</Link>
-            <Link href="/dashboard" className="flex items-center gap-1.5 hover:text-slate-900"><LayoutDashboard size={15} /> Dashboard</Link>
+            <Link href="/dashboard/pte/listening" className="flex items-center gap-1.5 hover:text-slate-900"><LayoutDashboard size={15} /> Dashboard</Link>
             <span className="flex items-center gap-1.5 text-emerald-600"><Headphones size={15} /> SST AI</span>
           </div>
           <div className="flex items-center gap-2">
@@ -293,7 +293,7 @@ function SSTInner() {
         {mobileNavOpen && (
           <div className="md:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-1 text-sm font-bold text-slate-700">
             <Link href="/" className="block py-2" onClick={() => setMobileNavOpen(false)}>Home</Link>
-            <Link href="/dashboard" className="block py-2" onClick={() => setMobileNavOpen(false)}>Dashboard</Link>
+            <Link href="/dashboard/pte/listening" className="block py-2" onClick={() => setMobileNavOpen(false)}>Dashboard</Link>
           </div>
         )}
       </nav>

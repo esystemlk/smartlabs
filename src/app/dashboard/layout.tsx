@@ -1,4 +1,6 @@
 'use client';
+import '@/components/dashboard/student-workspace.css';
+import { searchStudentTasks, examContext } from '@/lib/student-navigation';
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -24,17 +26,15 @@ import {
 } from '@phosphor-icons/react';
 
 const mainNav = [
-  { title: 'Dashboard', href: '/dashboard', icon: House, exact: true },
+ {title:'Home',href:'/dashboard',icon:House,exact:true},
+ {title:'PTE Academic',href:'/dashboard/pte',icon:Microphone},
+ {title:'IELTS',href:'/dashboard/ielts',icon:BookOpen},
+ {title:'My Registrations',href:'/dashboard/registrations',icon:BookmarkSimple},
+ {title:'Results',href:'/dashboard/results',icon:Clock},
+ {title:'Help',href:'/dashboard/support',icon:Headphones},
 ];
-
-const practiceNav = [
-  { title: 'Writing', href: '/dashboard/ai-score-test/writing', icon: PencilSimple, color: 'text-violet-500', bg: 'bg-violet-500/10', activeBg: 'bg-violet-600' },
-];
-
-const toolsNav = [
-  { title: 'Recorded Sessions', href: '/dashboard/recorded-sessions', icon: FilmSlate, color: 'text-rose-500', bg: 'bg-rose-500/10' },
-  { title: 'Resources', href: '/resources', icon: BookmarkSimple, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
-];
+const practiceNav = ['speaking','writing','reading','listening'].map((skill,i)=>({title:skill[0].toUpperCase()+skill.slice(1),href:'/dashboard/pte/'+skill,icon:[Microphone,PencilSimple,BookOpen,Headphones][i]}));
+const toolsNav = [{title:'Settings',href:'/dashboard/settings',icon:BookmarkSimple},{title:'Website home',href:'/',icon:House}];
 
 const ieltsNav = [
   { title: 'Listening', href: '/dashboard/ielts/listening', icon: Headphones },
@@ -46,7 +46,8 @@ const ieltsNav = [
 
 function NavItem({ item, pathname, onClick }: { item: any; pathname: string; onClick?: () => void }) {
   const Icon = item.icon;
-  const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+  const context = examContext(pathname);
+  const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href) || (context?.exam === 'pte' && (item.href === '/dashboard/pte' || item.href === '/dashboard/pte/'+context.skill));
 
   return (
     <Link
@@ -97,7 +98,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           <Image src="/logo.png" alt="SmartLabs" width={38} height={38} className="rounded-xl shrink-0" />
           <div className="min-w-0">
             <div className="font-black text-sm tracking-tight">SMARTLABS</div>
-            <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{isIelts ? 'IELTS Studio' : 'PTE Platform'}</div>
+            <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Student Space</div>
           </div>
         </Link>
         {onClose && (
@@ -116,10 +117,10 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           ))}
         </div>
 
-        {/* Practice Sections */}
+        {/* Exam skills */}
         <div>
           <div className="px-3 mb-2.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-            Practice Sections
+            {isIelts ? 'IELTS skills' : 'PTE skills'}
           </div>
           <div className="space-y-1">
             {(isIelts ? ieltsNav : practiceNav).map(item => (
@@ -170,8 +171,11 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const pathname = usePathname();
+  const router = useRouter();
+  useEffect(()=>{if(!isUserLoading && !user)router.replace('/login?redirect='+encodeURIComponent(pathname));},[user,isUserLoading,router,pathname]);
+  const [search, setSearch] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isElectron, setIsElectron] = useState(false);
   const [isMac, setIsMac] = useState(false);
@@ -185,6 +189,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Close sidebar on route change
   useEffect(() => {
     setSidebarOpen(false);
+    setSearch('');
   }, [pathname]);
 
   const isDesktopClient = isElectron && !isMac;
@@ -193,8 +198,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const isExam = /^\/dashboard\/ielts\/(listening|reading|writing)\/cambridge-/.test(pathname)
     || /^\/dashboard\/ielts\/mock-tests\/mock-/.test(pathname);
 
+  if(isUserLoading || !user) return <div className="p-8" role="status">Loading your student space…</div>;
   return (
-    <div className={cn('min-h-screen bg-muted/20', isDesktopClient && 'pt-8')}
+    <div className={cn('student-workspace min-h-screen', isDesktopClient && 'pt-8')}
       style={pathname.startsWith('/dashboard/ielts') ? {
         '--primary': '358 79% 47%', '--primary-foreground': '0 0% 100%',
         '--background': '0 0% 100%', '--foreground': '0 0% 13%',
@@ -253,8 +259,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Main content — offset by sidebar width, except in exam mode (full width) */}
       <main className={cn('min-h-screen', !isExam && 'lg:ml-64')}>
-        <div className="p-4 sm:p-6 lg:p-8">{children}</div>
+        <div className="p-4 sm:p-6 lg:p-8">{!isExam && <div className="student-search"><label className="sr-only" htmlFor="practice-search">Find PTE or IELTS practice</label><input id="practice-search" type="search" placeholder="Find practice: PTE writing, IELTS reading…" value={search} onChange={event=>setSearch(event.target.value)} onKeyDown={event=>{if(event.key==='Escape')setSearch('')}}/>{search.trim() && <div className="student-search-results">{searchStudentTasks(search).length ? searchStudentTasks(search).map(item=><Link key={item.href} href={item.href} onClick={()=>setSearch('')}>{item.label}<small>{item.context}</small></Link>):<p className="p-4 text-sm">No matching practice. Try an exam or skill name.</p>}</div>}</div>}{children}</div>
       </main>
+      {!isExam && <nav className="student-mobile-nav" aria-label="Student navigation"><Link href="/dashboard">Home</Link><Link href="/dashboard#choose-exam">Practice</Link><Link href="/dashboard/registrations">Registrations</Link><Link href="/dashboard/results">Results</Link><button onClick={()=>setSidebarOpen(true)}>More</button></nav>}
     </div>
   );
 }
