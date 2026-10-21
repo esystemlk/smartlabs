@@ -222,7 +222,9 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
               </div>
               <div className="mt-4 space-y-3">
                 {[
-                  { label: 'Content', v: result.content, fb: result.contentFeedback },
+                  // Read Aloud has no Content category in real PTE scoring — Pearson scores it on
+                  // Oral Fluency and Pronunciation only, so `content` is omitted by the AI for that task.
+                  ...(result.content !== undefined ? [{ label: 'Content', v: result.content, fb: result.contentFeedback ?? '' }] : []),
                   { label: 'Oral Fluency', v: result.fluency, fb: result.fluencyFeedback },
                   { label: 'Pronunciation', v: result.pronunciation, fb: result.pronunciationFeedback },
                 ].map(row => (

@@ -94,6 +94,11 @@ export const adminNavigation: {title:string;items:AdminTool[]}[] = [
         "href": "/admin/dashboard/payments"
       },
       {
+        "title": "AI Credits Earnings",
+        "description": "Successful AI-credit payments — weekly, monthly and yearly totals",
+        "href": "/admin/dashboard/ai-credits-earnings"
+      },
+      {
         "title": "Credit Manager",
         "description": "All students holding credits + gift/deduct universal AI credits",
         "href": "/admin/dashboard/credit-manager"
