@@ -32,6 +32,8 @@ interface Props<Q extends SpeakingQuestion> {
   questions: Q[];
   /** Reference text sent to the AI (paragraph / sentence / question / gist). */
   getPromptText: (q: Q) => string;
+  /** Describe Image only: the question's actual image URL, sent to the AI so it scores the real picture. */
+  getImageUrl?: (q: Q) => string | undefined;
   /** What the student sees on screen. */
   renderPrompt: (q: Q) => React.ReactNode;
   /** Text used for the search box. */
@@ -141,7 +143,7 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
       const audioDataUri: string = await new Promise((res, rej) => {
         const r = new FileReader(); r.onloadend = () => res(r.result as string); r.onerror = rej; r.readAsDataURL(blob);
       });
-      const score = await scorePteSpeaking({ taskType: p.taskType, promptText: p.getPromptText(question), audioDataUri });
+      const score = await scorePteSpeaking({ taskType: p.taskType, promptText: p.getPromptText(question), audioDataUri, imageUrl: p.getImageUrl?.(question) });
       setResult(score); setPhase('result');
     } catch (e: unknown) {
       setErrMsg(e instanceof Error ? e.message : 'Scoring failed. Please try again.');

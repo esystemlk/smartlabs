@@ -36,6 +36,14 @@ export interface SpeakingScoreInput {
   promptText: string;
   /** data:audio/...;base64,... of the student's recording. */
   audioDataUri: string;
+  /**
+   * Describe Image only: the actual question image (an https URL — typically
+   * Firebase Storage — or a data:image/...;base64,... URI). Fetched and sent
+   * to the model as a real image attachment so it scores the picture the
+   * student was actually shown, instead of relying only on whatever text an
+   * admin may or may not have typed in when uploading the question.
+   */
+  imageUrl?: string;
 }
 
 const RUBRICS: Record<string, string> = {
@@ -75,9 +83,11 @@ PRONUNCIATION — clarity and intelligibility of the words ACTUALLY produced (so
 
 Feedback must show: the original sentence, the words reliably identified from the student's actual response (never the words filled in as if correct), which words were omitted/substituted/inserted, and one practical instruction to listen again and reproduce the complete sentence in order next time.`,
   'describe-image':
-`DESCRIBE IMAGE: the student describes an image (the prompt text is what the image shows / its data). Score CONTENT, ORAL FLUENCY and PRONUNCIATION independently (each on the 0–90 scale).
+`DESCRIBE IMAGE: the student describes an image. THE ACTUAL QUESTION IMAGE IS ATTACHED to this prompt as a media file — it is the ground truth. Look at it directly; do not guess or invent what it might show. Score CONTENT, ORAL FLUENCY and PRONUNCIATION independently (each on the 0–90 scale).
 
-MANDATORY IMAGE ANALYSIS FIRST — never begin marking based only on a model answer or an initial impression. Before assessing the student:
+If an "ADMIN REFERENCE NOTES" block is included below, treat it only as a hint from the person who uploaded the question — verify every fact in it against the attached image itself, and if it conflicts with what the image actually shows, trust the image. If no admin notes are included, analyse the attached image entirely on your own.
+
+MANDATORY IMAGE ANALYSIS FIRST — never begin marking based only on a model answer, the admin notes, or an initial impression. Before assessing the student, look at the attached image and:
 1. Classify the IMAGE TYPE (bar/line/pie chart, table, map, process/cycle/flowchart, scientific diagram, photo/illustration, infographic, Venn diagram, mixed chart…) and adapt what counts as important:
    • Charts/graphs/tables → main topic + highest/lowest values, major trend/increase/decrease, key differences/similarities, overall pattern. Reward COMPARISON over reading numbers: "China records the highest figure, followed by India, while Australia is lowest" beats "China 50, India 40, Australia 20".
    • Maps → geographical distribution / regional patterns / concentrations, not a list of place names.
@@ -148,9 +158,26 @@ ORAL FLUENCY — judge actual delivery only (continuity, rhythm, phrasing, pace,
 PRONUNCIATION — clarity/intelligibility of the words produced (sounds, word/sentence stress, connected speech), judged from the actual audio. Do not penalise a non-native/regional accent when speech stays intelligible; identify specific unclear words where possible, but never fabricate one the audio doesn't support.`,
 };
 
+/** Fetches a remote image and inlines it as a data: URI so the model receives the actual bytes. */
+async function toImageDataUri(url: string): Promise<string | null> {
+  if (url.startsWith('data:')) return url;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const contentType = res.headers.get('content-type') || 'image/jpeg';
+    const buf = Buffer.from(await res.arrayBuffer());
+    return `data:${contentType};base64,${buf.toString('base64')}`;
+  } catch (e) {
+    console.error('[score-pte-speaking] failed to fetch question image:', e);
+    return null;
+  }
+}
+
 export async function scorePteSpeaking(input: SpeakingScoreInput): Promise<SpeakingScore> {
   const rubric = RUBRICS[input.taskType] ?? 'General PTE Academic speaking rubric: score content, fluency and pronunciation.';
   const isReadAloud = input.taskType === 'read-aloud';
+  const isDescribeImage = input.taskType === 'describe-image';
+  const imageDataUri = isDescribeImage && input.imageUrl ? await toImageDataUri(input.imageUrl) : null;
 
   const scoringSteps = isReadAloud
     ? `Steps:
@@ -172,25 +199,34 @@ Score the three skills INDEPENDENTLY — do not let one drag another:
 - Never reduce Content because pronunciation is weak, and never reduce Fluency because content is weak.
 Be realistic: silence or off-topic answers score very low on the relevant skill; near-perfect delivery scores 80+. Never claim this is an exact official Pearson score; it is an instructional estimate calibrated against the Pearson descriptors.`;
 
+  const referenceBlock = isDescribeImage
+    ? (input.promptText.trim()
+        ? `ADMIN REFERENCE NOTES (a hint only — verify every fact against the attached image; trust the image if they conflict):\n"""\n${input.promptText}\n"""`
+        : 'No admin reference notes were provided for this image — analyse the attached image entirely on your own.')
+    : `PROMPT / REFERENCE:\n"""\n${input.promptText}\n"""`;
+
+  if (isDescribeImage && input.imageUrl && !imageDataUri) {
+    // The image failed to load — never let the model silently invent a picture instead.
+    throw new Error('Could not load the question image for scoring. Please try again.');
+  }
+
   return callWithFallback(async (ai) => {
     const { output } = await ai.generate({
       prompt: [
         {
           text:
-`You are a strict but fair PTE Academic speaking examiner. Score the attached audio recording using the official Pearson enabling skills.
+`You are a strict but fair PTE Academic speaking examiner. Score the student's attached audio recording using the official Pearson enabling skills.
 
 Golden rule — never misidentify the student's spoken response: identify exactly what the student said before marking anything. Never invent words, never assume a word was spoken because it appears in the reference text, never silently replace the actual response with an expected or "corrected" version, and never fabricate a fluency or pronunciation problem the audio does not support. Distinguish a genuine student error from a microphone/audio/background-noise problem — never penalise the student for the latter. If the audio is too unclear to judge something reliably, say so rather than inventing precision.
-
+${imageDataUri ? '\nThe image attached to this prompt is the EXACT question image the student was shown — base every image-content judgement on it, never on a generic or remembered example.\n' : ''}
 TASK TYPE: ${input.taskType}
 ${rubric}
 
-PROMPT / REFERENCE:
-"""
-${input.promptText}
-"""
+${referenceBlock}
 
 ${scoringSteps}`,
         },
+        ...(imageDataUri ? [{ media: { url: imageDataUri } }] : []),
         { media: { url: input.audioDataUri } },
       ],
       output: { schema: SpeakingScoreSchema },

@@ -10,7 +10,6 @@
 
 import { pteReadAloudData } from '@/lib/pte-speaking-read-aloud-data';
 import { pteRepeatSentenceData } from '@/lib/pte-speaking-repeat-sentence-data';
-import { pteDescribeImageData } from '@/lib/pte-speaking-describe-image-data';
 import { pteRetellLectureData } from '@/lib/pte-speaking-retell-lecture-data';
 import { pteAnswerShortQuestionData } from '@/lib/pte-speaking-answer-short-question-data';
 import { pteSummarizeGroupDiscussionData } from '@/lib/pte-speaking-summarize-group-discussion-data';
@@ -62,7 +61,9 @@ export const QUESTION_BANK: Record<string, readonly any[]> = {
   // ── Speaking ──
   'read-aloud': pteReadAloudData,
   'repeat-sentence': pteRepeatSentenceData,
-  'describe-image': pteDescribeImageData,
+  // 'describe-image' intentionally has no seed/mock bank — every question
+  // must be a real admin-uploaded image (pte_questions in Firestore), never
+  // a placeholder bar chart. See api/questions/route.ts's seed-fallback note.
   'retell-lecture': pteRetellLectureData,
   'answer-short-question': pteAnswerShortQuestionData,
   'summarize-group-discussion': pteSummarizeGroupDiscussionData,
