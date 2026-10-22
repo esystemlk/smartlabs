@@ -2,8 +2,12 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { CompactQuestionBank } from './compact-question-bank';
 import { CreditsPill } from '@/components/pte/credits-pill';
-import { scorePteSpeaking, type SpeakingScore } from '@/ai/flows/score-pte-speaking';
+import type { SpeakingScore } from '@/ai/flows/score-pte-speaking';
+import { MAX_SPEAKING_AUDIO_BYTES } from '@/lib/speaking-recordings';
+import { speakingRequest } from '@/lib/services/speaking-recordings.client';
+import { useUser } from '@/firebase';
 import {
   Mic, Square, Loader2, RotateCcw, Play, Search, ChevronLeft, ChevronRight,
   Shuffle, Volume2, ArrowLeft, Sparkles, ListChecks, AlertTriangle,
@@ -74,13 +78,29 @@ interface Props<Q extends SpeakingQuestion> {
 type Phase = 'idle' | 'listening' | 'prep' | 'recording' | 'scoring' | 'result' | 'error';
 
 export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
+  const { user } = useUser();
   const t = theme(p.color);
   const [index, setIndex] = useState(0);
-  const [query, setQuery] = useState('');
   const [phase, setPhase] = useState<Phase>('idle');
   const [count, setCount] = useState(0);
   const [result, setResult] = useState<SpeakingScore | null>(null);
   const [errMsg, setErrMsg] = useState('');
+  const [answerBlob, setAnswerBlob] = useState<Blob | null>(null);
+  const [answerUrl, setAnswerUrl] = useState('');
+  const [answerSource, setAnswerSource] = useState<'microphone' | 'upload'>('microphone');
+  const [saved, setSaved] = useState(false);
+  const [saveStage, setSaveStage] = useState('');
+  const answerIdRef = useRef<string | null>(null);
+  const attemptRef = useRef(0);
+  const operationRef = useRef(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (!answerBlob) { setAnswerUrl(''); return; }
+    const url = URL.createObjectURL(answerBlob);
+    setAnswerUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [answerBlob]);
 
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -95,10 +115,7 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
   const meterRafRef = useRef<number | null>(null);
   const lastMeterPaintRef = useRef(0);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return q ? p.questions.filter(x => p.searchText(x).toLowerCase().includes(q)) : p.questions;
-  }, [query, p.questions]); // eslint-disable-line
+  const filtered = p.questions;
   const question = filtered[index] ?? filtered[0] ?? p.questions[0];
 
   const clearTimer = () => { if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; } };
@@ -148,15 +165,19 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
   };
 
   const reset = useCallback(() => {
+    attemptRef.current++;
+    operationRef.current = false;
     clearTimer(); stopStream(); stopMeter();
-    if (mediaRef.current && mediaRef.current.state !== 'inactive') { try { mediaRef.current.stop(); } catch { /* ignore */ } }
+    if (mediaRef.current) { mediaRef.current.onstop = null; if (mediaRef.current.state !== 'inactive') { try { mediaRef.current.stop(); } catch { /* ignore */ } } }
     mediaRef.current = null; chunksRef.current = [];
+    answerIdRef.current = null; setAnswerBlob(null); setSaved(false); setSaveStage('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
     setPhase('idle'); setResult(null); setErrMsg(''); setCount(0);
   }, []);
 
   // Reset whenever the question changes.
-  useEffect(() => { reset(); }, [question?.id, reset]);
-  useEffect(() => () => { clearTimer(); stopStream(); stopMeter(); }, []);
+  useEffect(() => { reset(); }, [question?.id, user?.uid, reset]);
+  useEffect(() => () => { attemptRef.current++; clearTimer(); if (mediaRef.current) mediaRef.current.onstop = null; stopStream(); stopMeter(); window.speechSynthesis?.cancel(); }, []);
 
   const speak = (text: string) => new Promise<void>((resolve) => {
     try {
@@ -168,63 +189,94 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
   });
 
   const startRecording = useCallback(async () => {
+    const attempt = attemptRef.current;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (attempt !== attemptRef.current) { stream.getTracks().forEach(track => track.stop()); return; }
       streamRef.current = stream;
       startMeter(stream);
       const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : '';
       const mr = new MediaRecorder(stream, mime ? { mimeType: mime, audioBitsPerSecond: 32000 } : undefined);
       chunksRef.current = [];
       mr.ondataavailable = e => { if (e.data.size) chunksRef.current.push(e.data); };
-      mr.onstop = () => { stopStream(); stopMeter(); void submit(); };
+      mr.onstop = () => {
+        stopStream(); stopMeter();
+        const blob = new Blob(chunksRef.current, { type: mr.mimeType || chunksRef.current[0]?.type || 'audio/webm' });
+        setAnswerBlob(blob); setAnswerSource('microphone');
+        void submit(blob, 'microphone');
+      };
       mediaRef.current = mr;
       mr.start();
       setPhase('recording');
       setCount(p.recordSeconds);
       clearTimer();
-      timerRef.current = setInterval(() => setCount(c => {
-        if (c <= 1) { clearTimer(); stopRecording(); return 0; }
-        return c - 1;
-      }), 1000);
+      let remaining = p.recordSeconds;
+      timerRef.current = setInterval(() => {
+        remaining = Math.max(0, remaining - 1); setCount(remaining);
+        if (remaining === 0) { clearTimer(); stopRecording(); }
+      }, 1000);
     } catch {
+      if (attempt !== attemptRef.current) return;
+      stopStream(); stopMeter();
       setErrMsg('Microphone access was blocked. Please allow the mic and try again.');
       setPhase('error');
     }
     // eslint-disable-next-line
-  }, [p.recordSeconds]);
+  }, [p, question, user]);
 
   const beginPrep = useCallback(async () => {
+    if (!user) { setErrMsg('Sign in to save and check your speaking answers.'); setPhase('error'); return; }
+    reset();
+    const attempt = attemptRef.current;
     setResult(null); setErrMsg('');
     // Optionally play the prompt aloud first.
     const toSpeak = p.speakPrompt?.(question);
     if (toSpeak) { setPhase('listening'); await speak(toSpeak); }
+    if (attempt !== attemptRef.current) return;
     setPhase('prep');
     setCount(p.prepSeconds);
     clearTimer();
-    timerRef.current = setInterval(() => setCount(c => {
-      if (c <= 1) { clearTimer(); void startRecording(); return 0; }
-      return c - 1;
-    }), 1000);
-  }, [question, p, startRecording]); // eslint-disable-line
+    let remaining = p.prepSeconds;
+    timerRef.current = setInterval(() => {
+      remaining = Math.max(0, remaining - 1); setCount(remaining);
+      if (remaining === 0) { clearTimer(); void startRecording(); }
+    }, 1000);
+  }, [question, p, startRecording, user, reset]); // eslint-disable-line
 
   const stopRecording = () => {
     clearTimer();
     if (mediaRef.current && mediaRef.current.state !== 'inactive') mediaRef.current.stop();
   };
 
-  const submit = async () => {
+  const submit = async (blob: Blob, source: 'microphone' | 'upload') => {
+    if (operationRef.current) return;
+    if (!user) { setErrMsg('Sign in to save and check your answer.'); setPhase('error'); return; }
+    if (blob.size < 800 || blob.size > MAX_SPEAKING_AUDIO_BYTES) { setErrMsg('Choose an audio recording between 800 bytes and 4 MB.'); setPhase('error'); return; }
+    operationRef.current = true;
+    const attempt = attemptRef.current;
     setPhase('scoring');
+    setErrMsg('');
     try {
-      const blob = new Blob(chunksRef.current, { type: chunksRef.current[0]?.type || 'audio/webm' });
-      if (blob.size < 800) { setErrMsg('We could not hear any speech. Please try again.'); setPhase('error'); return; }
-      const audioDataUri: string = await new Promise((res, rej) => {
-        const r = new FileReader(); r.onloadend = () => res(r.result as string); r.onerror = rej; r.readAsDataURL(blob);
-      });
-      const score = await scorePteSpeaking({ taskType: p.taskType, promptText: p.getPromptText(question), audioDataUri, imageUrl: p.getImageUrl?.(question) });
+      const id = answerIdRef.current ?? crypto.randomUUID();
+      answerIdRef.current = id;
+      setSaveStage('Saving your answer securely…');
+      const form = new FormData();
+      form.set('id', id); form.set('audio', blob, 'answer'); form.set('source', source);
+      form.set('taskType', p.taskType); form.set('title', p.title); form.set('questionId', question.id);
+      form.set('questionLabel', p.searchText(question)); form.set('promptText', p.getPromptText(question));
+      await speakingRequest(user, '', { method: 'POST', body: form });
+      if (attempt !== attemptRef.current) return;
+      setSaved(true); setSaveStage('Saved. Checking your response with AI…');
+      const response = await speakingRequest(user, `/${id}/score`, { method: 'POST' });
+      const { score } = await response.json() as { score: SpeakingScore };
+      if (attempt !== attemptRef.current) return;
       setResult(score); setPhase('result');
     } catch (e: unknown) {
+      if (attempt !== attemptRef.current) return;
       setErrMsg(e instanceof Error ? e.message : 'Scoring failed. Please try again.');
       setPhase('error');
+    } finally {
+      if (attempt === attemptRef.current) operationRef.current = false;
     }
   };
 
@@ -232,6 +284,28 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
   const rand = () => setIndex(Math.floor(Math.random() * filtered.length));
 
   const busy = phase === 'prep' || phase === 'recording' || phase === 'listening' || phase === 'scoring';
+
+  const chooseUpload = async (file?: File) => {
+    if (!file || busy) return;
+    reset();
+    const attempt = attemptRef.current;
+    if (file.size < 800 || file.size > MAX_SPEAKING_AUDIO_BYTES) { setErrMsg('Choose an audio file between 800 bytes and 4 MB.'); setPhase('error'); return; }
+    const url = URL.createObjectURL(file);
+    const audio = new Audio();
+    try {
+      const duration = await new Promise<number>((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('This file could not be opened. Please export it as MP3, M4A, WAV, OGG or WebM.')), 8000);
+        audio.onloadedmetadata = () => { clearTimeout(timeout); resolve(audio.duration); };
+        audio.onerror = () => { clearTimeout(timeout); reject(new Error('This audio format cannot be played. Please choose another file.')); };
+        audio.src = url;
+      });
+      if (attempt !== attemptRef.current) return;
+      if (!Number.isFinite(duration) || duration <= 0 || duration > p.recordSeconds + 1) throw new Error(`Use an answer no longer than ${p.recordSeconds} seconds for this question.`);
+      setAnswerBlob(file); setAnswerSource('upload');
+    } catch (error) {
+      if (attempt === attemptRef.current) { setErrMsg(error instanceof Error ? error.message : 'Could not open this recording.'); setPhase('error'); }
+    } finally { audio.removeAttribute('src'); audio.load(); URL.revokeObjectURL(url); }
+  };
 
   return (
     <div className="mx-auto w-full max-w-5xl">
@@ -244,13 +318,14 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <CreditsPill pool="speaking" />
+          <Link href="/dashboard/speaking-recordings" className="rounded-xl border px-3 py-2 text-xs font-semibold">My recordings</Link>
           <span className={`hidden sm:inline-flex items-center gap-1 rounded-full ${t.soft} ${t.text} px-3 py-1 text-xs font-bold`}><Sparkles className="h-3 w-3" /> AI Score · {p.weight}</span>
         </div>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
         {/* Main */}
-        <div className="min-w-0 space-y-4">
+        <div className="order-last min-w-0 space-y-4 lg:order-first">
           <div className={`rounded-2xl border-2 bg-card p-5 md:p-6 ${busy ? `ring-2 ${t.ring}` : ''}`}>
             <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{p.instructions}</p>
             <div className="min-h-[120px]">{p.renderPrompt(question)}</div>
@@ -258,8 +333,10 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
 
           {/* Recorder */}
           <div className="rounded-2xl border bg-card p-5 text-center">
+            <p className="mb-4 text-sm text-muted-foreground">Record here or upload your own answer. Signed-in answers are saved privately for you to replay.</p>
+            {!user && <Link href={`/login?redirect=${encodeURIComponent(`/dashboard/practice/${p.taskType}`)}`} className="mb-4 inline-block font-semibold text-primary underline">Sign in to save & check answers</Link>}
             {phase === 'idle' && (
-              <button onClick={beginPrep} className={`inline-flex items-center gap-2 rounded-xl bg-gradient-to-r ${t.grad} px-6 py-3 text-sm font-bold text-white shadow-sm`}>
+              <button disabled={!user} onClick={beginPrep} className={`inline-flex items-center gap-2 rounded-xl bg-gradient-to-r ${t.grad} px-6 py-3 text-sm font-bold text-white shadow-sm disabled:opacity-50`}>
                 <Mic className="h-4 w-4" /> Start
               </button>
             )}
@@ -278,16 +355,31 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
                 <button onClick={stopRecording} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-rose-600 px-6 py-3 text-sm font-bold text-white"><Square className="h-4 w-4" /> Stop & Score</button>
               </div>
             )}
-            {phase === 'scoring' && <p className="flex items-center justify-center gap-2 text-sm font-medium"><Loader2 className="h-5 w-5 animate-spin" /> Scoring your response with AI…</p>}
+            {phase === 'scoring' && <p role="status" className="flex items-center justify-center gap-2 text-sm font-medium"><Loader2 className="h-5 w-5 animate-spin" /> {saveStage}</p>}
             {phase === 'error' && (
               <div className="space-y-3">
-                <p className="flex items-center justify-center gap-2 text-sm text-rose-600"><AlertTriangle className="h-4 w-4" /> {errMsg}</p>
-                <button onClick={beginPrep} className={`inline-flex items-center gap-2 rounded-xl ${t.bg} px-5 py-2.5 text-sm font-bold text-white`}><RotateCcw className="h-4 w-4" /> Try again</button>
+                <p role="alert" className="flex items-center justify-center gap-2 text-sm text-rose-600"><AlertTriangle className="h-4 w-4" /> {errMsg}</p>
+                {answerBlob && <button disabled={!user} onClick={() => void submit(answerBlob, answerSource)} className={`mr-2 rounded-xl ${t.bg} px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50`}>{saved ? 'Retry AI checking' : 'Retry saving & checking'}</button>}
+                <button disabled={!user} onClick={beginPrep} className="inline-flex items-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-bold disabled:opacity-50"><RotateCcw className="h-4 w-4" /> Record a new answer</button>
               </div>
             )}
             {phase === 'result' && (
               <button onClick={beginPrep} className={`inline-flex items-center gap-2 rounded-xl ${t.bg} px-5 py-2.5 text-sm font-bold text-white`}><RotateCcw className="h-4 w-4" /> Record again</button>
             )}
+            {!busy && <div className="mt-4 border-t pt-4 text-left">
+              <label htmlFor="speaking-answer-upload" className="block text-sm font-bold">Or upload a prerecorded answer</label>
+              <p id="speaking-upload-help" className="my-2 text-xs text-muted-foreground">Your own voice answering the question above. MP3, M4A, WAV, OGG or WebM · up to 4 MB · {p.recordSeconds} seconds maximum.</p>
+              <input ref={fileInputRef} id="speaking-answer-upload" type="file" accept="audio/mpeg,audio/mp4,audio/x-m4a,audio/wav,audio/x-wav,audio/ogg,audio/webm,.mp3,.m4a,.wav,.ogg,.webm" aria-describedby="speaking-upload-help" disabled={!user} onChange={event => void chooseUpload(event.target.files?.[0])} className="block w-full min-w-0 rounded-xl border p-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-muted file:px-3 file:py-2 disabled:opacity-50" />
+            </div>}
+            {answerUrl && <div className="mt-4 rounded-xl bg-muted/40 p-4 text-left">
+              <p className="mb-2 text-sm font-semibold">Your {answerSource === 'upload' ? 'uploaded answer' : 'recorded answer'}</p>
+              <audio controls preload="metadata" src={answerUrl} className="w-full" aria-label="Listen to your speaking answer" />
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
+                <a href={answerUrl} download={`speaking-answer.${answerBlob?.type.includes('mp4') ? 'm4a' : answerBlob?.type.includes('mpeg') ? 'mp3' : answerBlob?.type.includes('wav') ? 'wav' : answerBlob?.type.includes('ogg') ? 'ogg' : 'webm'}`} className="font-semibold underline">Download my answer</a>
+                <span role="status">{saved ? 'Saved to My recordings.' : 'Not saved yet — keep this page open.'}</span>
+              </div>
+              {!busy && phase === 'idle' && answerSource === 'upload' && <button onClick={() => answerBlob && void submit(answerBlob, 'upload')} className={`mt-3 rounded-xl ${t.bg} px-5 py-2.5 text-sm font-bold text-white`}>Save & check with AI</button>}
+            </div>}
           </div>
 
           {/* Result */}
@@ -329,33 +421,7 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
           )}
         </div>
 
-        {/* Question list + search */}
-        <div className="min-w-0 rounded-2xl border bg-card">
-          <div className="border-b p-3">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input value={query} onChange={e => { setQuery(e.target.value); setIndex(0); }} placeholder="Search questions…"
-                className="w-full rounded-lg border bg-background py-2 pl-8 pr-2 text-sm outline-none focus:border-primary" />
-            </div>
-            <div className="mt-2 flex items-center justify-between">
-              <div className="flex gap-1">
-                <button onClick={() => go(-1)} disabled={busy} className="rounded-lg border p-1.5 disabled:opacity-40"><ChevronLeft className="h-4 w-4" /></button>
-                <button onClick={() => go(1)} disabled={busy} className="rounded-lg border p-1.5 disabled:opacity-40"><ChevronRight className="h-4 w-4" /></button>
-                <button onClick={rand} disabled={busy} className="rounded-lg border p-1.5 disabled:opacity-40"><Shuffle className="h-4 w-4" /></button>
-              </div>
-              <span className="text-xs text-muted-foreground">{filtered.length ? index + 1 : 0} / {filtered.length}</span>
-            </div>
-          </div>
-          <div className="max-h-[52vh] overflow-y-auto p-2">
-            {filtered.map((q, i) => (
-              <button key={q.id} onClick={() => setIndex(i)} disabled={busy}
-                className={`mb-1 block w-full truncate rounded-lg px-3 py-2 text-left text-sm transition-colors disabled:opacity-50 ${i === index ? `${t.soft} ${t.text} font-semibold` : 'hover:bg-muted/60'}`}>
-                {p.searchText(q)}
-              </button>
-            ))}
-            {filtered.length === 0 && <p className="p-4 text-center text-sm text-muted-foreground">No questions match.</p>}
-          </div>
-        </div>
+        <div className="order-first lg:order-last"><CompactQuestionBank questions={p.questions} label={p.searchText} selectedIndex={index} onSelect={setIndex} disabled={busy} mobileCollapse /></div>
       </div>
     </div>
   );

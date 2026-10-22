@@ -16,5 +16,6 @@
 .pte-practice-art-float{top:16px;right:16px;left:auto;bottom:auto}.pte-practice-question>p{font-size:12px}.pte-practice-how p{font-size:12px}.pte-practice-library-heading p{font-size:13px}#practice-workspace-title{scroll-margin-top:24px}@media(max-width:760px){.pte-practice-search input{font-size:16px}.pte-practice-art-float{top:10px;right:10px;left:auto;bottom:auto}.pte-practice-account>button{display:inline-block;font-size:10px}}
 
 .pte-practice-search input:focus-visible{outline:none}
+.pte-compact-library{--background:0 0% 100%;--foreground:218 43% 19%;--card:0 0% 100%;--card-foreground:218 43% 19%;--muted:218 33% 95%;--muted-foreground:216 18% 42%;--border:218 32% 88%;--primary:var(--practice-primary-hsl,243 44% 50%);--primary-foreground:0 0% 100%}.pte-compact-library button{cursor:pointer}.pte-compact-library :is(button,input):focus-visible{outline:3px solid var(--practice-accent);outline-offset:2px}
 
 .pte-practice-top-up{font-size:11px;font-weight:700;color:var(--practice-accent);padding:8px 2px}@media(max-width:760px){.pte-practice-top-up{font-size:10px}}

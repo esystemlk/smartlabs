@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { CompactQuestionBank } from './compact-question-bank';
 import { ArrowLeft, Volume2, Loader2, CheckCircle2, XCircle, RotateCcw, ChevronRight, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -95,6 +96,8 @@ export function ListeningTrainer(p: Props) {
         </div>
         <span className={cn('shrink-0 rounded-full px-3 py-1 text-xs font-black', t.soft, t.text)}>{p.weight}</span>
       </div>
+
+      <div className="mb-4"><CompactQuestionBank questions={p.questions} label={(q, questionIndex) => String(q.title || q.question || ('Question ' + (questionIndex + 1)))} selectedIndex={index} onSelect={go} mobileCollapse /></div>
 
       {/* Audio card */}
       <div className="rounded-2xl border bg-card p-5">

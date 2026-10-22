@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { CompactQuestionBank } from './compact-question-bank';
 import { Reorder } from 'framer-motion';
 import {
   ArrowLeft, Search, ChevronLeft, ChevronRight, Shuffle, Sparkles,
@@ -66,7 +67,6 @@ function labelOf(variant: ReadingVariant, q: AnyQ): string {
 export function ReadingTrainer(p: Props) {
   const t = theme(p.color);
   const [index, setIndex] = useState(0);
-  const [query, setQuery] = useState('');
 
   // Per-attempt controls.
   const [submitted, setSubmitted] = useState(false); // user confirmed their own answer
@@ -78,10 +78,7 @@ export function ReadingTrainer(p: Props) {
 
   const graded = submitted || peeked;
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return q ? p.questions.filter((x) => labelOf(p.variant, x).toLowerCase().includes(q)) : p.questions;
-  }, [query, p.questions, p.variant]);
+  const filtered = p.questions;
   const question = filtered[index] ?? filtered[0] ?? p.questions[0];
 
   // Count-up timer — starts on load, resets on question change / Redo, and
@@ -169,7 +166,7 @@ export function ReadingTrainer(p: Props) {
 
       <div className="mt-4 grid gap-4 lg:mt-5 lg:grid-cols-[1fr_320px]">
         {/* Main */}
-        <div className="min-w-0 space-y-4">
+        <div className="order-last min-w-0 space-y-4 lg:order-first">
           <div className={cn('overflow-hidden rounded-2xl border bg-card shadow-sm')}>
             <div className={cn('flex items-center justify-between gap-2 border-b px-4 py-3 sm:px-6', t.soft)}>
               <span className={cn('inline-flex items-center gap-2 text-sm font-black', t.text)}>
@@ -253,50 +250,7 @@ export function ReadingTrainer(p: Props) {
           </div>
         </div>
 
-        {/* Question navigator */}
-        <div className="min-w-0 rounded-2xl border bg-card shadow-sm">
-          <div className="border-b p-3">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                value={query}
-                onChange={(e) => { setQuery(e.target.value); setIndex(0); }}
-                placeholder="Search questions…"
-                className="w-full rounded-lg border bg-background py-2 pl-8 pr-2 text-sm outline-none focus:border-primary"
-              />
-            </div>
-            <div className="mt-2 flex items-center justify-between">
-              <div className="flex gap-1">
-                <button onClick={() => go(-1)} aria-label="Previous" className="rounded-lg border p-2 transition hover:bg-muted"><ChevronLeft className="h-4 w-4" /></button>
-                <button onClick={() => go(1)} aria-label="Next" className="rounded-lg border p-2 transition hover:bg-muted"><ChevronRight className="h-4 w-4" /></button>
-                <button onClick={rand} aria-label="Random" className="rounded-lg border p-2 transition hover:bg-muted"><Shuffle className="h-4 w-4" /></button>
-              </div>
-              <span className="text-xs font-medium text-muted-foreground">{pos} / {total}</span>
-            </div>
-          </div>
-          {/* Numbered palette — compact and responsive on every screen. */}
-          <div className="max-h-[34vh] overflow-y-auto p-3 lg:max-h-[56vh]">
-            {total > 0 ? (
-              <div className="grid grid-cols-8 gap-1.5 sm:grid-cols-10 lg:grid-cols-6">
-                {filtered.map((q, i) => (
-                  <button
-                    key={q.id ?? i}
-                    onClick={() => setIndex(i)}
-                    title={labelOf(p.variant, q)}
-                    className={cn(
-                      'flex aspect-square items-center justify-center rounded-lg border text-xs font-bold transition',
-                      i === index ? `${t.bg} border-transparent text-white shadow-sm` : 'text-muted-foreground hover:bg-muted',
-                    )}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <p className="p-4 text-center text-sm text-muted-foreground">No questions match.</p>
-            )}
-          </div>
-        </div>
+        <div className="order-first lg:order-last"><CompactQuestionBank questions={p.questions} label={q => labelOf(p.variant, q)} selectedIndex={index} onSelect={setIndex} mobileCollapse /></div>
       </div>
     </div>
   );
