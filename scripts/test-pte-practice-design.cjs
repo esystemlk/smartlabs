@@ -1,0 +1,11 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),ts=require('typescript'),React=require('react'),{renderToStaticMarkup}=require('react-dom/server');
+const exportsObject={};vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/components/pte/practice-design.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText,{exports:exportsObject,require:name=>name==='./practice-design.css'?{}:name==='next/link'?({href,children,...props})=>React.createElement('a',{href,...props},children):name==='lucide-react'?new Proxy({},{get:()=>()=>null}):require(name)});
+const {filterPracticeQuestions,practiceDesign,PteQuestionLibrary,PtePracticeSession}=exportsObject;
+const questions=[{title:'Urban parks',category:'Environment',content:'Hidden transcript about a penguin.'},{title:'Digital learning',category:'Education'},{title:'Transport systems',category:'Society'}];
+assert.deepEqual(Array.from(filterPracticeQuestions(questions,'  EDUCATION '),entry=>entry.index),[1]);
+assert.equal(filterPracticeQuestions(questions,'penguin').length,0,'Searching must not reveal hidden transcripts');
+assert.deepEqual(Array.from(filterPracticeQuestions(questions,'transport'),entry=>entry.index),[2],'Filtered selections must retain the original question index');
+assert.equal(filterPracticeQuestions(questions,'missing').length,0);
+const locked=renderToStaticMarkup(React.createElement(PteQuestionLibrary,{kind:'wfd',questions,loading:false,locked:true,onSelect:()=>{}}));assert.ok(!locked.includes('Urban parks'));assert.ok(!locked.includes('Hidden transcript'));assert.ok(locked.includes('Sign in to practise'));
+for(const kind of ['sst','swt','wfd']){const config=practiceDesign[kind];assert.ok(fs.existsSync('src/app'+config.href+'/page.tsx'));const html=renderToStaticMarkup(React.createElement(PtePracticeSession,{kind,questionTitle:'Example question',hasResult:false}));assert.equal((html.match(/aria-current="step"/g)||[]).length,1);assert.ok(html.includes('Your response'));}
+console.log('Passed: category/title search, stable filtered-question identity, hidden transcript protection, locked library privacy, practice destinations and active response progress.');

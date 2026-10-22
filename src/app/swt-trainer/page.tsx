@@ -1,4 +1,5 @@
 'use client';
+import {PtePracticeHero,PtePracticeTopbar,PteQuestionLibrary,PtePracticeSession} from '@/components/pte/practice-design';
 
 import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -167,7 +168,7 @@ function SWTInner() {
   const backToList = () => { setSelected(null); setSummary(''); setResult(null); setError(null); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
+    <div className="pte-practice-studio font-sora" data-practice="swt">
       <AiRetryDialog
         open={retryOpen}
         onRetry={handleRetry}
@@ -179,70 +180,11 @@ function SWTInner() {
         {payhereParams && Object.entries(payhereParams).map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
       </form>
 
-      {/* Top bar */}
-      <div className="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-slate-200">
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/dashboard/pte/writing" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-slate-900">
-            <ArrowLeft size={16} /> Dashboard
-          </Link>
-          <div className="flex items-center gap-3">
-            {/* Credits chip → top up (pool + universal) */}
-            {user && <CreditsPill pool="swt" />}
-            {false && credit && (
-              <button onClick={() => window.location.assign('/credits')} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-50 border border-violet-200 text-violet-700 text-xs font-black">
-                {unlimited ? <><InfinityIcon size={13} /> Unlimited</> : <>{remaining} left</>}
-                <CreditCard size={13} />
-              </button>
-            )}
-            <span className="hidden sm:flex items-center gap-2 text-sm font-black text-slate-800"><Sparkles size={16} className="text-violet-600" /> SWT Trainer</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-5xl mx-auto px-4 py-10">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <span className="inline-flex items-center gap-2 text-violet-600 font-black text-xs uppercase tracking-[0.3em] mb-2">
-            <BookOpenText size={14} /> Summarize Written Text
-          </span>
-          <h1 className="text-4xl font-black tracking-tight">PTE SWT <span className="text-violet-600">AI Trainer & Examiner</span></h1>
-          <p className="text-slate-500 mt-2 max-w-2xl mx-auto font-medium">
-            Pick a passage, write <strong>one sentence</strong> (5–75 words) that captures the main ideas, and get a full score breakdown with idea-by-idea coaching.
-          </p>
-        </div>
-
-        {/* ── QUESTION SELECTION ── */}
-        {!selected && (
-          <div>
-            <h2 className="text-sm font-black uppercase tracking-wider text-slate-700 mb-4">Choose a Passage</h2>
-            {loadingQ ? (
-              <div className="flex items-center gap-2 text-slate-400 py-12 justify-center"><Loader2 className="animate-spin" size={18} /> Loading passages…</div>
-            ) : questions.length === 0 ? (
-              <div className="text-center py-16 rounded-3xl border border-dashed border-slate-300 bg-slate-50">
-                <p className="text-slate-600 font-bold">No passages available yet.</p>
-                <p className="text-slate-400 text-sm mt-1">New SWT passages are added by the Smart Labs team — please check back soon.</p>
-              </div>
-            ) : (
-              <div className="grid sm:grid-cols-2 gap-4">
-                {questions.map((q, i) => (
-                  <button
-                    key={q.id ?? i}
-                    onClick={() => { setSelected(q); setSummary(''); setResult(null); setError(null); }}
-                    className="text-left rounded-3xl border border-slate-200 hover:border-violet-300 hover:shadow-lg transition-all p-5 group bg-white"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-violet-600">Passage {i + 1}</span>
-                      {q.category && <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-200">{q.category}</span>}
-                    </div>
-                    <h3 className="font-black text-slate-800 mb-1.5 group-hover:text-violet-700 transition-colors">{q.title}</h3>
-                    <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed">{q.content}</p>
-                    <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-violet-600 opacity-0 group-hover:opacity-100 transition-opacity">Practise <ArrowRight size={13} /></span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+      <PtePracticeTopbar kind="swt" signedIn={!!user} credits={user?<CreditsPill pool="swt"/>:undefined}/>
+      {!selected&&<PtePracticeHero kind="swt"/>}
+      <div className="pte-practice-content" data-session={!!selected}>
+        {selected&&<PtePracticeSession kind="swt" questionTitle={selected.title} hasResult={!!result}/>}
+        {!selected&&<PteQuestionLibrary kind="swt" questions={questions} loading={loadingQ}  onSelect={index=>{const q=questions[index];setSelected(q);setSummary('');setResult(null);setError(null);}}/>}
 
         {/* ── PRACTICE AREA ── */}
         {selected && (
@@ -257,8 +199,9 @@ function SWTInner() {
             </div>
 
             <div className="rounded-3xl border border-slate-200 p-6 md:p-8 mb-6">
-              <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3 block">Your One-Sentence Summary</label>
+              <label htmlFor="pte-response" data-response-label className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3 block">Your One-Sentence Summary</label>
               <textarea
+                id="pte-response"
                 value={summary}
                 onChange={e => setSummary(e.target.value)}
                 placeholder="Write a single, complete sentence summarising the passage…"

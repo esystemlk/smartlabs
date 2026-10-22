@@ -1,4 +1,5 @@
 'use client';
+import {PtePracticeHero,PtePracticeTopbar,PteQuestionLibrary,PtePracticeSession} from '@/components/pte/practice-design';
 
 import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -249,7 +250,7 @@ function SSTInner() {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
+    <div className="pte-practice-studio font-sora" data-practice="sst">
       <AiRetryDialog open={retryOpen} onRetry={handleRetry} onClose={() => setRetryOpen(false)} isRetrying={isRetrying} />
 
       {/* Hidden PayHere form */}
@@ -267,164 +268,12 @@ function SSTInner() {
         className="hidden"
       />
 
-      {/* ── NAV ── */}
-      <nav className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="font-black text-lg tracking-tight">SMART<span className="text-emerald-600">LABS</span></span>
-            <span className="text-[10px] font-black uppercase bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">PTE 2026</span>
-          </Link>
-          <div className="hidden md:flex items-center gap-6 text-sm font-bold text-slate-600">
-            <Link href="/" className="flex items-center gap-1.5 hover:text-slate-900"><Home size={15} /> Home</Link>
-            <Link href="/dashboard/pte/listening" className="flex items-center gap-1.5 hover:text-slate-900"><LayoutDashboard size={15} /> Dashboard</Link>
-            <span className="flex items-center gap-1.5 text-emerald-600"><Headphones size={15} /> SST AI</span>
-          </div>
-          <div className="flex items-center gap-2">
-            {user && <CreditsPill pool="sst" className="hidden sm:inline-flex" />}
-            {false && credit && (
-              <button onClick={() => window.location.assign('/credits')} className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-black">
-                {unlimited ? <><InfinityIcon size={13} /> Unlimited</> : <>{creditsRemaining} Scoring</>}
-                <CreditCard size={13} />
-              </button>
-            )}
-            <button onClick={() => setMobileNavOpen(v => !v)} className="md:hidden w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center"><Menu size={18} /></button>
-          </div>
-        </div>
-        {mobileNavOpen && (
-          <div className="md:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-1 text-sm font-bold text-slate-700">
-            <Link href="/" className="block py-2" onClick={() => setMobileNavOpen(false)}>Home</Link>
-            <Link href="/dashboard/pte/listening" className="block py-2" onClick={() => setMobileNavOpen(false)}>Dashboard</Link>
-          </div>
-        )}
-      </nav>
+      <PtePracticeTopbar kind="sst" signedIn={!!user} credits={user?<CreditsPill pool="sst"/>:undefined}/>
+      {!selected&&<PtePracticeHero kind="sst"/>}
+      <div className="pte-practice-content" data-session={!!selected}>
+        {selected&&<PtePracticeSession kind="sst" questionTitle={selected.title} hasResult={!!result}/>}
 
-      {/* ── CREDIT DASHBOARD BANNER ── */}
-      <section className="pt-16 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white border-b border-slate-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-          <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
-            <div className="shrink-0">
-              <div className="flex items-center gap-2 mb-1">
-                <Headphones size={18} className="text-emerald-500" />
-                <span className="text-xs font-black uppercase tracking-widest text-slate-400">AI SST Scoring</span>
-              </div>
-              <h2 className="text-lg font-extrabold text-white">Your Credit Dashboard</h2>
-            </div>
-            <div className="hidden md:block w-px h-12 bg-slate-700" />
-
-            {!user && !isUserLoading ? (
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 bg-slate-800 border border-slate-700 px-4 py-3 rounded-2xl">
-                  <Lock size={16} className="text-slate-400" />
-                  <span className="text-sm font-bold text-slate-300">Sign in to view your credits</span>
-                </div>
-                <Link href="/login" className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm px-4 py-2.5 rounded-xl transition-all">Sign In</Link>
-              </div>
-            ) : !credit ? (
-              <div className="flex gap-3">{[1, 2].map(i => <div key={i} className="w-36 h-16 rounded-2xl bg-slate-800 animate-pulse" />)}</div>
-            ) : (
-              <div className="flex flex-wrap gap-3 flex-1">
-                <div className={`flex items-center gap-4 px-5 py-3 rounded-2xl border flex-1 min-w-[160px] ${unlimited ? 'bg-emerald-900/40 border-emerald-700' : creditsRemaining === 0 ? 'bg-red-900/30 border-red-700' : 'bg-emerald-900/30 border-emerald-700'}`}>
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${unlimited ? 'bg-emerald-700' : creditsRemaining === 0 ? 'bg-red-700' : 'bg-emerald-700'}`}>
-                    <Target size={20} className="text-white" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Scoring Credits</p>
-                    {unlimited ? (
-                      <div className="flex items-center gap-1.5">
-                        <InfinityIcon size={22} className="text-emerald-400" />
-                        <span className="text-sm font-black text-emerald-300">Unlimited</span>
-                        {isUnlimitedRole && <Crown size={14} className="text-amber-400" />}
-                      </div>
-                    ) : (
-                      <div className="flex items-baseline gap-1">
-                        <span className={`text-2xl font-black tabular-nums ${creditsRemaining === 0 ? 'text-red-400' : 'text-emerald-300'}`}>{creditsRemaining}</span>
-                        <span className="text-xs text-slate-500">remaining</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {!unlimited && credit.paidCredits === 0 && (
-                  <div className="flex items-center gap-4 px-5 py-3 rounded-2xl border bg-amber-900/30 border-amber-700 min-w-[160px]">
-                    <div className="w-10 h-10 rounded-xl bg-amber-700 flex items-center justify-center shrink-0"><Sparkles size={20} className="text-white" /></div>
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Free Trial</p>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-black tabular-nums text-amber-300">{creditsRemaining}</span>
-                        <span className="text-xs text-slate-500">/ {credit.freeUsed >= 1 ? FREE_SST_LIMIT : 0} left</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {user && !unlimited && (
-              <div className="shrink-0">
-                <button onClick={() => window.location.assign('/credits')} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm px-5 py-3 rounded-xl shadow-lg transition-all hover:scale-[1.02]">
-                  <CreditCard size={16} /> <span>Buy Credits</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* ── HERO ── */}
-      {!selected && (
-        <section className="relative overflow-hidden pt-12 pb-12 border-b border-slate-200">
-          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-emerald-100/50 blur-[120px] rounded-full pointer-events-none -z-10" />
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
-            <div className="inline-flex items-center gap-2 text-emerald-600 font-bold text-xs uppercase tracking-[0.2em] mb-4 bg-emerald-50 px-4 py-1.5 rounded-full border border-emerald-200">
-              <Headphones size={14} /> AI-Powered Listening Practice
-            </div>
-            <h1 className="font-display-serif text-4xl sm:text-5xl md:text-7xl font-black text-slate-900 leading-tight max-w-4xl mx-auto mb-6">
-              PTE Summarize Spoken <span className="text-emerald-600 italic">Text</span>
-            </h1>
-            <p className="text-slate-500 text-lg md:text-xl font-medium max-w-3xl mx-auto leading-relaxed mb-12">
-              Listen to a predicted lecture, write your 50–70 word summary, and receive instant AI feedback with a Band score, essential-keyword analysis, and a model answer — all based on real Pearson SST marking criteria.
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto mt-8">
-              {stats.map((stat, i) => (
-                <div key={i} className="p-4 md:p-6 rounded-2xl bg-slate-50 border border-slate-200 hover:shadow-md transition-shadow">
-                  <div className="flex justify-center mb-2">{stat.icon}</div>
-                  <div className="text-3xl font-black text-emerald-600 mb-1">{stat.value}</div>
-                  <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      <div className="max-w-5xl mx-auto px-4 py-10">
-        {/* ── QUESTION SELECTION ── */}
-        {!selected && (
-          <div>
-            <h2 className="text-sm font-black uppercase tracking-wider text-slate-700 mb-4">Choose a Lecture</h2>
-            {loadingQ ? (
-              <div className="flex items-center gap-2 text-slate-400 py-12 justify-center"><Loader2 className="animate-spin" size={18} /> Loading lectures…</div>
-            ) : questions.length === 0 ? (
-              <div className="text-center py-16 rounded-3xl border border-dashed border-slate-300 bg-slate-50">
-                <p className="text-slate-600 font-bold">No lectures available yet.</p>
-                <p className="text-slate-400 text-sm mt-1">New SST lectures are added by the Smart Labs team — please check back soon.</p>
-              </div>
-            ) : (
-              <div className="grid sm:grid-cols-2 gap-4">
-                {questions.map((q, i) => (
-                  <button key={q.id ?? i} onClick={() => selectQuestion(q)} className="text-left rounded-3xl border border-slate-200 hover:border-emerald-300 hover:shadow-lg transition-all p-5 group bg-white">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Lecture {i + 1}</span>
-                      {q.category && <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">{q.category}</span>}
-                    </div>
-                    <h3 className="font-black text-slate-800 mb-1.5 group-hover:text-emerald-700 transition-colors flex items-center gap-2"><Volume2 size={15} className="text-emerald-500" /> {q.title}</h3>
-                    <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity">Practise <ArrowRight size={13} /></span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        {!selected&&<PteQuestionLibrary kind="sst" questions={questions} loading={loadingQ}  onSelect={index=>selectQuestion(questions[index])}/>}
 
         {/* ── PRACTICE AREA ── */}
         {selected && (
@@ -443,7 +292,7 @@ function SSTInner() {
               </div>
 
               <div className="flex items-center gap-4 rounded-2xl bg-white border border-slate-200 p-4">
-                <button onClick={togglePlay} disabled={audioLoading} className="w-14 h-14 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center shrink-0 disabled:opacity-60 shadow-lg shadow-emerald-500/20">
+                <button aria-label={isPlaying?'Pause lecture audio':'Play lecture audio'} onClick={togglePlay} disabled={audioLoading} className="w-14 h-14 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center shrink-0 disabled:opacity-60 shadow-lg shadow-emerald-500/20">
                   {audioLoading ? <Loader2 className="animate-spin" size={22} /> : isPlaying ? <Pause size={22} /> : <Play size={22} className="ml-0.5" />}
                 </button>
                 <div className="flex-1">
@@ -461,8 +310,9 @@ function SSTInner() {
 
             {/* Summary input */}
             <div className="rounded-3xl border border-slate-200 p-6 md:p-8 mb-6">
-              <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3 block">Your Summary (50–70 words)</label>
+              <label htmlFor="pte-response" data-response-label className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3 block">Your Summary (50–70 words)</label>
               <textarea
+                id="pte-response"
                 value={summary}
                 onChange={e => setSummary(e.target.value)}
                 placeholder="Summarise the lecture in 50–70 words, capturing the main topic and essential keywords…"
