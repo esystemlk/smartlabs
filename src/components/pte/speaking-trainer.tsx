@@ -21,6 +21,31 @@ const THEME: Record<string, { text: string; bg: string; soft: string; grad: stri
 };
 const theme = (c: string) => THEME[c] ?? THEME.blue;
 
+/**
+ * Live mic input-level meter shown while recording. Red = too quiet, green =
+ * a good speaking volume, yellow = too loud / clipping — helps students
+ * learn to manage their vocal level without staring at a plain waveform.
+ */
+function MicLevelMeter({ level }: { level: number }) {
+  const zone = level < 25 ? 'low' : level < 80 ? 'good' : 'high';
+  const label = zone === 'low' ? 'Too quiet — speak a little louder' : zone === 'good' ? 'Good volume' : 'Too loud — ease off a little';
+  const labelColor = zone === 'low' ? 'text-rose-600' : zone === 'good' ? 'text-emerald-600' : 'text-amber-600';
+  return (
+    <div className="mx-auto mt-3 max-w-xs">
+      <div
+        className="relative h-3 w-full overflow-hidden rounded-full"
+        style={{ background: 'linear-gradient(to right, #f43f5e 0%, #f43f5e 25%, #22c55e 25%, #22c55e 80%, #eab308 80%, #eab308 100%)' }}
+      >
+        <div
+          className="absolute inset-y-0 w-1 rounded-full bg-white shadow-[0_0_0_1.5px_rgba(0,0,0,0.3)] transition-[left] duration-100 ease-out"
+          style={{ left: `calc(${level}% - 2px)` }}
+        />
+      </div>
+      <p className={`mt-1.5 text-xs font-semibold ${labelColor}`}>{label}</p>
+    </div>
+  );
+}
+
 export interface SpeakingQuestion { id: string }
 
 interface Props<Q extends SpeakingQuestion> {
@@ -32,6 +57,8 @@ interface Props<Q extends SpeakingQuestion> {
   questions: Q[];
   /** Reference text sent to the AI (paragraph / sentence / question / gist). */
   getPromptText: (q: Q) => string;
+  /** Describe Image only: the question's actual image URL, sent to the AI so it scores the real picture. */
+  getImageUrl?: (q: Q) => string | undefined;
   /** What the student sees on screen. */
   renderPrompt: (q: Q) => React.ReactNode;
   /** Text used for the search box. */
@@ -60,6 +87,14 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
   const streamRef = useRef<MediaStream | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Live mic input level (0-100), shown while recording so students can see
+  // whether they're speaking too quietly, well, or too loudly/noisily.
+  const [micLevel, setMicLevel] = useState(0);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const meterRafRef = useRef<number | null>(null);
+  const lastMeterPaintRef = useRef(0);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return q ? p.questions.filter(x => p.searchText(x).toLowerCase().includes(q)) : p.questions;
@@ -69,8 +104,51 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
   const clearTimer = () => { if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; } };
   const stopStream = () => { streamRef.current?.getTracks().forEach(tr => tr.stop()); streamRef.current = null; };
 
+  // Reads the mic's live volume via an AnalyserNode (never routed to the
+  // speakers — analysis only, no playback/feedback) and updates `micLevel`
+  // at ~12fps so the meter animates smoothly without re-rendering every frame.
+  const startMeter = (stream: MediaStream) => {
+    try {
+      const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = new Ctx();
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 1024;
+      ctx.createMediaStreamSource(stream).connect(analyser);
+      audioCtxRef.current = ctx;
+      analyserRef.current = analyser;
+      const data = new Uint8Array(analyser.fftSize);
+      const tick = (now: number) => {
+        if (!analyserRef.current) return;
+        if (now - lastMeterPaintRef.current > 80) {
+          lastMeterPaintRef.current = now;
+          analyser.getByteTimeDomainData(data);
+          let sumSquares = 0;
+          for (let i = 0; i < data.length; i++) {
+            const n = (data[i] - 128) / 128;
+            sumSquares += n * n;
+          }
+          const rms = Math.sqrt(sumSquares / data.length);
+          const db = 20 * Math.log10(rms || 0.0001);
+          // Map a typical mic's quiet (-55dB) to loud/clipping (-5dB) range to 0-100.
+          const level = Math.max(0, Math.min(100, Math.round(((db + 55) / 50) * 100)));
+          setMicLevel(level);
+        }
+        meterRafRef.current = requestAnimationFrame(tick);
+      };
+      meterRafRef.current = requestAnimationFrame(tick);
+    } catch { /* meter is a visual aid only — never block recording if it fails */ }
+  };
+
+  const stopMeter = () => {
+    if (meterRafRef.current) { cancelAnimationFrame(meterRafRef.current); meterRafRef.current = null; }
+    analyserRef.current = null;
+    if (audioCtxRef.current) { audioCtxRef.current.close().catch(() => {}); audioCtxRef.current = null; }
+    setMicLevel(0);
+  };
+
   const reset = useCallback(() => {
-    clearTimer(); stopStream();
+    clearTimer(); stopStream(); stopMeter();
     if (mediaRef.current && mediaRef.current.state !== 'inactive') { try { mediaRef.current.stop(); } catch { /* ignore */ } }
     mediaRef.current = null; chunksRef.current = [];
     setPhase('idle'); setResult(null); setErrMsg(''); setCount(0);
@@ -78,7 +156,7 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
 
   // Reset whenever the question changes.
   useEffect(() => { reset(); }, [question?.id, reset]);
-  useEffect(() => () => { clearTimer(); stopStream(); }, []);
+  useEffect(() => () => { clearTimer(); stopStream(); stopMeter(); }, []);
 
   const speak = (text: string) => new Promise<void>((resolve) => {
     try {
@@ -93,11 +171,12 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
+      startMeter(stream);
       const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : '';
       const mr = new MediaRecorder(stream, mime ? { mimeType: mime, audioBitsPerSecond: 32000 } : undefined);
       chunksRef.current = [];
       mr.ondataavailable = e => { if (e.data.size) chunksRef.current.push(e.data); };
-      mr.onstop = () => { stopStream(); void submit(); };
+      mr.onstop = () => { stopStream(); stopMeter(); void submit(); };
       mediaRef.current = mr;
       mr.start();
       setPhase('recording');
@@ -141,7 +220,7 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
       const audioDataUri: string = await new Promise((res, rej) => {
         const r = new FileReader(); r.onloadend = () => res(r.result as string); r.onerror = rej; r.readAsDataURL(blob);
       });
-      const score = await scorePteSpeaking({ taskType: p.taskType, promptText: p.getPromptText(question), audioDataUri });
+      const score = await scorePteSpeaking({ taskType: p.taskType, promptText: p.getPromptText(question), audioDataUri, imageUrl: p.getImageUrl?.(question) });
       setResult(score); setPhase('result');
     } catch (e: unknown) {
       setErrMsg(e instanceof Error ? e.message : 'Scoring failed. Please try again.');
@@ -195,7 +274,8 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
             {phase === 'recording' && (
               <div>
                 <div className="mb-2 flex items-center justify-center gap-2 text-rose-600"><span className="h-3 w-3 animate-pulse rounded-full bg-rose-600" /> <span className="font-bold">Recording… {count}s</span></div>
-                <button onClick={stopRecording} className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-6 py-3 text-sm font-bold text-white"><Square className="h-4 w-4" /> Stop & Score</button>
+                <MicLevelMeter level={micLevel} />
+                <button onClick={stopRecording} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-rose-600 px-6 py-3 text-sm font-bold text-white"><Square className="h-4 w-4" /> Stop & Score</button>
               </div>
             )}
             {phase === 'scoring' && <p className="flex items-center justify-center gap-2 text-sm font-medium"><Loader2 className="h-5 w-5 animate-spin" /> Scoring your response with AI…</p>}
@@ -222,7 +302,9 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
               </div>
               <div className="mt-4 space-y-3">
                 {[
-                  { label: 'Content', v: result.content, fb: result.contentFeedback },
+                  // Read Aloud has no Content category in real PTE scoring — Pearson scores it on
+                  // Oral Fluency and Pronunciation only, so `content` is omitted by the AI for that task.
+                  ...(result.content !== undefined ? [{ label: 'Content', v: result.content, fb: result.contentFeedback ?? '' }] : []),
                   { label: 'Oral Fluency', v: result.fluency, fb: result.fluencyFeedback },
                   { label: 'Pronunciation', v: result.pronunciation, fb: result.pronunciationFeedback },
                 ].map(row => (
