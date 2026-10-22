@@ -110,6 +110,7 @@ import { scorePteWriteEssay } from '@/ai/flows/score-pte-writing-write-essay';
 import type { PteWriteEssayOutput } from '@/ai/flows/pte-writing.types';
 import { useToast } from "@/hooks/use-toast";
 import { useSiteStats } from "@/hooks/use-site-stats";
+import { useStudentCommunity } from "@/hooks/use-student-community";
 import { logTestCompletion } from "@/lib/services/activity.service";
 import dynamic from "next/dynamic";
 
@@ -404,6 +405,7 @@ export default function Home() {
 
   // Fetch real data from Firebase
   const { stats: siteStats } = useSiteStats();
+  const studentCommunity = useStudentCommunity();
   const { courses: realCourses, loading: coursesLoading } = useHomepageCourses();
   const { methods: realMethods, loading: methodsLoading } = useLearningMethods();
   const { features: realFeatures, loading: featuresLoading } = useFeatures();
@@ -735,7 +737,7 @@ export default function Home() {
             {/* Stats 2×2 */}
             <div className="grid grid-cols-2 gap-3 mb-8">
               {[
-                { value: siteStats ? `${siteStats.studentsCount.toLocaleString()}+` : '5,000+', label: 'Students Trained', color: 'text-blue-400',    border: 'border-blue-500/20' },
+                { value: `${studentCommunity.toLocaleString()}+`, label: 'Learning Community', color: 'text-blue-400',    border: 'border-blue-500/20' },
                 { value: siteStats ? `${siteStats.successRate}%` : '95%',                        label: 'Success Rate',     color: 'text-emerald-400', border: 'border-emerald-500/20' },
                 { value: siteStats?.targetWeeks ?? '6–8',                                        label: 'Weeks to Target',  color: 'text-violet-400',  border: 'border-violet-500/20' },
                 { value: siteStats?.aiSupport ?? '24/7',                                         label: 'AI Support',       color: 'text-amber-400',   border: 'border-amber-500/20' },
@@ -880,7 +882,7 @@ export default function Home() {
             <h2 className="text-2xl font-black text-white mb-6">English Training Platform</h2>
             <div className="grid grid-cols-2 gap-3 mb-6">
               {[
-                { value: siteStats ? `${siteStats.studentsCount.toLocaleString()}+` : '5,000+', label: 'Students Trained', color: 'text-blue-400' },
+                { value: `${studentCommunity.toLocaleString()}+`, label: 'Learning Community', color: 'text-blue-400' },
                 { value: siteStats ? `${siteStats.successRate}%` : '95%',                        label: 'Success Rate',     color: 'text-emerald-400' },
                 { value: siteStats?.targetWeeks ?? '6–8',                                        label: 'Weeks to Target',  color: 'text-violet-400' },
                 { value: siteStats?.aiSupport ?? '24/7',                                         label: 'AI Support',       color: 'text-amber-400' },
@@ -1224,10 +1226,10 @@ export default function Home() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-24">
             {[
               {
-                value: siteStats?.studentsCount || 5000,
+                value: studentCommunity,
                 suffix: "+",
-                label: "Global Students",
-                sub: "Trained & Certified",
+                label: "Learning Community",
+                sub: "Learners & Website Members",
                 color: "text-accent-1",
                 icon: Users
               },
