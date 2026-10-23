@@ -13,12 +13,12 @@ const valid = { email: 'student@example.com', targetUid: 'student-1', amount: 3,
   requestId: '12345678-1234-1234-1234-123456789abc', note: 'Offline payment' };
 
 function setup({ role = 'admin', authorized = true, found = true, profile = true, auditFails = false } = {}) {
-  const records = new Map(profile ? [['users/student-1', { mockPaidCredits: 2, essayPaidCredits: 9, displayName: 'Student' }]] : []);
+  const records = new Map(profile ? [['users/student-1', { mockPaidCredits: 2, ieltsMockPaidCredits: 4, universalPaidCredits: 11, essayPaidCredits: 9, displayName: 'Student' }]] : []);
   const emails = [];
   const snap = key => ({ exists: records.has(key), data: () => records.get(key) });
   let queue = Promise.resolve();
   const adminDb = {
-    collection: collection => ({ doc: id => ({ key: `${collection}/${id}`, get: async () => snap(`${collection}/${id}`) }) }),
+    collection: collection => ({ doc: id => ({ id, key: `${collection}/${id}`, get: async () => snap(`${collection}/${id}`) }) }),
     runTransaction: callback => {
       const result = queue.then(async () => {
         const writes = [];
@@ -40,6 +40,7 @@ function setup({ role = 'admin', authorized = true, found = true, profile = true
   const modules = {
     'next/server': { NextResponse },
     'firebase-admin/firestore': { FieldValue: { serverTimestamp: () => 'server-time' } },
+    'node:crypto': require('node:crypto'),
     '@/lib/firebase-admin': { adminDb, adminAuth: { getUserByEmail: async email => {
       emails.push(email);
       if (!found) throw Object.assign(new Error('Not found'), { code: 'auth/user-not-found' });
@@ -47,11 +48,12 @@ function setup({ role = 'admin', authorized = true, found = true, profile = true
     } } },
     '@/lib/api-auth': { verifyAuthed: async () => authorized ? { ok: true, uid: 'admin-1', role } : { ok: false, status: 401, error: 'Unauthorized' } },
     '@/lib/mock-credits': { getMockCredits: async () => ({ paid: records.get('users/student-1').mockPaidCredits, unlimited: false }) },
+    '@/lib/ielts-mock-credits': { getIeltsMockCredits: async () => ({ paid: records.get('users/student-1').ieltsMockPaidCredits, unlimited: false }) },
   };
   const context = { exports: {}, require: name => { assert.ok(modules[name], `Unexpected import: ${name}`); return modules[name]; }, URL, console: { error: () => {} } };
   vm.runInNewContext(code, context);
   const post = (body = valid) => context.exports.POST(new Request('https://local.test/api/admin/manage-mock-credits', { method: 'POST', body: JSON.stringify(body) }));
-  const get = (email = 'student@example.com') => context.exports.GET(new Request(`https://local.test/api/admin/manage-mock-credits?email=${encodeURIComponent(email)}`));
+  const get = (email = 'student@example.com', examType) => context.exports.GET(new Request(`https://local.test/api/admin/manage-mock-credits?email=${encodeURIComponent(email)}${examType === undefined ? '' : `&examType=${encodeURIComponent(examType)}`}`));
   return { post, get, records, emails };
 }
 
@@ -60,6 +62,69 @@ test('lookup normalizes email and returns the existing mock balance', async () =
   assert.equal(response.status, 200); assert.equal((await response.json()).paid, 2);
   assert.deepEqual(h.emails, ['student@example.com']);
   assert.equal(h.records.size, 1);
+});
+
+test('IELTS lookup and grants use only the IELTS mock pool', async () => {
+  const h = setup(); const lookup = await h.get('student@example.com', 'ielts');
+  assert.equal(lookup.status, 200); assert.equal((await lookup.json()).paid, 4);
+  const response = await h.post({ ...valid, examType: 'ielts' });
+  assert.equal(response.status, 200); assert.equal((await response.json()).paid, 7);
+  const user = h.records.get('users/student-1');
+  assert.equal(user.ieltsMockPaidCredits, 7); assert.equal(user.mockPaidCredits, 2);
+  assert.equal(user.universalPaidCredits, 11); assert.equal(user.essayPaidCredits, 9);
+  const audit = [...h.records.values()].find(v => v.type === 'ielts_mock_credits');
+  assert.equal(audit.examType, 'ielts'); assert.equal(audit.previousBalance, 4); assert.equal(audit.newBalance, 7);
+});
+
+test('a grant request cannot be reused for a different exam pool', async () => {
+  const h = setup(); await h.post();
+  assert.equal((await h.post({ ...valid, examType: 'ielts' })).status, 409);
+  assert.equal(h.records.get('users/student-1').ieltsMockPaidCredits, 4);
+});
+
+const payment = { reference: 'SL-2026-00421', method: 'bank_transfer', amountLkr: 6500.50 };
+for (const examType of ['pte', 'ielts']) {
+  test(`${examType} institute payment is recorded atomically and duplicate receipts never add twice`, async () => {
+    const h = setup(); const body = { ...valid, examType, payment };
+    const responses = await Promise.all([h.post(body), h.post({ ...body, requestId: '12345678-1234-1234-1234-123456789def' })]);
+    assert.deepEqual(responses.map(r => r.status), [200, 200]); assert.equal((await responses[1].json()).duplicate, true);
+    const field = examType === 'pte' ? 'mockPaidCredits' : 'ieltsMockPaidCredits';
+    assert.equal(h.records.get('users/student-1')[field], examType === 'pte' ? 5 : 7);
+    assert.equal(h.records.get('users/student-1').universalPaidCredits, 11);
+    const audit = [...h.records.values()].find(v => v.source === 'institute_payment');
+    assert.equal(audit.payment.reference, payment.reference); assert.equal(audit.payment.method, 'bank_transfer');
+    assert.equal(audit.payment.amountLkr, 6500.5); assert.equal(audit.payment.currency, 'LKR');
+    assert.equal(h.records.size, 3);
+  });
+}
+
+test('same receipt with conflicting details is rejected; reference matching ignores case', async () => {
+  const h = setup(); await h.post({ ...valid, payment });
+  const again = { ...valid, requestId: '12345678-1234-1234-1234-123456789def', payment: { ...payment, reference: 'sl-2026-00421' } };
+  assert.equal((await h.post(again)).status, 200);
+  assert.equal((await h.post({ ...again, amount: 9 })).status, 409);
+  assert.equal((await h.post({ ...again, payment: { ...again.payment, amountLkr: 1 } })).status, 409);
+  assert.equal(h.records.get('users/student-1').mockPaidCredits, 5);
+});
+
+test('one institute receipt can cover separate PTE and IELTS grants without mixing pools', async () => {
+  const h = setup(); await h.post({ ...valid, examType: 'pte', payment });
+  await h.post({ ...valid, examType: 'ielts', payment, requestId: '12345678-1234-1234-1234-123456789def' });
+  assert.equal(h.records.get('users/student-1').mockPaidCredits, 5);
+  assert.equal(h.records.get('users/student-1').ieltsMockPaidCredits, 7);
+  assert.equal(h.records.get('users/student-1').universalPaidCredits, 11);
+});
+
+test('invalid exam and payment details are rejected before any grant', async () => {
+  for (const change of [{ examType: 'other' }, { payment: { ...payment, reference: '' } }, { payment: { ...payment, reference: 'a'.repeat(121) } }, { payment: { ...payment, method: 'unknown' } }, { payment: { ...payment, amountLkr: 0 } }, { payment: { ...payment, amountLkr: -1 } }, { payment: { ...payment, amountLkr: 12.345 } }, { payment: { ...payment, amountLkr: '6500' } }]) {
+    const h = setup(); assert.equal((await h.post({ ...valid, ...change })).status, 400); assert.equal(h.records.size, 1);
+  }
+  assert.equal((await setup().get('student@example.com', 'other')).status, 400);
+});
+
+test('institute payment audit failure rolls back balance and receipt', async () => {
+  const h = setup({ auditFails: true }); assert.equal((await h.post({ ...valid, examType: 'ielts', payment })).status, 500);
+  assert.equal(h.records.get('users/student-1').ieltsMockPaidCredits, 4); assert.equal(h.records.size, 1);
 });
 
 for (const options of [{ authorized: false }, { role: 'student' }, { role: 'teacher' }]) {

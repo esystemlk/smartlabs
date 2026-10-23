@@ -2,6 +2,19 @@
 
 The student entry is `/mock/full-1`, linked from `/mock-tests`. Staff review completed attempts at `/admin/dashboard/full-mocks`, linked from the existing mock administration page.
 
+## Manual institute payment credits
+
+Admins and developers can open `/admin/dashboard/credit-manager` and choose **PTE Mock credits** or **IELTS Mock credits** beside the existing **Universal & AI credits** tab.
+
+1. Find the registered student by email. Students with zero credits can be found here.
+2. Check the student name and the selected exam's current balance.
+3. Enter the number of mock credits to add and the institute receipt or bank reference. Optionally record the amount received in LKR and an internal note; choose cash, bank transfer, card, or other.
+4. Add the credits. The payment must already have been received; this form does not collect money.
+
+PTE grants update `mockPaidCredits`; IELTS grants update `ieltsMockPaidCredits`. Universal and other individual AI pools are unchanged. The balance update and admin audit receipt are committed atomically. A retry, refresh, or another admin entering the same payment reference for the same student and exam pool cannot add the credits twice. Conflicting details for a used reference are rejected. A payment that includes both exams can be recorded as separate PTE and IELTS grants.
+
+The existing PTE grant tool on mock administration remains compatible. Its older requests default to the PTE pool.
+
 ## Dedicated AI key
 
 Configure this **server-only** variable in `.env.local` for development and in the hosting provider's environment for deployment:
