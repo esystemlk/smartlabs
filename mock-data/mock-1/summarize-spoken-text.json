@@ -1,0 +1,12 @@
+{
+  "section": "listening",
+  "taskType": "summarize-spoken-text",
+  "storagePrefix": "summarize-spoken-text",
+  "items": [
+    { "id": "mock1-1", "title": "Mock 1 — Summarize Spoken Text Q1 (Washing fruits and vegetables)", "category": "mock-1",
+      "transcript": "Fruits and vegetables are required to be washed. If not, you will take bacteria. This can help prevent food-borne illnesses. So, how do we do it effectively? Usually, it is all right to wash them with cold water, but sometimes a brush is needed for produce with tougher skins, like potatoes or melons, to scrub away dirt and microbes.\n\nBefore washing, read the instruction on the packaging. You don't have to wash them if they have already been washed. Many packaged greens are pre-cleaned. For instance, spinach and lettuce are triply washed by the producer. Washing them again at home is often unnecessary and can actually increase the risk of contamination from your sink.\n\nWhile running water is usually sufficient, there are specialized products on the market. There may be special washer for fruits and vegetables available at the grocery store. These can be sprays or washes designed to help remove pesticides and waxes. However, for most people, the best practice remains using cold running water and a clean brush for certain items, as this method is widely recommended by health experts as both effective and accessible for everyone.",
+      "sampleAnswer": "Fruits and vegetables are required to be washed, which can help prevent food-borne illnesses. They can be washed with cold water in most cases, but sometimes a brush is also needed. Besides, you need to read the instructions on the packaging before washing. Therefore, the best practice remains using cold running water and a clean brush for certain items.",
+      "sampleAnswerNote": "Sample answer for AI reference only — not the required exact wording. The AI should judge whether the student produced a 50-70 word summary that accurately captures the lecture's main points, not whether it matches this wording.",
+      "localPath": "C:/Users/SMART LABS/Downloads/Fruit Washer.mp3" }
+  ]
+}

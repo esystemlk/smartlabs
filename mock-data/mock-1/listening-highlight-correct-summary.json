@@ -1,0 +1,27 @@
+{
+  "section": "listening",
+  "taskType": "highlight-correct-summary",
+  "storagePrefix": "highlight-correct-summary",
+  "items": [
+    { "id": "mock1-1", "title": "Mock 1 — Highlight Correct Summary Q1 (Romance)", "category": "mock-1",
+      "audioText": "I actually want to caution against using the word 'romance'. To me, romance can signify a lot of passion, chaos, instability — like we see in the movies. But this isn't always healthy. Romance can be part of a relationship, but we should make sure that it's not the definitive part. To me, the three great characteristics of a relationship are first, healthy communication. Are you able to express your needs, desires, and issues without a great deal of conflict? And is the other person open to hearing it? Number two is equality. Do you feel like an equal to your partner? Are you both putting in equal effort? And finally number three is trust. Do you feel your partner is loyal? Are you loyal to your partner? Do you ultimately have a safe relationship?",
+      "summaries": [
+        { "id": "sum1", "text": "Romance can be a part of a relationship, but it's not everything. Healthy communication, equality and trust are all very important in a relationship." },
+        { "id": "sum2", "text": "Romance can signify a lot of passion, but people will eventually get tired in a relationship, especially when it has lasted for a long time. So it's important that we should always find something new, to make the relationship fresh." },
+        { "id": "sum3", "text": "Romance consists of many things, including communication, equality and trust. Without these great characteristics, romance cannot survive within a relationship." },
+        { "id": "sum4", "text": "Romance mainly exists in the movies, and we don't often see it in our daily life. This is because it can cause more chaos and instability than passion, which is not healthy for a relationship." }
+      ],
+      "correctSummaryId": "sum1",
+      "localPath": "C:/Users/SMART LABS/Downloads/Romance.mp3" },
+    { "id": "mock1-2", "title": "Mock 1 — Highlight Correct Summary Q2 (Friendship)", "category": "mock-1",
+      "audioText": "My best piece of advice would be to join like-minded groups. So, for example, if you're into dance, join a dance group. And you can find a lot of these on, you know, something like Meetup or some sort of app. But you want to find groups that are similar to you. And then you can build a friendship from there because typically, if you're interested in something, those might be those type of people that you want to build a friendship with. One of my favorite quotes from Maya Angelou I think can apply to friendships. \"When someone shows you who they are, believe them the first time.\" So when you're building friendships with people, they're going to show you initially who they are. So trust that. And I'm a big proponent of trusting your instincts and investing in friendships that make you feel comfortable from the outset.",
+      "summaries": [
+        { "id": "sum1", "text": "When making a friend, we should not trust a person from the very beginning. It takes weeks or even months when we get to know a stranger. If we share the same interest, this process may take less time." },
+        { "id": "sum2", "text": "To build a friendship, an effective way is to join like-minded groups, who share the same interest. Also, you should trust your instincts and make friends with people who make you feel comfortable from the beginning." },
+        { "id": "sum3", "text": "When meeting with someone in a like-minded group, you should never trust what people show you about themselves initially. Also, you need to feel comfortable when communicating with people who may potentially become your friends." },
+        { "id": "sum4", "text": "People tend to disguise who they really are initially and avoid trusting strangers, even in like-minded groups. Therefore, we should invest more time in understanding others before deciding to develop a friendship with them." }
+      ],
+      "correctSummaryId": "sum2",
+      "localPath": "C:/Users/SMART LABS/Downloads/Friendship.mp3" }
+  ]
+}

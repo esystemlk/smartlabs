@@ -1,0 +1,20 @@
+{
+  "section": "reading",
+  "taskType": "reorder-paragraphs",
+  "items": [
+    { "id": "mock1-1", "title": "Mock 1 — Reorder Paragraphs Q1 (False memories)", "category": "mock-1",
+      "paragraphs": [
+        "False memories are constructed by combining actual memories with the content of suggestions received from others. During the process, individuals may forget the source of the information.",
+        "This is a classic example of source confusion, in which the content and the source become dissociated.",
+        "Of course, because we can implant false childhood memories in some individuals in no way implies that all memories that arise after suggestion are necessarily false.",
+        "Put another way, although experimental work on the creation of false memories may raise doubt about the validity of long-buried memories, such as repeated trauma, it in no way disproves them."
+      ] },
+    { "id": "mock1-2", "title": "Mock 1 — Reorder Paragraphs Q2 (Plant and Protein)", "category": "mock-1",
+      "paragraphs": [
+        "Researchers found that proteins can regulate plant growth by coordinating various biological responses.",
+        "They discovered that these specific proteins trigger mechanisms that allow plants to conserve water during environmental stress.",
+        "Understanding this process helps researchers find that some grains can live in drought conditions that would typically be fatal.",
+        "In the future, this can be applied to crops so they can adapt to drought, potentially resolving the global food crisis or issues of human hunger."
+      ] }
+  ]
+}

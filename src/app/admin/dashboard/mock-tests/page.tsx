@@ -175,6 +175,7 @@ export default function MockTestsAdminPage() {
       </div>
 
       <MockCreditManager />
+      <Link href="/admin/dashboard/full-mocks" className="block rounded-2xl border border-violet-200 bg-violet-50 p-5 text-sm font-bold text-violet-700">Full 66-question Mock 1 · Student reports & lecturer review →</Link>
 
       {!editing && (
         <button onClick={startNew} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-extrabold text-sm">

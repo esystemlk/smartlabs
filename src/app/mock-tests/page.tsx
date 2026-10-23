@@ -125,6 +125,12 @@ function MockTestsInner() {
             </p>
           </div>
 
+          <div className="mx-auto mb-8 max-w-5xl overflow-hidden rounded-3xl bg-slate-900 p-7 text-white md:p-9">
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-violet-300">Full PTE Academic · Mock 01</p>
+            <h2 className="text-2xl font-semibold md:text-3xl">Your complete test-day rehearsal.</h2>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300">66 questions across all 22 task types. Speaking, Writing, Reading, and Listening with background AI assessment, a Skills Profile, and detailed lecturer review.</p>
+            <div className="mt-6 flex flex-wrap items-center gap-5"><Link href="/mock/full-1" className="inline-flex items-center gap-2 rounded-xl bg-violet-500 px-6 py-3 text-sm font-bold hover:bg-violet-400">Prepare / resume full mock <ArrowRight className="h-4 w-4"/></Link><span className="text-xs text-slate-400">1 mock credit · AI scoring included</span></div>
+          </div>
           {/* Credits bar */}
           {user && credits && (
             <div className="max-w-5xl mx-auto mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-violet-200 bg-violet-50 px-5 py-4">

@@ -1,0 +1,26 @@
+{
+  "section": "reading",
+  "taskType": "fill-blanks",
+  "items": [
+    { "id": "mock1-1", "title": "Mock 1 — Fill in the Blanks Drag & Drop Q1 (Cuteness in offspring)", "category": "mock-1",
+      "passage": "Cuteness in offspring is a {BLANK} protective mechanism that {BLANK} survival for otherwise completely {BLANK} infants. Previous research has linked cuteness to early ethological ideas of a \"kindchenschema\" (infant schema) where infant facial features serve as \"innate releasing mechanisms\" for {BLANK} caregiving behaviors.",
+      "correctWords": ["potent", "ensures", "dependent", "instinctive"],
+      "extraWords": ["invalid", "proper", "makes", "deliberate", "guaranteed"] },
+    { "id": "mock1-2", "title": "Mock 1 — Fill in the Blanks Drag & Drop Q2 (Colorful Poison Frogs)", "category": "mock-1",
+      "passage": "Colorful poison frogs in the Amazon owe their great {BLANK} to ancestors that leapt into the region from the Andes Mountains several times during the last 10 million years, a new study from The University of Texas at Austin suggests. This is the first study to show that the Andes have been a {BLANK} source of diversity for the Amazon basin, one of the largest {BLANK} of biological diversity on Earth. The finding runs {BLANK} to the idea that Amazonian diversity is the result of evolution only within the {BLANK} forest itself. \"Basically, the Amazon basin is a melting pot for South American frogs,\" says graduate student Juan Santos, lead author of the study. \"Poison frogs there have come from multiple places of origin, notably the Andes Mountains, over many millions of years. We have shown that you cannot understand Amazonian biodiversity by looking only in the basin. Adjacent regions have played a major role.\"",
+      "correctWords": ["diversity", "major", "reservoirs", "counter", "tropical"],
+      "extraWords": ["essential", "accordant", "territories", "ruin"] },
+    { "id": "mock1-3", "title": "Mock 1 — Fill in the Blanks Drag & Drop Q3 (Children Skip School)", "category": "mock-1",
+      "passage": "Children who skip school are increasingly on family holidays, government figures revealed today. And, {BLANK} children {BLANK} truant this spring term compared with the spring term last year. Children missed 3m unauthorised days of school last term, compared with 3.7m days of school in the same period last year. But a {BLANK} group of truants - 6% of the school population - who account for more than three-quarters of all those on unauthorised absence, are more likely to be on a family holiday than they were in the same {BLANK} last year. Some 1.2% of all absence was for family holidays not {BLANK} by their school last term, compared with 0.9% for the same term last year. More than 60% of all absences were for illness, the same figure as last year.",
+      "correctWords": ["fewer", "played", "hardcore", "period", "agreed"],
+      "extraWords": ["way", "most", "consent"] },
+    { "id": "mock1-4", "title": "Mock 1 — Fill in the Blanks Drag & Drop Q4 (United Nations)", "category": "mock-1",
+      "passage": "Founded after World War II by 51 \"peace-loving states\" combined to oppose future aggression, the United Nations now counts 192 member nations, {BLANK} its newest members, Nauru, Kiribati, and Tonga in 1999, Tuvalu and Yugoslavia in 2000, Switzerland and East Timor in 2002, and Montenegro in 2006. United Nations Day has been {BLANK} on October 24 since 1948 and celebrates the objectives and accomplishments of the organization, which was established on October 24, 1945. The UN {BLANK} in peacekeeping and humanitarian missions across the globe. Though some say its {BLANK} has declined in recent decades, the United Nations still plays a tremendous role in world politics. In 2001 the United Nations and Kofi Annan, then Secretary-General of the UN, won the Nobel Peace Prize \"for their work for a better organized and more peaceful world.\" Since 1948 there have been 63 UN peacekeeping operations, 16 are currently underway. Thus far, close to 130 nations have contributed personnel at various times; 119 are currently providing peacekeepers. As of August 31, 2008, there were 16 peacekeeping operations underway with a total of 88,230 personnel. The small island nation of Fiji has taken part in virtually every UN peacekeeping operation, as has Canada.",
+      "correctWords": ["including", "observed", "engages", "influence"],
+      "extraWords": ["trades", "except", "watched", "treatment"] },
+    { "id": "mock1-5", "title": "Mock 1 — Fill in the Blanks Drag & Drop Q5 (Sports)", "category": "mock-1",
+      "passage": "Sports were firstly part of survival skills, {BLANK} linked to human existence, but now they are mainly for {BLANK} purposes and enjoyment. For example, swimming, hunting, and fishing were {BLANK} necessary for food, but today they have evolved into popular competitive sports. Some of them are actually seen as global competitions {BLANK} millions of spectators.",
+      "correctWords": ["tightly", "recreational", "originally", "attracting"],
+      "extraWords": ["barely", "actually", "untold", "supporting"] }
+  ]
+}

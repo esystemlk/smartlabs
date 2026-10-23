@@ -1,0 +1,33 @@
+{
+  "section": "reading",
+  "taskType": "mcq-multiple",
+  "items": [
+    { "id": "mock1-1", "title": "Mock 1 — Reading MCQ Multiple Q1 (Snap judgments / decision making)", "category": "mock-1",
+      "passage": "By the laws of probability, most decisions made under pressure should be flawed ones, yet psychologists have found that people routinely make correct judgments most of the time, even with limited information. One of Gladwell's surprising points is that we can actually learn how to make better snap judgments, in the same way that we can learn logical, deliberative thinking. But first we have to accept the idea that thinking long and hard about something does not always deliver us better results, and that the brain actually evolved to make us think on our feet.",
+      "question": "Which of the following does the passage tell us about decision making?",
+      "options": [
+        "The brain is designed to enable quick decision making.",
+        "Quick decision making can be improved.",
+        "Quick decision making routinely leads to error.",
+        "To make correct decisions we require all relevant information.",
+        "Thinking things through thoroughly will lead to greater success."
+      ],
+      "correctAnswers": [
+        "The brain is designed to enable quick decision making.",
+        "Quick decision making can be improved."
+      ] },
+    { "id": "mock1-2", "title": "Mock 1 — Reading MCQ Multiple Q2 (11th century Europe: north vs south)", "category": "mock-1",
+      "passage": "Europe in the eleventh century underwent enormous social, technological, and economic changes, but this did not create a new Europe—it created two new ones. The north was developed as a rigidly hierarchical society in which status was determined, or was at least indicated, by the extent to which one owned, controlled, or labored on land; whereas the Mediterranean south developed a more fluid, and therefore more chaotic, world in which industry and commerce predominated and social status both reflected and resulted from the role that one played in the public life of the community. In other words, individual identity and social community in the north were established on a personal basis, whereas in the south they were established on a civic basis. By the start of the twelfth century, northern and southern Europe were very different places indeed, and the Europeans themselves noticed it and commented on it.",
+      "question": "Which of the following was a deciding factor in person's place in society in northern and southern Europe respectively at the end of the eleventh century?",
+      "options": [
+        "Ownership of a commercial enterprise.",
+        "Participation in social and technological changes.",
+        "Role in public life in the community.",
+        "Relationship to land through ownership or labor."
+      ],
+      "correctAnswers": [
+        "Role in public life in the community.",
+        "Relationship to land through ownership or labor."
+      ] }
+  ]
+}

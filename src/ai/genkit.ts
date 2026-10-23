@@ -1,8 +1,11 @@
 import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
 import type { AiCallLog } from '@/lib/services/ai-usage.service';
+import { currentMockAiKey } from '@/lib/mock-ai-context';
 
 const getApiKeys = (): string[] => {
+  const mockKey = currentMockAiKey();
+  if (mockKey) return [mockKey]; // Full mocks use key 6 exclusively; no practice-pool fallback.
   const keys = [
     process.env.GOOGLE_GENAI_API_KEY_1,
     process.env.GOOGLE_GENAI_API_KEY_2,
@@ -104,6 +107,8 @@ async function logKeyUsage(
  * Returns a Genkit AI instance using round-robin key selection.
  */
 export const getAi = () => {
+  const mockKey = currentMockAiKey();
+  if (mockKey) return getInstance(mockKey);
   const keys = getApiKeys();
   const key = keys[counter % keys.length];
   counter = (counter + 1) % keys.length;
@@ -120,8 +125,9 @@ export const callWithFallback = async <T>(
   meta?: { task?: AiCallLog['task']; ip?: string | null; userId?: string | null; email?: string | null }
 ): Promise<T> => {
   const keys = getApiKeys();
-  const startIndex = counter % keys.length;
-  counter = (counter + 1) % keys.length;
+  const mockRequest = !!currentMockAiKey();
+  const startIndex = mockRequest ? 0 : counter % keys.length;
+  if (!mockRequest) counter = (counter + 1) % keys.length;
 
   const task  = meta?.task   ?? 'server-action';
   const ip    = meta?.ip     ?? null;
@@ -130,13 +136,14 @@ export const callWithFallback = async <T>(
 
   for (let attempt = 0; attempt < keys.length; attempt++) {
     const keyIndex = (startIndex + attempt) % keys.length;
+    const usageKeyIndex = mockRequest ? 6 : keyIndex + 1;
     const ai = getInstance(keys[keyIndex]);
 
     let lastError: any = null;
     for (let retry = 0; retry <= MAX_RETRIES_PER_KEY; retry++) {
       try {
         const result = await fn(ai);
-        logKeyUsage(keyIndex + 1, true, false, null, task, ip, userId, email, 'gemini-2.5-flash');
+        logKeyUsage(usageKeyIndex, true, false, null, task, ip, userId, email, 'gemini-2.5-flash');
         return result;
       } catch (error: any) {
         lastError = error;
@@ -164,17 +171,17 @@ export const callWithFallback = async <T>(
 
     if (rateLimit && attempt < keys.length - 1) {
       console.warn(`API key [${keyIndex + 1}] hit rate limit. Falling back to next key.`);
-      logKeyUsage(keyIndex + 1, false, true, errMsg, task, ip, userId, email, 'gemini-2.5-flash');
+      logKeyUsage(usageKeyIndex, false, true, errMsg, task, ip, userId, email, 'gemini-2.5-flash');
       continue;
     }
 
     if (attempt < keys.length - 1) {
       console.warn(`API key [${keyIndex + 1}] failed after retries. Trying next key.`);
-      logKeyUsage(keyIndex + 1, false, false, errMsg, task, ip, userId, email, 'gemini-2.5-flash');
+      logKeyUsage(usageKeyIndex, false, false, errMsg, task, ip, userId, email, 'gemini-2.5-flash');
       continue;
     }
 
-    logKeyUsage(keyIndex + 1, false, rateLimit, errMsg, task, ip, userId, email, 'gemini-2.5-flash');
+    logKeyUsage(usageKeyIndex, false, rateLimit, errMsg, task, ip, userId, email, 'gemini-2.5-flash');
     throw lastError;
   }
 

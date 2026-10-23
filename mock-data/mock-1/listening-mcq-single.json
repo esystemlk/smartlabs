@@ -1,0 +1,29 @@
+{
+  "section": "listening",
+  "taskType": "listening-mcq-single",
+  "storagePrefix": "listening-mcq-single",
+  "items": [
+    { "id": "mock1-1", "title": "Mock 1 — Listening MCQ Single Q1 (Isolation)", "category": "mock-1",
+      "audioText": "Psychiatrists say the covid pandemic and the focus on social distancing has made us all a bit more lonely and a bit more awkward around other people. I would like to emphasize the consequences of isolation and loneliness the most, because it is no doubt an extremely important factor that affects both physical and mental health. People who spend a long time in isolation, like prisons or hospitals or Antarctica if you will, definitely lose certain social skills. And the longer they stay, the more they lose. Marchian Prohasko spent almost two months in Antarctica. He went there in early 2019 to write a book about the experience of being at a polar station. Later during quarantine, Marchionne often drew parallels with his time at the South Pole.",
+      "question": "What is the similarity between staying at Antarctica and being in quarantine according to the passage?",
+      "options": [
+        "They force people to stay at home for a long time.",
+        "People tend to become less sociable.",
+        "They both make people feel less lonely and less awkward.",
+        "Both of them are expensive and compulsory."
+      ],
+      "correctAnswer": "People tend to become less sociable.",
+      "localPath": "C:/Users/SMART LABS/Downloads/isolation.mp3" },
+    { "id": "mock1-2", "title": "Mock 1 — Listening MCQ Single Q2 (US Political Parties)", "category": "mock-1",
+      "audioText": "Since 1852, every US president has been a member of one of the country's two major political parties, the Republican party or the Democratic party. Democrats generally support higher taxes, so they can fund more government programs. Republicans generally prefer lower taxes and smaller government. These two parties tend to reflect relatively moderate political views.\n\nBut there are several other smaller parties on the fringes, including the Libertarian, Constitution, Socialist or Green Parties. Or you can just be an independent not affiliated with any party. Third parties are not that big. But they can have a major influence on presidential elections, by taking away votes from the two major party candidates, which in some years can be a deciding factor in the race to become president.",
+      "question": "Which statement about the US parties is NOT true?",
+      "options": [
+        "Apart from the Republican party and the Democratic party, there are other parties as well.",
+        "Democrats usually want taxes to increase so as to support more government programs.",
+        "Republicans are unwilling to enlarge the government and often reject higher taxes.",
+        "Third parties always play a marginal role in the presidential elections in America."
+      ],
+      "correctAnswer": "Third parties always play a marginal role in the presidential elections in America.",
+      "localPath": "C:/Users/SMART LABS/Downloads/Parties.mp3" }
+  ]
+}

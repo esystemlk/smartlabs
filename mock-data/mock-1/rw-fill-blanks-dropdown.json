@@ -1,0 +1,50 @@
+{
+  "section": "reading",
+  "taskType": "rw-fill-blanks",
+  "items": [
+    { "id": "mock1-1", "title": "Mock 1 — Reading Fill in the Blanks (Dropdown) Q1 (Burger King)", "category": "mock-1",
+      "passage": "Drive down any highway, and you'll see a proliferation of chain restaurants—most likely, if you travel long and far enough you'll see McDonald's golden arches as well as signs for Burger King, Hardee's, and Wendy's the 'big four' of burgers. Despite its name, though, Burger King has fallen short of {1} the burger crown, unable to surpass market leader McDonald's No. 1 sales status. Always the bridesmaid and never the bride, Burger King remains No 2. Worse yet, Burger King has experienced a six-year 22 percent decline in customer traffic, with its overall quality rating dropping while ratings for the other three {2} have increased. The decline has been {3} to inconsistent product quality and poor customer service. Although the chain tends to throw advertising dollars at the problem, an understanding of Integrated Marketing Communication theory would suggest that internal management problems (nineteen CEOs in fifty years) need to be {4} before a unified, long-term strategy can be put in place. The {5} of consistency in brand image and messages, at all levels of communication, has become a basic tenet of IMC theory and practice. The person who takes the customer's order must communicate the same message as Burger King's famous tagline, 'Have it your way,' or the customer will just buzz up the highway to a chain restaurant that seems more consistent and, therefore, more {6}.",
+      "blanks": [
+        { "id": "1", "options": ["filing", "claiming", "winning", "getting"], "correctAnswer": "claiming" },
+        { "id": "2", "options": ["participants", "contenders", "cooperators", "contestants"], "correctAnswer": "contenders" },
+        { "id": "3", "options": ["dedicated", "contributed", "devoted", "attributed"], "correctAnswer": "attributed" },
+        { "id": "4", "options": ["rectified", "ratified", "realized", "recognized"], "correctAnswer": "rectified" },
+        { "id": "5", "options": ["importance", "pressure", "incumbency", "ignorance"], "correctAnswer": "importance" },
+        { "id": "6", "options": ["available", "reliable", "quality", "disputable"], "correctAnswer": "reliable" }
+      ] },
+    { "id": "mock1-2", "title": "Mock 1 — Reading Fill in the Blanks (Dropdown) Q2 (Good Schools Guide)", "category": "mock-1",
+      "passage": "A big rise in state schools rated among the best institutions in the country is revealed in the latest edition of the Good Schools Guide. Middle-class parents facing financial pressures in the {1} are increasingly looking beyond the private sector to educate their children. The 23 year-old Good Schools Guide — a {2} reference book for fee-paying families set on the best private school — has increased the number of state schools in this year's edition to 251, pushing the figure to more than a quarter of its 1,000 entries for the first time. {3} why the guide has more than doubled the number of schools it features outside the private sector in only five years, Sue Fieldman, regional editor, told the Financial Times: \"The parents we speak to want more information on the state {4} and the best it has to offer.\"",
+      "blanks": [
+        { "id": "1", "options": ["period", "upturn", "downtown", "downturn"], "correctAnswer": "downturn" },
+        { "id": "2", "options": ["diverse", "ubiquitous", "complete", "popular"], "correctAnswer": "popular" },
+        { "id": "3", "options": ["Demonstrating", "Asking", "Complaining", "Explaining"], "correctAnswer": "Explaining" },
+        { "id": "4", "options": ["part", "branch", "division", "sector"], "correctAnswer": "sector" }
+      ] },
+    { "id": "mock1-3", "title": "Mock 1 — Reading Fill in the Blanks (Dropdown) Q3 (Fear of conflict)", "category": "mock-1",
+      "passage": "Most of us are {1} of open conflict and avoid it if we can. And there is a {2} to expressing and working through conflict. If the working involves harsh words and name-calling, people feel deeply hurt and relationships can be {3}. Some group members may be afraid that if they really {4} their anger, they may go out of control and become violent, or they may do this. These fears can be very {5} and based on experience.",
+      "blanks": [
+        { "id": "1", "options": ["panic", "scared", "horrible", "fear"], "correctAnswer": "scared" },
+        { "id": "2", "options": ["hazard", "challenge", "risk", "danger"], "correctAnswer": "risk" },
+        { "id": "3", "options": ["injured", "opted", "impaired", "damaged"], "correctAnswer": "damaged" },
+        { "id": "4", "options": ["express", "say", "communicate", "hide"], "correctAnswer": "express" },
+        { "id": "5", "options": ["real", "vivid", "tangible", "concrete"], "correctAnswer": "real" }
+      ] },
+    { "id": "mock1-4", "title": "Mock 1 — Reading Fill in the Blanks (Dropdown) Q4 (Teenage sleep patterns)", "category": "mock-1",
+      "passage": "Children have sound sleep patterns. They can {1} sleep for 8-9 hours and get up at a fixed time. But teenagers don't. Their sleep patterns are {2} by their {3} schedules, in which they sometimes have more classes but sometimes have fewer. {4} these factors, they actually need longer sleep and {5} sleep may be responsible for their learning problems.",
+      "blanks": [
+        { "id": "1", "options": ["soundly", "successfully", "hardly", "barely"], "correctAnswer": "soundly" },
+        { "id": "2", "options": ["effected", "influenced", "gained", "diverged"], "correctAnswer": "influenced" },
+        { "id": "3", "options": ["expressive", "erratic", "explicit", "erroneous"], "correctAnswer": "erratic" },
+        { "id": "4", "options": ["Regardless", "Despite", "As", "Unless"], "correctAnswer": "Despite" },
+        { "id": "5", "options": ["uneven", "insufficient", "unequal", "default"], "correctAnswer": "insufficient" }
+      ] },
+    { "id": "mock1-5", "title": "Mock 1 — Reading Fill in the Blanks (Dropdown) Q5 (Origin of music / motherese)", "category": "mock-1",
+      "passage": "Music is an important part of our lives. We connect and interact with it daily and use it as a way of projecting our self-identities to the people around us. The music we enjoy — whether it's country or classical, rock n' roll or rap — {1} who we are. But where did music, at its core, first come from? It's a puzzling question that may not have a definitive answer. One {2} researcher, however, has proposed that the key to understanding the origin of music is nestled snugly in the loving bond between mother and child. In a lecture at the University of Melbourne, Richard Parncutt, an Australian-born professor of systematic musicology, endorsed the idea that music originally spawned from 'motherese' — the playful voices mothers {3} when speaking to infants and toddlers. As the theory goes, increased human brain sizes caused by evolutionary changes occurring between one and 2,000,000 years ago resulted in earlier births, more fragile infants and a critical need for stronger relationships between mothers and their newborn babies. According to Parncutt, who is based at the University of Graz in Austria, 'motherese' arose as a way to strengthen this maternal bond and to help {4} an infant's survival.",
+      "blanks": [
+        { "id": "1", "options": ["means", "convinces", "shows", "reflects"], "correctAnswer": "reflects" },
+        { "id": "2", "options": ["freelance", "best", "unanimous", "leading"], "correctAnswer": "leading" },
+        { "id": "3", "options": ["adapt", "adopt", "sing", "forge"], "correctAnswer": "adopt" },
+        { "id": "4", "options": ["assure", "insure", "ensure", "reassure"], "correctAnswer": "ensure" }
+      ] }
+  ]
+}
