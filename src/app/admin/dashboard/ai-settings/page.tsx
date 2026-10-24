@@ -64,7 +64,7 @@ interface UsageData {
 }
 
 // All expected API key labels — always shown even if no data yet
-const ALL_KEY_LABELS = ['KEY_1', 'KEY_2', 'KEY_3', 'KEY_4', 'KEY_5'];
+const ALL_KEY_LABELS = ['KEY_1', 'KEY_2', 'KEY_3', 'KEY_4', 'KEY_5', 'KEY_6'];
 const EMPTY_PERIOD: PeriodStats = { requests: 0, successes: 0, failures: 0, rateLimitHits: 0 };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
