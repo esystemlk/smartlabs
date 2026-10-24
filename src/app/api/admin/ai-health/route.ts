@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 const STAFF = new Set(['admin', 'developer']);
-const MODEL = 'gemini-2.5-flash'; // the model the live scorers use
+const MODEL = 'gemini-flash-latest'; // the model the live scorers use
 
 // Ping one Gemini key with a tiny prompt; returns ok + latency, never throws.
 async function ping(key: string): Promise<{ ok: boolean; latencyMs: number; error?: string }> {
@@ -14,7 +14,9 @@ async function ping(key: string): Promise<{ ok: boolean; latencyMs: number; erro
   try {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${key}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 'Reply with exactly one word: OK' }] }], generationConfig: { maxOutputTokens: 5, temperature: 0 } }),
+      // Flash is a thinking model — give enough output budget that thinking tokens
+      // don't starve the actual reply and make a working key look empty/failed.
+      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 'Reply with exactly one word: OK' }] }], generationConfig: { maxOutputTokens: 256, temperature: 0 } }),
     });
     const latencyMs = Date.now() - started;
     if (!res.ok) {

@@ -5,10 +5,14 @@
 // up after the deadline — at which point the caller shows a soft "try again".
 import { currentMockAiKey } from '@/lib/mock-ai-context';
 
+// gemini-flash-latest first: a stable alias that resolves to each project's
+// current Flash, so newer keys (where 2.5-flash is retired) and older keys both
+// work. The pinned models stay as fallbacks for projects that still expose them.
 export const GENAI_MODELS = [
-  { name: 'gemini-2.5-flash', api: 'v1beta' },
-  { name: 'gemini-2.5-pro',   api: 'v1beta' },
-  { name: 'gemini-2.0-flash', api: 'v1beta' },
+  { name: 'gemini-flash-latest', api: 'v1beta' },
+  { name: 'gemini-2.5-flash',    api: 'v1beta' },
+  { name: 'gemini-2.5-pro',      api: 'v1beta' },
+  { name: 'gemini-2.0-flash',    api: 'v1beta' },
 ] as const;
 
 const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));

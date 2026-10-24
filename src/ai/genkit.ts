@@ -38,7 +38,7 @@ const getInstance = (apiKey: string) => {
       apiKey,
       genkit({
         plugins: [googleAI({ apiKey })],
-        model: 'googleai/gemini-2.5-flash',
+        model: 'googleai/gemini-flash-latest',
       })
     );
   }
