@@ -195,7 +195,12 @@ export default function AiSettingsPage() {
     try {
       const token = await getToken();
       const res = await fetch('/api/admin/ai-health', { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
+      // The endpoint can return a non-JSON error (e.g. a platform timeout page),
+      // so read text and parse defensively instead of assuming JSON.
+      const raw = await res.text();
+      let data: HealthReport & { error?: string };
+      try { data = JSON.parse(raw); }
+      catch { throw new Error(res.ok ? 'Server returned an unexpected response.' : `Health check failed (HTTP ${res.status}).`); }
       if (!res.ok) throw new Error(data.error || 'Health check failed.');
       setHealth(data as HealthReport);
     } catch (e) {

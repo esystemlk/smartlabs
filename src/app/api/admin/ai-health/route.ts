@@ -11,9 +11,13 @@ const MODEL = 'gemini-flash-latest'; // the model the live scorers use
 // Ping one Gemini key with a tiny prompt; returns ok + latency, never throws.
 async function ping(key: string): Promise<{ ok: boolean; latencyMs: number; error?: string }> {
   const started = Date.now();
+  // Hard timeout per key so one hung request can't stall the whole function
+  // until the platform kills it (which returns a non-JSON error to the client).
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 15000);
   try {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${key}`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
       // Flash is a thinking model — give enough output budget that thinking tokens
       // don't starve the actual reply and make a working key look empty/failed.
       body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 'Reply with exactly one word: OK' }] }], generationConfig: { maxOutputTokens: 256, temperature: 0 } }),
@@ -28,7 +32,10 @@ async function ping(key: string): Promise<{ ok: boolean; latencyMs: number; erro
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
     return text ? { ok: true, latencyMs } : { ok: false, latencyMs, error: 'Empty response (key may be restricted).' };
   } catch (e) {
-    return { ok: false, latencyMs: Date.now() - started, error: e instanceof Error ? e.message : String(e) };
+    const timedOut = e instanceof Error && e.name === 'AbortError';
+    return { ok: false, latencyMs: Date.now() - started, error: timedOut ? 'Timed out after 15s.' : (e instanceof Error ? e.message : String(e)) };
+  } finally {
+    clearTimeout(timer);
   }
 }
 
