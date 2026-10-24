@@ -4,8 +4,6 @@ import type { AiCallLog } from '@/lib/services/ai-usage.service';
 import { currentMockAiKey } from '@/lib/mock-ai-context';
 
 const getApiKeys = (): string[] => {
-  const mockKey = currentMockAiKey();
-  if (mockKey) return [mockKey]; // Full mocks use key 6 exclusively; no practice-pool fallback.
   const keys = [
     process.env.GOOGLE_GENAI_API_KEY_1,
     process.env.GOOGLE_GENAI_API_KEY_2,
@@ -13,6 +11,11 @@ const getApiKeys = (): string[] => {
     process.env.GOOGLE_GENAI_API_KEY_4,
     process.env.GOOGLE_GENAI_API_KEY_5,
   ].filter(Boolean) as string[];
+
+  // Full mocks prefer the dedicated key 6, then fall back to the pool so a
+  // missing/exhausted key 6 never dead-ends mock scoring.
+  const mockKey = currentMockAiKey();
+  if (mockKey) return [mockKey, ...keys];
 
   if (keys.length === 0) {
     const legacy = process.env.GOOGLE_GENAI_API_KEY;

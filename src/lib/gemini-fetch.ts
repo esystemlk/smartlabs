@@ -33,11 +33,13 @@ let _rot = 0;
 /** Present keys, in priority order, rotated so load spreads across them. */
 function keysInOrder(): { key: string; label: string; keyIndex: number }[] {
   const mockKey = currentMockAiKey();
-  if (mockKey) return [{ key:mockKey, label:'KEY_6', keyIndex:6 }];
   const order = priorityOrder();
   const present = order
     .map(i => ({ key: process.env[`GOOGLE_GENAI_API_KEY_${i}`] ?? '', label: `KEY_${i}`, keyIndex: i }))
     .filter(k => k.key.length > 0);
+  // Full mocks prefer the dedicated key 6, then fall back to the normal pool so
+  // a missing/exhausted key 6 never dead-ends mock scoring.
+  if (mockKey) return [{ key:mockKey, label:'KEY_6', keyIndex:6 }, ...present];
   if (present.length <= 1) return present;
   const start = _rot++ % present.length;
   return [...present.slice(start), ...present.slice(0, start)];
