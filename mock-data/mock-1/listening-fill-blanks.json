@@ -1,0 +1,17 @@
+{
+  "section": "listening",
+  "taskType": "listening-fill-blanks",
+  "storagePrefix": "listening-fill-blanks",
+  "items": [
+    { "id": "mock1-1", "title": "Mock 1 — Listening Fill in the Blanks Q1 (STEM Internship Support)", "category": "mock-1",
+      "audioText": "Many universities offer subsidies for summer research to maintain an average stipend, while career centers oversee placement rates to secure industrial experience for graduates.",
+      "transcript": "Many universities offer {BLANK} for summer research to maintain an {BLANK} stipend, while career centers oversee {BLANK} rates to secure industrial {BLANK} for graduates.",
+      "correctWords": ["subsidies", "average", "placement", "experience"],
+      "localPath": "C:/Users/SMART LABS/Downloads/STEM Internship Support.mp3" },
+    { "id": "mock1-2", "title": "Mock 1 — Listening Fill in the Blanks Q2 (Driving License Test Preparation)", "category": "mock-1",
+      "audioText": "The driving school is always busy during the summer as many students sign up for lessons. They want to get their licenses before school starts. The instructor is responsible for teaching them how to drive safely. They are requiring each student to demonstrate their ability to handle the car properly. This ensures everyone is ready for the road. Passing the test is a big achievement for new drivers.",
+      "transcript": "The driving school is always {BLANK} during the summer as many students sign up for lessons. They want to get their licenses before school starts. The {BLANK} is responsible for teaching them how to drive safely. They are {BLANK} each student to demonstrate their {BLANK} to handle the car properly. This ensures everyone is ready for the road. Passing the test is a big achievement for new drivers.",
+      "correctWords": ["busy", "instructor", "requiring", "ability"],
+      "localPath": "C:/Users/SMART LABS/Downloads/Driving License Test Preparation.mp3" }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "section": "reading",
+  "taskType": "reading-mcq-single",
+  "items": [
+    { "id": "mock1-1", "title": "Mock 1 — Reading MCQ Single Q1 (Flies and Mosquitos)", "category": "mock-1",
+      "passage": "Scientists at Johns Hopkins Medicine meticulously counted brain cells in fruit flies and three species of mosquitos, revealing a number that would surprise many people outside the science world. The insects' tiny brains, on average, have about 200,000 neurons and other cells, they say. By comparison, a human brain has 86 billion neurons, and a rodent brain contains about 12 billion. Even though these brains are simple (in contrast to mammalian brains), they can do a lot of processing, even more than a supercomputer. They enable the insects to navigate, find food and perform other complicated tasks at the same time.",
+      "question": "According to this passage, we can know that fruit flies __",
+      "options": [
+        "have about 12 billion neurons and cells in the brain.",
+        "have more brain cells than rodents.",
+        "can do more processing than a supercomputer.",
+        "can't navigate and find food at the same time."
+      ],
+      "correctAnswer": "can do more processing than a supercomputer." },
+    { "id": "mock1-2", "title": "Mock 1 — Reading MCQ Single Q2 (Packet-switching network)", "category": "mock-1",
+      "passage": "Internet data, whether in the form of a Web page, a downloaded file or an e-mail message, travels over a system known as a packet-switching network. In this system, the data in a message or file is broken up into packages about 1,500 bytes long. Each of these packages gets a wrapper that includes information on the sender's address, the receiver's address, the package's place in the entire message, and how the receiving computer can be sure that the package arrived intact. Each data package, called a packet, is then sent off to its destination via the best available route -- a route that might be taken by all the other packets in the message or by none of the other packets in the message.",
+      "question": "According to the text, which description below of the transmission process is NOT true?",
+      "options": [
+        "The receiving computer can determine whether or not the package is intact all by itself.",
+        "In a packet-switching network, the data cannot be transmitted without being cut into packages.",
+        "Apart from the data, a package also carries with it some other information.",
+        "There are different routes for the transmission of data in a packet-switching network."
+      ],
+      "correctAnswer": "The receiving computer can determine whether or not the package is intact all by itself." }
+  ]
+}

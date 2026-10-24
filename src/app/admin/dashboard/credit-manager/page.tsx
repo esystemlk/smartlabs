@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useUser, useFirebase } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import Link from 'next/link';
+import { MockCreditManager } from '@/components/admin/mock-credit-manager';
 import {
   Search, RefreshCw, Plus, Minus, Crown, AlertTriangle, CheckCircle2, XCircle,
   ChevronLeft, Loader2, ShieldCheck, Gift, Users, Coins, Trash2,
@@ -33,6 +34,12 @@ const POOL_LABELS: { key: keyof Holder['pools']; label: string }[] = [
   { key: 'speaking', label: 'Speaking' },
   { key: 'ieltsEssay', label: 'IELTS' },
 ];
+const CREDIT_TABS = [
+  { id: 'ai', label: 'Universal & AI credits' },
+  { id: 'pte', label: 'PTE Mock credits' },
+  { id: 'ielts', label: 'IELTS Mock credits' },
+] as const;
+type CreditTab = typeof CREDIT_TABS[number]['id'];
 
 export default function CreditManagerPage() {
   const { user, isUserLoading } = useUser();
@@ -41,6 +48,7 @@ export default function CreditManagerPage() {
 
   const [allowed, setAllowed] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [tab, setTab] = useState<CreditTab>('ai');
 
   const [holders, setHolders] = useState<Holder[]>([]);
   const [loadingList, setLoadingList] = useState(false);
@@ -167,17 +175,33 @@ export default function CreditManagerPage() {
                 <Coins size={18} className="text-orange-400" />
                 Credit Manager
               </h1>
-              <p className="text-[11px] text-slate-500 font-medium">Students who hold credits · universal credit control · Admin &amp; Developer only</p>
+              <p className="text-[11px] text-slate-400 font-medium">Universal AI · PTE mocks · IELTS mocks · Admin &amp; Developer only</p>
             </div>
           </div>
           <button onClick={loadHolders} disabled={loadingList}
-            className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white border border-slate-700 hover:border-slate-500 px-3 py-2 rounded-xl transition-colors">
+            className={`${tab === 'ai' ? 'flex' : 'hidden'} items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white border border-slate-700 hover:border-slate-500 px-3 py-2 rounded-xl transition-colors`}>
             <RefreshCw size={13} className={loadingList ? 'animate-spin' : ''} /> Refresh
           </button>
         </div>
       </header>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+        <div role="tablist" aria-label="Credit type" className="grid gap-2 rounded-2xl border border-slate-800 bg-slate-900 p-2 sm:grid-cols-3">
+          {CREDIT_TABS.map((item, index) => <button key={item.id} type="button" role="tab" id={`credit-tab-${item.id}`} aria-controls={`credit-panel-${item.id}`} aria-selected={tab === item.id} tabIndex={tab === item.id ? 0 : -1}
+            className={`rounded-xl px-4 py-3 text-sm font-bold transition-colors ${tab === item.id ? item.id === 'ai' ? 'bg-orange-500 text-slate-950' : item.id === 'pte' ? 'bg-violet-600 text-white' : 'bg-sky-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+            onClick={() => setTab(item.id)} onKeyDown={event => {
+              const next = event.key === 'ArrowRight' ? (index + 1) % CREDIT_TABS.length : event.key === 'ArrowLeft' ? (index + CREDIT_TABS.length - 1) % CREDIT_TABS.length : event.key === 'Home' ? 0 : event.key === 'End' ? CREDIT_TABS.length - 1 : -1;
+              if (next >= 0) { event.preventDefault(); const nextTab = CREDIT_TABS[next].id; setTab(nextTab); document.getElementById(`credit-tab-${nextTab}`)?.focus(); }
+            }}>{item.label}</button>)}
+        </div>
+        {/* Keep each panel mounted so an uncertain grant retains its retry receipt when switching tabs. */}
+        <div role="tabpanel" id="credit-panel-pte" aria-labelledby="credit-tab-pte" className={tab === 'pte' ? 'space-y-5' : 'hidden'}>
+          <MockCreditManager examType="pte" institutePayments />
+        </div>
+        <div role="tabpanel" id="credit-panel-ielts" aria-labelledby="credit-tab-ielts" className={tab === 'ielts' ? 'space-y-5' : 'hidden'}>
+          <MockCreditManager examType="ielts" institutePayments />
+        </div>
+        <div role="tabpanel" id="credit-panel-ai" aria-labelledby="credit-tab-ai" className={tab === 'ai' ? 'space-y-8' : 'hidden'}>
         {/* Summary + filter */}
         <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -375,6 +399,7 @@ export default function CreditManagerPage() {
             </p>
           </section>
         )}
+        </div>
       </div>
     </div>
   );

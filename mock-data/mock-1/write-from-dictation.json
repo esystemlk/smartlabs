@@ -1,0 +1,16 @@
+{
+  "section": "listening",
+  "taskType": "write-from-dictation",
+  "storagePrefix": "write-from-dictation",
+  "items": [
+    { "id": "mock1-1", "title": "Mock 1 — Write from Dictation Q1", "category": "mock-1",
+      "text": "Before choosing your university courses, you should consider your future career.",
+      "localPath": "C:/Users/SMART LABS/Downloads/WFD 1.mp3" },
+    { "id": "mock1-2", "title": "Mock 1 — Write from Dictation Q2", "category": "mock-1",
+      "text": "We no longer respond to any postal reference requests.",
+      "localPath": "C:/Users/SMART LABS/Downloads/WFD 2.mp3" },
+    { "id": "mock1-3", "title": "Mock 1 — Write from Dictation Q3", "category": "mock-1",
+      "text": "His analysis study appears to be based on the false premise.",
+      "localPath": "C:/Users/SMART LABS/Downloads/WFD3.mp3" }
+  ]
+}

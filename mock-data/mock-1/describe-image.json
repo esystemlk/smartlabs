@@ -1,0 +1,22 @@
+{
+  "section": "speaking",
+  "taskType": "describe-image",
+  "storagePrefix": "describe-image",
+  "items": [
+    { "id": "mock1-1", "title": "Mock 1 — Describe Image Q1 (Pacific garbage patch map)", "category": "mock-1",
+      "describe": "Infographic 'Out of sight, out of mind' showing the Eastern and Western Pacific garbage patches as two large areas of floating plastic waste trapped by the North Pacific Gyre currents, between Japan/Russia/Canada/US/Mexico, with a cutaway panel showing the plastic soup extends to about 10 metres depth.",
+      "localPath": "C:/Users/SMARTL~1/AppData/Local/Temp/claude/C--Users-SMART-LABS-Desktop-smartlabs/a6e01e64-7984-4a43-b249-8528cde84840/images/12.webp" },
+    { "id": "mock1-2", "title": "Mock 1 — Describe Image Q2 (Benefit recipients bar chart)", "category": "mock-1",
+      "describe": "Bar chart 'Benefit Recipient by Health Area in Sydney, 2004' comparing Age Pension vs Disability Pension as a percent of eligible population across two regions: Sydney South West (Age Pension 73.3%, Disability Pension 7%) and South Eastern Sydney & Illawarra (Age Pension 64.9%, Disability Pension 6.2%). Age Pension recipients are far higher than Disability Pension in both regions.",
+      "localPath": "C:/Users/SMARTL~1/AppData/Local/Temp/claude/C--Users-SMART-LABS-Desktop-smartlabs/a6e01e64-7984-4a43-b249-8528cde84840/images/13.webp" },
+    { "id": "mock1-3", "title": "Mock 1 — Describe Image Q3 (World GDP share map)", "category": "mock-1",
+      "describe": "World map 'Share of World GDP PPP 2011, World Bank, ICP' colour-coded by each country's share of world GDP (under 0.1% up to over 15%), with red pie markers on the six biggest economies (US, China, and others in Europe/Asia); a pie chart shows those six economies make up the large majority of world GDP.",
+      "localPath": "C:/Users/SMARTL~1/AppData/Local/Temp/claude/C--Users-SMART-LABS-Desktop-smartlabs/a6e01e64-7984-4a43-b249-8528cde84840/images/14.webp" },
+    { "id": "mock1-4", "title": "Mock 1 — Describe Image Q4 (6-step process cycle)", "category": "mock-1",
+      "describe": "Circular 6-step process/flow diagram: 1. State the Problem, 2. Generate Ideas, 3. Select a Solution, 4. Build the Item, 5. Evaluate, 6. Present Results — arrows link each stage back to the start, forming a continuous cycle.",
+      "localPath": "C:/Users/SMARTL~1/AppData/Local/Temp/claude/C--Users-SMART-LABS-Desktop-smartlabs/a6e01e64-7984-4a43-b249-8528cde84840/images/15.webp" },
+    { "id": "mock1-5", "title": "Mock 1 — Describe Image Q5 (Cups of coffee sold bar chart)", "category": "mock-1",
+      "describe": "Grouped bar chart 'Cups of Coffee Sold' comparing Downtown vs Mall locations across Jan–May: Jan (17 vs 23), Feb (26 vs 42, the peak for both), March (11 vs 14), April (9 vs 5, the only month Downtown exceeds Mall), May (6 vs 10). Overall a sharp spike in February followed by a steady decline.",
+      "localPath": "C:/Users/SMARTL~1/AppData/Local/Temp/claude/C--Users-SMART-LABS-Desktop-smartlabs/a6e01e64-7984-4a43-b249-8528cde84840/images/16.webp" }
+  ]
+}

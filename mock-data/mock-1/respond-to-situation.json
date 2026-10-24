@@ -1,0 +1,17 @@
+{
+  "section": "speaking",
+  "taskType": "respond-to-situation",
+  "storagePrefix": "respond-to-situation",
+  "items": [
+    { "id": "mock1-1", "title": "Mock 1 — Respond to a Situation Q1 (Fallen tree blocks road)", "category": "mock-1",
+      "situation": "You are on your way to campus to deliver a presentation when a fallen tree blocks the road, preventing you from arriving on time. You call your professor to ask if it would be possible to reschedule your presentation for later, or allow another student to present first. What would you say?",
+      "sampleAnswer": "Hi! I would like to discuss an issue we have encountered with my presentation time. The background is that I'm on my way to campus but a fallen tree is blocking the road, so I won't arrive on time. In the situation, what I can think of is to ask if another student could go first. Besides, another thing that comes to my mind is to reschedule for later today.",
+      "sampleAnswerNote": "This is a SAMPLE answer for the AI's reference only, not the expected/required student response. Students will phrase their own answer differently; the AI should judge whether the student achieved the communication goal of the situation, not whether they match this wording.",
+      "localPath": "C:/Users/SMART LABS/Downloads/Fallen Tree.mp3" },
+    { "id": "mock1-2", "title": "Mock 1 — Respond to a Situation Q2 (Wrong exam time)", "category": "mock-1",
+      "situation": "You just told one of your friends that the exam time is 3 p.m. tomorrow afternoon. But you've just found out that you were wrong—the exam is actually at 2 p.m. this afternoon. You want to correct this mistake immediately. What would you say to the friend?",
+      "sampleAnswer": "Hi! I would like to discuss an issue we have encountered with the exam time. The background is that I just told you the exam is at 3 p.m. tomorrow, but I found out it's actually at 2 p.m. today - I'm so sorry for the mistake. In the situation, what I can think of is to apologize for the wrong information. Besides, another thing that comes to my mind is to confirm you can still make it.",
+      "sampleAnswerNote": "This is a SAMPLE answer for the AI's reference only, not the expected/required student response. Students will phrase their own answer differently; the AI should judge whether the student achieved the communication goal of the situation, not whether they match this wording.",
+      "localPath": "C:/Users/SMART LABS/Downloads/Wrong Time.mp3" }
+  ]
+}

@@ -3,6 +3,7 @@
 // so a single bad/rate-limited key dead-ended the student. This tries other
 // keys automatically (preferring the ones most likely to work) and only gives
 // up after the deadline — at which point the caller shows a soft "try again".
+import { currentMockAiKey } from '@/lib/mock-ai-context';
 
 export const GENAI_MODELS = [
   { name: 'gemini-2.5-flash', api: 'v1beta' },
@@ -31,6 +32,8 @@ function priorityOrder(): number[] {
 let _rot = 0;
 /** Present keys, in priority order, rotated so load spreads across them. */
 function keysInOrder(): { key: string; label: string; keyIndex: number }[] {
+  const mockKey = currentMockAiKey();
+  if (mockKey) return [{ key:mockKey, label:'KEY_6', keyIndex:6 }];
   const order = priorityOrder();
   const present = order
     .map(i => ({ key: process.env[`GOOGLE_GENAI_API_KEY_${i}`] ?? '', label: `KEY_${i}`, keyIndex: i }))

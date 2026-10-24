@@ -1,0 +1,27 @@
+{
+  "section": "speaking",
+  "taskType": "answer-short-question",
+  "storagePrefix": "answer-short-question",
+  "items": [
+    { "id": "mock1-1", "title": "Mock 1 — Answer Short Question Q1", "category": "mock-1",
+      "question": "What do we call the organs in our chest that we use to breathe?",
+      "answer": "Lungs / lung",
+      "localPath": "C:/Users/SMART LABS/Downloads/asq1.mp3" },
+    { "id": "mock1-2", "title": "Mock 1 — Answer Short Question Q2", "category": "mock-1",
+      "question": "What do you call the very long essay that students have to write for a doctoral degree?",
+      "answer": "Thesis / dissertation / discourse / paper",
+      "localPath": "C:/Users/SMART LABS/Downloads/ASQ 2.mp3" },
+    { "id": "mock1-3", "title": "Mock 1 — Answer Short Question Q3", "category": "mock-1",
+      "question": "Where do people usually go to deposit money?",
+      "answer": "Bank",
+      "localPath": "C:/Users/SMART LABS/Downloads/asq_106-US.mp3" },
+    { "id": "mock1-4", "title": "Mock 1 — Answer Short Question Q4", "category": "mock-1",
+      "question": "What is the word for a period of one hundred years?",
+      "answer": "Century",
+      "localPath": "C:/Users/SMART LABS/Downloads/ASQ 4.mp3" },
+    { "id": "mock1-5", "title": "Mock 1 — Answer Short Question Q5", "category": "mock-1",
+      "question": "What is the job of someone that looks after your teeth and gums?",
+      "answer": "Dentist / surgeon dentist",
+      "localPath": "C:/Users/SMART LABS/Downloads/asq_171-US.mp3" }
+  ]
+}

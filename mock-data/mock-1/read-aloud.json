@@ -1,0 +1,16 @@
+{
+  "section": "speaking",
+  "taskType": "read-aloud",
+  "items": [
+    { "id": "mock1-1", "title": "Mock 1 — Read Aloud Q1", "category": "mock-1",
+      "text": "The Royal Institution is an organization that has been around for 209 years. Many of the people that have worked here have been scientists themselves, including Michael Faraday. He made the discoveries that made generating and using electricity much easier, making it possible for us all to switch on lights, cook our dinner, play games consoles much, much more." },
+    { "id": "mock1-2", "title": "Mock 1 — Read Aloud Q2", "category": "mock-1",
+      "text": "In spite of the spectacularly high quality of life for the vast majority of the people who live in the European Union, its inhabitants seem obsessed by the region's relative decline in the world. Slow economic growth rates and high unemployment have reinforced the impression that Europe is unhappy with today and unsure of tomorrow." },
+    { "id": "mock1-3", "title": "Mock 1 — Read Aloud Q3", "category": "mock-1",
+      "text": "Aquaculture, also known as aquafarming, is the farming of aquatic organisms such as fish, crustaceans, molluscs and aquatic plants. Aquaculture involves cultivating freshwater and saltwater populations under controlled conditions." },
+    { "id": "mock1-4", "title": "Mock 1 — Read Aloud Q4", "category": "mock-1",
+      "text": "Your tutor helps you make the most of your time at university by giving you guidance and support along the way. All new students are allocated a personal tutor who will encourage you to get the most out of your course, direct you to other sources of support and help you achieve your goals." },
+    { "id": "mock1-5", "title": "Mock 1 — Read Aloud Q5", "category": "mock-1",
+      "text": "Statistics are indicators of change and allow meaningful comparisons to be made. While it may be the issues rather than the statistics as such that grab people's attention, it should be recognized that it is the statistics that informed the issues. Statistical literacy, then, is the ability to accurately understand, interpret and evaluate the data that inform these issues." }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "section": "listening",
+  "taskType": "select-missing-word",
+  "storagePrefix": "select-missing-word",
+  "items": [
+    { "id": "mock1-1", "title": "Mock 1 — Select Missing Word Q1 (Triggers)", "category": "mock-1",
+      "audioTextStart": "They see triggers all over the world. What are triggers? Triggers are cases where you take a part of your nervous system and you say, if someone says that word they can control my nervous system and make me afraid and anxious. That's a terrible idea. We should not be teaching our kids to see the world as being full of triggers. We should teach them to live in a world that is physically quite safe but full of offensive statements and ideas especially on the Internet. A sad commentary on the state of the business world now is that Google is being sued from both sides, from women who say that they're victims of a hostile climate, and from conservatives and white men, who say that conservatives and white men are discriminated against. So in our current era, everybody feels they're",
+      "options": ["a victim", "conservatives", "commentators", "white men"],
+      "correctAnswer": "a victim",
+      "localPath": "C:/Users/SMART LABS/Downloads/Triggers.mp3" }
+  ]
+}

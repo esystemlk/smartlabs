@@ -1,0 +1,8 @@
+{
+  "section": "writing",
+  "taskType": "write-essay",
+  "items": [
+    { "id": "mock1-1", "title": "Mock 1 — Write Essay Q1 (Studying centuries-old plays)", "category": "mock-1",
+      "text": "What are the problems and the benefits for high school students of studying plays and other works for theatre that were written centuries ago? Use your own experience to discuss it." }
+  ]
+}

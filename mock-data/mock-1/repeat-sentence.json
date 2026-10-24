@@ -1,0 +1,17 @@
+{
+  "section": "speaking",
+  "taskType": "repeat-sentence",
+  "storagePrefix": "repeat-sentence",
+  "items": [
+    { "id": "mock1-1", "title": "Mock 1 — Repeat Sentence Q1", "category": "mock-1", "localPath": "C:/Users/SMART LABS/Downloads/2511_volume.mp3" },
+    { "id": "mock1-2", "title": "Mock 1 — Repeat Sentence Q2", "category": "mock-1", "localPath": "C:/Users/SMART LABS/Downloads/2590_volume.mp3" },
+    { "id": "mock1-3", "title": "Mock 1 — Repeat Sentence Q3", "category": "mock-1", "localPath": "C:/Users/SMART LABS/Downloads/rs_2622-1784891460_072657.mp3" },
+    { "id": "mock1-4", "title": "Mock 1 — Repeat Sentence Q4", "category": "mock-1", "localPath": "C:/Users/SMART LABS/Downloads/2600_volume.mp3" },
+    { "id": "mock1-5", "title": "Mock 1 — Repeat Sentence Q5", "category": "mock-1", "localPath": "C:/Users/SMART LABS/Downloads/748_volume.mp3" },
+    { "id": "mock1-6", "title": "Mock 1 — Repeat Sentence Q6", "category": "mock-1", "localPath": "C:/Users/SMART LABS/Downloads/2641_volume.mp3" },
+    { "id": "mock1-7", "title": "Mock 1 — Repeat Sentence Q7", "category": "mock-1", "localPath": "C:/Users/SMART LABS/Downloads/2847_volume.mp3" },
+    { "id": "mock1-8", "title": "Mock 1 — Repeat Sentence Q8", "category": "mock-1", "localPath": "C:/Users/SMART LABS/Downloads/2782_volume.mp3" },
+    { "id": "mock1-9", "title": "Mock 1 — Repeat Sentence Q9", "category": "mock-1", "localPath": "C:/Users/SMART LABS/Downloads/rs_3069-1779317008_273253.mp3" },
+    { "id": "mock1-10", "title": "Mock 1 — Repeat Sentence Q10", "category": "mock-1", "localPath": "C:/Users/SMART LABS/Downloads/rs_3070-1779317116_2816553.mp3" }
+  ]
+}

@@ -1,0 +1,9 @@
+'use client';
+import {useEffect,useState} from 'react';
+import Link from 'next/link';
+import {useUser} from '@/firebase';
+export default function FullMocksReview() {
+  const {user}=useUser();const [rows,setRows]=useState<any[]>([]);const [error,setError]=useState('');const [loading,setLoading]=useState(true);
+  useEffect(()=>{if(!user)return;void user.getIdToken().then(token=>fetch('/api/full-mock?review=1',{headers:{Authorization:`Bearer ${token}`}})).then(async res=>{const d=await res.json();if(!res.ok)throw new Error(d.error);setRows(d.attempts);}).catch(e=>setError(e.message)).finally(()=>setLoading(false));},[user]);
+  return <div className="mx-auto max-w-6xl space-y-6 p-6"><Link href="/admin/dashboard/mock-tests" className="text-sm text-violet-600">← Mock administration</Link><div><h1 className="text-3xl font-bold">Full mock · lecturer review</h1><p className="mt-3 text-slate-500">Review recent student attempts, compare responses, and leave specific corrections in the saved report.</p></div>{error&&<p role="alert" className="text-rose-700">{error}</p>}{loading?<p>Loading attempts…</p>:<div className="overflow-x-auto rounded-2xl border bg-white"><table className="w-full text-left text-sm"><thead><tr className="border-b bg-slate-50"><th className="p-4">Student</th><th>Date</th><th>Status</th><th>Overall</th><th>Report</th></tr></thead><tbody>{rows.map(r=><tr key={r.id} className="border-b"><td className="p-4">{r.student}</td><td>{new Date(r.createdAt).toLocaleString()}</td><td>{r.status.replace('_',' ')}</td><td>{r.results?.overall ?? 'Pending'}</td><td>{r.status==='scored'?<Link className="text-violet-700 underline" href={`/mock/full-1?attemptId=${r.id}`}>Review & add notes</Link>:'Awaiting completion'}</td></tr>)}</tbody></table>{!rows.length&&<p className="p-8 text-slate-400">No full mock attempts yet.</p>}</div>}</div>;
+}

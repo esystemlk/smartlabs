@@ -9,8 +9,8 @@ export interface AiCallLog {
   email:      string | null;
   ip:         string | null;
   task:       'essay' | 'swt' | 'sst' | 'ielts-essay' | 'ielts-task1' | 'server-action';
-  keyLabel:   string;          // e.g. 'KEY_1' … 'KEY_5' or 'FIRESTORE_KEY'
-  keyIndex:   number | null;   // 1-5 for the env-key pool, null for Firestore key
+  keyLabel:   string;          // 'KEY_1' … 'KEY_5' practice, 'KEY_6' full mocks, or 'FIRESTORE_KEY'
+  keyIndex:   number | null;   // 1-5 practice, 6 full mocks, null for Firestore key
   model?:     string | null;   // e.g. 'gemini-2.5-flash'
   success:    boolean;
   isRateLimit: boolean;

@@ -1,0 +1,38 @@
+{
+  "section": "listening",
+  "taskType": "listening-mcq-multiple",
+  "storagePrefix": "listening-mcq-multiple",
+  "items": [
+    { "id": "mock1-1", "title": "Mock 1 — Listening MCQ Multiple Q1 (Time Famine)", "category": "mock-1",
+      "audioText": "A team of researchers finds that shelling out for services that save time can bring greater feelings of life satisfaction than, say, simply buying more stuff. The results appear in the Proceedings of the National Academy of Sciences.\n\nIt's safe to say that most of us regularly feel crunched for time. So much so that we are experiencing what Ashley Whillans of the Harvard Business School, the lead author of the study, describes as a \"time famine.\" And like any famine, this chronic lack of time takes its toll on our health.\n\n\"When we feel like our to-do lists are longer than the hours that we have time in the day to complete them, we can feel as if our life is spiraling out of control, thereby undermining our personal well-being.\"\n\nWell, if time is money, Whillans and her team wondered whether money that's used to buy time could offer some relief. Like paying someone else to clean the house, mow the lawn, or deliver the groceries.",
+      "question": "According to the speaker, which services are the time-saving services?",
+      "options": [
+        "Purchasing more supplies and goods.",
+        "Hiring someone to walk the dog.",
+        "Making a to-do list and completing it.",
+        "Hiring a babysitter to take care of the baby.",
+        "Repairing the computer."
+      ],
+      "correctAnswers": [
+        "Hiring someone to walk the dog.",
+        "Hiring a babysitter to take care of the baby."
+      ],
+      "localPath": "C:/Users/SMART LABS/Downloads/Time Famine.mp3" },
+    { "id": "mock1-2", "title": "Mock 1 — Listening MCQ Multiple Q2 (Negotiation)", "category": "mock-1",
+      "audioText": "We constantly negotiate at work. We negotiate for higher pay, promotions, vacations and even greater autonomy. In fact, every day we negotiate just to get our job done and to secure resources for ourselves and our teams. And yet when we go in with the wrong mindset, with a fist up ready to fight, we aren't as successful. You know why? Because negotiation is not about dominating. It's about crafting a relationship.\n\nAnd relationships thrive when we find ways to give and to take and move together in unison. And to do that, you have to be well prepared.\n\nFirst, do your research. Figure out whether what you're asking for is realistic. What is your aspiration? What do you want, and what will make you walk away from the table? This might seem obvious, but too many people don't think it through.",
+      "question": "What can we infer from the passage about negotiation?",
+      "options": [
+        "If your demands do not match reality, the negotiation may fail.",
+        "It's best not to compromise or make concessions in negotiations.",
+        "Negotiation is not about holding your fist up for a fight. It's about taking and giving.",
+        "We negotiate for what we want, such as salaries or promotions in work.",
+        "It is better to consult a lawyer before the negotiation."
+      ],
+      "correctAnswers": [
+        "If your demands do not match reality, the negotiation may fail.",
+        "Negotiation is not about holding your fist up for a fight. It's about taking and giving.",
+        "We negotiate for what we want, such as salaries or promotions in work."
+      ],
+      "localPath": "C:/Users/SMART LABS/Downloads/Negotiation.mp3" }
+  ]
+}
