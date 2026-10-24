@@ -57,7 +57,7 @@ function studentQuestion(source: Record<string, any>, type: string) {
   // Explicit allowlist: answer keys and listening reference transcripts never reach an active exam.
   if (type === 'read-aloud') result.text = d.text;
   if (type === 'respond-to-situation') result.text = d.situation;
-  if (type === 'write-essay') result.text = d.topic;
+  if (type === 'write-essay') result.text = d.topic ?? d.text;
   if (d.passage) result.text = d.passage;
   if (type === 'listening-fill-blanks' || type === 'highlight-incorrect-words') result.text = d.transcript;
   if (d.question && !speakingTask(type)) result.question = d.question;
