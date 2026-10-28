@@ -159,7 +159,7 @@ export function IeltsStudio({ section }: { section?: string }) {
         <span className="studio-skim-badge">NEW · SKILL CHALLENGE</span>
         <h3>Skimming Mastery Challenge</h3>
         <p>Five progressive levels that train you to spot the main idea, purpose and best heading — and not get trapped by details. Pass each level to unlock the next and earn the <b>Skimming Master</b> badge.</p>
-        <span className="studio-primary">Start the challenge <ArrowUpRight size={16} /></span>
+        <span className="studio-skim-cta">Start the challenge <ArrowUpRight size={16} /></span>
       </Link>}
       {books ? <><ol className="studio-howto"><li><b>1</b> Pick a Cambridge test below</li><li><b>2</b> Answer all the parts — your answers save as you go</li><li><b>3</b> Submit to get your score</li><li><b>4</b> Review each question with “Explain this answer”</li></ol><div className="studio-books">{books.map((group, gi) => { const open = !!openBooks[group.book]; return <section className="studio-book" key={group.book} data-open={open}>
         <button type="button" className="studio-book-header" aria-expanded={open} onClick={() => toggleBook(group.book)}>

@@ -14,4 +14,5 @@
 .studio-skim-card h3 { font-size: 1.45rem; font-weight: 900; margin: .7rem 0 .4rem; color: #fff; }
 .studio-skim-card p { color: #cbd5e1; line-height: 1.55; font-size: .95rem; margin-bottom: 1rem; }
 .studio-skim-card p b { color: #fcd34d; }
-.studio-skim-card .studio-primary { display: inline-flex; align-items: center; gap: .4rem; background: #fff; color: #1e1b4b; font-weight: 800; border-radius: 10px; padding: .6rem 1.1rem; }
+.studio-skim-cta { display: inline-flex; align-items: center; gap: .4rem; background: #fff; color: #1e1b4b; font-weight: 800; border-radius: 10px; padding: .6rem 1.1rem; font-size: 14px; }
+.studio-skim-cta svg { color: #1e1b4b; }
