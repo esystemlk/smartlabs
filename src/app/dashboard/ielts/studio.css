@@ -6,3 +6,12 @@
 .studio-howto li{display:flex;align-items:center;gap:8px;font-size:14px;color:#404040;font-weight:600}
 .studio-howto li b{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#d71920;color:#fff;font-size:12px;flex:none}
 .studio-nav a{font-size:14px}.studio-book-title h3{font-size:22px}.studio-book-meta{font-size:12.5px}.studio-subpart h4{font-size:16px}.studio-subpart p{font-size:13px;line-height:1.7}.studio-subpart-number{font-size:20px}.studio-primary{font-size:14px;padding:15px 24px}.studio-detail-hero>p:not(.studio-eyebrow){font-size:16px}.studio-part h3{font-size:16px}.studio-part p{font-size:13px}.studio-skill>p{font-size:12.5px}.studio-types span{font-size:13px}
+
+/* Skimming Mastery featured card (Reading section) */
+.studio-skim-card { display: block; text-decoration: none; color: #f8fafc; background: linear-gradient(120deg, #0b1220 0%, #1e1b4b 60%, #312e81 100%); border-radius: 20px; padding: 1.5rem 1.6rem; margin: 0 0 1.6rem; box-shadow: 0 18px 50px -24px #312e81; transition: transform .18s, box-shadow .18s; }
+.studio-skim-card:hover { transform: translateY(-2px); box-shadow: 0 24px 60px -24px #312e81; }
+.studio-skim-badge { display: inline-block; font-size: .68rem; font-weight: 800; letter-spacing: .16em; color: #fcd34d; background: #fcd34d22; border: 1px solid #fcd34d55; border-radius: 999px; padding: .3rem .7rem; }
+.studio-skim-card h3 { font-size: 1.45rem; font-weight: 900; margin: .7rem 0 .4rem; color: #fff; }
+.studio-skim-card p { color: #cbd5e1; line-height: 1.55; font-size: .95rem; margin-bottom: 1rem; }
+.studio-skim-card p b { color: #fcd34d; }
+.studio-skim-card .studio-primary { display: inline-flex; align-items: center; gap: .4rem; background: #fff; color: #1e1b4b; font-weight: 800; border-radius: 10px; padding: .6rem 1.1rem; }

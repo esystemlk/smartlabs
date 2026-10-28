@@ -17,6 +17,7 @@ import { Settings, ArrowLeft } from 'lucide-react';
 import { updateProfile } from 'firebase/auth';
 import Link from 'next/link';
 import Image from 'next/image';
+import { SkimmingBadge } from '@/components/ielts/skimming-badge';
 
 const settingsSchema = z.object({
   displayName: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -144,6 +145,7 @@ export default function SettingsPage() {
             </Form>
         </CardContent>
         </Card>
+        <SkimmingBadge />
     </div>
   );
 }

@@ -137,6 +137,11 @@ export const adminNavigation: {title:string;items:AdminTool[]}[] = [
         "title": "Level Test Results",
         "description": "Student diagnostic reports & analytics",
         "href": "/admin/dashboard/level-tests"
+      },
+      {
+        "title": "Skimming Mastery",
+        "description": "Edit the IELTS skimming challenge passages, questions, answers & feedback",
+        "href": "/admin/dashboard/skimming"
       }
     ]
   },

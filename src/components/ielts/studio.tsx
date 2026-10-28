@@ -155,6 +155,12 @@ export function IeltsStudio({ section }: { section?: string }) {
     </div> : skill ? <>
       <section className="studio-detail-hero" style={{ '--skill-color': skill.color, '--skill-tint': skill.tint } as CSSProperties}><p className="studio-eyebrow">{isGeneral ? 'GENERAL TRAINING' : 'ACADEMIC'} · {skill.title.toUpperCase()}</p><h1>{skill.subtitle}</h1><p>{skill.description}</p><span className="studio-detail-label">{skill.id === 'listening' || skill.id === 'speaking' ? 'Shared by Academic and General Training' : `${isGeneral ? 'General Training' : 'Academic'} practice path`}</span></section>
       <div className="studio-section-title"><div><p className="studio-eyebrow">YOUR PRACTICE COLLECTION</p><h2>{skill.title} sections</h2></div></div>
+      {skill.id === 'reading' && <Link className="studio-skim-card" href="/dashboard/ielts/reading/skimming">
+        <span className="studio-skim-badge">NEW · SKILL CHALLENGE</span>
+        <h3>Skimming Mastery Challenge</h3>
+        <p>Five progressive levels that train you to spot the main idea, purpose and best heading — and not get trapped by details. Pass each level to unlock the next and earn the <b>Skimming Master</b> badge.</p>
+        <span className="studio-primary">Start the challenge <ArrowUpRight size={16} /></span>
+      </Link>}
       {books ? <><ol className="studio-howto"><li><b>1</b> Pick a Cambridge test below</li><li><b>2</b> Answer all the parts — your answers save as you go</li><li><b>3</b> Submit to get your score</li><li><b>4</b> Review each question with “Explain this answer”</li></ol><div className="studio-books">{books.map((group, gi) => { const open = !!openBooks[group.book]; return <section className="studio-book" key={group.book} data-open={open}>
         <button type="button" className="studio-book-header" aria-expanded={open} onClick={() => toggleBook(group.book)}>
           <span className="studio-book-title"><span className="studio-part-number">{String(books.length - gi).padStart(2, '0')}</span><h3>Cambridge IELTS {group.book} · {bookLabel}</h3>{gi === 0 && <span className="studio-book-badge">LATEST</span>}</span>

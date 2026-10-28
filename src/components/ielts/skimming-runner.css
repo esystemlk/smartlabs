@@ -1,0 +1,90 @@
+.skim-wrap { max-width: 860px; margin: 0 auto; padding: 1.25rem 1rem 4rem; color: #0f172a; font-size: 1.02rem; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+.skim-loading, .skim-error { padding: 2rem 0; color: #475569; }
+.skim-error { color: #b91c1c; font-weight: 600; }
+
+.skim-back { display: inline-flex; align-items: center; gap: .4rem; background: none; border: 0; color: #4f46e5; font-weight: 700; font-size: .95rem; cursor: pointer; padding: .4rem 0; text-decoration: none; }
+.skim-back:hover { text-decoration: underline; }
+
+/* Hero / dashboard */
+.skim-hero, .skim-step-head { margin: .5rem 0 1.5rem; }
+.skim-eyebrow { font-size: .72rem; font-weight: 800; letter-spacing: .18em; color: #7c3aed; text-transform: uppercase; }
+.skim-hero h1, .skim-step-head h1 { font-size: 2rem; font-weight: 900; margin: .35rem 0 .5rem; letter-spacing: -.01em; }
+.skim-hero p, .skim-objective { color: #475569; line-height: 1.55; }
+.skim-passmark { color: #64748b; font-weight: 700; font-size: .9rem; margin-top: .4rem; }
+
+.skim-progressbar { height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin: 1rem 0 .4rem; }
+.skim-progressbar span { display: block; height: 100%; background: linear-gradient(90deg, #6366f1, #8b5cf6); border-radius: 999px; transition: width .4s; }
+.skim-progress-label { font-size: .85rem; color: #64748b; font-weight: 700; }
+
+.skim-badge-banner { display: flex; align-items: center; gap: 1rem; background: linear-gradient(120deg, #0b1220, #1e1b4b); color: #fde68a; padding: 1.1rem 1.4rem; border-radius: 18px; margin-bottom: 1.4rem; box-shadow: 0 14px 40px -20px #1e1b4b; }
+.skim-badge-banner strong { color: #fff; font-size: 1.15rem; }
+.skim-badge-banner p { color: #cbd5e1; font-size: .9rem; margin-top: .2rem; }
+
+/* Levels list */
+.skim-levels { list-style: none; margin: 0; padding: 0; display: grid; gap: .8rem; }
+.skim-level { width: 100%; display: flex; align-items: center; gap: 1rem; text-align: left; background: #fff; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 1rem 1.2rem; cursor: pointer; transition: .18s; }
+.skim-level:hover:not(:disabled) { border-color: #a5b4fc; box-shadow: 0 10px 30px -20px #6366f1; transform: translateY(-1px); }
+.skim-level:disabled { cursor: not-allowed; opacity: .6; }
+.skim-level.passed { border-color: #86efac; background: #f0fdf4; }
+.skim-level-num { font-size: 1.5rem; font-weight: 900; color: #cbd5e1; min-width: 2rem; }
+.skim-level.passed .skim-level-num { color: #22c55e; }
+.skim-level-body { flex: 1; display: flex; flex-direction: column; gap: .2rem; }
+.skim-level-title { font-weight: 800; font-size: 1.1rem; }
+.skim-level-meta { font-size: .82rem; color: #64748b; }
+.skim-level-best { font-size: .8rem; color: #16a34a; font-weight: 700; }
+.skim-chip { display: inline-flex; align-items: center; gap: .3rem; font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; padding: .35rem .7rem; border-radius: 999px; white-space: nowrap; }
+.skim-chip.locked { background: #f1f5f9; color: #94a3b8; }
+.skim-chip.ready { background: #eef2ff; color: #4f46e5; }
+.skim-chip.in_progress { background: #fef3c7; color: #b45309; }
+.skim-chip.passed { background: #dcfce7; color: #15803d; }
+
+/* Step view */
+.skim-scorecard { display: flex; align-items: center; gap: 1.2rem; padding: 1.1rem 1.4rem; border-radius: 16px; margin-bottom: 1.4rem; }
+.skim-scorecard.pass { background: #f0fdf4; border: 1.5px solid #86efac; }
+.skim-scorecard.fail { background: #fef2f2; border: 1.5px solid #fecaca; }
+.skim-score { font-size: 2.4rem; font-weight: 900; line-height: 1; color: #0f172a; }
+.skim-score span { font-size: 1.1rem; color: #94a3b8; }
+.skim-scorecard strong { font-size: 1.1rem; }
+.skim-scorecard p { color: #475569; font-size: .9rem; margin-top: .2rem; }
+
+.skim-passage { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.2rem 1.4rem; margin-bottom: 1.6rem; line-height: 1.7; }
+.skim-passage p { margin: 0 0 .9rem; }
+.skim-passage p:last-child { margin-bottom: 0; }
+.skim-passage b { color: #4338ca; }
+
+.skim-questions { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.4rem; }
+.skim-q-prompt { font-weight: 800; font-size: 1.08rem; display: flex; gap: .6rem; align-items: baseline; margin-bottom: .7rem; }
+.skim-q-num { background: #4f46e5; color: #fff; font-size: .8rem; min-width: 1.6rem; height: 1.6rem; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; }
+.skim-options { border: 0; margin: 0; padding: 0; display: grid; gap: .55rem; }
+.skim-option { display: flex; align-items: center; gap: .75rem; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: .75rem .9rem; cursor: pointer; transition: .15s; }
+.skim-option:hover { border-color: #a5b4fc; }
+.skim-option input { accent-color: #4f46e5; width: 1.1rem; height: 1.1rem; flex: none; }
+.skim-option-key { font-weight: 800; color: #64748b; min-width: 1.1rem; }
+.skim-option-text { flex: 1; }
+.skim-option.correct { border-color: #22c55e; background: #f0fdf4; }
+.skim-option.wrong { border-color: #ef4444; background: #fef2f2; }
+.skim-ic-ok { color: #16a34a; flex: none; }
+.skim-ic-no { color: #dc2626; flex: none; }
+.skim-options:disabled .skim-option { cursor: default; }
+
+.skim-feedback { margin-top: .7rem; padding: .8rem 1rem; background: #f8fafc; border-left: 3px solid #8b5cf6; border-radius: 0 10px 10px 0; font-size: .92rem; }
+.skim-why-wrong { color: #b91c1c; display: flex; align-items: center; gap: .4rem; margin-bottom: .5rem; font-weight: 600; }
+.skim-teacher { color: #334155; line-height: 1.5; }
+.skim-trick-btn { margin-top: .6rem; display: inline-flex; align-items: center; gap: .4rem; background: #ede9fe; color: #6d28d9; border: 0; border-radius: 999px; padding: .4rem .9rem; font-weight: 800; font-size: .82rem; cursor: pointer; }
+.skim-trick-btn:hover { background: #ddd6fe; }
+.skim-trick { margin-top: .6rem; color: #5b21b6; font-style: italic; line-height: 1.5; }
+
+.skim-actions { margin-top: 1.8rem; display: flex; flex-direction: column; align-items: flex-start; gap: .7rem; }
+.skim-warn { color: #b45309; font-weight: 600; font-size: .9rem; }
+.skim-submit { display: inline-flex; align-items: center; gap: .5rem; background: #4f46e5; color: #fff; border: 0; border-radius: 12px; padding: .85rem 1.6rem; font-weight: 800; font-size: 1rem; cursor: pointer; transition: .15s; }
+.skim-submit:hover:not(:disabled) { background: #4338ca; }
+.skim-submit:disabled { opacity: .6; cursor: default; }
+
+@media (max-width: 640px) {
+  .skim-wrap { font-size: .98rem; }
+  .skim-hero h1, .skim-step-head h1 { font-size: 1.6rem; }
+  .skim-level { flex-wrap: wrap; }
+  .skim-scorecard { flex-direction: column; align-items: flex-start; gap: .5rem; }
+}
