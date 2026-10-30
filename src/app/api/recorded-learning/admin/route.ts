@@ -5,13 +5,14 @@ import { firebaseConfig } from '@/firebase/config';
 import { verifyStaff } from '@/lib/api-auth';
 import { adminDb } from '@/lib/firebase-admin';
 import { validLearningId } from '@/lib/server/recorded-learning';
+import { GRAMMAR_PACKAGE_ID, grammarPackage } from '@/lib/recorded-learning';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 const headers={'Cache-Control':'private, no-store'};
 const collection=()=>adminDb!.collection('recorded_learning_items');
 export async function GET(request:Request){
   const auth=await verifyStaff(request);if(!auth.ok)return NextResponse.json({error:auth.error},{status:auth.status,headers});
-  try{const docs=await collection().get();return NextResponse.json({items:docs.docs.map(doc=>({...doc.data(),id:doc.id})).sort((a,b)=>Number((a as {order?:number}).order||0)-Number((b as {order?:number}).order||0))},{headers});}
+  try{const docs=await collection().get();const plan=await adminDb!.collection('recorded_packages').doc(GRAMMAR_PACKAGE_ID).get();return NextResponse.json({grammarPlan:grammarPackage(plan.data()),items:docs.docs.map(doc=>({...doc.data(),id:doc.id})).sort((a,b)=>Number((a as {order?:number}).order||0)-Number((b as {order?:number}).order||0))},{headers});}
   catch{return NextResponse.json({error:'Could not load shared content.'},{status:500,headers});}
 }
 export async function POST(request:Request){
@@ -26,6 +27,13 @@ export async function POST(request:Request){
       return NextResponse.json({storagePath:path},{headers});
     }
     const body=await request.json();
+    if(body.action==='grammar-plan'){
+      const tiers=body.tiers;
+      if(!Array.isArray(tiers)||!tiers.length||tiers.some(t=>!Number.isInteger(Number(t.months))||Number(t.months)<1||Number(t.months)>3||!Number.isFinite(Number(t.price))||Number(t.price)<=0)||new Set(tiers.map(t=>Number(t.months))).size!==tiers.length)return NextResponse.json({error:'Use unique 1, 2 or 3 month plans with positive prices.'},{status:400,headers});
+      const existingPlan=await adminDb!.collection('recorded_packages').doc(GRAMMAR_PACKAGE_ID).get();
+      const plan=grammarPackage({...existingPlan.data(),tiers:tiers.map(t=>({months:Number(t.months),price:Number(t.price)})),published:body.published!==false});
+      const {id,...fields}=plan;await adminDb!.collection('recorded_packages').doc(GRAMMAR_PACKAGE_ID).set({...fields,updatedAt:new Date()},{merge:true});return NextResponse.json({grammarPlan:plan},{headers});
+    }
     const id=body.id?String(body.id):null;
     if(id&&!validLearningId(id))return NextResponse.json({error:'Invalid item.'},{status:400,headers});
     const title=String(body.title||'').trim(),kind=body.kind,exam=body.exam,packageId=String(body.packageId||'');
@@ -44,7 +52,7 @@ export async function POST(request:Request){
       const [exists]=await getStorage().bucket(firebaseConfig.storageBucket).file(storagePath).exists();
       if(!exists)return NextResponse.json({error:'That file was not found in Firebase Storage.'},{status:400,headers});
     }
-    const data={title,kind,exam,packageId,group:kind==='video'?'grammar':'resources',published:body.published===true,description:String(body.description||'').slice(0,2000),duration:String(body.duration||'').slice(0,60),order:Number(body.order)||0,
+    const data={title,kind,exam,packageId,grammarResource:kind==='document'&&body.grammarResource===true,group:kind==='video'?'grammar':'resources',published:body.published===true,description:String(body.description||'').slice(0,2000),duration:String(body.duration||'').slice(0,60),order:Number(body.order)||0,
       bunnyLibraryId:kind==='video'?String(body.bunnyLibraryId):'',bunnyVideoId:kind==='video'?String(body.bunnyVideoId):'',storagePath:kind==='document'?storagePath:'',updatedAt:new Date()};
     const ref=id?collection().doc(id):collection().doc();await ref.set(data,{merge:true});return NextResponse.json({id:ref.id},{headers});
   }catch{return NextResponse.json({error:'Could not save this content. Check the fields and try again.'},{status:500,headers});}

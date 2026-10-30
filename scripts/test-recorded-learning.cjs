@@ -17,7 +17,7 @@ async function main(){
  const domain=load('src/lib/recorded-learning.ts'),server=load('src/lib/server/recorded-learning.ts'),types=load('src/types/recorded-package.ts');
  const pkg={id:'pte',title:'PTE course',exam:'pte',includesGrammar:true,includesResources:true,published:true};
  const grammar={id:'grammar1',title:'Grammar',kind:'video',group:'grammar',exam:'both',published:true,order:1,bunnyLibraryId:'123',bunnyVideoId:'12345678-abcd'};
- assert.equal(domain.itemBelongs(grammar,pkg),true);assert.equal(domain.itemBelongs(grammar,{...pkg,exam:'ielts'}),true);assert.equal(domain.itemBelongs(grammar,{...pkg,includesGrammar:false}),false);
+ assert.equal(domain.itemBelongs(grammar,pkg),true);assert.equal(domain.itemBelongs(grammar,{...pkg,exam:'ielts'}),true);assert.equal(domain.itemBelongs(grammar,{...pkg,includesGrammar:false}),true,'Grammar is now included with every recorded course');
  assert.equal(domain.itemBelongs({...grammar,exam:'ielts'},pkg),false);assert.equal(domain.itemBelongs({...grammar,packageId:'other'},pkg),false);assert.equal(domain.itemBelongs({...grammar,published:false},pkg),false);
  assert.equal(domain.packageExam({title:'IELTS recordings'}),'ielts');assert.equal(domain.packageExam({title:'Old recorded package'}),'pte');
  assert.equal(types.addMonths(new Date(2026,0,31),1).getDate(),28,'Jan 31 access must not overflow into March');assert.equal(types.addMonths(new Date(2028,0,31),1).getDate(),29);
@@ -32,6 +32,11 @@ async function main(){
  const items=await server.learningItems(pkg);assert.equal(items.length,2);assert.equal(items[0].id,'class:core');const safe=server.safeLearningItem(items[1]);for(const key of ['bunnyLibraryId','bunnyVideoId','storagePath'])assert.ok(!(key in safe));
  env.BUNNY_STREAM_EMBED_KEYS=JSON.stringify({'123':'test-key-only'});const url=new URL(server.learningEmbedUrl('123','12345678-abcd',Date.now()+60000));const expires=url.searchParams.get('expires');assert.equal(url.searchParams.get('token'),crypto.createHash('sha256').update('test-key-only12345678-abcd'+expires).digest('hex'));assert.ok(Number(expires)*1000<=Date.now()+60000);assert.ok(!url.toString().includes('test-key-only'));
  assert.throws(()=>server.learningEmbedUrl('../bad','12345678-abcd',0));
+ const grammarPkg=domain.grammarPackage();assert.equal(grammarPkg.tiers[0].months,1);assert.equal(grammarPkg.tiers[0].price,5000);assert.equal(grammarPkg.tiers[2].months,3);assert.equal(domain.itemBelongs({...grammar,kind:'document',group:'resources'},grammarPkg),false);assert.equal(domain.itemBelongs({...grammar,kind:'document',group:'resources',grammarResource:true},grammarPkg),true);
+ assert.equal(types.packageTiers({tiers:[{months:1,price:10},{months:4,price:20}]}).length,1,'Only new 1–3 month plans may be offered');
+ const until=new Date(Date.now()+86400000);records.set('recorded_enrollments/carol_pte',{userId:'carol',packageId:'pte',status:'active',expiresAt:until});assert.equal((await server.learningPackage(domain.GRAMMAR_PACKAGE_ID,'carol')).included,true);assert.equal((await server.learningPackage(domain.GRAMMAR_PACKAGE_ID,'carol')).expiresAt,until.getTime());assert.equal((await server.learningPackage('pte','other')).allowed,false);
+ records.set('pte_course_enrollments/normal',{userId:'normal-student',status:'active',amountPaid:10000,expiresAt:until});assert.equal((await server.learningPackage(domain.GRAMMAR_PACKAGE_ID,'normal-student')).included,true);records.set('pte_course_enrollments/normal',{userId:'normal-student',status:'suspended',amountPaid:10000,expiresAt:until});assert.equal((await server.learningPackage(domain.GRAMMAR_PACKAGE_ID,'normal-student')).allowed,false);
+ records.set('ielts_course_enrollments/pending',{userId:'unpaid',status:'active',amountPaid:0,expiresAt:until});assert.equal((await server.learningPackage(domain.GRAMMAR_PACKAGE_ID,'unpaid')).allowed,false);
  console.log('Passed: shared PTE/IELTS grammar, scope filtering, draft exclusion, owner/expiry/suspension checks, safe outlines, end-of-month access and signed Bunny URLs.');
 }
 main().catch(error=>{console.error(error);process.exitCode=1});

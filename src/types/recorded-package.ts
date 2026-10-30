@@ -18,13 +18,14 @@ export interface AccessTier {
 
 /** Default tiers requested by SmartLabs (editable per package). */
 export const DEFAULT_TIERS: AccessTier[] = [
+  { months: 1, price: 10000 },
   { months: 2, price: 20000 },
   { months: 3, price: 30000 },
-  { months: 4, price: 40000 },
 ];
 
 /** A purchasable package = a set of recorded classes (e.g. "January 2026"). */
 export interface RecordedPackage {
+  productType?: 'course' | 'grammar';
   exam?: 'pte' | 'ielts' | 'both';
   includesResources?: boolean;
   id?: string;
@@ -94,8 +95,8 @@ export const formatLkr = (n: number): string => `LKR ${Number(n || 0).toLocaleSt
 
 /** The tiers to show for a package (falls back to the legacy single price/access). */
 export function packageTiers(p: Pick<RecordedPackage, 'tiers' | 'price' | 'accessMonths'>): AccessTier[] {
-  if (p.tiers && p.tiers.length) return p.tiers.filter((t) => t && t.months > 0 && t.price > 0);
-  return [{ months: p.accessMonths || 1, price: p.price || 0 }];
+  const tiers=p.tiers?.length?p.tiers:[{months:p.accessMonths||1,price:p.price||0}];
+  return tiers.filter(t=>t&&Number.isInteger(Number(t.months))&&Number(t.months)>=1&&Number(t.months)<=3&&Number.isFinite(Number(t.price))&&Number(t.price)>0).sort((a,b)=>a.months-b.months);
 }
 /** Label for a duration, e.g. "1 month" / "3 months". */
 export const tierLabel = (months: number): string => `${months} month${months === 1 ? '' : 's'}`;

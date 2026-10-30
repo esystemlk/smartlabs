@@ -16,10 +16,22 @@ Existing PTE packages and purchases are retained. Legacy packages without an exp
 
 Go to `/admin/dashboard/recorded-packages`.
 
-1. **Packages, prices & videos:** create/edit a package; select PTE, IELTS or Both; edit title, period, description, features and cover; configure unique access durations and LKR prices; enable/disable shared grammar and shared documents; publish when ready. Existing Bunny video picker, pasted embed links, CSV/LMS import and manual bank-transfer access remain available.
-2. **Shared grammar & resources:** add a grammar video once using its Bunny embed URL or `libraryId/videoId`. Select **Both PTE & IELTS**, **Every matching package**, and Published. Every eligible package with Grammar included uses this same entry.
+1. **Packages, prices & videos:** create/edit a package; select PTE, IELTS or Both; edit title, period, description, features and cover; configure unique **1, 2 or 3 month** access durations and LKR prices; choose shared documents; publish when ready. Grammar is included free with every recorded course. Existing Bunny video picker, pasted embed links, CSV/LMS import and manual bank-transfer access remain available.
+2. **Shared grammar & resources:** add a grammar video once using its Bunny embed URL or `libraryId/videoId`. Select **Both PTE & IELTS**, **Every matching package**, and Published. These same lessons are used for included grammar and standalone grammar purchases. The Grammar-only plans panel fixes one month at **LKR 5,000** and lets admins add/edit/remove the optional 2- and 3-month plans (defaults LKR 10,000 and LKR 15,000).
 3. Add documents in the same editor. Upload a PDF/Office/ZIP file up to 4 MB, or paste an existing Firebase Storage object path, `gs://` path or Firebase download URL for this site's bucket. Larger files can be uploaded in Firebase first and linked by path. Private document delivery uses short-lived signed URLs. Existing public Firebase download tokens, if any, are not revoked by this feature.
 4. Limit an item to one exam or a specific package when needed. Edit title, description, duration and sort order. Hide retains the source file/video and removes the item from student libraries.
+
+## Grammar inclusion and standalone access
+
+`grammar-pack` is the reserved standalone product ID. Its default catalogue entry is generated without writing a new live package. Saving its plans in admin stores the selected settings in `recorded_packages/grammar-pack`. It uses only shared grammar videos and documents explicitly marked **Include this document in the standalone grammar pack**; it never unlocks course recordings or unrelated course PDFs.
+
+- Active PTE/IELTS recorded-course purchases include grammar until the same expiry date. Multiple qualifying courses use the latest active expiry. Existing purchases are recognised without buying again.
+- Active paid normal-course records in `pte_course_enrollments` or `ielts_course_enrollments` also qualify. Expiry/accessMonths are honoured when present. Older normal courses without dates use their server-issued active status; suspension/end status removes eligibility.
+- Older `user_course_access` records qualify only for a PTE/IELTS course with a matching successful payment order.
+- Pending, unpaid, suspended and expired records do not grant free grammar. A grammar-only purchase never grants a full recorded course or creates another free-course entitlement.
+- Standalone access uses the selected 1–3 month paid plan and the existing PayHere enrollment/expiry flow. The one-month plan is always LKR 5,000; 2/3 month prices come from the admin settings, never the browser.
+- Eligible students see grammar in **My learning** as included free. Checkout refuses a redundant grammar payment when a qualifying course already includes it. Checkout also refuses a grammar purchase until videos have been published.
+- Previously granted longer access is retained. Only new plans and new manual grants are limited to three months; no existing entitlement is shortened.
 
 No IELTS course, grammar video assignments, document assignments or course prices are invented or published automatically. At implementation time the existing database contained one published package with 17 class videos and no shared library entries. Configure the real IELTS lessons and shared grammar/document set in this editor.
 

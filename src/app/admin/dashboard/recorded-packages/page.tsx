@@ -15,7 +15,7 @@ import {
   listPackages, addPackage, updatePackage, deletePackage,
   listClasses, addClass, updateClass, deleteClass,
 } from '@/lib/services/recorded-packages.service';
-import { type RecordedPackage, type RecordedClass, formatLkr, DEFAULT_TIERS } from '@/types/recorded-package';
+import { type RecordedPackage, type RecordedClass, formatLkr, DEFAULT_TIERS, packageTiers } from '@/types/recorded-package';
 import {
   ArrowLeft, Plus, Pencil, Trash2, Loader2, X, Film, PlayCircle,
   Eye, EyeOff, ListVideo, GripVertical, Upload, Wallet, Download, Check,
@@ -189,14 +189,14 @@ export default function AdminRecordedPackagesPage() {
 
   const openAdd = () => { setForm(emptyPkg()); setEditingId(null); setShowPkg(true); };
   const openEdit = (p: RecordedPackage) => {
-    setForm({ ...emptyPkg(), ...p, exam: packageExam(p), features: p.features ?? [] });
+    setForm({ ...emptyPkg(), ...p, exam: packageExam(p), tiers: packageTiers(p), features: p.features ?? [] });
     setEditingId(p.id!); setShowPkg(true);
   };
 
   const savePkg = async () => {
     if (form.title.trim().length < 2) { toast({ variant: 'destructive', title: 'Title is required.' }); return; }
     const tiers = form.tiers ?? DEFAULT_TIERS;
-    if (!tiers.length || tiers.some(t => !Number.isInteger(Number(t.months)) || Number(t.months) < 1 || Number(t.months) > 36 || !Number.isFinite(Number(t.price)) || Number(t.price) <= 0) || new Set(tiers.map(t=>Number(t.months))).size !== tiers.length) { toast({variant:'destructive',title:'Use unique access periods (1–36 months) with a positive price for every plan.'}); return; }
+    if (!tiers.length || tiers.some(t => !Number.isInteger(Number(t.months)) || Number(t.months) < 1 || Number(t.months) > 3 || !Number.isFinite(Number(t.price)) || Number(t.price) <= 0) || new Set(tiers.map(t=>Number(t.months))).size !== tiers.length) { toast({variant:'destructive',title:'Use unique access periods (1–3 months) with a positive price for every plan.'}); return; }
     setSaving(true);
     try {
       const payload = {
@@ -205,7 +205,7 @@ export default function AdminRecordedPackagesPage() {
         periodLabel: form.periodLabel?.trim() ?? '',
         description: form.description?.trim() ?? '',
         features: (form.features ?? []).map(f => f.trim()).filter(Boolean),
-        includesGrammar: !!form.includesGrammar,
+        includesGrammar: true,
         tiers: (form.tiers ?? DEFAULT_TIERS)
           .map(t => ({ months: Number(t.months) || 0, price: Number(t.price) || 0 }))
           .filter(t => t.months > 0 && t.price > 0),
@@ -357,7 +357,7 @@ export default function AdminRecordedPackagesPage() {
                 <div className="space-y-2">
                   {(form.tiers ?? DEFAULT_TIERS).map((t, i) => (
                     <div key={i} className="flex items-center gap-2">
-                      <input type="number" min={1} value={t.months}
+                      <input type="number" min={1} max={3} value={t.months}
                         onChange={e => setForm(f => { const tiers = [...(f.tiers ?? DEFAULT_TIERS)]; tiers[i] = { ...tiers[i], months: parseInt(e.target.value) || 0 }; return { ...f, tiers }; })}
                         className="rp-input w-24" placeholder="Months" />
                       <span className="text-xs text-muted-foreground">months —</span>
@@ -375,8 +375,8 @@ export default function AdminRecordedPackagesPage() {
               <Field label="Exam programme"><select value={form.exam || 'pte'} onChange={e=>setForm(f=>({...f,exam:e.target.value as 'pte'|'ielts'|'both'}))} className="rp-input"><option value="pte">PTE Academic</option><option value="ielts">IELTS</option><option value="both">Both PTE & IELTS</option></select></Field>
               <label className="flex items-center gap-2 text-sm font-medium cursor-pointer"><input type="checkbox" checked={form.includesResources !== false} onChange={e=>setForm(f=>({...f,includesResources:e.target.checked}))}/>Include the matching shared study documents</label>
               <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
-                <input type="checkbox" checked={!!form.includesGrammar} onChange={e => setForm(f => ({ ...f, includesGrammar: e.target.checked }))} />
-                Grammar sessions included
+                <input type="checkbox" checked={true} disabled />
+                Grammar sessions included free with every course
               </label>
               <Field label="Description"><textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={2} className="rp-input" /></Field>
               <Field label="Features (one per line)">

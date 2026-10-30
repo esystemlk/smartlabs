@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
+import { GRAMMAR_PACKAGE_ID, grammarPackage } from '@/lib/recorded-learning';
+import { includedGrammarAccess } from '@/lib/server/grammar-access';
+import { learningItems } from '@/lib/server/recorded-learning';
 
 export const runtime = 'nodejs';
 
@@ -22,8 +25,12 @@ export async function POST(request: NextRequest) {
     if (!packageId || !/^[a-zA-Z0-9_-]{1,160}$/.test(packageId)) return NextResponse.json({ error: 'A valid packageId is required' }, { status: 400 });
 
     const pkgSnap = await adminDb.collection('recorded_packages').doc(packageId).get();
-    if (!pkgSnap.exists) return NextResponse.json({ error: 'Package not found' }, { status: 404 });
-    const pkg = pkgSnap.data()!;
+    if (!pkgSnap.exists && packageId!==GRAMMAR_PACKAGE_ID) return NextResponse.json({ error: 'Package not found' }, { status: 404 });
+    const pkg = packageId===GRAMMAR_PACKAGE_ID?grammarPackage(pkgSnap.data()):pkgSnap.data()!;
+    if(packageId===GRAMMAR_PACKAGE_ID){
+      if(await includedGrammarAccess(uid)>Date.now())return NextResponse.json({error:'Grammar is already included free with your course. Refresh the learning library to open it.'},{status:409});
+      if(!(await learningItems({...pkg,id:packageId} as Parameters<typeof learningItems>[0])).some(item=>item.kind==='video'))return NextResponse.json({error:'The grammar video library is being prepared. Please check back before purchasing.'},{status:409});
+    }
     if (pkg.published === false) return NextResponse.json({ error: 'Package is not available' }, { status: 409 });
 
     // Resolve the chosen duration tier (falls back to the legacy single price).
@@ -33,7 +40,7 @@ export async function POST(request: NextRequest) {
     const tier = months
       ? tiers.find((t) => Number(t.months) === Number(months))
       : tiers[0];
-    if (!tier || !Number.isFinite(Number(tier.price)) || !(Number(tier.price) > 0) || !Number.isInteger(Number(tier.months)) || Number(tier.months) < 1 || Number(tier.months) > 36) {
+    if (!tier || !Number.isFinite(Number(tier.price)) || !(Number(tier.price) > 0) || !Number.isInteger(Number(tier.months)) || Number(tier.months) < 1 || Number(tier.months) > 3) {
       return NextResponse.json({ error: 'Selected plan is not available for this package.' }, { status: 400 });
     }
     const accessMonths = Number(tier.months) || 1;

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { addMonths } from '@/types/recorded-package';
+import { GRAMMAR_PACKAGE_ID, grammarPackage } from '@/lib/recorded-learning';
 
 export const runtime = 'nodejs';
 
@@ -36,12 +37,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'packageId and email are required.' }, { status: 400 });
     }
     const accessMonths = Number(months) || 1;
+    if(!Number.isInteger(accessMonths)||accessMonths<1||accessMonths>3)return NextResponse.json({error:'Choose 1, 2 or 3 months of access.'},{status:400});
     const cleanEmail = String(email).toLowerCase().trim();
 
     // Package
     const pkgSnap = await adminDb.collection('recorded_packages').doc(packageId).get();
-    if (!pkgSnap.exists) return NextResponse.json({ error: 'Package not found.' }, { status: 404 });
-    const pkg = pkgSnap.data()!;
+    if (!pkgSnap.exists && packageId!==GRAMMAR_PACKAGE_ID) return NextResponse.json({ error: 'Package not found.' }, { status: 404 });
+    const pkg = packageId===GRAMMAR_PACKAGE_ID?grammarPackage(pkgSnap.data()):pkgSnap.data()!;
 
     // Find the student's account by email (they need an account to watch).
     const usersSnap = await adminDb.collection('users').where('email', '==', cleanEmail).limit(1).get();

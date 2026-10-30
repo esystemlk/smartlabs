@@ -27,6 +27,12 @@ async function main(){
     assert.equal((await api('/admin',tokens[2],'POST',{id:testId+'-doc',title:'Fixture workbook.pdf',kind:'document',exam:'both',published:true,packageId:testId,order:2,storagePath:`gs://${config.storageBucket}/${path}`})).status,200);
     assert.equal((await api('?packageId='+testId,tokens[1])).status,404);
     let detail=await(await api('?packageId='+testId,tokens[0])).json();assert.equal(detail.allowed,true);assert.equal(detail.items.length,3);assert.ok(!JSON.stringify(detail.items).includes('bunnyVideoId'));assert.ok(!JSON.stringify(detail.items).includes('storagePath'));
+    let grammar=await(await api('?packageId=grammar-pack',tokens[0])).json();assert.equal(grammar.allowed,true);assert.equal(grammar.included,true);assert.equal(grammar.expiresAt,detail.expiresAt,'Free grammar follows recorded-course expiry');
+    grammar=await(await api('?packageId=grammar-pack',tokens[1])).json();assert.equal(grammar.allowed,false);assert.equal(grammar.pkg.tiers[0].months,1);assert.equal(grammar.pkg.tiers[0].price,5000);assert.ok(grammar.pkg.tiers.every(t=>t.months<=3));
+    await fixture('ielts_course_enrollments',testId+'-normal',{userId:users[1],status:'active',amountPaid:5000,expiresAt:new Date(Date.now()+86400000)});
+    grammar=await(await api('?packageId=grammar-pack',tokens[1])).json();assert.equal(grammar.included,true,'Normal-course students receive grammar free');
+    await db.collection('ielts_course_enrollments').doc(testId+'-normal').update({status:'suspended'});grammar=await(await api('?packageId=grammar-pack',tokens[1])).json();assert.equal(grammar.allowed,false);
+    await fixture('recorded_enrollments',users[1]+'_grammar-pack',{userId:users[1],packageId:'grammar-pack',status:'active',expiresAt:new Date(Date.now()+2*86400000)});grammar=await(await api('?packageId=grammar-pack',tokens[1])).json();assert.equal(grammar.allowed,true);assert.equal(grammar.included,false,'Standalone grammar purchase stays separate from course entitlement');
     const query='/media?packageId='+testId+'&itemId='+encodeURIComponent('class:'+testId);
     assert.equal((await api(query,tokens[1])).status,403);const video=await(await api(query,tokens[0])).json();assert.ok(video.url.startsWith('https://iframe.mediadelivery.net/embed/'));
     const progress={packageId:testId,itemId:'class:'+testId,completed:true};assert.equal((await api('/progress',tokens[1],'PATCH',progress)).status,403);assert.equal((await api('/progress',tokens[0],'PATCH',progress)).status,200);
