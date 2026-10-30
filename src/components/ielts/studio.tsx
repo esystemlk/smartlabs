@@ -1,5 +1,6 @@
 'use client';
 import {IeltsText} from '@/components/ielts/ielts-text';
+import { RecordedLearningEntry } from '@/components/recorded-learning/entry';
 import { ExamFooter } from '@/components/dashboard/student-views';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -151,6 +152,7 @@ export function IeltsStudio({ section }: { section?: string }) {
       <section className="student-exam-hero" style={{backgroundImage:"linear-gradient(90deg,#fff8fafc,#fff8fadd 45%,#fff8fa10),url('/images/student/ielts-hero.webp')"}}><div className="student-hero-copy"><span className="student-exam-badge"><IeltsText>IELTS</IeltsText> · {isGeneral?'GENERAL TRAINING':'ACADEMIC'}</span><h1><IeltsText>Your IELTS journey, clearly mapped.</IeltsText></h1><p>Choose a skill below to find your practice. Switch between Academic and General Training above.</p><Link className="student-text-link" href="/dashboard/pte">Looking for PTE Academic? →</Link></div></section>
       <div className="student-section-heading"><h2>Choose your skill</h2><span className="student-muted">Four skills, one clear starting point</span></div>
       <div className="student-skill-grid">{ieltsSkills.map(item=>{const Icon=icons[item.id];return <Link className="student-skill-card" href={'/dashboard/ielts/'+item.id} key={item.id}><span className={'student-skill-icon student-skill-'+item.id}><Icon size={27}/></span><h2>{item.title}</h2><p>{item.subtitle}</p><span className="student-status">{item.id==='speaking'?'Coming soon':item.id==='writing'&&isGeneral?'Task 2 available':'Practice available'}</span><span className="student-card-action">Explore section <ArrowRight size={16}/></span></Link>})}</div>
+      <RecordedLearningEntry exam="ielts"/>
       <section className="student-help-strip"><Clock3 size={26}/><div><h2>Ready for a timed practice test?</h2><p>Explore IELTS mock practice for Listening, Reading and Writing. Speaking is not included.</p></div><Link className="student-button" href="/dashboard/ielts/mock-tests">Explore mock tests →</Link></section>
     </div> : skill ? <>
       <section className="studio-detail-hero" style={{ '--skill-color': skill.color, '--skill-tint': skill.tint } as CSSProperties}><p className="studio-eyebrow">{isGeneral ? 'GENERAL TRAINING' : 'ACADEMIC'} · {skill.title.toUpperCase()}</p><h1>{skill.subtitle}</h1><p>{skill.description}</p><span className="studio-detail-label">{skill.id === 'listening' || skill.id === 'speaking' ? 'Shared by Academic and General Training' : `${isGeneral ? 'General Training' : 'Academic'} practice path`}</span></section>

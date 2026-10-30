@@ -3,7 +3,7 @@ import { createHash } from 'crypto';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { sendMail } from '@/lib/mail';
-import { formatLkr } from '@/types/recorded-package';
+import { formatLkr, addMonths } from '@/types/recorded-package';
 import { renderAdminPaymentAlert } from '@/lib/admin-payment-email';
 
 export const runtime = 'nodejs';
@@ -55,8 +55,7 @@ export async function POST(request: NextRequest) {
       const accessMonths = Number(orderData.accessMonths) || 1;
 
       const purchasedAt = new Date();
-      const expiresAt = new Date(purchasedAt);
-      expiresAt.setMonth(expiresAt.getMonth() + accessMonths);
+      const expiresAt = addMonths(purchasedAt, accessMonths);
 
       let userEmail: string | null = null;
       let userName: string | null = null;

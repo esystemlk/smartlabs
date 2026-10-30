@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { addMonths } from '@/types/recorded-package';
 
 export const runtime = 'nodejs';
 
@@ -54,8 +55,7 @@ export async function POST(request: NextRequest) {
     const u = userDoc.data();
 
     const purchasedAt = new Date();
-    const expiresAt = new Date(purchasedAt);
-    expiresAt.setMonth(expiresAt.getMonth() + accessMonths);
+    const expiresAt = addMonths(purchasedAt, accessMonths);
 
     // Deterministic id => re-granting refreshes the same row.
     const enrollRef = adminDb.collection('recorded_enrollments').doc(`${userId}_${packageId}`);

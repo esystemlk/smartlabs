@@ -152,10 +152,13 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isStaff();
     }
-    // The class list (Bunny ids). Signed-in students read; the player re-checks
-    // the enrollment before it renders, and a bunny id alone is useless.
+    // Bunny references are limited to staff or the active package owner.
+    // The recorded-learning API exposes a safe outline to other visitors.
     match /recorded_classes/{id} {
-      allow read: if isAuthed();
+      allow read: if isStaff() || (isAuthed()
+        && exists(/databases/$(database)/documents/recorded_enrollments/$(request.auth.uid + '_' + resource.data.packageId))
+        && get(/databases/$(database)/documents/recorded_enrollments/$(request.auth.uid + '_' + resource.data.packageId)).data.status == 'active'
+        && get(/databases/$(database)/documents/recorded_enrollments/$(request.auth.uid + '_' + resource.data.packageId)).data.expiresAt > request.time);
       allow write: if isStaff();
     }
     // A student's purchased package access. Read own rows only; writes are

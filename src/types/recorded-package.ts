@@ -25,6 +25,8 @@ export const DEFAULT_TIERS: AccessTier[] = [
 
 /** A purchasable package = a set of recorded classes (e.g. "January 2026"). */
 export interface RecordedPackage {
+  exam?: 'pte' | 'ielts' | 'both';
+  includesResources?: boolean;
   id?: string;
   /** e.g. "January 2026 — PTE Recorded Classes" */
   title: string;
@@ -101,8 +103,11 @@ export const tierLabel = (months: number): string => `${months} month${months ==
 /** Add whole months to a date (clamps end-of-month). */
 export function addMonths(date: Date, months: number): Date {
   const d = new Date(date);
-  const targetMonth = d.getMonth() + months;
-  d.setMonth(targetMonth);
+  const day = d.getDate();
+  d.setDate(1);
+  d.setMonth(d.getMonth() + months);
+  const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  d.setDate(Math.min(day, last));
   return d;
 }
 

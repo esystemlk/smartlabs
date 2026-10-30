@@ -26,6 +26,7 @@ export const legacyStudentDestinations: Record<string, string> = {
   '/dashboard/progress': '/dashboard/results',
 };
 export const studentSearchItems = [
+  { label: 'Recorded courses', context: 'PTE & IELTS · Video learning', href: '/dashboard/recorded-sessions', aliases: 'recorded recordings packages videos grammar resources documents classes courses' },
   { label: 'Website guide', context: 'Student help', href: '/dashboard/guide', aliases: 'how to use getting started new student instructions onboarding tutorial help' },
   ...PTE_CATALOG.flatMap(section => [
     { label: section.label, context: 'PTE Academic', href: `/dashboard/pte/${section.id}`, aliases: section.id },

@@ -9,6 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { parseBunnyRef } from '@/lib/bunny-parse';
+import { SharedLearningAdmin } from '@/components/recorded-learning/admin-shared';
+import { packageExam } from '@/lib/recorded-learning';
 import {
   listPackages, addPackage, updatePackage, deletePackage,
   listClasses, addClass, updateClass, deleteClass,
@@ -60,6 +62,7 @@ interface LmsBatch {
 }
 
 const emptyPkg = (): Omit<RecordedPackage, 'id'> => ({
+  exam: 'pte', includesResources: true,
   title: '', periodLabel: '', description: '', features: [], includesGrammar: true,
   tiers: DEFAULT_TIERS.map(t => ({ ...t })),
   price: DEFAULT_TIERS[0].price, accessMonths: DEFAULT_TIERS[0].months,
@@ -77,6 +80,7 @@ export default function AdminRecordedPackagesPage() {
   const [packages, setPackages] = useState<RecordedPackage[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [contentTab, setContentTab] = useState<'packages'|'shared'>('packages');
 
   const [showPkg, setShowPkg] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -185,15 +189,18 @@ export default function AdminRecordedPackagesPage() {
 
   const openAdd = () => { setForm(emptyPkg()); setEditingId(null); setShowPkg(true); };
   const openEdit = (p: RecordedPackage) => {
-    setForm({ ...emptyPkg(), ...p, features: p.features ?? [] });
+    setForm({ ...emptyPkg(), ...p, exam: packageExam(p), features: p.features ?? [] });
     setEditingId(p.id!); setShowPkg(true);
   };
 
   const savePkg = async () => {
     if (form.title.trim().length < 2) { toast({ variant: 'destructive', title: 'Title is required.' }); return; }
+    const tiers = form.tiers ?? DEFAULT_TIERS;
+    if (!tiers.length || tiers.some(t => !Number.isInteger(Number(t.months)) || Number(t.months) < 1 || Number(t.months) > 36 || !Number.isFinite(Number(t.price)) || Number(t.price) <= 0) || new Set(tiers.map(t=>Number(t.months))).size !== tiers.length) { toast({variant:'destructive',title:'Use unique access periods (1–36 months) with a positive price for every plan.'}); return; }
     setSaving(true);
     try {
       const payload = {
+        exam: form.exam || 'pte', includesResources: form.includesResources !== false,
         title: form.title.trim(),
         periodLabel: form.periodLabel?.trim() ?? '',
         description: form.description?.trim() ?? '',
@@ -287,8 +294,10 @@ export default function AdminRecordedPackagesPage() {
           Build a monthly package, then add the class videos from Bunny. Students see published packages under{' '}
           <Link href="/dashboard/recorded-sessions" className="text-primary underline">Recorded Sessions</Link>.
         </p>
+        <div className="rl-tabs mb-5" aria-label="Recorded course management"><button aria-pressed={contentTab==='packages'} onClick={()=>setContentTab('packages')}>Packages, prices & videos</button><button aria-pressed={contentTab==='shared'} onClick={()=>setContentTab('shared')}>Shared grammar & resources</button></div>
+        {contentTab==='shared' && <SharedLearningAdmin packages={packages} />}
 
-        {loading ? (
+        {contentTab==='shared' ? null : loading ? (
           <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading…</div>
         ) : packages.length === 0 ? (
           <div className="rounded-xl border border-dashed p-10 text-center">
@@ -304,6 +313,7 @@ export default function AdminRecordedPackagesPage() {
                     <h3 className="font-semibold truncate">{p.title}</h3>
                     <div className="mt-1 flex flex-wrap items-center gap-1.5">
                       {p.periodLabel && <Badge variant="secondary">{p.periodLabel}</Badge>}
+                      <Badge variant="outline">{packageExam(p).toUpperCase()}</Badge>
                       <Badge className={p.published ? 'bg-green-500/15 text-green-600' : 'bg-slate-500/15 text-slate-500'}>{p.published ? 'Published' : 'Hidden'}</Badge>
                     </div>
                   </div>
@@ -362,6 +372,8 @@ export default function AdminRecordedPackagesPage() {
                     className="text-xs font-semibold text-primary">＋ Add tier</button>
                 </div>
               </Field>
+              <Field label="Exam programme"><select value={form.exam || 'pte'} onChange={e=>setForm(f=>({...f,exam:e.target.value as 'pte'|'ielts'|'both'}))} className="rp-input"><option value="pte">PTE Academic</option><option value="ielts">IELTS</option><option value="both">Both PTE & IELTS</option></select></Field>
+              <label className="flex items-center gap-2 text-sm font-medium cursor-pointer"><input type="checkbox" checked={form.includesResources !== false} onChange={e=>setForm(f=>({...f,includesResources:e.target.checked}))}/>Include the matching shared study documents</label>
               <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
                 <input type="checkbox" checked={!!form.includesGrammar} onChange={e => setForm(f => ({ ...f, includesGrammar: e.target.checked }))} />
                 Grammar sessions included

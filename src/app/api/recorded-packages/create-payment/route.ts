@@ -18,8 +18,8 @@ export async function POST(request: NextRequest) {
     const decoded = await adminAuth.verifyIdToken(authHeader.slice(7));
     const uid = decoded.uid;
 
-    const { packageId, months } = (await request.json()) as { packageId?: string; months?: number };
-    if (!packageId) return NextResponse.json({ error: 'packageId is required' }, { status: 400 });
+    const { packageId, months, expectedPrice } = (await request.json()) as { packageId?: string; months?: number; expectedPrice?: number };
+    if (!packageId || !/^[a-zA-Z0-9_-]{1,160}$/.test(packageId)) return NextResponse.json({ error: 'A valid packageId is required' }, { status: 400 });
 
     const pkgSnap = await adminDb.collection('recorded_packages').doc(packageId).get();
     if (!pkgSnap.exists) return NextResponse.json({ error: 'Package not found' }, { status: 404 });
@@ -33,11 +33,12 @@ export async function POST(request: NextRequest) {
     const tier = months
       ? tiers.find((t) => Number(t.months) === Number(months))
       : tiers[0];
-    if (!tier || !(Number(tier.price) > 0)) {
+    if (!tier || !Number.isFinite(Number(tier.price)) || !(Number(tier.price) > 0) || !Number.isInteger(Number(tier.months)) || Number(tier.months) < 1 || Number(tier.months) > 36) {
       return NextResponse.json({ error: 'Selected plan is not available for this package.' }, { status: 400 });
     }
     const accessMonths = Number(tier.months) || 1;
     const tierPrice = Number(tier.price);
+    if (expectedPrice !== undefined && Number(expectedPrice) !== tierPrice) return NextResponse.json({error:'This plan’s price has changed. Refresh the course page and review the new price before purchasing.'},{status:409});
 
     const merchantId     = process.env.NEXT_PUBLIC_PAYHERE_MERCHANT_ID;
     const merchantSecret = process.env.PAYHERE_MERCHANT_SECRET;

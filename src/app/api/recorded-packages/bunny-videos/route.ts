@@ -22,14 +22,14 @@ export async function GET(request: NextRequest) {
     const role = (await adminDb.collection('users').doc(decoded.uid).get()).data()?.role;
     if (!ADMIN_ROLES.includes(role)) return NextResponse.json({ error: 'Admins only.' }, { status: 403 });
 
-    const lmsDb = getLmsDb();
-    if (!lmsDb) return NextResponse.json({ error: 'LMS connection not configured (set LMS_ADMIN_CONFIG).' }, { status: 503 });
-
-    const settings = (await lmsDb.collection('settings').doc('general').get()).data() || {};
-    const libraryId = String(settings.bunnyLibraryId || '');
-    const apiKey = String(settings.bunnyApiKey || '');
-    const cdnHost = String(settings.bunnyCdnHostname || (libraryId ? `vz-${libraryId}.b-cdn.net` : ''));
-    if (!libraryId || !apiKey) return NextResponse.json({ error: 'Bunny Stream is not configured in the LMS settings.' }, { status: 503 });
+    const directLibrary = process.env.BUNNY_STREAM_LIBRARY_ID;
+    const directKey = process.env.BUNNY_STREAM_API_KEY;
+    const lmsDb = directLibrary && directKey ? undefined : getLmsDb();
+    const settings = lmsDb ? (await lmsDb.collection('settings').doc('general').get()).data() || {} : {};
+    const libraryId = String(directLibrary || settings.bunnyLibraryId || '');
+    const apiKey = String(directKey || settings.bunnyApiKey || '');
+    const cdnHost = String(process.env.BUNNY_STREAM_CDN_HOSTNAME || settings.bunnyCdnHostname || (libraryId ? `vz-${libraryId}.b-cdn.net` : ''));
+    if (!libraryId || !apiKey) return NextResponse.json({ error: 'The video picker needs Bunny Stream library/API configuration or the LMS connection. You can still paste Bunny embed links to add videos.' }, { status: 503 });
 
     const { searchParams } = new URL(request.url);
     const page = Math.max(1, Number(searchParams.get('page')) || 1);
