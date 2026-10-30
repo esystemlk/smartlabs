@@ -84,7 +84,6 @@ export default function RecordingPlayerPage({ params }: { params: Promise<{ id: 
           className="w-full h-full"
           style={{ border: 0 }}
           allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen"
-          allowFullScreen
           title={rec.title}
         />
       </div>

@@ -11,7 +11,14 @@ async function main(){
       try{const settings=(await lms.firestore().collection('settings').doc('general').get()).data()||{};output.lmsConnected=true;if(settings.bunnyLibraryId&&settings.bunnyApiKey){const response=await fetch(`https://video.bunnycdn.com/library/${settings.bunnyLibraryId}/videos?itemsPerPage=1`,{headers:{AccessKey:settings.bunnyApiKey},signal:AbortSignal.timeout(15000)});output.bunnyApiStatus=response.status}}finally{await lms.delete()}
     }
     const first=classes.docs.find(doc=>doc.data().published!==false&&doc.data().bunnyLibraryId&&doc.data().bunnyVideoId)?.data();
-    if(first){const response=await fetch(`https://iframe.mediadelivery.net/embed/${first.bunnyLibraryId}/${first.bunnyVideoId}?autoplay=false`,{headers:{Referer:process.env.NEXT_PUBLIC_APP_URL||'https://smartlabs.lk/'},signal:AbortSignal.timeout(15000)});output.embedHttpStatus=response.status;}
+    if(first){
+      const response=await fetch(`https://iframe.mediadelivery.net/embed/${first.bunnyLibraryId}/${first.bunnyVideoId}?autoplay=false`,{headers:{Referer:process.env.NEXT_PUBLIC_APP_URL||'https://www.smartlabs.lk/'},signal:AbortSignal.timeout(15000)});
+      const html=await response.text();
+      output.embedHttpStatus=response.status;
+      output.embedPlayerDetected=response.ok&&/\bdata-plyr-config\s*=/i.test(html);
+      output.embedErrorPage=/<title>\s*(?:403|404)(?:\s+[^<]*)?\s*<\/title>|<h1[^>]*>\s*(?:403|404)\s*<\/h1>/i.test(html);
+      if(!output.embedPlayerDetected||output.embedErrorPage)process.exitCode=1;
+    }
     console.log(JSON.stringify(output));
   }finally{await app.delete()}
 }

@@ -37,7 +37,9 @@ No IELTS course, grammar video assignments, document assignments or course price
 
 ## Playback configuration
 
-Existing Bunny embed references continue to work. A read-only check of an existing video embed returned HTTP 200. This checks embed availability, not end-to-end viewing of every video on every device.
+On 30 October 2026, all 17 existing class references were corrected from the stale library `301323` to the user-confirmed library `594383`. Every existing video ID was verified to return actual Bunny player markup in the new library before the library fields were updated. Video IDs, lesson titles, enrollments and progress were retained. The local repair backup is under ignored `tmp/recorded-playback/` and is not published to GitHub.
+
+Bunny can return a 404 page with HTTP 200. The connection check now checks the HTML for player markup and error pages instead of treating HTTP 200 alone as success. This checks player availability, not end-to-end viewing of every video on every device. `node scripts/test-recorded-player-health.cjs` covers this regression without live service calls.
 
 The optional video picker supports the site's own server environment values `BUNNY_STREAM_LIBRARY_ID`, `BUNNY_STREAM_API_KEY`, and optional `BUNNY_STREAM_CDN_HOSTNAME`. It also retains the older `LMS_ADMIN_CONFIG` → LMS `settings/general` connection. The local setup had no LMS connection; manually pasted Bunny links work without it. These are server-only values and must never be placed in public client variables.
 
