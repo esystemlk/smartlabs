@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { parseBunnyRef } from '@/lib/bunny-parse';
+import { PackagePricing } from '@/components/recorded-learning/package-pricing';
 import { SharedLearningAdmin } from '@/components/recorded-learning/admin-shared';
 import { packageExam } from '@/lib/recorded-learning';
 import {
@@ -159,6 +160,8 @@ export default function AdminRecordedPackagesPage() {
       });
       setShowLms(false);
       await load();
+      const imported = (await listPackages(false)).find(p => p.id === pkgId);
+      if (imported) openEdit(imported);
     } catch (e) { console.error(e); toast({ variant: 'destructive', title: 'Import failed' }); }
     finally { setImportingBatch(null); }
   };
@@ -206,12 +209,12 @@ export default function AdminRecordedPackagesPage() {
         description: form.description?.trim() ?? '',
         features: (form.features ?? []).map(f => f.trim()).filter(Boolean),
         includesGrammar: true,
-        tiers: (form.tiers ?? DEFAULT_TIERS)
+        tiers: [...tiers].sort((a,b) => a.months-b.months)
           .map(t => ({ months: Number(t.months) || 0, price: Number(t.price) || 0 }))
           .filter(t => t.months > 0 && t.price > 0),
-        // Keep legacy fields in sync with the cheapest tier (back-compat).
-        price: Number((form.tiers ?? DEFAULT_TIERS)[0]?.price) || 0,
-        accessMonths: Number((form.tiers ?? DEFAULT_TIERS)[0]?.months) || 1,
+        // Keep legacy fields in sync with the shortest enabled period.
+        price: Number([...tiers].sort((a,b) => a.months-b.months)[0]?.price) || 0,
+        accessMonths: Number([...tiers].sort((a,b) => a.months-b.months)[0]?.months) || 1,
         thumbnail: form.thumbnail?.trim() ?? '',
         published: form.published,
         order: Number(form.order) || Date.now(),
@@ -320,12 +323,11 @@ export default function AdminRecordedPackagesPage() {
                 </div>
                 <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1"><PlayCircle className="h-3.5 w-3.5" /> {counts[p.id!] ?? 0} classes</span>
-                  <span>{p.accessMonths} mo access</span>
-                  <span className="font-semibold text-foreground">{formatLkr(p.price)}</span>
+                  {packageTiers(p).map(t => <span key={t.months} className="rounded-lg border px-2 py-1 font-semibold text-foreground">{t.months} month{t.months === 1 ? '' : 's'} · {formatLkr(t.price)}</span>)}
                 </div>
                 <div className="mt-4 flex gap-2">
                   <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => setManagePkg(p)}><ListVideo className="h-3.5 w-3.5" /> Classes</Button>
-                  <Button variant="outline" size="sm" onClick={() => openEdit(p)}><Pencil className="h-3.5 w-3.5" /></Button>
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => openEdit(p)}><Pencil className="h-3.5 w-3.5" /> Edit prices</Button>
                   <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700" onClick={() => removePkg(p)}><Trash2 className="h-3.5 w-3.5" /></Button>
                 </div>
               </div>
@@ -337,7 +339,7 @@ export default function AdminRecordedPackagesPage() {
       {/* Package modal */}
       {showPkg && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4" onClick={() => setShowPkg(false)}>
-          <div className="w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-card p-5 sm:p-6" onClick={e => e.stopPropagation()}>
+          <div className="w-full sm:max-w-3xl max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-card p-5 sm:p-6" onClick={e => e.stopPropagation()}>
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-lg font-semibold">{editingId ? 'Edit Package' : 'New Package'}</h2>
               <Button variant="ghost" size="sm" onClick={() => setShowPkg(false)}><X className="h-4 w-4" /></Button>
@@ -353,25 +355,7 @@ export default function AdminRecordedPackagesPage() {
                   </select>
                 </Field>
               </div>
-              <Field label="Duration & price tiers (students pick one)">
-                <div className="space-y-2">
-                  {(form.tiers ?? DEFAULT_TIERS).map((t, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <input type="number" min={1} max={3} value={t.months}
-                        onChange={e => setForm(f => { const tiers = [...(f.tiers ?? DEFAULT_TIERS)]; tiers[i] = { ...tiers[i], months: parseInt(e.target.value) || 0 }; return { ...f, tiers }; })}
-                        className="rp-input w-24" placeholder="Months" />
-                      <span className="text-xs text-muted-foreground">months —</span>
-                      <input type="number" min={0} value={t.price}
-                        onChange={e => setForm(f => { const tiers = [...(f.tiers ?? DEFAULT_TIERS)]; tiers[i] = { ...tiers[i], price: parseInt(e.target.value) || 0 }; return { ...f, tiers }; })}
-                        className="rp-input flex-1" placeholder="Price LKR" />
-                      <button type="button" onClick={() => setForm(f => ({ ...f, tiers: (f.tiers ?? DEFAULT_TIERS).filter((_, j) => j !== i) }))}
-                        className="text-red-500 text-sm px-2" aria-label="Remove tier">✕</button>
-                    </div>
-                  ))}
-                  <button type="button" onClick={() => setForm(f => ({ ...f, tiers: [...(f.tiers ?? DEFAULT_TIERS), { months: 1, price: 0 }] }))}
-                    className="text-xs font-semibold text-primary">＋ Add tier</button>
-                </div>
-              </Field>
+              <PackagePricing tiers={form.tiers ?? DEFAULT_TIERS} onChange={tiers => setForm(f => ({ ...f, tiers }))} />
               <Field label="Exam programme"><select value={form.exam || 'pte'} onChange={e=>setForm(f=>({...f,exam:e.target.value as 'pte'|'ielts'|'both'}))} className="rp-input"><option value="pte">PTE Academic</option><option value="ielts">IELTS</option><option value="both">Both PTE & IELTS</option></select></Field>
               <label className="flex items-center gap-2 text-sm font-medium cursor-pointer"><input type="checkbox" checked={form.includesResources !== false} onChange={e=>setForm(f=>({...f,includesResources:e.target.checked}))}/>Include the matching shared study documents</label>
               <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
@@ -412,9 +396,9 @@ export default function AdminRecordedPackagesPage() {
                 </div>
               </Field>
             </div>
-            <div className="mt-6 flex gap-2">
+            <div className="sticky bottom-0 mt-6 flex gap-2 border-t bg-card py-4">
               <Button variant="outline" className="flex-1" onClick={() => setShowPkg(false)}>Cancel</Button>
-              <Button className="flex-1 gap-1.5" onClick={savePkg} disabled={saving}>{saving && <Loader2 className="h-4 w-4 animate-spin" />} {editingId ? 'Save' : 'Create'}</Button>
+              <Button className="flex-1 gap-1.5" onClick={savePkg} disabled={saving}>{saving && <Loader2 className="h-4 w-4 animate-spin" />} {editingId ? 'Save package & prices' : 'Create package & prices'}</Button>
             </div>
           </div>
         </div>
