@@ -382,7 +382,8 @@ export default function AdminRecordedPackagesPage() {
               <Field label="Features (one per line)">
                 <textarea value={(form.features ?? []).join('\n')} onChange={e => setForm(f => ({ ...f, features: e.target.value.split('\n') }))} rows={3} placeholder={'Full-length real class recordings\nWatch on any device\n2 months access'} className="rp-input" />
               </Field>
-              <Field label="Cover image (optional — else first class thumbnail)">
+              <Field label="Package cover (choose a generated cover or upload your own)">
+                <div className="mb-3 flex flex-wrap gap-2">{(['pte','ielts','grammar'] as const).map(cover=><button key={cover} type="button" className="rounded-xl border px-3 py-2 text-xs font-semibold" onClick={()=>setForm(f=>({...f,thumbnail:`/recorded-learning/${cover}-package.webp`}))}>Use {cover==='grammar'?'Grammar':cover.toUpperCase()} cover</button>)}</div>
                 <div className="space-y-2">
                   {form.thumbnail ? (
                     <div className="relative w-full overflow-hidden rounded-xl border bg-muted" style={{ aspectRatio: '16 / 9' }}>

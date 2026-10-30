@@ -12,6 +12,12 @@ export type SharedLearningItem = LearningItem & { exam: RecordedExam; published:
 export function packageExam(pkg: Pick<RecordedPackage, 'exam' | 'title' | 'lmsCourseTitle'>): RecordedExam {
   return pkg.exam || (/ielts/i.test(`${pkg.title} ${pkg.lmsCourseTitle || ''}`) ? 'ielts' : 'pte');
 }
+export function packageCover(pkg: Pick<RecordedPackage,'exam'|'title'|'lmsCourseTitle'|'thumbnail'|'productType'|'id'>):string {
+  if(pkg.thumbnail)return pkg.thumbnail;
+  if(pkg.productType==='grammar'||pkg.id===GRAMMAR_PACKAGE_ID)return '/recorded-learning/grammar-package.webp';
+  const exam=packageExam(pkg);
+  return exam==='both'?'/recorded-learning/study-hero.webp':`/recorded-learning/${exam}-package.webp`;
+}
 export function itemBelongs(item: SharedLearningItem, pkg: RecordedPackage & { id: string }) {
   if (!item.published || (item.packageId && item.packageId !== pkg.id)) return false;
   const exam = packageExam(pkg);

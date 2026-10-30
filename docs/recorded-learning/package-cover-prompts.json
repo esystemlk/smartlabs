@@ -1,0 +1,20 @@
+{
+  "generationMode": "built-in image_gen",
+  "assets": [
+    {
+      "package": "pte",
+      "path": "public/recorded-learning/pte-package.webp",
+      "prompt": "Use case: stylized-concept. Asset type: premium 16:9 website course-package cover for SmartLabs adult English learning, one cohesive three-cover series. Elegant polished 3D editorial still life, matte tactile materials, soft studio daylight, subtle realistic shadows, refined ivory background, calm spacious composition. Main subject centered within the central 65% so the cover crops well on mobile and small cards; top-left corner uncluttered for a website exam badge. No lettering, no words, no logos, no watermark, no UI screenshot. PTE Academic recorded learning: a beautiful deep-blue desktop microphone with a softly glowing cyan audio waveform sculpture behind it, premium headphones resting beside an open notebook, a small pencil and abstract speaking practice cards. Distinct cobalt blue and cyan accents against pale blue-ivory, confident and contemporary. Landscape cover image, fully composed opaque background."
+    },
+    {
+      "package": "ielts",
+      "path": "public/recorded-learning/ielts-package.webp",
+      "prompt": "Use case: stylized-concept. Asset type: premium 16:9 website course-package cover for SmartLabs adult English learning, one cohesive three-cover series. Elegant polished 3D editorial still life, matte tactile materials, soft studio daylight, subtle realistic shadows, refined ivory background, calm spacious composition. Main subject centered within the central 65% so the cover crops well on mobile and small cards; top-left corner uncluttered for a website exam badge. No lettering, no words, no logos, no watermark, no UI screenshot. IELTS recorded learning: an open book, elegant over-ear headphones, pencil and a small translucent globe forming a balanced scholarly composition. Distinct warm crimson, blush red and rose accents against pale warm ivory. Sophisticated adult exam preparation, welcoming and ambitious, visually distinct from a microphone-led PTE cover. Landscape cover image, fully composed opaque background."
+    },
+    {
+      "package": "grammar",
+      "path": "public/recorded-learning/grammar-package.webp",
+      "prompt": "Use case: stylized-concept. Asset type: premium 16:9 website course-package cover for SmartLabs adult English learning, one cohesive three-cover series. Elegant polished 3D editorial still life, matte tactile materials, soft studio daylight, subtle realistic shadows, refined ivory background, calm spacious composition. Main subject centered within the central 65% so the cover crops well on mobile and small cards; top-left corner uncluttered for a website exam badge. No lettering, no words, no logos, no watermark, no UI screenshot. English Grammar Foundations package, shared for PTE and IELTS: sculptural rounded sentence-building cards and neatly stacked books arranged with a mint-green bookmark and a refined gold pencil, small 3D punctuation sculptures such as a comma and question mark suggesting sentence structure. Distinct sage green, teal and warm gold accents against ivory. Clear, approachable and intelligent. No alphabet lettering or written sentences. Landscape cover image, fully composed opaque background."
+    }
+  ]
+}
