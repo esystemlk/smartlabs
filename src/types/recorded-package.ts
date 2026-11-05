@@ -6,6 +6,7 @@
  * Distinct from `class_recordings` (the older per-class rolling catalogue):
  * this is a bundle model — one package = many classes, one purchase.
  */
+import { timestampMillis } from '@/lib/recorded-learning';
 
 // Re-export the Bunny helpers so consumers have a single import.
 export { bunnyEmbedUrl, bunnyThumbnailUrl } from '@/types/recording';
@@ -83,7 +84,7 @@ export interface RecordedEnrollment {
   purchasedAt: unknown;
   /** purchasedAt + accessMonths. */
   expiresAt: unknown;
-  status: 'active' | 'expired' | 'suspended';
+  status: 'active' | 'expired' | 'suspended' | 'chargedback';
   orderId?: string;
   amountPaid?: number;
   /** Set when an admin grants access manually rather than via PayHere. */
@@ -110,6 +111,12 @@ export function addMonths(date: Date, months: number): Date {
   const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
   d.setDate(Math.min(day, last));
   return d;
+}
+
+/** New expiry for a purchase: unused days on active access carry over. */
+export function renewedExpiry(current: { status?: unknown; expiresAt?: unknown } | undefined, months: number, now: Date): Date {
+  const until = current?.status === 'active' ? timestampMillis(current.expiresAt) : 0;
+  return addMonths(until > now.getTime() ? new Date(until) : now, months);
 }
 
 /** True when the enrollment is active and not past expiry. */

@@ -63,6 +63,14 @@ export async function POST(request: NextRequest) {
         const orderData = orderDoc.data();
         const { userId, courseId, batchId, userEmail, userPhone } = orderData as any;
 
+        // Enroll orders are written by the browser, so the signed order ID must
+        // name this user and course. Otherwise a payment for something cheaper
+        // could be pointed here to unlock a course the order merely claims.
+        if (orderData.type || !String(order_id).startsWith(`${userId}__${courseId}__`)) {
+            console.warn(`Order ${order_id} does not match its order record.`);
+            return new Response('OK', { status: 200 });
+        }
+
         if (status_code === '2') {
             const batch = adminDb.batch();
 

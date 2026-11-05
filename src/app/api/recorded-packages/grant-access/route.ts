@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
-import { addMonths } from '@/types/recorded-package';
+import { renewedExpiry } from '@/types/recorded-package';
 import { GRAMMAR_PACKAGE_ID, grammarPackage } from '@/lib/recorded-learning';
 
 export const runtime = 'nodejs';
@@ -57,10 +57,10 @@ export async function POST(request: NextRequest) {
     const u = userDoc.data();
 
     const purchasedAt = new Date();
-    const expiresAt = addMonths(purchasedAt, accessMonths);
 
-    // Deterministic id => re-granting refreshes the same row.
+    // Deterministic id => re-granting updates the same row, keeping unused days.
     const enrollRef = adminDb.collection('recorded_enrollments').doc(`${userId}_${packageId}`);
+    const expiresAt = renewedExpiry((await enrollRef.get()).data(), accessMonths, purchasedAt);
     await enrollRef.set({
       userId,
       userEmail: u.email ?? cleanEmail,
@@ -74,6 +74,7 @@ export async function POST(request: NextRequest) {
       amountPaid: Number(amountPaid) || 0,
       grantedBy: (callerSnap.data()?.email as string) || decoded.uid,
       paymentMethod: 'bank_transfer',
+      reminder7SentAt: FieldValue.delete(),
       updatedAt: FieldValue.serverTimestamp(),
     }, { merge: true });
 

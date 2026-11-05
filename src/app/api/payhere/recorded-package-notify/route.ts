@@ -3,7 +3,7 @@ import { createHash } from 'crypto';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { sendMail } from '@/lib/mail';
-import { formatLkr, addMonths } from '@/types/recorded-package';
+import { formatLkr, renewedExpiry } from '@/types/recorded-package';
 import { renderAdminPaymentAlert } from '@/lib/admin-payment-email';
 
 export const runtime = 'nodejs';
@@ -38,9 +38,41 @@ export async function POST(request: NextRequest) {
 
     const orderDoc = ordersSnap.docs[0];
     const orderData = orderDoc.data();
+    const sc = String(status_code);
+
+    // A signed notice proves a payment for THIS order ID. Only IDs issued by our
+    // create-payment route can buy a package, and only for durations it sells.
+    const orderMonths = Number(orderData.accessMonths) || 1;
+    if (!String(order_id).startsWith(`recpkg_${String(orderData.userId).slice(0, 8)}_`) || !Number.isInteger(orderMonths) || orderMonths < 1 || orderMonths > 3) {
+      console.error(`[recpkg-notify] rejected order ${order_id}: does not match a server-issued order`);
+      return new Response('OK', { status: 200 });
+    }
+
+    if (orderData.paymentStatus === 'chargedback') return new Response('OK', { status: 200 });
+
+    // A chargeback arrives after success, so handle it before the success guard.
+    if (sc === '-3') {
+      const enrollRef = adminDb.collection('recorded_enrollments').doc(`${orderData.userId}_${orderData.packageId}`);
+      await adminDb.runTransaction(async tx => {
+        const enrollment = await tx.get(enrollRef);
+        tx.update(orderDoc.ref, { paymentStatus: 'chargedback', updatedAt: FieldValue.serverTimestamp() });
+        if (enrollment.data()?.status === 'active') {
+          tx.update(enrollRef, { status: 'chargedback', chargedbackAt: FieldValue.serverTimestamp(), chargebackOrderId: String(order_id) });
+        }
+      });
+      console.warn(`[recpkg-notify] chargeback: access removed for order ${order_id}`);
+      try {
+        await sendMail({
+          to: 'contact@smartlabs.lk',
+          subject: `Chargeback — recorded package access removed (${order_id})`,
+          html: `<p>PayHere reported a chargeback for order <b>${order_id}</b> (${orderData.packageTitle ?? 'recorded package'}). The student's access to this package has been removed. Grant access again from the admin panel if this is resolved.</p>`,
+        });
+      } catch (e) { console.error('[recpkg-notify] chargeback alert failed:', e); }
+      return new Response('OK', { status: 200 });
+    }
+
     if (orderData.paymentStatus === 'success') return new Response('OK', { status: 200 });
 
-    const sc = String(status_code);
     const expected = Number(orderData.paymentAmount);
     const paid = Number(payhere_amount);
 
@@ -52,10 +84,10 @@ export async function POST(request: NextRequest) {
 
     if (sc === '2') {
       const { userId, packageId, packageTitle } = orderData as { userId: string; packageId: string; packageTitle: string };
-      const accessMonths = Number(orderData.accessMonths) || 1;
+      const accessMonths = orderMonths;
 
       const purchasedAt = new Date();
-      const expiresAt = addMonths(purchasedAt, accessMonths);
+      let expiresAt = purchasedAt;
 
       let userEmail: string | null = null;
       let userName: string | null = null;
@@ -67,12 +99,17 @@ export async function POST(request: NextRequest) {
         userPhone = (u.data()?.phone as string) ?? null;
       } catch { /* non-fatal */ }
 
-      // Deterministic id => re-purchasing after expiry refreshes the same row.
+      // Deterministic id => re-purchasing updates the same row, keeping unused days.
       const enrollRef = adminDb.collection('recorded_enrollments').doc(`${userId}_${packageId}`);
 
+      let granted = false;
       await adminDb.runTransaction(async tx => {
         const fresh = await tx.get(orderDoc.ref);
+        const enrollment = await tx.get(enrollRef);
+        granted = false;
         if (fresh.data()?.paymentStatus === 'success') return;
+        granted = true;
+        expiresAt = renewedExpiry(enrollment.data(), accessMonths, purchasedAt);
         tx.update(orderDoc.ref, {
           paymentStatus: 'success',
           payherePaymentId: String(payment_id),
@@ -90,8 +127,10 @@ export async function POST(request: NextRequest) {
           status: 'active',
           orderId: String(order_id),
           amountPaid: paid,
+          reminder7SentAt: FieldValue.delete(),
         }, { merge: true });
       });
+      if (!granted) return new Response('OK', { status: 200 });
       console.log(`[recpkg-notify] ✅ access granted user=${userId} package=${packageId} until ${expiresAt.toISOString()}`);
 
       // Receipt email (best-effort).
@@ -145,8 +184,6 @@ export async function POST(request: NextRequest) {
       await orderDoc.ref.update({ paymentStatus: 'cancelled', updatedAt: FieldValue.serverTimestamp() });
     } else if (sc === '-2') {
       await orderDoc.ref.update({ paymentStatus: 'failed', updatedAt: FieldValue.serverTimestamp() });
-    } else if (sc === '-3') {
-      await orderDoc.ref.update({ paymentStatus: 'chargedback', updatedAt: FieldValue.serverTimestamp() });
     }
     return new Response('OK', { status: 200 });
   } catch (error) {
