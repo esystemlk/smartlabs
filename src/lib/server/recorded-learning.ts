@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { adminDb } from '@/lib/firebase-admin';
 import { itemBelongs, timestampMillis, grammarPackage, GRAMMAR_PACKAGE_ID, type SharedLearningItem } from '@/lib/recorded-learning';
 import { includedGrammarAccess } from '@/lib/server/grammar-access';
+import { currentBunnyLibraryId } from '@/lib/bunny-parse';
 import type { RecordedPackage } from '@/types/recorded-package';
 export const validLearningId = (id: string) => /^[a-zA-Z0-9_-]{1,160}$/.test(id);
 export async function learningPackage(id: string, uid?: string, role?: string) {
@@ -35,8 +36,9 @@ export async function learningItems(pkg: RecordedPackage & { id: string }) {
 export function safeLearningItem(item: SharedLearningItem) {
   return { id: item.id, title: item.title, kind: item.kind, group: item.group, order: item.order, duration: item.duration || '', description: item.description || '' };
 }
-export function learningEmbedUrl(libraryId: string, videoId: string, accessExpiry: number) {
-  if (!/^\d+$/.test(libraryId) || !/^[a-f\d-]{8,}$/i.test(videoId)) throw new Error('Invalid video reference');
+export function learningEmbedUrl(savedLibraryId: string, videoId: string, accessExpiry: number) {
+  if (!/^\d+$/.test(savedLibraryId) || !/^[a-f\d-]{8,}$/i.test(videoId)) throw new Error('Invalid video reference');
+  const libraryId = currentBunnyLibraryId(savedLibraryId);
   let keys: Record<string,string> = {};
   try { keys = JSON.parse(process.env.BUNNY_STREAM_EMBED_KEYS || '{}'); } catch { throw new Error('Invalid Bunny embed configuration'); }
   const key = keys[libraryId] || (process.env.BUNNY_STREAM_LIBRARY_ID === libraryId ? process.env.BUNNY_STREAM_EMBED_TOKEN_KEY : '');

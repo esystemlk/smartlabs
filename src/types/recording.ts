@@ -1,4 +1,5 @@
 /** Class-recording packages (Bunny Stream) and the access students purchase. */
+import { currentBunnyLibraryId } from '@/lib/bunny-parse';
 
 /** One purchasable package = ONE class recording. Each month has 2 classes. */
 export interface ClassRecording {
@@ -62,12 +63,12 @@ export function priceBreakdown(base: number = RECORDING_PRICE) {
 
 /** Bunny Stream embed URL for the player iframe. */
 export function bunnyEmbedUrl(libraryId: string, videoId: string) {
-  return `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=false&preload=false`;
+  return `https://iframe.mediadelivery.net/embed/${currentBunnyLibraryId(libraryId)}/${videoId}?autoplay=false&preload=false`;
 }
 
 /** Bunny Stream thumbnail for catalog cards. */
 export function bunnyThumbnailUrl(libraryId: string, videoId: string) {
-  return `https://vz-${libraryId}.b-cdn.net/${videoId}/thumbnail.jpg`;
+  return `https://vz-${currentBunnyLibraryId(libraryId)}.b-cdn.net/${videoId}/thumbnail.jpg`;
 }
 
 /** "2026-01" → "January 2026" */

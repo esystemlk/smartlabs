@@ -32,6 +32,11 @@ async function main(){
  const items=await server.learningItems(pkg);assert.equal(items.length,2);assert.equal(items[0].id,'class:core');const safe=server.safeLearningItem(items[1]);for(const key of ['bunnyLibraryId','bunnyVideoId','storagePath'])assert.ok(!(key in safe));
  env.BUNNY_STREAM_EMBED_KEYS=JSON.stringify({'123':'test-key-only'});const url=new URL(server.learningEmbedUrl('123','12345678-abcd',Date.now()+60000));const expires=url.searchParams.get('expires');assert.equal(url.searchParams.get('token'),crypto.createHash('sha256').update('test-key-only12345678-abcd'+expires).digest('hex'));assert.ok(Number(expires)*1000<=Date.now()+60000);assert.ok(!url.toString().includes('test-key-only'));
  assert.throws(()=>server.learningEmbedUrl('../bad','12345678-abcd',0));
+ // Links saved with the moved library must play from the current one.
+ assert.match(server.learningEmbedUrl('301323','12345678-abcd',0),/\/embed\/594383\/12345678-abcd/);
+ assert.match(types.bunnyEmbedUrl('301323','12345678-abcd'),/\/embed\/594383\/12345678-abcd/);
+ assert.equal(load('src/lib/bunny-parse.ts').parseBunnyRef('https://iframe.mediadelivery.net/embed/301323/12345678-abcd').libraryId,'594383');
+ assert.equal(load('src/lib/bunny-parse.ts').parseBunnyRef('123/12345678-abcd').libraryId,'123');
  const grammarPkg=domain.grammarPackage();assert.equal(grammarPkg.tiers[0].months,1);assert.equal(grammarPkg.tiers[0].price,5000);assert.equal(grammarPkg.tiers[2].months,3);assert.equal(domain.itemBelongs({...grammar,kind:'document',group:'resources'},grammarPkg),false);assert.equal(domain.itemBelongs({...grammar,kind:'document',group:'resources',grammarResource:true},grammarPkg),true);
  assert.equal(types.packageTiers({tiers:[{months:1,price:10},{months:4,price:20}]}).length,1,'Only new 1–3 month plans may be offered');
  const until=new Date(Date.now()+86400000);records.set('recorded_enrollments/carol_pte',{userId:'carol',packageId:'pte',status:'active',expiresAt:until});assert.equal((await server.learningPackage(domain.GRAMMAR_PACKAGE_ID,'carol')).included,true);assert.equal((await server.learningPackage(domain.GRAMMAR_PACKAGE_ID,'carol')).expiresAt,until.getTime());assert.equal((await server.learningPackage('pte','other')).allowed,false);

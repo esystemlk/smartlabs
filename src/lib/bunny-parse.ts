@@ -9,6 +9,16 @@
  */
 export interface BunnyRef { libraryId: string; videoId: string; }
 
+/**
+ * Library IDs that moved. Bunny shows a 404 player for the old ID, but the same
+ * video IDs play in the new library, and older links and exports still carry it.
+ */
+const MOVED_LIBRARIES: Record<string, string> = { '301323': '594383' };
+
+export function currentBunnyLibraryId(libraryId: string): string {
+  return MOVED_LIBRARIES[libraryId] ?? libraryId;
+}
+
 const GUID = '[0-9a-fA-F-]{8,}';
 const PATTERNS = [
   new RegExp(`mediadelivery\\.net/(?:embed|play)/(\\d+)/(${GUID})`),
@@ -21,7 +31,7 @@ export function parseBunnyRef(input: string): BunnyRef | null {
   if (!s) return null;
   for (const re of PATTERNS) {
     const m = s.match(re);
-    if (m) return { libraryId: m[1], videoId: m[2] };
+    if (m) return { libraryId: currentBunnyLibraryId(m[1]), videoId: m[2] };
   }
   return null;
 }
