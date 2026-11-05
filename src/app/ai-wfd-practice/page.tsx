@@ -10,6 +10,7 @@ import {
   LayoutDashboard, Menu, Volume2, Target, ListChecks, BarChart3, Repeat,
 } from 'lucide-react';
 import { WfdResultDetails, type WfdApiResult } from '@/components/wfd/WfdResultDetails';
+import { recordPracticeResult } from '@/lib/services/activity.service';
 
 interface WfdQuestion {
   id: string;
@@ -116,6 +117,7 @@ export default function WfdPracticePage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Scoring failed.');
       setResult(data as WfdApiResult);
+      recordPracticeResult(user.uid, { title: 'Write From Dictation', category: 'Listening', score: data.correctWords, maxScore: data.totalWords });
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     } catch (e) {
       toast({ variant: 'destructive', title: e instanceof Error ? e.message : 'Scoring failed.' });

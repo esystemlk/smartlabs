@@ -16,6 +16,7 @@ import { motion } from 'framer-motion';
 import { MoodPrompt } from '@/components/dashboard/MoodPrompt';
 import { MoodBadge } from '@/components/dashboard/MoodBadge';
 import { getUserMood, setUserMood, isMoodSetToday } from '@/lib/services/mood.service';
+import { calculateStudyStreak } from '@/lib/streak';
 import Link from 'next/link';
 import {
   Microphone,
@@ -266,26 +267,6 @@ function getGreeting() {
   return 'Good evening';
 }
 
-function calculateStudyStreak(activities: any[]) {
-  if (!activities || activities.length === 0) return 0;
-  const sorted = [...activities].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-  let streak = 0;
-  let lastDate: Date | null = null;
-  for (const activity of sorted) {
-    const cur = new Date(activity.timestamp);
-    cur.setHours(0, 0, 0, 0);
-    if (!lastDate) {
-      streak = 1;
-    } else {
-      const diff = Math.ceil(Math.abs(cur.getTime() - lastDate.getTime()) / 86400000);
-      if (diff === 1) streak++;
-      else if (diff > 1) break;
-    }
-    lastDate = cur;
-  }
-  return streak;
-}
-
 // ─── Section Card ─────────────────────────────────────────────────────────────
 
 function SectionCard({ section, index }: { section: (typeof pteSections)[number] | (typeof ieltsSections)[number]; index: number }) {
@@ -399,7 +380,7 @@ export default function DashboardPage() {
     [firestore, user]
   );
   const { data: enrollments, isLoading: enrollmentsLoading } = useCollection(enrollmentsQuery);
-  const { activities: userActivities, loading: userActivitiesLoading } = useUserActivity(user?.uid);
+  const { activities: userActivities, loading: userActivitiesLoading } = useUserActivity(user?.uid, 500);
 
   const studyStreak = useMemo(() => calculateStudyStreak(userActivities), [userActivities]);
 

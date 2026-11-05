@@ -14,7 +14,12 @@ export async function GET(request: Request) {
     try { uid = (await adminAuth.verifyIdToken(authHeader.slice(7))).uid; }
     catch { return NextResponse.json({ error: 'Session expired.' }, { status: 401 }); }
 
-    const snap = await adminDb.collection('payment_orders').where('userId', '==', uid).limit(100).get();
+    // Only successful payments are shown here — pending/failed orders are
+    // internal noise for the student and get swept up by the cleanup cron.
+    const snap = await adminDb.collection('payment_orders')
+      .where('userId', '==', uid)
+      .where('paymentStatus', '==', 'success')
+      .limit(100).get();
     const toMillis = (v: unknown) => {
       const d = (v as { toDate?: () => Date; seconds?: number } | undefined);
       if (d?.toDate) return d.toDate().getTime();

@@ -1,7 +1,7 @@
 'use client';
 import {IeltsText} from '@/components/ielts/ielts-text';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -38,6 +38,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useNotifications } from "@/hooks/use-notifications";
+import { useUserActivity } from "@/hooks/use-user-activity";
+import { usePerformanceData } from "@/hooks/use-performance-data";
+import { calculateStudyStreak } from "@/lib/streak";
 import { LMS_URL } from "@/lib/constants";
 import { DEV_CONSOLE_PATH } from "@/lib/site-mode";
 import { PTE_CATALOG } from "@/lib/pte-catalog";
@@ -261,6 +264,20 @@ export default function Header() {
   const { user } = useUser();
   const auth = useAuth();
   const router = useRouter();
+
+  const { activities: userActivities } = useUserActivity(user?.uid, 500);
+  const studyStreak = calculateStudyStreak(userActivities);
+  const { results: testResults, overallProgress: skillMastery } = usePerformanceData(user?.uid);
+  const avgScoreLabel = useMemo(() => {
+    if (testResults.length === 0) return '—';
+    const ieltsResults = testResults.filter(r => r.testType === 'IELTS');
+    const pool = ieltsResults.length > 0 ? ieltsResults : testResults;
+    const scale = pool[0]?.maxScore === 9 ? 9 : 90;
+    const normalized = pool.filter(r => r.maxScore === scale);
+    if (normalized.length === 0) return '—';
+    const avg = normalized.reduce((sum, r) => sum + r.score, 0) / normalized.length;
+    return scale === 9 ? `${avg.toFixed(1)} Band` : `${Math.round(avg)} / 90`;
+  }, [testResults]);
 
   const [isElectron, setIsElectron] = useState(false);
   const [isMac, setIsMac] = useState(false);
@@ -748,9 +765,9 @@ export default function Header() {
                       <div className="pt-2">
                         <div className="flex justify-between items-end mb-1.5">
                           <span className="text-[10px] font-black uppercase tracking-widest text-white/80">Skill Mastery</span>
-                          <span className="text-[10px] font-black">74%</span>
+                          <span className="text-[10px] font-black">{skillMastery}%</span>
                         </div>
-                        <Progress value={74} className="h-1.5 bg-white/20" indicatorClassName="bg-white" />
+                        <Progress value={skillMastery} className="h-1.5 bg-white/20" indicatorClassName="bg-white" />
                       </div>
                     </div>
                   </div>
@@ -759,12 +776,12 @@ export default function Header() {
                     <div className="p-3 bg-background border border-border/50 rounded-2xl text-center flex flex-col items-center group cursor-pointer hover:border-primary/30 transition-colors">
                       <TrendingUp className="h-4 w-4 text-primary mb-1 group-hover:scale-110 transition-transform" />
                       <span className="text-[9px] font-black uppercase text-muted-foreground tracking-tighter">Day Streak</span>
-                      <span className="text-xs font-black">12 Days</span>
+                      <span className="text-xs font-black">{studyStreak} {studyStreak === 1 ? 'Day' : 'Days'}</span>
                     </div>
                     <div className="p-3 bg-background border border-border/50 rounded-2xl text-center flex flex-col items-center group cursor-pointer hover:border-accent-1/30 transition-colors">
                       <Trophy className="h-4 w-4 text-accent-1 mb-1 group-hover:scale-110 transition-transform" />
                       <span className="text-[9px] font-black uppercase text-muted-foreground tracking-tighter">Avg Score</span>
-                      <span className="text-xs font-black">7.5 Band</span>
+                      <span className="text-xs font-black">{avgScoreLabel}</span>
                     </div>
                   </div>
 
@@ -804,7 +821,7 @@ export default function Header() {
                         <div className="h-8 w-8 rounded-xl bg-destructive/10 flex items-center justify-center transition-colors group-focus:bg-white/20">
                           <LogOut className="h-4 w-4 text-destructive group-focus:text-white" />
                         </div>
-                        <span className="text-sm font-bold tracking-tight">Secure Shutdown</span>
+                        <span className="text-sm font-bold tracking-tight">Logout</span>
                       </div>
                     </DropdownMenuItem>
                   </div>

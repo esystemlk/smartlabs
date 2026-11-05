@@ -8,6 +8,7 @@ import type { SpeakingScore } from '@/ai/flows/score-pte-speaking';
 import { MAX_SPEAKING_AUDIO_BYTES } from '@/lib/speaking-recordings';
 import { speakingRequest } from '@/lib/services/speaking-recordings.client';
 import { useUser } from '@/firebase';
+import { recordPracticeResult } from '@/lib/services/activity.service';
 import {
   Mic, Square, Loader2, RotateCcw, Play, Search, ChevronLeft, ChevronRight,
   Shuffle, Volume2, ArrowLeft, Sparkles, ListChecks, AlertTriangle,
@@ -271,6 +272,9 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
       const { score } = await response.json() as { score: SpeakingScore };
       if (attempt !== attemptRef.current) return;
       setResult(score); setPhase('result');
+      if (user) {
+        recordPracticeResult(user.uid, { title: p.title, category: 'Speaking', score: score.overall, maxScore: 90 });
+      }
     } catch (e: unknown) {
       if (attempt !== attemptRef.current) return;
       setErrMsg(e instanceof Error ? e.message : 'Scoring failed. Please try again.');

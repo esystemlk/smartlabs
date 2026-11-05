@@ -11,6 +11,7 @@ import { payhereUrls } from '@/lib/payhere';
 import { listQuestions } from '@/lib/services/pte-questions.service';
 import type { PteQuestion } from '@/types/pte-question';
 import { SSTResultDetails, type SSTResult } from '@/components/sst/SSTResultDetails';
+import { recordPracticeResult } from '@/lib/services/activity.service';
 import { useToast } from '@/hooks/use-toast';
 import { AiRetryDialog } from '@/components/ui/ai-retry-dialog';
 import {
@@ -196,6 +197,7 @@ function SSTInner() {
       setResult(data as SSTResult);
       setTimerRunning(false);
       setRevealTranscript(true);
+      recordPracticeResult(user.uid, { title: 'Summarize Spoken Text', category: 'Listening', score: data.total, maxScore: data.maxTotal });
       refreshCredits();
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     } catch (e) {

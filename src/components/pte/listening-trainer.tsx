@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { CompactQuestionBank } from './compact-question-bank';
 import { ArrowLeft, Volume2, Loader2, CheckCircle2, XCircle, RotateCcw, ChevronRight, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useUser } from '@/firebase';
+import { recordPracticeResult } from '@/lib/services/activity.service';
 
 /** Interactive Listening variants (deterministic marking). */
 export type ListeningVariant = 'mcsa' | 'mcma' | 'fill-blanks' | 'summary' | 'missing-word' | 'highlight-words';
@@ -59,6 +61,7 @@ function useSpeech() {
 }
 
 export function ListeningTrainer(p: Props) {
+  const { user } = useUser();
   const t = theme(p.color);
   const [index, setIndex] = useState(0);
   const [submitted, setSubmitted] = useState(false);
@@ -137,7 +140,17 @@ export function ListeningTrainer(p: Props) {
       {/* Controls */}
       <div className="mt-4 flex flex-wrap gap-3">
         {!submitted ? (
-          <button onClick={() => setSubmitted(true)} disabled={!progress.answered}
+          <button onClick={() => {
+            setSubmitted(true);
+            if (user) {
+              recordPracticeResult(user.uid, {
+                title: p.title,
+                category: 'Listening',
+                score: progress.allCorrect ? 1 : 0,
+                maxScore: 1,
+              });
+            }
+          }} disabled={!progress.answered}
             className={cn('inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-extrabold text-white transition-all active:scale-95 disabled:opacity-40', t.bg)}>
             <CheckCircle2 size={16} /> Submit answer
           </button>

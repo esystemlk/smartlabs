@@ -12,6 +12,8 @@ import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useUser } from '@/firebase';
+import { recordPracticeResult } from '@/lib/services/activity.service';
 
 // Fixed theme classes per catalogue hue (Tailwind can't build dynamic names).
 const THEME: Record<string, { text: string; bg: string; soft: string; grad: string; ring: string; border: string }> = {
@@ -65,6 +67,7 @@ function labelOf(variant: ReadingVariant, q: AnyQ): string {
 }
 
 export function ReadingTrainer(p: Props) {
+  const { user } = useUser();
   const t = theme(p.color);
   const [index, setIndex] = useState(0);
 
@@ -214,7 +217,17 @@ export function ReadingTrainer(p: Props) {
             {!graded ? (
               <>
                 <button
-                  onClick={() => setSubmitted(true)}
+                  onClick={() => {
+                    setSubmitted(true);
+                    if (user) {
+                      recordPracticeResult(user.uid, {
+                        title: p.title,
+                        category: 'Reading',
+                        score: progress.allCorrect ? 1 : 0,
+                        maxScore: 1,
+                      });
+                    }
+                  }}
                   disabled={!progress.answered}
                   className={cn('inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold text-white shadow-sm transition active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none',
                     `bg-gradient-to-r ${t.grad}`)}

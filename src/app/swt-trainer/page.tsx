@@ -11,6 +11,7 @@ import { payhereUrls } from '@/lib/payhere';
 import { listQuestions } from '@/lib/services/pte-questions.service';
 import type { PteQuestion } from '@/types/pte-question';
 import { SWTResultDetails, type SWTResult } from '@/components/swt/SWTResultDetails';
+import { recordPracticeResult } from '@/lib/services/activity.service';
 import { useToast } from '@/hooks/use-toast';
 import {
   BookOpenText, Sparkles, ArrowRight, ArrowLeft, Lock, CheckCircle2, XCircle,
@@ -128,6 +129,7 @@ function SWTInner() {
       if (res.status === 402 || data.code === 'NO_CREDITS') { window.location.assign('/credits'); return; }
       if (!res.ok) throw new Error(data.error || 'Scoring failed.');
       setResult(data as SWTResult);
+      recordPracticeResult(user.uid, { title: 'Summarize Written Text', category: 'Writing', score: data.total, maxScore: data.maxTotal });
       refreshCredits();
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     } catch (e) {

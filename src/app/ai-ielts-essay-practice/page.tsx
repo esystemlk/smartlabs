@@ -13,6 +13,7 @@ import {
 import { IELTS_ESSAY_PACKAGES } from '@/lib/ielts-essay-packages';
 import { payhereUrls } from '@/lib/payhere';
 import type { IeltsEssayResult } from '@/types/ielts-essay';
+import { recordPracticeResult } from '@/lib/services/activity.service';
 import {
   Loader2, PenLine, Sparkles, Target, ArrowLeft, Lightbulb, ShieldAlert, RotateCcw,
   CreditCard, X, Check, FileDown,
@@ -105,6 +106,7 @@ export default function IeltsEssayPractice() {
       }
       setResult(data as IeltsEssayResult);
       setPhase('result');
+      recordPracticeResult(user.uid, { title: 'IELTS Writing Task 2', category: 'Writing', testType: 'IELTS', score: data.overallBand, maxScore: 9 });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
       setPhase('writing');
