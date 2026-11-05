@@ -8,9 +8,10 @@ const DAY = 86400000;
 const PENDING_RETENTION_DAYS = 10;
 
 /**
- * Daily sweep: deletes payment_orders that never completed (anything but
- * 'success') once they're older than 10 days. Successful payments are never
- * touched. Runs via Vercel Cron (see vercel.json).
+ * Daily sweep: deletes pending, failed and cancelled payment_orders once
+ * they're older than 10 days. Successful payments are never touched, and
+ * amount_mismatch/chargedback orders are kept as records for disputes and
+ * accounting. Runs via Vercel Cron (see vercel.json).
  */
 export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
     // 'in' (not an inequality) combines with the createdAt range filter —
     // Firestore disallows a '!=' and a range filter on two different fields.
     const snap = await adminDb.collection('payment_orders')
-      .where('paymentStatus', 'in', ['pending', 'failed', 'cancelled', 'amount_mismatch', 'chargedback'])
+      .where('paymentStatus', 'in', ['pending', 'failed', 'cancelled'])
       .where('createdAt', '<', cutoff)
       .limit(500)
       .get();
