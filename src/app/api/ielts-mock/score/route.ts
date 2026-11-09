@@ -3,6 +3,9 @@ import React from 'react';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { internalHeaders } from '@/lib/internal-auth';
+import { withMockAiKey } from '@/lib/mock-ai-context';
+import { POST as scoreTask1 } from '@/app/api/score-ielts-task1/route';
+import { POST as scoreEssay } from '@/app/api/score-ielts-essay/route';
 import { getMock } from '@/lib/ielts-mock/mocks';
 import { getCambridge21WritingTest } from '@/lib/ielts-writing/cambridge-21';
 import { getListeningBundle, getReadingBundle, gradeTest } from '@/lib/ielts-mock/registry.server';
@@ -113,21 +116,19 @@ export async function POST(request: Request) {
     const img = await imageToBase64(origin, writing.task1.image);
     const headers = { 'Content-Type': 'application/json', Authorization: authHeader, ...internalHeaders() };
 
-    const [t1Res, t2Res] = await Promise.all([
-      fetch(`${origin}/api/score-ielts-task1`, {
-        method: 'POST', headers,
-        body: JSON.stringify({
-          prompt: writing.task1.prompt, response: t1Text,
-          wordCount: t1Text.split(/\s+/).filter(Boolean).length,
-          visualType: writing.task1.visualType, keyFeatures: writing.task1.keyFeatures,
-          imageBase64: img?.data, imageMime: img?.mime,
-        }),
-      }),
-      fetch(`${origin}/api/score-ielts-essay`, {
-        method: 'POST', headers,
-        body: JSON.stringify({ topic: writing.task2.prompt, essay: t2Text, wordCount: t2Text.split(/\s+/).filter(Boolean).length }),
-      }),
-    ]);
+    const internalRequest = (body: object) =>
+      new Request('http://internal/scoring', { method: 'POST', headers, body: JSON.stringify(body) });
+
+    // Called directly, not over HTTP: the key 6 context lives in AsyncLocalStorage.
+    const [t1Res, t2Res] = await withMockAiKey(() => Promise.all([
+      scoreTask1(internalRequest({
+        prompt: writing.task1.prompt, response: t1Text,
+        wordCount: t1Text.split(/\s+/).filter(Boolean).length,
+        visualType: writing.task1.visualType, keyFeatures: writing.task1.keyFeatures,
+        imageBase64: img?.data, imageMime: img?.mime,
+      })),
+      scoreEssay(internalRequest({ topic: writing.task2.prompt, essay: t2Text, wordCount: t2Text.split(/\s+/).filter(Boolean).length })),
+    ]));
 
     if (!t1Res.ok || !t2Res.ok) {
       console.error('[ielts-mock/score] writing scoring failed', t1Res.status, t2Res.status);

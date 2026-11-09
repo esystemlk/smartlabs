@@ -224,6 +224,7 @@ The "achieved" and "gap" fields are corrected server-side — focus on accurate 
         contents: [{ role: 'user', parts: [{ text: userMessage }] }],
         systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         generationConfig: { maxOutputTokens: 32768, temperature: 0.1 },
+        deadlineMs: 100_000, attemptMs: 45_000, // stays inside maxDuration (120s)
         validate: (t) => { try { JSON.parse(extractJson(t)); return true; } catch { return false; } },
       });
       responseText = extractJson(r.text);

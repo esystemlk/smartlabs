@@ -61,6 +61,7 @@ interface GeminiCallOpts {
   generationConfig?: Record<string, unknown>;
   models?: readonly { name: string; api: string }[];
   deadlineMs?: number; // default 55s (inside Vercel's 60s function cap)
+  attemptMs?: number; // cap per call so a hung model fails over; default: all remaining time
   /** Return false to reject a response (e.g. invalid JSON) and fail over to the next model/key. */
   validate?: (text: string) => boolean;
 }
@@ -71,7 +72,7 @@ interface GeminiCallOpts {
  * route can tell the student to try again (no hard error dump).
  */
 export async function generateWithFailover(opts: GeminiCallOpts): Promise<GeminiCallResult> {
-  const { contents, systemInstruction, generationConfig, models = GENAI_MODELS, deadlineMs = 55_000, validate } = opts;
+  const { contents, systemInstruction, generationConfig, models = GENAI_MODELS, deadlineMs = 55_000, attemptMs = deadlineMs, validate } = opts;
   const deadline = Date.now() + deadlineMs;
   const keys = keysInOrder();
   if (!keys.length) throw new Error('NO_KEYS'); // distinct from AiBusy — a config problem
@@ -86,6 +87,7 @@ export async function generateWithFailover(opts: GeminiCallOpts): Promise<Gemini
       try {
         const res = await fetch(`https://generativelanguage.googleapis.com/${api}/models/${model}:generateContent?key=${key}`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
+          signal: AbortSignal.timeout(Math.max(1, Math.min(attemptMs, deadline - Date.now()))),
         });
         if (!res.ok) {
           let msg = `HTTP ${res.status}`;
