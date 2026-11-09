@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { doc, getDoc } from 'firebase/firestore';
 import { useUser, useFirestore } from '@/firebase';
 import { IeltsEssayResultView } from '@/components/ielts-essay/IeltsEssayResult';
+import { MockAnswerReview } from '@/components/ielts/mock-answer-review';
 import type { IeltsEssayResult } from '@/types/ielts-essay';
 import { READING_MINUTES, WRITING_MINUTES, LISTENING_PART_GAP_SECONDS, type IeltsMockDef } from '@/lib/ielts-mock/mocks';
 import type { IeltsMockResult } from '@/lib/ielts-mock/types';
@@ -26,7 +27,7 @@ const CRIMSON = '#dc2626';
 // ── Loose shapes for the bundled test JSON ──
 interface Question { id: number; part?: number; passage?: number; kind: string; prompt: string; options?: string[]; choices?: { letter: string; text: string }[]; wordLimit?: number; }
 interface Group { title?: string; instructions?: string; matchOptions?: { letter: string; text: string }[]; }
-interface MapBlock { type: string; startId: number; endId: number; image: string; alt?: string; }
+interface MapBlock { type: string; startId: number; endId: number; image: string; alt?: string; title?: string; text?: string; }
 interface ListeningData { sections: { part: number; title: string; subtitle?: string; audio: string }[]; groups: Record<string, Group>; questions: Question[]; blocks?: MapBlock[]; }
 interface Passage { title: string; intro?: string; paragraphs: { label?: string; text: string }[]; }
 interface ReadingData { passages: Passage[]; groups: Record<string, Group>; questions: Question[]; blocks?: MapBlock[]; }
@@ -43,6 +44,31 @@ function groupFor(groups: Record<string, Group>, id: number): Group | undefined 
   let chosen: number | undefined;
   for (const s of starts) if (s <= id) chosen = s;
   return chosen != null ? groups[String(chosen)] : undefined;
+}
+
+// A question group's instructions and, when it has one, its box of lettered answers.
+function GroupIntro({ group }: { group: Group }) {
+  return (
+    <div className="my-2">
+      {group.instructions && <p className="text-xs font-semibold text-slate-500 bg-slate-50 rounded-lg px-3 py-2 whitespace-pre-line">{group.instructions}</p>}
+      {!!group.matchOptions?.length && (
+        <ul className="mt-2 rounded-lg border border-slate-200 divide-y divide-slate-100">
+          {group.matchOptions.map(o => (
+            <li key={o.letter} className="flex gap-2 px-3 py-1.5 text-sm text-slate-700"><b className="shrink-0">{o.letter}</b><span>{o.text}</span></li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function SummaryText({ block }: { block: MapBlock }) {
+  return (
+    <div className="my-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+      {block.title && <p className="text-sm font-black text-slate-800 mb-1">{block.title}</p>}
+      <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{block.text?.replace(/\{(\d+)\}/g, '[$1] ________')}</p>
+    </div>
+  );
 }
 
 function QuestionField({ q, value, onChange }: { q: Question; value: string; onChange: (v: string) => void }) {
@@ -206,7 +232,7 @@ export function IeltsMockRunner({ mock, listening, reading, writing }: { mock: I
             <p className="text-xs text-slate-400 mt-1">Writing is scored by AI; this can take up to a minute.</p>
           </div>
         )}
-        {phase === 'result' && mockResult && <MockResultView r={mockResult} studentName={user?.displayName || 'Student'} studentEmail={user?.email || undefined} />}
+        {phase === 'result' && mockResult && <MockResultView r={mockResult} attemptId={attemptId ?? undefined} studentName={user?.displayName || 'Student'} studentEmail={user?.email || undefined} />}
       </div>
     </div>
   );
@@ -367,9 +393,7 @@ function ListeningPhase({ data, answers, setAnswers, onDone, dev, devAnswers }: 
       <div className="rounded-2xl border border-slate-200 bg-white p-4">
         {qs.map(q => (
           <div key={q.id}>
-            {firstOfGroup.has(q.id) && group(q.id)?.instructions && (
-              <p className="text-xs font-semibold text-slate-500 bg-slate-50 rounded-lg px-3 py-2 my-2 whitespace-pre-line">{group(q.id)!.instructions}</p>
-            )}
+            {firstOfGroup.has(q.id) && <GroupIntro group={group(q.id)!} />}
             <QuestionField q={q} value={answers[q.id] ?? ''} onChange={v => setA(q.id, v)} />
           </div>
         ))}
@@ -434,9 +458,8 @@ function ReadingPhase({ data, answers, setAnswers, onDone, dev, devAnswers }: { 
         <div className="rounded-2xl border border-slate-200 bg-white p-4 lg:max-h-[70vh] lg:overflow-auto">
           {qs.map(q => (
             <div key={q.id}>
-              {firstOfGroup.has(q.id) && group(q.id)?.instructions && (
-                <p className="text-xs font-semibold text-slate-500 bg-slate-50 rounded-lg px-3 py-2 my-2 whitespace-pre-line">{group(q.id)!.instructions}</p>
-              )}
+              {firstOfGroup.has(q.id) && <GroupIntro group={group(q.id)!} />}
+              {data.blocks?.filter(b => b.type === 'summary' && b.startId === q.id).map(b => <SummaryText key={b.startId} block={b} />)}
               <QuestionField q={q} value={answers[q.id] ?? ''} onChange={v => setA(q.id, v)} />
             </div>
           ))}
@@ -526,7 +549,18 @@ function BandDonut({ band, label, sub }: { band: number; label: string; sub?: st
   );
 }
 
-export function MockResultView({ r, studentName, studentEmail }: { r: IeltsMockResult; studentName: string; studentEmail?: string }) {
+function WritingResponse({ question, response }: { question?: string; response?: string }) {
+  if (!response) return null;
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+      {question && <><p className="text-[11px] font-black uppercase tracking-wider text-slate-400 mb-1">Question</p><p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line mb-3">{question}</p></>}
+      <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 mb-1">Your answer</p>
+      <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-line">{response}</p>
+    </div>
+  );
+}
+
+export function MockResultView({ r, attemptId, studentName, studentEmail }: { r: IeltsMockResult; attemptId?: string; studentName: string; studentEmail?: string }) {
   const [open, setOpen] = useState<'none' | 't1' | 't2'>('none');
   const [pdfLoading, setPdfLoading] = useState(false);
 
@@ -573,8 +607,10 @@ export function MockResultView({ r, studentName, studentEmail }: { r: IeltsMockR
           <button onClick={() => setOpen(open === 't2' ? 'none' : 't2')} className={`flex-1 text-sm font-bold px-3 py-2 rounded-xl border ${open === 't2' ? 'text-white border-transparent' : 'bg-white border-slate-200 text-slate-600'}`} style={open === 't2' ? { backgroundColor: CRIMSON } : undefined}>Task 2 · Band {r.writing.task2Band}</button>
         </div>
       </div>
-      {open === 't1' && <IeltsEssayResultView result={r.writing.task1} />}
-      {open === 't2' && <IeltsEssayResultView result={r.writing.task2} />}
+      {open === 't1' && <><WritingResponse question={r.writing.task1Question} response={r.writing.task1Response} /><IeltsEssayResultView result={r.writing.task1} /></>}
+      {open === 't2' && <><WritingResponse question={r.writing.task2Question} response={r.writing.task2Response} /><IeltsEssayResultView result={r.writing.task2} /></>}
+
+      {attemptId && <MockAnswerReview attemptId={attemptId} />}
 
       <div className="flex flex-wrap gap-3 justify-center">
         <button onClick={downloadPdf} disabled={pdfLoading} className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-black text-sm disabled:opacity-60" style={{ backgroundColor: '#0F172A' }}>

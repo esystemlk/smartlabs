@@ -229,7 +229,7 @@ function IeltsMockCatalogInner() {
                   </div>
                 </div>
                 {rescoreMsg?.id === item.id && <p role="status" className="mt-2 text-xs font-bold text-slate-600">{rescoreMsg.text}</p>}
-                {openResult === item.id && <div className="mt-4"><MockResultView r={item.result} studentName={user?.displayName || 'Student'} studentEmail={user?.email || undefined} /></div>}
+                {openResult === item.id && <div className="mt-4"><MockResultView r={item.result} attemptId={item.id} studentName={user?.displayName || 'Student'} studentEmail={user?.email || undefined} /></div>}
                 </div>
               ))}
             </div>

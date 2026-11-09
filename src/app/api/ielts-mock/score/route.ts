@@ -8,7 +8,7 @@ import { POST as scoreTask1 } from '@/app/api/score-ielts-task1/route';
 import { POST as scoreEssay } from '@/app/api/score-ielts-essay/route';
 import { getMock } from '@/lib/ielts-mock/mocks';
 import { getCambridge21WritingTest } from '@/lib/ielts-writing/cambridge-21';
-import { getListeningBundle, getReadingBundle, gradeTest } from '@/lib/ielts-mock/registry.server';
+import { getListeningBundle, getReadingBundle, gradeTest, savedAnswers } from '@/lib/ielts-mock/registry.server';
 import { listeningBand, academicReadingBand, writingBand, overallMockBand, bandLabel } from '@/lib/ielts-mock/bands';
 import { IeltsMockScorePDF } from '@/components/ielts/IeltsMockScorePDF';
 import { mockResultEmail } from '@/lib/email/mock-result-email';
@@ -146,7 +146,10 @@ export async function POST(request: Request) {
       overall, overallLabel: bandLabel(overall),
       listening: { band: lBand, raw: lGrade.raw, total: lGrade.total, label: mock.listening.label },
       reading: { band: rBand, raw: rGrade.raw, total: rGrade.total, label: mock.reading.label },
-      writing: { band: wBand, task1Band: t1Result.overallBand, task2Band: t2Result.overallBand, task1: t1Result, task2: t2Result, label: mock.writingLabel },
+      writing: { band: wBand, task1Band: t1Result.overallBand, task2Band: t2Result.overallBand, task1: t1Result, task2: t2Result, label: mock.writingLabel,
+        // Capped so an oversized submission cannot exceed Firestore's document limit.
+        task1Question: writing.task1.prompt, task1Response: t1Text.slice(0, 20_000),
+        task2Question: writing.task2.prompt, task2Response: t2Text.slice(0, 20_000) },
       scoredAt: new Date().toISOString(),
     };
 
@@ -155,11 +158,9 @@ export async function POST(request: Request) {
       completedAt: FieldValue.serverTimestamp(),
       overall, listeningBand: lBand, readingBand: rBand, writingBand: wBand,
       listeningRaw: lGrade.raw, readingRaw: rGrade.raw,
-      // Known question ids only: this came from the browser. Needed to re-score later.
-      listeningAnswers: Object.fromEntries(lBundle.data.questions.flatMap((q: { id: number }) => {
-        const value = listeningAnswers?.[q.id];
-        return typeof value === 'string' ? [[String(q.id), value.slice(0, 200)]] : [];
-      })),
+      // Needed to re-score and to show the student their answers later.
+      listeningAnswers: savedAnswers(lBundle, listeningAnswers),
+      readingAnswers: savedAnswers(rBundle, readingAnswers),
       writingTask1Band: t1Result.overallBand, writingTask2Band: t2Result.overallBand,
       // Full result so the student can re-view and download the PDF later.
       result,

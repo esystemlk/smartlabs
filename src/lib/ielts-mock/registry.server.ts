@@ -1,5 +1,6 @@
 import 'server-only';
 import { gradeReadingAnswer } from '@/lib/ielts-reading/grading';
+import type { MockReviewQuestion } from '@/lib/ielts-mock/types';
 
 // Listening data + answer keys
 import l21t1 from '@/lib/ielts-listening/cambridge-21-test-1.json';
@@ -45,17 +46,45 @@ const READING: Record<string, TestBundle> = {
 export function getListeningBundle(testId: string): TestBundle | undefined { return LISTENING[testId]; }
 export function getReadingBundle(testId: string): TestBundle | undefined { return READING[testId]; }
 
+type LetterOption = { letter: string; text: string };
+type GradableQuestion = { id: number; kind: string; prompt?: string; wordLimit?: number; choices?: LetterOption[] };
+
+const gradableQuestions = (bundle: TestBundle): GradableQuestion[] =>
+  bundle.data.questions.filter((q: GradableQuestion) => q.kind !== 'unavailable');
+
+function isCorrect(bundle: TestBundle, q: GradableQuestion, value: unknown): boolean {
+  const accepted = bundle.key[q.id];
+  if (!accepted || typeof value !== 'string') return false;
+  return gradeReadingAnswer(value, accepted, q.kind === 'choice' ? 2 : q.wordLimit ?? 2);
+}
+
 /** Grade a submitted answer map against a test's key. Returns raw correct / total. */
 export function gradeTest(bundle: TestBundle, answers: Record<string, unknown>): { raw: number; total: number } {
-  const gradable = bundle.data.questions.filter((q: { id: number; kind: string; wordLimit?: number }) => q.kind !== 'unavailable');
-  let raw = 0;
-  for (const q of gradable) {
-    const accepted = bundle.key[q.id];
-    if (!accepted) continue;
+  const gradable = gradableQuestions(bundle);
+  return { raw: gradable.filter(q => isCorrect(bundle, q, answers?.[q.id])).length, total: gradable.length };
+}
+
+/** Browser answers reduced to known question ids and bounded strings, safe to store. */
+export function savedAnswers(bundle: TestBundle, answers: Record<string, unknown> | undefined): Record<string, string> {
+  return Object.fromEntries(gradableQuestions(bundle).flatMap(q => {
     const value = answers?.[q.id];
-    if (typeof value !== 'string') continue;
-    const limit = q.kind === 'choice' ? 2 : q.wordLimit ?? 2;
-    if (gradeReadingAnswer(value, accepted, limit)) raw += 1;
-  }
-  return { raw, total: gradable.length };
+    return typeof value === 'string' ? [[String(q.id), value.slice(0, 200)]] : [];
+  }));
+}
+
+/** One row per question for the student's review. Includes the answer key. */
+export function reviewTest(bundle: TestBundle, answers: Record<string, unknown>): MockReviewQuestion[] {
+  const groups: Record<string, { matchOptions?: LetterOption[] }> = bundle.data.groups ?? {};
+  return gradableQuestions(bundle).map(q => {
+    const start = Math.max(...Object.keys(groups).map(Number).filter(s => s <= q.id));
+    const value = answers?.[q.id];
+    return {
+      id: q.id,
+      prompt: q.prompt ?? '',
+      given: typeof value === 'string' ? value : '',
+      correct: isCorrect(bundle, q, value),
+      accepted: bundle.key[q.id] ?? [],
+      options: q.choices ?? groups[String(start)]?.matchOptions,
+    };
+  });
 }
