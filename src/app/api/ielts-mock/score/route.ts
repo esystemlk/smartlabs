@@ -155,6 +155,11 @@ export async function POST(request: Request) {
       completedAt: FieldValue.serverTimestamp(),
       overall, listeningBand: lBand, readingBand: rBand, writingBand: wBand,
       listeningRaw: lGrade.raw, readingRaw: rGrade.raw,
+      // Known question ids only: this came from the browser. Needed to re-score later.
+      listeningAnswers: Object.fromEntries(lBundle.data.questions.flatMap((q: { id: number }) => {
+        const value = listeningAnswers?.[q.id];
+        return typeof value === 'string' ? [[String(q.id), value.slice(0, 200)]] : [];
+      })),
       writingTask1Band: t1Result.overallBand, writingTask2Band: t2Result.overallBand,
       // Full result so the student can re-view and download the PDF later.
       result,

@@ -526,7 +526,7 @@ function BandDonut({ band, label, sub }: { band: number; label: string; sub?: st
   );
 }
 
-function MockResultView({ r, studentName, studentEmail }: { r: IeltsMockResult; studentName: string; studentEmail?: string }) {
+export function MockResultView({ r, studentName, studentEmail }: { r: IeltsMockResult; studentName: string; studentEmail?: string }) {
   const [open, setOpen] = useState<'none' | 't1' | 't2'>('none');
   const [pdfLoading, setPdfLoading] = useState(false);
 

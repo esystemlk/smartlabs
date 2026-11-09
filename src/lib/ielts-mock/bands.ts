@@ -5,6 +5,7 @@
 // conversions. Writing combines Task 1 and Task 2 with Task 2 double-weighted
 // (the official method). The overall mock band is the mean of the three skill
 // bands rounded to the nearest half band — (Listening + Reading + Writing) / 3.
+import type { IeltsMockResult } from './types';
 
 /** Round a raw value to the nearest half band, clamped to 0–9. */
 export function toHalfBand(x: number): number {
@@ -51,6 +52,13 @@ export function writingBand(task1Band: number, task2Band: number): number {
 /** Overall mock band = mean of the three skill bands, rounded to nearest 0.5. */
 export function overallMockBand(listening: number, reading: number, writing: number): number {
   return toHalfBand((listening + reading + writing) / 3);
+}
+
+/** A saved result with Listening replaced; Reading and Writing bands are kept. */
+export function withListeningScore(result: IeltsMockResult, raw: number, total: number): IeltsMockResult {
+  const band = listeningBand(raw);
+  const overall = overallMockBand(band, result.reading.band, result.writing.band);
+  return { ...result, overall, overallLabel: bandLabel(overall), listening: { ...result.listening, band, raw, total } };
 }
 
 export function bandLabel(band: number): string {

@@ -9,14 +9,15 @@ import { payhereUrls } from '@/lib/payhere';
 import { IELTS_MOCKS } from '@/lib/ielts-mock/mocks';
 import { IELTS_MOCK_PACKAGES } from '@/lib/ielts-mock-packages';
 import type { IeltsMockResult } from '@/lib/ielts-mock/types';
+import { MockResultView } from '@/components/ielts/mock-runner';
 import {
   ArrowLeft, ArrowRight, Headphones, BookOpen, PenLine, Loader2, CreditCard,
-  X, Check, Clock, Ticket, FileDown, History,
+  X, Check, Clock, Ticket, FileDown, History, RefreshCw,
 } from 'lucide-react';
 
 const CRIMSON = '#dc2626';
 
-interface HistoryItem { id: string; result: IeltsMockResult; completedAt: Date | null }
+interface HistoryItem { id: string; result: IeltsMockResult; completedAt: Date | null; canRescore: boolean }
 
 function IeltsMockCatalogInner() {
   const router = useRouter();
@@ -27,6 +28,9 @@ function IeltsMockCatalogInner() {
   const [credits, setCredits] = useState<{ unlimited: boolean; remaining: number } | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [pdfBusy, setPdfBusy] = useState<string | null>(null);
+  const [openResult, setOpenResult] = useState<string | null>(null);
+  const [rescoring, setRescoring] = useState<string | null>(null);
+  const [rescoreMsg, setRescoreMsg] = useState<{ id: string; text: string } | null>(null);
   const [showBuy, setShowBuy] = useState(false);
   const [buying, setBuying] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -54,12 +58,31 @@ function IeltsMockCatalogInner() {
       const rows: HistoryItem[] = [];
       snap.forEach(d => {
         const data = d.data();
-        if (data.result) rows.push({ id: d.id, result: data.result as IeltsMockResult, completedAt: data.completedAt?.toDate?.() ?? null });
+        if (data.result) rows.push({ id: d.id, result: data.result as IeltsMockResult, completedAt: data.completedAt?.toDate?.() ?? null, canRescore: !!data.listeningAnswers });
       });
       setHistory(rows);
     } catch { /* index may be building; ignore */ }
   };
   useEffect(() => { if (user) { void load(); void loadHistory(); } /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [user, firestore]);
+
+  async function rescoreListening(item: HistoryItem) {
+    if (!user) return;
+    setRescoring(item.id); setRescoreMsg(null);
+    try {
+      const idToken = await user.getIdToken();
+      const res = await fetch('/api/ielts-mock/rescore-listening', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ attemptId: item.id }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Could not re-score Listening.');
+      const result = d.result as IeltsMockResult;
+      setHistory(h => h.map(x => x.id === item.id ? { ...x, result } : x));
+      setRescoreMsg({ id: item.id, text: result.listening.band === item.result.listening.band && result.listening.raw === item.result.listening.raw ? 'Re-scored. Your Listening score is unchanged.' : 'Re-scored. Your Listening score has been updated.' });
+    } catch (e) {
+      setRescoreMsg({ id: item.id, text: e instanceof Error ? e.message : 'Could not re-score Listening.' });
+    } finally { setRescoring(null); }
+  }
 
   async function downloadHistoryPdf(item: HistoryItem) {
     setPdfBusy(item.id);
@@ -170,7 +193,8 @@ function IeltsMockCatalogInner() {
             </div>
             <div className="space-y-2.5">
               {history.map(item => (
-                <div key={item.id} className="rounded-2xl border border-slate-200 bg-white p-3.5 flex items-center justify-between gap-3">
+                <div key={item.id} className="rounded-2xl border border-slate-200 bg-white p-3.5">
+                <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm font-black text-slate-900 truncate">{item.result.title}</p>
                     <p className="text-[12px] text-slate-500">
@@ -187,6 +211,25 @@ function IeltsMockCatalogInner() {
                       {pdfBusy === item.id ? <Loader2 size={13} className="animate-spin" /> : <FileDown size={13} />} PDF
                     </button>
                   </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                  <p className="inline-flex items-center gap-1.5 text-sm font-black text-slate-800">
+                    <Headphones size={14} style={{ color: CRIMSON }} /> Listening: Band {item.result.listening.band}
+                    <span className="font-semibold text-slate-500">· {item.result.listening.raw}/{item.result.listening.total} correct</span>
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <button onClick={() => setOpenResult(openResult === item.id ? null : item.id)} aria-expanded={openResult === item.id} className="text-xs font-black px-3 py-2 rounded-xl text-white" style={{ backgroundColor: CRIMSON }}>
+                      {openResult === item.id ? 'Hide full result' : 'View full result'}
+                    </button>
+                    {item.canRescore && (
+                      <button onClick={() => rescoreListening(item)} disabled={rescoring === item.id} className="inline-flex items-center gap-1.5 text-xs font-black px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 disabled:opacity-60">
+                        <RefreshCw size={13} className={rescoring === item.id ? 'animate-spin' : undefined} /> {rescoring === item.id ? 'Re-scoring…' : 'Re-score Listening'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {rescoreMsg?.id === item.id && <p role="status" className="mt-2 text-xs font-bold text-slate-600">{rescoreMsg.text}</p>}
+                {openResult === item.id && <div className="mt-4"><MockResultView r={item.result} studentName={user?.displayName || 'Student'} studentEmail={user?.email || undefined} /></div>}
                 </div>
               ))}
             </div>
