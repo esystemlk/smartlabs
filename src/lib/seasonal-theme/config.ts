@@ -137,7 +137,7 @@ export function selectTheme(configs: SeasonalTheme[], now: number) {
   return configs.filter(config => resolveTheme(config, now).active).sort((a, b) => Number(b.mode === 'manual') - Number(a.mode === 'manual') || b.priority - a.priority || a.id.localeCompare(b.id))[0] ?? defaultTheme;
 }
 
-const protectedPrefixes = ['/admin', '/dashboard', '/api', '/payment', '/payment-success', '/payment-cancel', '/enroll', '/mock', '/mock-tests', '/ai-essay-practice', '/ai-ielts-essay-practice', '/ai-sst-practice', '/ai-wfd-practice', '/swt-trainer', '/level-test', '/partners', '/credits', '/my-purchases', '/login', '/signup', '/forgot-password', '/welcome', '/site-status', '/sl-console-9f3k2x', '/smreg'];
+const protectedPrefixes = ['/admin', '/studio', '/dashboard', '/api', '/payment', '/payment-success', '/payment-cancel', '/enroll', '/mock', '/mock-tests', '/ai-essay-practice', '/ai-ielts-essay-practice', '/ai-sst-practice', '/ai-wfd-practice', '/swt-trainer', '/level-test', '/partners', '/credits', '/my-purchases', '/login', '/signup', '/forgot-password', '/welcome', '/site-status', '/sl-console-9f3k2x', '/smreg'];
 export const matchesPath = (pathname: string, prefix: string) => pathname === prefix || pathname.startsWith(`${prefix}/`);
 export function eligibleRoute(pathname: string, config: SeasonalTheme) {
   return !protectedPrefixes.some(prefix => matchesPath(pathname, prefix)) && !config.routes.excluded.some(prefix => prefix === '/' || matchesPath(pathname, prefix)) && (!config.routes.homeOnly || pathname === '/');

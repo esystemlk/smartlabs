@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in · IELTS Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="studio.css">
+</head>
+<body>
+<div class="auth">
+  <main class="auth-main">
+    <header><a class="wordmark" href="dashboard.html"><picture class="mark"><source srcset="assets/logo-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/logo.png" alt="IELTS Studio logo" width="256" height="256"></picture><b>IELTS Studio</b><span>by Smart Labs</span></a></header>
+
+    <form class="auth-form" action="dashboard.html" onsubmit="event.preventDefault(); location.href='dashboard.html'">
+      <h1>Welcome back</h1>
+      <p>Sign in to continue your practice. Your Smart Labs account works here too.</p>
+
+      <button type="button" class="btn secondary block" onclick="location.href='dashboard.html'">
+        <svg class="google-g" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.5l6.7-6.7C35.6 2.4 30.2 0 24 0 14.6 0 6.6 5.4 2.6 13.3l7.8 6.1C12.3 13.6 17.6 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.5 5.8c4.4-4 6.8-10 6.8-17.2z"/><path fill="#FBBC05" d="M10.4 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.8-6.1C1 16.6 0 20.2 0 24s1 7.4 2.6 10.7l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.4 2.3-6.4 0-11.7-4.1-13.6-9.9l-7.8 6.1C6.6 42.6 14.6 48 24 48z"/></svg>
+        Continue with Google
+      </button>
+
+      <div class="divider">or with email</div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+      </div>
+      <div class="field">
+        <div class="row-between"><label for="password">Password</label><a href="#" class="muted" style="font-size:13px">Forgot password?</a></div>
+        <input id="password" type="password" autocomplete="current-password" required>
+      </div>
+
+      <button class="btn block" type="submit">Sign in</button>
+
+      <p style="margin-top:24px;font-size:14px;color:var(--ink-2)">New to IELTS Studio? <a href="signup.html">Create an account</a></p>
+    </form>
+
+    <footer><span>© 2026 Smart Labs</span><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Help</a><span class="sample-note">Sample screen · not connected</span></footer>
+  </main>
+
+  <aside class="auth-aside" aria-label="About IELTS band scores">
+    <p class="label" style="margin:0 0 10px">How your work is marked</p>
+    <h2>Practise against the same 9-band scale the test uses.</h2>
+    <div class="band-scale">
+      <div><b class="num">8</b><p><strong>Very good user</strong>Handles complex language well, with only occasional slips.</p></div>
+      <div><b class="num">7</b><p><strong>Good user</strong>Copes with detailed reasoning; some mistakes in unfamiliar situations.</p></div>
+      <div><b class="num">6</b><p><strong>Competent user</strong>Generally effective, with some inaccuracies and misunderstandings.</p></div>
+      <div><b class="num">5</b><p><strong>Modest user</strong>Gets the overall meaning in most situations, with frequent errors.</p></div>
+    </div>
+    <p class="muted" style="font-size:13px;margin:18px 0 0">Full mocks give a band for Listening, Reading and Writing, and an overall average of the three.</p>
+  </aside>
+</div>
+</body>
+</html>

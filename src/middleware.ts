@@ -10,6 +10,7 @@ import {
   safeEqual,
   type SiteMode,
 } from '@/lib/site-mode';
+import { isStudioHost, STUDIO_ALLOWED_PREFIXES, STUDIO_ONLY, STUDIO_REDIRECTS } from '@/lib/studio';
 
 /**
  * Enforces the site-wide mode. Runs on the edge for every page and API
@@ -78,6 +79,28 @@ export async function middleware(req: NextRequest) {
   // Answer the preflight before any site-mode logic.
   if (isApi && req.method === 'OPTIONS') {
     return applyCors(new NextResponse(null, { status: 204 }));
+  }
+
+  // ── IELTS Studio project: no scheduled jobs ───────────────────────────────
+  // vercel.json crons ship with the code, so the separate Studio Vercel project
+  // would run them too. Both projects share one database, so the main Smart Labs
+  // project runs them alone; here they succeed without doing anything (no
+  // duplicate win-back / expiry emails).
+  if (STUDIO_ONLY && pathname.startsWith('/api/cron/')) {
+    return NextResponse.json({ ok: true, skipped: 'Scheduled jobs run on the main Smart Labs project only.' });
+  }
+
+  // ── IELTS Studio domain ───────────────────────────────────────────────────
+  // Same app on its own domain: send Smart Labs addresses to their Studio
+  // equivalents and keep visitors inside the IELTS-only area. Other hosts skip this.
+  if (isStudioHost(req.headers.get('host'))) {
+    const target = STUDIO_REDIRECTS[pathname]
+      ?? (STUDIO_ALLOWED_PREFIXES.some(p => pathname === p || pathname.startsWith(p + '/')) ? null : '/studio');
+    if (target) {
+      const url = req.nextUrl.clone();
+      url.pathname = target;
+      return applyCors(NextResponse.redirect(url));
+    }
   }
 
   if (ALWAYS_ALLOWED.some(p => pathname === p || pathname.startsWith(p + '/'))) {

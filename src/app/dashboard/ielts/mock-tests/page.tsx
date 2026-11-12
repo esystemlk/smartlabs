@@ -64,6 +64,10 @@ function IeltsMockCatalogInner() {
     } catch { /* index may be building; ignore */ }
   };
   useEffect(() => { if (user) { void load(); void loadHistory(); } /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [user, firestore]);
+  // ?buy=1 (used by IELTS Studio's "Buy credits") opens the credit packages straight away.
+  useEffect(() => { if (new URLSearchParams(window.location.search).get('buy') === '1') setShowBuy(true); }, []);
+  // History renders after it loads, so jump to #history once it exists.
+  useEffect(() => { if (history.length && window.location.hash === '#history') document.getElementById('history')?.scrollIntoView(); }, [history.length]);
 
   async function rescoreListening(item: HistoryItem) {
     if (!user) return;
@@ -186,7 +190,7 @@ function IeltsMockCatalogInner() {
 
         {/* Your results — saved to your profile */}
         {user && history.length > 0 && (
-          <div className="mt-10">
+          <div className="mt-10 scroll-mt-24" id="history">
             <div className="flex items-center gap-2 mb-3">
               <History size={16} style={{ color: CRIMSON }} />
               <h2 className="text-sm font-black uppercase tracking-wider text-slate-700">Your results</h2>

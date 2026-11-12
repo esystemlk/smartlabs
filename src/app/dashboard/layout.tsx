@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useState, useEffect, type CSSProperties } from 'react';
 import { cn } from '@/lib/utils';
 import { StudentDock, StudentMoreMenu } from '@/components/dashboard/student-dock';
+import { isStudioHost } from '@/lib/studio';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, isUserLoading } = useUser();
@@ -37,6 +38,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setSearch('');
   }, [pathname]);
 
+  // IELTS Studio domain: same IELTS pages, Studio branding and no Smart Labs (PTE) navigation.
+  const [studio, setStudio] = useState(false);
+  useEffect(() => { setStudio(isStudioHost(window.location.host)); }, []);
+
   const isDesktopClient = isElectron && !isMac;
   // Keep the floating dock out of timed IELTS tests.
   const isExam = /^\/dashboard\/ielts\/(listening|reading|writing)\/cambridge-/.test(pathname)
@@ -53,15 +58,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         '--accent-foreground': '0 0% 13%', '--ring': '358 79% 47%',
       } as CSSProperties : undefined}>
       <header className={cn('student-workspace-header', isDesktopClient && 'student-header-desktop')}>
-        <Link href="/dashboard" className="student-workspace-brand"><Image src="/logo.png" alt="SmartLabs" width={34} height={34} /><span>SmartLabs<small>Student Space</small></span></Link>
-        <div className="flex items-center gap-3">{isExam && <StudentMoreMenu pathname={pathname} onSignOut={handleLogout} includeNavigation/>}<Link href="/dashboard/settings" aria-label="Account settings"><Avatar className="h-9 w-9"><AvatarImage src={user?.photoURL ?? ''} alt=""/><AvatarFallback>{user?.displayName?.charAt(0) || user?.email?.charAt(0)}</AvatarFallback></Avatar></Link></div>
+        {studio
+          ? <Link href="/studio" className="student-workspace-brand"><Image src="/studio/logo.png" alt="" width={34} height={34} /><span>IELTS Studio<small>Back to dashboard</small></span></Link>
+          : <Link href="/dashboard" className="student-workspace-brand"><Image src="/logo.png" alt="SmartLabs" width={34} height={34} /><span>SmartLabs<small>Student Space</small></span></Link>}
+        <div className="flex items-center gap-3">{isExam && !studio && <StudentMoreMenu pathname={pathname} onSignOut={handleLogout} includeNavigation/>}<Link href={studio ? '/studio' : '/dashboard/settings'} aria-label={studio ? 'IELTS Studio dashboard' : 'Account settings'}><Avatar className="h-9 w-9"><AvatarImage src={user?.photoURL ?? ''} alt=""/><AvatarFallback>{user?.displayName?.charAt(0) || user?.email?.charAt(0)}</AvatarFallback></Avatar></Link></div>
       </header>
 
       {/* Full-width content; reserve space for the floating dock outside exams. */}
-      <main className={cn('min-h-screen', !isExam && 'student-dock-content')}>
-        <div className="p-4 sm:p-6 lg:p-8">{!isExam && <div className="student-search"><label className="sr-only" htmlFor="practice-search">Find PTE or IELTS practice</label><input id="practice-search" type="search" placeholder="Find practice: PTE writing, IELTS reading…" value={search} onChange={event=>setSearch(event.target.value)} onKeyDown={event=>{if(event.key==='Escape')setSearch('')}}/>{search.trim() && <div className="student-search-results">{searchStudentTasks(search).length ? searchStudentTasks(search).map(item=><Link key={item.href} href={item.href} onClick={()=>setSearch('')}>{item.label}<small>{item.context}</small></Link>):<p className="p-4 text-sm">No matching practice. Try an exam or skill name.</p>}</div>}</div>}<DashboardSeasonalBanner/>{children}</div>
+      <main className={cn('min-h-screen', !isExam && !studio && 'student-dock-content')}>
+        <div className="p-4 sm:p-6 lg:p-8">{!isExam && !studio && <div className="student-search"><label className="sr-only" htmlFor="practice-search">Find PTE or IELTS practice</label><input id="practice-search" type="search" placeholder="Find practice: PTE writing, IELTS reading…" value={search} onChange={event=>setSearch(event.target.value)} onKeyDown={event=>{if(event.key==='Escape')setSearch('')}}/>{search.trim() && <div className="student-search-results">{searchStudentTasks(search).length ? searchStudentTasks(search).map(item=><Link key={item.href} href={item.href} onClick={()=>setSearch('')}>{item.label}<small>{item.context}</small></Link>):<p className="p-4 text-sm">No matching practice. Try an exam or skill name.</p>}</div>}</div>}<DashboardSeasonalBanner/>{children}</div>
       </main>
-      {!isExam && <StudentDock pathname={pathname} onSignOut={handleLogout}/>}
+      {!isExam && !studio && <StudentDock pathname={pathname} onSignOut={handleLogout}/>}
     </div></DashboardSeasonalFrame>
   );
 }

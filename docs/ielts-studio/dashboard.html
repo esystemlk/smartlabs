@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard · IELTS Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="studio.css">
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <a class="wordmark" href="dashboard.html"><picture class="mark"><source srcset="assets/logo-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/logo.png" alt="IELTS Studio logo" width="256" height="256"></picture><b>IELTS Studio</b><span>by Smart Labs</span></a>
+    <nav aria-label="Main">
+      <a href="dashboard.html" aria-current="page">Dashboard</a>
+      <p>Practice</p>
+      <a href="#"><span class="nl"><picture class="ic"><source srcset="assets/listening-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/listening.png" alt="" width="256" height="256"></picture>Listening</span><small class="num">48 sets</small></a>
+      <a href="#"><span class="nl"><picture class="ic"><source srcset="assets/reading-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/reading.png" alt="" width="256" height="256"></picture>Reading</span><small class="num">36 sets</small></a>
+      <a href="#"><span class="nl"><picture class="ic"><source srcset="assets/writing-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/writing.png" alt="" width="256" height="256"></picture>Writing</span><small>Task 1 · 2</small></a>
+      <a href="#" aria-disabled="true" style="color:var(--ink-3)"><span class="nl"><picture class="ic faded"><source srcset="assets/speaking-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/speaking.png" alt="" width="256" height="256"></picture>Speaking</span><small>Soon</small></a>
+      <p>Tests</p>
+      <a href="#"><span class="nl"><picture class="ic"><source srcset="assets/mocks-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/mocks.png" alt="" width="256" height="256"></picture>Mock tests</span><small class="num">4</small></a>
+      <a href="#"><span class="nl"><picture class="ic"><source srcset="assets/results-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/results.png" alt="" width="256" height="256"></picture>Results</span></a>
+      <p>Account</p>
+      <a href="#"><span class="nl"><picture class="ic"><source srcset="assets/credits-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/credits.png" alt="" width="256" height="256"></picture>Credits &amp; purchases</span></a>
+      <a href="#">Settings</a>
+    </nav>
+    <div class="me"><div class="me-row"><picture class="me-badge" data-badge><source data-badge-dark srcset="assets/badge-paid-dark.png" media="(prefers-color-scheme: dark)"><img data-badge-img src="assets/badge-paid.png" alt="" width="256" height="256"></picture><div>Nadeesha Perera<span>Academic · target 7.0</span></div></div><a class="plan-chip" href="#" data-plan-chip>Paid plan</a></div>
+  </aside>
+
+  <div>
+    <div class="topbar">
+      <a class="wordmark" href="dashboard.html"><picture class="mark"><source srcset="assets/logo-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/logo.png" alt="IELTS Studio logo" width="256" height="256"></picture><b>IELTS Studio</b></a>
+      <span class="top-right"><picture class="top-badge" data-badge><source data-badge-dark srcset="assets/badge-paid-dark.png" media="(prefers-color-scheme: dark)"><img data-badge-img src="assets/badge-paid.png" alt="" width="256" height="256"></picture><a class="btn secondary small" href="#">Menu</a></span>
+    </div>
+
+    <main class="main">
+      <section class="greeting" aria-labelledby="hello">
+        <div>
+          <p class="date">Thursday, 12 November</p>
+          <h1 id="hello">Good morning, Nadeesha</h1>
+          <p class="plan-line"><picture class="plan-badge" data-badge><source data-badge-dark srcset="assets/badge-paid-dark.png" media="(prefers-color-scheme: dark)"><img data-badge-img src="assets/badge-paid.png" alt="" width="256" height="256"></picture><span data-plan-text>Paid plan · all 4 mock tests unlocked</span></p>
+        </div>
+        <div class="facts">
+          <div><span>Target</span><b class="num">7.0</b></div>
+          <div><span>Latest overall</span><b class="num">6.5 <small>Mock 2</small></b></div>
+          <div><span>Test day</span><b class="num">23 <small>days</small></b></div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="cont">
+        <div class="continue">
+          <div>
+            <p class="label" style="margin:0">Continue where you left off</p>
+            <h3 id="cont">IELTS Mock Test 3 · Reading</h3>
+            <p>Passage 2 of 3 · 38 of 60 minutes left · answers saved automatically</p>
+            <div class="meter" role="img" aria-label="About 40% complete"><i style="width:40%"></i></div>
+          </div>
+          <a class="btn accent" href="#">Resume mock</a>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="skills-h">
+        <div class="section-head"><h2 id="skills-h">Your skills</h2><a href="#">How bands are worked out</a></div>
+        <div class="skills">
+          <a class="skill" href="#">
+            <picture class="skill-ic"><source srcset="assets/listening-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/listening.png" alt="" width="256" height="256"></picture><h3>Listening</h3>
+            <span class="band num">7.0 <small>/ 9</small></span>
+            <p>Latest mock · 31 of 40 correct</p>
+            <p>Weakest: map &amp; diagram labelling</p>
+            <span class="go">Practise →</span>
+          </a>
+          <a class="skill" href="#">
+            <picture class="skill-ic"><source srcset="assets/reading-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/reading.png" alt="" width="256" height="256"></picture><h3>Reading</h3>
+            <span class="band num">6.5 <small>/ 9</small></span>
+            <p>Latest mock · 27 of 40 correct</p>
+            <p>Weakest: True / False / Not Given</p>
+            <span class="go">Practise →</span>
+          </a>
+          <a class="skill" href="#">
+            <picture class="skill-ic"><source srcset="assets/writing-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/writing.png" alt="" width="256" height="256"></picture><h3>Writing</h3>
+            <span class="band num">6.0 <small>/ 9</small></span>
+            <p>Task 2 essay · 4 days ago</p>
+            <p>Focus: coherence &amp; cohesion</p>
+            <span class="go">Write an essay →</span>
+          </a>
+          <div class="skill soon" aria-disabled="true">
+            <picture class="skill-ic faded"><source srcset="assets/speaking-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/speaking.png" alt="" width="256" height="256"></picture><h3>Speaking</h3>
+            <span class="band">Coming soon</span>
+            <p>Interview, cue card and discussion practice are being built.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="two section">
+        <section aria-labelledby="results-h">
+          <div class="section-head"><h2 id="results-h" class="ic-head"><picture class="ic"><source srcset="assets/results-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/results.png" alt="" width="256" height="256"></picture>Recent results</h2><a href="#">All results</a></div>
+          <table class="list">
+            <thead><tr><th scope="col">Practice</th><th scope="col" class="hide-sm">Date</th><th scope="col">Result</th><th scope="col"><span class="hide-sm">Report</span></th></tr></thead>
+            <tbody>
+              <tr><td>IELTS Mock Test 2<br><span class="muted" style="font-size:13px">L 7.0 · R 6.5 · W 6.0</span></td><td class="hide-sm num muted">8 Nov</td><td class="score num">6.5</td><td><a href="#">View</a></td></tr>
+              <tr><td>Writing Task 2 · Opinion essay</td><td class="hide-sm num muted">8 Nov</td><td class="score num">6.0</td><td><a href="#">View</a></td></tr>
+              <tr><td>Reading · Passage 3 set 12</td><td class="hide-sm num muted">6 Nov</td><td class="score num">9/13</td><td><a href="#">View</a></td></tr>
+              <tr><td>Listening · Part 4 set 7</td><td class="hide-sm num muted">5 Nov</td><td class="score num">8/10</td><td><a href="#">View</a></td></tr>
+              <tr><td>IELTS Mock Test 1<br><span class="muted" style="font-size:13px">L 6.5 · R 6.0 · W 5.5</span></td><td class="hide-sm num muted">29 Oct</td><td class="score num">6.0</td><td><a href="#">View</a></td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <div>
+          <section aria-labelledby="mocks-h">
+            <div class="section-head"><h2 id="mocks-h" class="ic-head"><picture class="ic"><source srcset="assets/mocks-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/mocks.png" alt="" width="256" height="256"></picture>Mock tests</h2><a href="#">About the mocks</a></div>
+            <div class="mocks">
+              <div class="mock"><span class="n num">1</span><div><h3>IELTS Mock Test 1</h3><p>Completed 29 Oct · overall 6.0</p></div><span class="tag ok">Done</span></div>
+              <div class="mock"><span class="n num">2</span><div><h3>IELTS Mock Test 2</h3><p>Completed 8 Nov · overall 6.5</p></div><span class="tag ok">Done</span></div>
+              <div class="mock"><span class="n num">3</span><div><h3>IELTS Mock Test 3</h3><p>In progress · Reading</p></div><a class="btn accent small" href="#">Resume</a></div>
+              <div class="mock"><span class="n num">4</span><div><h3>IELTS Mock Test 4</h3><p>Listening, Reading, Writing · about 2 h 40 min</p></div><a class="btn secondary small" href="#">Start</a></div>
+            </div>
+          </section>
+
+          <section class="panel section" aria-labelledby="credits-h" style="margin-top:28px">
+            <h3 id="credits-h" class="ic-head"><picture class="ic"><source srcset="assets/credits-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/credits.png" alt="" width="256" height="256"></picture>Credits</h3>
+            <div class="credit-row"><span>Mock test credits</span><b class="num">1</b></div>
+            <div class="credit-row"><span>Writing feedback credits</span><b class="num">6</b></div>
+            <p class="muted" style="font-size:13px;margin:10px 0 14px">Shared with your Smart Labs account.</p>
+            <a class="btn secondary small block" href="#">Buy credits</a>
+          </section>
+        </div>
+      </div>
+
+      <p class="sample-note" style="margin-top:40px">Sample screen with made-up data · not connected to the database.</p>
+    </main>
+  </div>
+</div>
+
+<nav class="tabbar" aria-label="Main">
+  <a href="dashboard.html" aria-current="page">Home</a>
+  <a href="#">Listening</a>
+  <a href="#">Reading</a>
+  <a href="#">Writing</a>
+  <a href="#">Mocks</a>
+</nav>
+<script>
+  // Sample only: open dashboard.html?plan=free to see the free account.
+  if (new URLSearchParams(location.search).get("plan") === "free") {
+    document.querySelectorAll("[data-badge-img]").forEach(i => i.src = "assets/badge-free.png");
+    document.querySelectorAll("[data-badge-dark]").forEach(s => s.srcset = "assets/badge-free-dark.png");
+    document.querySelectorAll("[data-badge]").forEach(p => p.classList.add("free"));
+    document.querySelector("[data-plan-text]").textContent = "Free plan · upgrade to unlock all 4 mock tests";
+    const chip = document.querySelector("[data-plan-chip]"); chip.textContent = "Free plan · Upgrade"; chip.classList.add("free");
+  }
+  document.querySelectorAll("[data-badge] img").forEach(i => i.alt = document.querySelector("[data-badge]").classList.contains("free") ? "Free plan" : "Paid plan");
+</script>
+</body>
+</html>

@@ -315,7 +315,7 @@ export default function Header() {
 
   // Hidden on app-style pages and on pages that render their own navigation bar
   // (AI trainers) — two stacked fixed navs block each other's taps on mobile.
-  const isSpecialLayout = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/welcome' || pathname.startsWith('/payment')
+  const isSpecialLayout = pathname.startsWith('/studio') || pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/welcome' || pathname.startsWith('/payment')
     || pathname.startsWith('/ai-essay-practice') || pathname.startsWith('/ai-sst-practice') || pathname.startsWith('/swt-trainer')
     || pathname.startsWith('/ai-wfd-practice')
     || pathname.startsWith('/mock/') || pathname === '/site-status' || pathname.startsWith(DEV_CONSOLE_PATH);
