@@ -129,7 +129,7 @@ function MockTestsInner() {
           <div className="mx-auto mb-8 max-w-5xl overflow-hidden rounded-3xl bg-slate-900 p-7 text-white md:p-9">
             <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-violet-300">Full PTE Academic · {FULL_MOCKS_LIVE.length > 1 ? `${FULL_MOCKS_LIVE.length} full mocks` : 'Mock 01'}</p>
             <h2 className="text-2xl font-semibold md:text-3xl">Your complete test-day rehearsal.</h2>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300">66 questions across all 22 task types. Speaking, Writing, Reading, and Listening with background AI assessment, a Skills Profile, and detailed lecturer review.</p>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300">{FULL_MOCKS_LIVE.length > 1 ? 'Each mock has 66+ questions' : '66 questions'} across all 22 task types. Speaking, Writing, Reading, and Listening with background AI assessment, a Skills Profile, and detailed lecturer review.</p>
             <div className="mt-6 flex flex-wrap items-center gap-5">{FULL_MOCKS_LIVE.map(n => <Link key={n} href={`/mock/full-${n}`} className="inline-flex items-center gap-2 rounded-xl bg-violet-500 px-6 py-3 text-sm font-bold hover:bg-violet-400">{FULL_MOCKS_LIVE.length > 1 ? `Full mock ${n}` : 'Prepare / resume full mock'} <ArrowRight className="h-4 w-4"/></Link>)}<span className="text-xs text-slate-400">1 mock credit · AI scoring included</span></div>
           </div>
           {/* Credits bar */}

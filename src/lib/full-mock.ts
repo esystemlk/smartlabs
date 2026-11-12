@@ -1,7 +1,7 @@
 export type FullMockNo = '1' | '2';
 export const FULL_MOCK_NOS: FullMockNo[] = ['1', '2'];
 // Mocks shown to students. Add '2' once its 66 questions and media are seeded and verified.
-export const FULL_MOCKS_LIVE: FullMockNo[] = ['1'];
+export const FULL_MOCKS_LIVE: FullMockNo[] = ['1', '2'];
 export const fullMockNo =(v: unknown): FullMockNo => FULL_MOCK_NOS.includes(v as FullMockNo) ? v as FullMockNo : '1';
 export const fullMockId = (n: FullMockNo) => `pte-full-mock-${n}`;
 // Mock 1 kept the bare uid as its session doc; later mocks get their own slot so attempts never collide.
