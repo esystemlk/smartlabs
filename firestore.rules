@@ -33,6 +33,9 @@ service cloud.firestore {
         'sstPaidCredits', 'sstFreeUsed', 'sstMonthlyExpiry',
         'mockPaidCredits', 'mockFreeUsed', 'mockMonthlyExpiry',
         'ieltsEssayPaidCredits', 'ieltsEssayFreeUsed', 'ieltsEssayMonthlyExpiry',
+        'ieltsMockPaidCredits', 'ieltsMockFreeUsed', 'ieltsMockMonthlyExpiry',
+        // IELTS Studio packages (set only by the server after payment).
+        'studioPlan', 'studioPlanExpiry',
         'bundleExpiry'
       ];
     }
