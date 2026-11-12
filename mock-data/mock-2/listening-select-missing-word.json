@@ -3,5 +3,34 @@
   "taskType": "select-missing-word",
   "storagePrefix": "select-missing-word",
   "source": "mock-2",
-  "items": []
+  "items": [
+    {
+      "id": "mock2-1",
+      "title": "Mock 2 — Select Missing Word Q1 (Lying to ourselves)",
+      "category": "mock-2",
+      "audioTextStart": "Why is lying to ourselves a problem? We need to tell ourselves the truth when we can, for the simple reason that we often pay a very high price for the short-term calm of our lies. We miss key opportunities for growth and learning. We're not very nice to be around. We develop harmful systems. And not least, the truth will out. When we don't let it emerge, it has a tendency to reveal itself through involuntary often physical symptoms. We become insomniac or impotent. An eyelid starts twitching. We acquire a stutter, and scream in our sleep and lose energy. We fall into depression. We owe it to ourselves to dare to start to confront",
+      "options": [
+        "our real nature",
+        "our lies",
+        "depression",
+        "growth and learning"
+      ],
+      "correctAnswer": "our real nature",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/select-missing-word-1.mp3"
+    },
+    {
+      "id": "mock2-2",
+      "title": "Mock 2 — Select Missing Word Q2 (Rigid systems and control)",
+      "category": "mock-2",
+      "audioTextStart": "Do you need rigid systems in place all the time? People who compulsively control everything usually do so to protect themselves and others from making mistakes or getting hurt. While having systems in place isn't a bad thing, being too rigid can also be problematic. According to NY based mental health counselor, Diane Webb, a person with over-controlling tendencies can get triggered by anxiety if even just one thing isn't in place. Instead, try to ground yourself and focus on the things that you can",
+      "options": [
+        "protect",
+        "control",
+        "avoid",
+        "intertwine"
+      ],
+      "correctAnswer": "control",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/select-missing-word-2.mp3"
+    }
+  ]
 }

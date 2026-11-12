@@ -2,5 +2,36 @@
   "section": "speaking",
   "taskType": "read-aloud",
   "source": "mock-2",
-  "items": []
+  "items": [
+    {
+      "id": "mock2-1",
+      "title": "Mock 2 — Read Aloud Q1 (Vanilla)",
+      "category": "mock-2",
+      "text": "The uniquely scented flavor of vanilla is second only to chocolate in popularity on the world's palate. It's also the second most expensive spice after saffron. But highly labor intensive cultivation methods and the plant's temperamental life cycle and propagation mean production on a global scale is struggling to keep up with the increasing demand for the product."
+    },
+    {
+      "id": "mock2-2",
+      "title": "Mock 2 — Read Aloud Q2 (Pluto)",
+      "category": "mock-2",
+      "text": "Pluto lost its official status as a planet yesterday, when the International Astronomical Union downsized the solar system from nine to eight planets. Although there had been a passionate debate at the IAU General Assembly Meeting in Prague about the definition of a planet, and whether Pluto met the specifications, the audience greeted the decision to exclude it with applause."
+    },
+    {
+      "id": "mock2-3",
+      "title": "Mock 2 — Read Aloud Q3 (Strandlopers)",
+      "category": "mock-2",
+      "text": "The speaker is a marine biologist who became interested in the Strandlopers, an ancient people who lived on the coastline, because of their connection to the sea. Their way of life intrigued him. As a child he had spent a lot of time by the sea, exploring and collecting things so he began to study them, and discovered some interesting information about their way of life, how they hunted, what tools they used, and so on."
+    },
+    {
+      "id": "mock2-4",
+      "title": "Mock 2 — Read Aloud Q4 (Russia and Europe)",
+      "category": "mock-2",
+      "text": "Long isolated from Western Europe, Russia grew up without participating in the development like the Reformation that many Russians taking pride in their unique culture find dubious value. Russia is, as a result, the most unusual member of the European family, if indeed it is European at all. The question is still open to debate, particularly among Russians themselves."
+    },
+    {
+      "id": "mock2-5",
+      "title": "Mock 2 — Read Aloud Q5 (Converting carbon dioxide into fuel)",
+      "category": "mock-2",
+      "text": "Across the globe, there is a widespread effort to explore methods for extracting carbon dioxide from the atmosphere or power plant emissions and transforming it into a valuable resource. Among the various ideas being explored, the concept of converting carbon dioxide into a stable fuel shows significant promise."
+    }
+  ]
 }

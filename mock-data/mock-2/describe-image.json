@@ -3,5 +3,41 @@
   "taskType": "describe-image",
   "storagePrefix": "describe-image",
   "source": "mock-2",
-  "items": []
+  "items": [
+    {
+      "id": "mock2-1",
+      "title": "Mock 2 — Describe Image Q1 (World air temperature map, January)",
+      "category": "mock-2",
+      "describe": "World map 'Air Temperature — Jan' showing average January air temperatures (NCEP/NCAR Reanalysis, 1959-1997 climatologies) on a colour scale from -50°C (purple/dark blue) to 35°C (dark red). The tropics and Southern Hemisphere are hottest (red, 25-35°C), with the highest temperatures over central Australia (dark red, above 30°C), southern Africa and South America, because January is southern summer. The Northern Hemisphere is much colder: Siberia, northern Canada and Greenland are dark blue (about -30 to -40°C), and the Tibetan Plateau is also very cold. Antarctica's coast is light blue. Temperatures generally fall with distance from the equator.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/describe-image-1.webp"
+    },
+    {
+      "id": "mock2-2",
+      "title": "Mock 2 — Describe Image Q2 (Life cycle of an apple tree)",
+      "category": "mock-2",
+      "describe": "Process diagram 'Life Cycle of an Apple Tree' showing a cycle of six stages connected by arrows: a mature Tree with red apples produces a white Flower; the flower develops into a green apple Fruit; the fruit is cut open to show the core; the Seeds are released; a seed grows into a Sprout with roots in soil; and the sprout grows into a new Tree, so the cycle repeats.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/describe-image-2.webp"
+    },
+    {
+      "id": "mock2-3",
+      "title": "Mock 2 — Describe Image Q3 (Share of food, beverages and tobacco in consumer spending table)",
+      "category": "mock-2",
+      "describe": "Table 'Tab. 2. Share of foods, beverages and tobacco in consumer spending' (percent, Slovak Republic, 2009-2012; source: Statistical Office of the Slovak Republic, RIAFE calculations). Food and non-alcoholic beverages: 24.2% (2009), 24.8% (2010), 24.4% (2011), 24.8% (2012). Alcoholic beverages and tobacco: 3.0%, 3.4%, 3.3%, 3.3%. Total food, beverages and tobacco: 27.2%, 28.2%, 27.7%, 28.1%. Food and non-alcoholic beverages make up by far the largest part; all shares stayed fairly stable, peaking in 2010 and 2012.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/describe-image-3.webp"
+    },
+    {
+      "id": "mock2-4",
+      "title": "Mock 2 — Describe Image Q4 (Countries with the most cat owners bar chart)",
+      "category": "mock-2",
+      "describe": "Horizontal bar chart 'Which Countries Have The Most Cat Owners?' showing the share of people who own a cat in selected countries in 2017 (Statista, source Dalia Research, n = 43,034). Russia is highest at 59%, followed by the United States 43%, Argentina 41%, Italy 40%, France 39%, Vietnam 39%, Brazil 36%, Thailand 33%, United Kingdom 32% and Germany 26%. The lowest are Turkey 19%, India 18%, China 16%, Japan 16% and South Korea, lowest at 9%.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/describe-image-4.webp"
+    },
+    {
+      "id": "mock2-5",
+      "title": "Mock 2 — Describe Image Q5 (Favourite type of movies pie chart)",
+      "category": "mock-2",
+      "describe": "Pie chart 'Favorite Type of Movies' showing survey responses from 20 people. Romance is the most popular with 6 people (30%), followed by Action with 5 (25%), Sci-Fi with 4 (20%) and Comedy with 4 (20%). Drama is the least popular with only 1 person (5%).",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/describe-image-5.webp"
+    }
+  ]
 }

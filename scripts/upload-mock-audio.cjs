@@ -10,8 +10,8 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const env = fs.readFileSync(process.argv[2], 'utf-8');
-const sa = JSON.parse(env.match(/FIREBASE_ADMIN_CONFIG=(.*)/)[1]);
+// dotenv handles quoted values (the key in .env.local is wrapped in single quotes).
+const sa =JSON.parse(require('dotenv').parse(fs.readFileSync(process.argv[2]))['FIREBASE_ADMIN_CONFIG']);
 if (!admin.apps.length) admin.initializeApp({ credential: admin.credential.cert(sa) });
 const db = admin.firestore();
 const bucket = admin.storage().bucket('smart-labs-ekk8j.firebasestorage.app');
@@ -54,8 +54,13 @@ async function uploadOne(localPath, destPrefix) {
       else imageUrl = url;
       console.log('uploaded', item.localPath, '->', url);
     }
+    // Optional second file: an image shown alongside audio (e.g. a Retell Lecture slide).
+    if (item.imagePath) {
+      imageUrl = await uploadOne(item.imagePath, storagePrefix);
+      console.log('uploaded', item.imagePath, '->', imageUrl);
+    }
     const id = `${safeId(taskType)}__${safeId(item.id)}`;
-    const { localPath, ...itemRest } = item;
+    const { localPath, imagePath, ...itemRest } = item;
     const dataItem = { ...itemRest, ...(audioUrl ? { audioUrl } : {}), ...(imageUrl ? { imageUrl } : {}) };
     const payload = {
       section,

@@ -3,5 +3,15 @@
   "taskType": "summarize-spoken-text",
   "storagePrefix": "summarize-spoken-text",
   "source": "mock-2",
-  "items": []
+  "items": [
+    {
+      "id": "mock2-1",
+      "title": "Mock 2 — Summarize Spoken Text Q1 (Nonhuman Rights Project and chimpanzees)",
+      "category": "mock-2",
+      "transcript": "We are from an organization called Nonhuman Rights Project, and we fight for legal rights of non-human animals. Drawing a line in order to enslave an autonomous and self-determining being is a violation of equality. We then searched through 80 jurisdictions. We chose the state of New York. Then we decided upon who our plaintiffs are going to be. We decided upon chimpanzees. We know the extraordinary cognitive capabilities that they have, and they also resemble the kind that human beings have. And so we chose chimpanzees, and we began to then canvass the world to find the experts in chimpanzee cognition. So now we needed to find our chimpanzee. Our chimpanzee, first we found two of them in the state of New York. Both of them would die before we could even get our suits filed. Then we found Tommy. Tommy is a chimpanzee. Tommy was a chimpanzee. We found him in that cage. We found him in a small room that was filled with cages in a larger warehouse structure on a used trailer lot in central New York. And so on the last week of December 2013, the Nonhuman Rights Project filed three suits all across the state of New York using the same common law argument. The court didn't approve our appeal because they think chimpanzees are not humans even though they have cognitive skills. We proved to the court that chimpanzees also have cognitive capabilities, and they were not hearing us.",
+      "sampleAnswer": "Our organization is called Nonhuman Rights Project. We fight for the legal rights of non-human animals, and we decided upon chimpanzees. After we found our chimpanzee, we filed three suits. However, the court didn't approve our appeal because they think chimpanzees are not humans, even if we proved to the court that chimpanzees also have cognitive capabilities.",
+      "sampleAnswerNote": "Sample answer for AI reference only — not the required exact wording. The AI should judge whether the student produced a 50-70 word summary that accurately captures the lecture's main points, not whether it matches this wording.",
+      "localPath": "C:/Users/SMART LABS/Downloads/Summarize Spoken Text ×1.mp3"
+    }
+  ]
 }

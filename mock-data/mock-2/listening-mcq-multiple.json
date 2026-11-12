@@ -3,5 +3,44 @@
   "taskType": "listening-mcq-multiple",
   "storagePrefix": "listening-mcq-multiple",
   "source": "mock-2",
-  "items": []
+  "items": [
+    {
+      "id": "mock2-1",
+      "title": "Mock 2 — Listening MCQ Multiple Q1 (The battle of the thermostat)",
+      "category": "mock-2",
+      "audioText": "A few years ago scientists determined that our thermostats are sexist—namely, that office climates had been optimized for a hypothetical roomful of 40-year-old, 150-pound men, using standards developed more than 50 years ago. And that ends up leaving a lot of women in the cold.\n\n\"It's called the battle of the thermostat, right?\" Tom Chang, a behavioral economist at the USC Marshall School of Business. He says it goes beyond comfort for women: \"It seems that it's not just a matter of comfort, but it also affects their productivity.\"\n\nChang and his colleague tested that link between temperature and performance by quizzing 543 German students on basic addition skills and word scrambles in rooms that varied from 60 to 90 degrees Fahrenheit.\n\n\"And if you went from the low 60s to the mid-70s, you saw an increase in female performance of almost 15 percent, one five not five zero, which I found remarkably large—that's much larger than I had expected.\" The effects tapered off after the mid-70s. But men, on the other hand, had a small decrease in performance—about 3 percent—as temperatures rose to the mid-70s.",
+      "question": "What can be inferred from this passage?",
+      "options": [
+        "When the temperature rose to the mid 70s, men's body temperature would increase.",
+        "Office thermostats were set according to standards established more than 50 years ago.",
+        "Rising temperatures made women less productive.",
+        "For women, the standardized thermostat in the office can be uncomfortable.",
+        "Rising office temperatures can boost men's productivity dramatically."
+      ],
+      "correctAnswers": [
+        "Office thermostats were set according to standards established more than 50 years ago.",
+        "For women, the standardized thermostat in the office can be uncomfortable."
+      ],
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/listening-mcq-multiple-1.mp3"
+    },
+    {
+      "id": "mock2-2",
+      "title": "Mock 2 — Listening MCQ Multiple Q2 (Paper mills self-rescue)",
+      "category": "mock-2",
+      "audioText": "Paper mills had the worst of it for years as newspapers reduced pagination, went wholly digital or shut for good. The papers were able to hammer down the cost of newsprint from firms fighting for business as demand declined. Price-taking paper mills suffered in silence. Many hesitated to shut massive machines costing hundreds of millions of dollars. That hesitance has disappeared; mills are taking out newsprint capacity and diversifying. Norske Skog, a Norwegian pulp and paper firm, said in June it would close its 66-year-old Tasman Mill in New Zealand, for example. Many mills are converting machines to make packaging for e-commerce. UPM, a Finnish firm, announced this year the sale of its Shotton newsprint mill in Wales to a Turkish maker of containerboard and packaging. For JCS Volga, a Russian mill, newsprint used to account for 70% of production; now half of what it makes is packaging.",
+      "question": "According to the speaker, which of the options below are right?",
+      "options": [
+        "The lower paper price brings higher sales volumes to paper mills.",
+        "Many paper mill bosses are still hesitant about turning the machines off.",
+        "Paper mills are now reducing the newsprint production.",
+        "Many paper mills have started to use machines to make packaging.",
+        "Governments will take over the paper mills that have gone bankrupt."
+      ],
+      "correctAnswers": [
+        "Paper mills are now reducing the newsprint production.",
+        "Many paper mills have started to use machines to make packaging."
+      ],
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/listening-mcq-multiple-2.mp3"
+    }
+  ]
 }

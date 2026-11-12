@@ -3,5 +3,58 @@
   "taskType": "highlight-correct-summary",
   "storagePrefix": "highlight-correct-summary",
   "source": "mock-2",
-  "items": []
+  "items": [
+    {
+      "id": "mock2-1",
+      "title": "Mock 2 — Highlight Correct Summary Q1 (Too many choices and satisfaction)",
+      "category": "mock-2",
+      "audioText": "So I spent an hour trying on all these damn jeans, and I walked out of the store. Truth! With the best-fitting jeans I had ever had. I did better. All this choice made it possible for me to do better. But I felt worse. The reason I felt worse is that with all of these options available, my expectations about how good a pair of jeans should be went up. I had very low, I had no particular expectations when they only came in one flavor. When they came in 100 flavors, damn it, one of them should've been perfect. And what I got was good, but it wasn't perfect. And so I compared what I got to what I expected, and what I got was disappointing in comparison to what I expected. Adding options to people's lives can't help but increase the expectations people have about how good those options will be. And what that's going to produce is less satisfaction with results, even when they're good results.",
+      "summaries": [
+        {
+          "id": "sum1",
+          "text": "When people have more options, they will have a higher expectation, and tend to feel less satisfied with results, even when they're good results."
+        },
+        {
+          "id": "sum2",
+          "text": "People need to make many choices when buying a good pair of jeans, so making more choices can make it possible for people to do better."
+        },
+        {
+          "id": "sum3",
+          "text": "If people get a good thing, they will think that it is not perfect, and then they will feel disappointed in the choice that they've made."
+        },
+        {
+          "id": "sum4",
+          "text": "People often feel more satisfied with more options, as adding options to their lives can increase the expectations, so they often get good results from them."
+        }
+      ],
+      "correctSummaryId": "sum1",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/highlight-correct-summary-1.mp3"
+    },
+    {
+      "id": "mock2-2",
+      "title": "Mock 2 — Highlight Correct Summary Q2 (Education vs. skills development)",
+      "category": "mock-2",
+      "audioText": "I actually think we oftentimes confused skills and skills development with education. An education is actually designed to actually encourage the individual to consider questions they hadn't considered before, to actually be able to assemble a vast array of information and then to synthesize that information and to come up with perhaps what one would think of as new answers. It's not about learning the most recent technique. And the challenge is that if you only talk about skills development the way knowledge is produced these days a generation is 18 months. And so that means by the time you've actually finished school oftentimes you're already behind the curve and some of that information is obsolete. If you're really truly educated you then learn and you know how to go about pursuing the new acquisition of information and that information that you can then synthesize and apply to what you already know means then that you're not behind the curve, you're keeping pace with the change that's always occurring in both technology and other aspects of American life.",
+      "summaries": [
+        {
+          "id": "sum1",
+          "text": "When students want to acquire new knowledge, they need to use the most recent technique. They also have to forget what they have already learned, in order not to let the former memories mess with new information."
+        },
+        {
+          "id": "sum2",
+          "text": "Many changes have occurred in technology and other aspects of American life. We need to study in order to keep up with the changes. Even when we graduate from schools, we still have to keep studying."
+        },
+        {
+          "id": "sum3",
+          "text": "Education is not about learning the most recent technique, but is to encourage people to synthesize the information they've learned and come up with their own answers. Otherwise you may be behind the curve of new information."
+        },
+        {
+          "id": "sum4",
+          "text": "If you're already behind the curve, you need to study harder to get more information or knowledge. Developing certain study skills can help you with that, especially when you are under 18 years old."
+        }
+      ],
+      "correctSummaryId": "sum3",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/highlight-correct-summary-2.mp3"
+    }
+  ]
 }

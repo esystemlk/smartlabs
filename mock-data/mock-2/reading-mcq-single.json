@@ -2,5 +2,34 @@
   "section": "reading",
   "taskType": "reading-mcq-single",
   "source": "mock-2",
-  "items": []
+  "items": [
+    {
+      "id": "mock2-1",
+      "title": "Mock 2 — Reading MCQ Single Q1 (Dual-Mode Vehicle in Japan)",
+      "category": "mock-2",
+      "passage": "Japan recently unveiled the world's first Dual-Mode Vehicle (DMV), a contraption that runs both on roads, like a bus, and on rails, like a train. The mini-bus-like contraption didn't win anyone over with its looks, but it definitely made an impression in terms of practicality. It runs with normal rubber tires on the road, but when it needs to switch to train mode, a pair of metal wheels drop down from the vehicle's underbelly. The front tires are lifted off of the track, while the rear wheels stay down to propel the vehicle. Switching between road and train modes takes only about 15 seconds.",
+      "question": "According to this passage, we can know that ___.",
+      "options": [
+        "People think DMV is pragmatic.",
+        "People like DMV's appearance.",
+        "DMV can work as a plane.",
+        "DMV needs 15 seconds to start the engine."
+      ],
+      "correctAnswer": "People think DMV is pragmatic."
+    },
+    {
+      "id": "mock2-2",
+      "title": "Mock 2 — Reading MCQ Single Q2 (Poverty and stress in teens)",
+      "category": "mock-2",
+      "passage": "Teens who have lived in poverty experience physical signs of stress at higher levels than those in more economically secure families. In an ongoing longitudinal study, researchers tested the saliva of 229 17-year-olds, many of whom had lived at or below the poverty level between the ages 10 and 16, for their levels of cortisol — a hormone in the blood. It is one of the commonest metrics for measuring stress. It showed that poverty in children has resulted in stress. Also, researchers examined cortisol levels after participants experienced a social stressor and their cortisol levels typically increase following stress.",
+      "question": "The author develops the passage mainly by ___.",
+      "options": [
+        "providing typical examples.",
+        "following natural time order.",
+        "presenting conclusion and supporting evidence.",
+        "comparing opinions from different sides."
+      ],
+      "correctAnswer": "presenting conclusion and supporting evidence."
+    }
+  ]
 }

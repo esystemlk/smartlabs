@@ -31,8 +31,9 @@ const promptOf = q => ['passage', 'topic', 'transcript', 'text', 'question', 'si
       if (!isDeepStrictEqual(d[key], value)) issues.push(`${q.id}: ${key} mismatch`);
     }
     for (const [key, value] of Object.entries(q.item)) {
-      if (key !== 'localPath' && !isDeepStrictEqual(d.data?.[key], value)) issues.push(`${q.id}: data.${key} mismatch`);
+      if (key !== 'localPath' && key !== 'imagePath' && !isDeepStrictEqual(d.data?.[key], value)) issues.push(`${q.id}: data.${key} mismatch`);
     }
+    if (q.item.imagePath && !d.imageUrl) issues.push(`${q.id}: missing imageUrl for imagePath`);
     if (q.item.localPath) {
       const key = /\.(mp3|wav|m4a|ogg)$/i.test(q.item.localPath) ? 'audioUrl' : 'imageUrl';
       if (!d[key] || d.data?.[key] !== d[key]) { issues.push(`${q.id}: missing/inconsistent ${key}`); continue; }

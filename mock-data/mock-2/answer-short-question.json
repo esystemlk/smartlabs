@@ -3,5 +3,38 @@
   "taskType": "answer-short-question",
   "storagePrefix": "answer-short-question",
   "source": "mock-2",
-  "items": []
+  "items": [
+    {
+      "id": "mock2-1",
+      "title": "Mock 2 — Answer Short Question Q1",
+      "category": "mock-2",
+      "question": "What do we call a 12-month accounting period used by governments, companies, and organizations for financial reporting and budgeting purposes?",
+      "answer": "Fiscal year / financial year",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/answer-short-question-1.mp3"
+    },
+    {
+      "id": "mock2-2",
+      "title": "Mock 2 — Answer Short Question Q2",
+      "category": "mock-2",
+      "question": "If a person is not telling the truth, then what is he or she telling?",
+      "answer": "Lie / lies",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/answer-short-question-2.mp3"
+    },
+    {
+      "id": "mock2-3",
+      "title": "Mock 2 — Answer Short Question Q3",
+      "category": "mock-2",
+      "question": "What is the color of the medal that an athlete at the third place gets in the Olympics?",
+      "answer": "Bronze",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/answer-short-question-3.mp3"
+    },
+    {
+      "id": "mock2-4",
+      "title": "Mock 2 — Answer Short Question Q4",
+      "category": "mock-2",
+      "question": "What is the quickest way to get from the first floor to the 25th floor in a building?",
+      "answer": "Lift / Elevator",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/answer-short-question-4.mp3"
+    }
+  ]
 }

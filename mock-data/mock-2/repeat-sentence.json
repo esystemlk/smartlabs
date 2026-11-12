@@ -3,5 +3,76 @@
   "taskType": "repeat-sentence",
   "storagePrefix": "repeat-sentence",
   "source": "mock-2",
-  "items": []
+  "items": [
+    {
+      "id": "mock2-1",
+      "title": "Mock 2 — Repeat Sentence Q1",
+      "category": "mock-2",
+      "text": "All essays and seminar papers submitted must be emailed to your tutor.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/repeat-sentence-1.mp3"
+    },
+    {
+      "id": "mock2-2",
+      "title": "Mock 2 — Repeat Sentence Q2",
+      "category": "mock-2",
+      "text": "Answering such a complex question with a simple yes or no is absolutely impossible.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/repeat-sentence-2.mp3"
+    },
+    {
+      "id": "mock2-3",
+      "title": "Mock 2 — Repeat Sentence Q3",
+      "category": "mock-2",
+      "text": "Even with a permit, finding a parking spot on campus is still impossible.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/repeat-sentence-3.mp3"
+    },
+    {
+      "id": "mock2-4",
+      "title": "Mock 2 — Repeat Sentence Q4",
+      "category": "mock-2",
+      "text": "Our class is divided into two groups. You come with me, the others stay here.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/repeat-sentence-4.mp3"
+    },
+    {
+      "id": "mock2-5",
+      "title": "Mock 2 — Repeat Sentence Q5",
+      "category": "mock-2",
+      "text": "Hypothetically, insufficient mastery in the area slows future progress.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/repeat-sentence-5.mp3"
+    },
+    {
+      "id": "mock2-6",
+      "title": "Mock 2 — Repeat Sentence Q6",
+      "category": "mock-2",
+      "text": "What distinguishes him from others is his dramatic use of black-and-white photography.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/repeat-sentence-6.mp3"
+    },
+    {
+      "id": "mock2-7",
+      "title": "Mock 2 — Repeat Sentence Q7",
+      "category": "mock-2",
+      "text": "I think your watch is fast. You need to reset it.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/repeat-sentence-7.mp3"
+    },
+    {
+      "id": "mock2-8",
+      "title": "Mock 2 — Repeat Sentence Q8",
+      "category": "mock-2",
+      "text": "Every student has their own computer.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/repeat-sentence-8.mp3"
+    },
+    {
+      "id": "mock2-9",
+      "title": "Mock 2 — Repeat Sentence Q9",
+      "category": "mock-2",
+      "text": "The student must attend the safety courses and wear protective goggles before entering the laboratory.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/repeat-sentence-9.mp3"
+    },
+    {
+      "id": "mock2-10",
+      "title": "Mock 2 — Repeat Sentence Q10",
+      "category": "mock-2",
+      "text": "The train will not stop at the southern station due to the construction.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/repeat-sentence-10.mp3"
+    }
+  ]
 }

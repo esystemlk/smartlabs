@@ -3,5 +3,34 @@
   "taskType": "listening-fill-blanks",
   "storagePrefix": "listening-fill-blanks",
   "source": "mock-2",
-  "items": []
+  "items": [
+    {
+      "id": "mock2-1",
+      "title": "Mock 2 — Listening Fill in the Blanks Q1 (Central pattern generator)",
+      "category": "mock-2",
+      "audioText": "In animals, a movement is coordinated by a cluster of neurons in the spinal cord called the central contract pattern generator (CPG). This produces signals that drive muscles to contract rhythmically in a way that produces running or walking, depending on the pattern of pulse. A simple signal from the brain instructs the CPG to switch between modes such as going from a standstill to walking.",
+      "transcript": "In animals, a movement is coordinated by a cluster of neurons in the spinal cord called the central contract pattern generator (CPG). This produces signals that drive muscles to {BLANK} rhythmically in a way that produces running or walking, depending on the {BLANK} of pulse. A simple signal from the brain instructs the CPG to switch between {BLANK} such as going from a standstill to walking.",
+      "correctWords": [
+        "contract",
+        "pattern",
+        "modes"
+      ],
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/listening-fill-blanks-1.mp3"
+    },
+    {
+      "id": "mock2-2",
+      "title": "Mock 2 — Listening Fill in the Blanks Q2 (Student responsibility)",
+      "category": "mock-2",
+      "audioText": "At school, the students understood that responsibilities can help build strong communities. The teacher reminded them that integrity means keeping promises even in small matters. One day, they made a discovery of ancient words in a library book, which inspired the whole class. They realized that honest actions together with shared responsibilities can shape a brighter future.",
+      "transcript": "At school, the students understood that {BLANK} can help build strong {BLANK}. The teacher reminded them that {BLANK} means keeping promises even in small matters. One day, they made a {BLANK} of ancient {BLANK} in a library book, which inspired the whole class. They realized that honest actions together with shared responsibilities can shape a brighter future.",
+      "correctWords": [
+        "responsibilities",
+        "communities",
+        "integrity",
+        "discovery",
+        "words"
+      ],
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/listening-fill-blanks-2.mp3"
+    }
+  ]
 }

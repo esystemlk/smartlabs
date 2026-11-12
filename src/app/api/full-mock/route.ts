@@ -6,7 +6,7 @@ import { verifyAuthed } from '@/lib/api-auth';
 import { getMockCredits } from '@/lib/mock-credits';
 import { FREE_MOCK_LIMIT } from '@/lib/mock-packages';
 import { FULL_BANKS } from '@/lib/full-mock-bank';
-import { fullMockNo, fullMockId, fullMockSessionId, attemptMockNo, FULL_TASKS, PARTS, aggregateFullScores, speakingTask, type FullAttempt, type FullAnswer } from '@/lib/full-mock';
+import { fullMockNo, fullMockId, fullMockSessionId, attemptMockNo, FULL_MOCKS_LIVE, FULL_TASKS, PARTS, aggregateFullScores, speakingTask, type FullAttempt, type FullAnswer } from '@/lib/full-mock';
 import { scoreFullQuestion } from '@/lib/full-mock-scoring';
 import { hasMockAiKey } from '@/lib/mock-ai-context';
 
@@ -68,6 +68,20 @@ function studentQuestion(source: Record<string, any>, type: string) {
   if (type === 'reorder-paragraphs') result.paragraphs = d.paragraphs.map((text: string,i: number) => ({ id:d.paragraphIds[i],text })).sort((a: any,b: any)=>a.id.localeCompare(b.id));
   return result;
 }
+// Staff test mode: the correct answer for a question, built server-side so the key never reaches the browser.
+// Speaking tasks have no recording, so they are scored as skipped.
+function autoAnswer(type: string, d: Record<string, any>): FullAnswer {
+  if (type === 'rw-fill-blanks') return d.blanks.map((b: any) => b.correctAnswer);
+  if (type === 'fill-blanks' || type === 'listening-fill-blanks') return d.correctWords;
+  if (type === 'reorder-paragraphs') return d.paragraphIds;
+  if (type === 'mcq-multiple' || type === 'listening-mcq-multiple') return d.correctAnswers;
+  if (type === 'highlight-incorrect-words') return d.transcript.map((w: string, i: number) => d.incorrectWords.includes(w) ? i : -1).filter((n: number) => n >= 0);
+  if (type === 'write-from-dictation') return d.text;
+  if (type === 'swt' || type === 'summarize-spoken-text') return d.sampleAnswer || 'Admin test answer.';
+  if (type === 'write-essay') return 'This is an automatically filled staff test essay used only to check that the mock runs from start to finish.';
+  if (speakingTask(type)) return '';
+  return String(d.correctSummaryId ?? d.correctAnswer ?? '');
+}
 async function state(id: string, canReview: boolean) {
   const ref = attempts().doc(id);
   const a = await adminDb!.runTransaction(async tx => {
@@ -117,7 +131,9 @@ export async function GET(req: Request) {
       getMockCredits(auth.uid), adminDb!.collection('pte_full_mock_sessions').doc(fullMockSessionId(auth.uid,mock)).get(),
       attempts().where('userId','==',auth.uid).get(),
     ]);
-    return NextResponse.json({ credits, aiReady:aiReady(), attemptId:slot.data()?.attemptId || null, tasks:FULL_TASKS, parts:PARTS,
+    // Mocks may hold different numbers of each task type; show this mock's real counts.
+    const tasks = FULL_TASKS.map(t => ({ ...t, count: FULL_BANKS[mock].filter(q => q.type === t.type).length }));
+    return NextResponse.json({ credits, aiReady:aiReady(), attemptId:slot.data()?.attemptId || null, tasks, total:FULL_BANKS[mock].length, parts:PARTS, staff:['admin','developer','teacher'].includes(auth.role),
       history: history.docs.filter(d => attemptMockNo(d.data().mockId) === mock).map(d => ({ id:d.id, status:d.data().status, createdAt:d.data().createdAt, results:d.data().results || null })).sort((a,b)=>b.createdAt-a.createdAt).slice(0,20) });
   } catch(e) { return failure(e); }
 }
@@ -151,9 +167,11 @@ export async function POST(req: Request) {
       // Validate all source documents BEFORE any debit. No guessed media URLs or partial exams.
       const mock = fullMockNo(body.mock);
       const FULL_BANK = FULL_BANKS[mock];
-      if (FULL_BANK.length !== 66) throw new ExamError(`Mock ${mock} is not ready yet. No mock credit has been used.`,409);
+      // Counts per type can differ between mocks, but every task type must be present. Unreleased mocks are staff-only (for testing).
+      const staff = ['admin','developer','teacher'].includes(role);
+      if ((!FULL_MOCKS_LIVE.includes(mock) && !staff) || FULL_TASKS.some(t => !FULL_BANK.some(q => q.type === t.type))) throw new ExamError(`Mock ${mock} is not ready yet. No mock credit has been used.`,409);
       const docs = await adminDb!.getAll(...FULL_BANK.map(q => adminDb!.collection('pte_questions').doc(q.id)));
-      const problems = docs.filter((d,i) => !d.exists || d.data()?.taskType !== FULL_BANK[i].type || !d.data()?.data || ('localPath' in FULL_BANK[i].item && !d.data()?.audioUrl && !d.data()?.imageUrl));
+      const problems = docs.filter((d,i) => !d.exists || d.data()?.taskType !== FULL_BANK[i].type || !d.data()?.data || ('localPath' in FULL_BANK[i].item && !d.data()?.audioUrl && !d.data()?.imageUrl) || ('imagePath' in FULL_BANK[i].item && !d.data()?.imageUrl));
       if (problems.length) throw new ExamError(`Mock ${mock} is not ready: some question documents or media are missing. Please contact Smart Labs.`,409);
       const newRef = attempts().doc();
       const session = adminDb!.collection('pte_full_mock_sessions').doc(fullMockSessionId(uid,mock));
@@ -238,7 +256,8 @@ export async function POST(req: Request) {
       await attempts().doc(id).update({results,status:'scored',scoredAt:Date.now()});
       return NextResponse.json({...await state(id,true),ready:true,canAnnotate:['admin','developer','teacher'].includes(role)});
     }
-    if (!['save','play','respond'].includes(body.action)) throw new ExamError('Unknown exam action.');
+    if (!['save','play','respond','autofill'].includes(body.action)) throw new ExamError('Unknown exam action.');
+    if (body.action === 'autofill' && !['admin','developer','teacher'].includes(role)) throw new ExamError('Staff access is required.',403);
     const index = body.index;
     if (!Number.isInteger(index) || index<0 || index>=a.questions.length) throw new ExamError('Invalid question index.');
     if (body.action === 'save' && !(typeof body.answer === 'string' && body.answer.length<20000 || Array.isArray(body.answer) && body.answer.length<250 && body.answer.every((v: unknown) => typeof v === 'string' && v.length<2000 || typeof v === 'number' && Number.isInteger(v)))) throw new ExamError('Invalid answer.');
@@ -258,6 +277,9 @@ export async function POST(req: Request) {
           tx.update(rowRef,{responseStartsAt:startsAt});
           latest.questionEndsAt = Math.min(latest.partEndsAt,startsAt+spec.respond*1000);
         }
+      } else if (body.action === 'autofill') {
+        tx.update(rowRef,{answer:autoAnswer(latest.questions[index].type,row.data()?.source?.data || {}),savedAt:now,autofilledBy:uid});
+        next(latest,now);
       } else if (body.action === 'play') {
         if (!row.data()?.source?.audioUrl || row.data()?.played) return;
         tx.update(rowRef,{played:true});

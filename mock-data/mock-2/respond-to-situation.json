@@ -3,5 +3,33 @@
   "taskType": "respond-to-situation",
   "storagePrefix": "respond-to-situation",
   "source": "mock-2",
-  "items": []
+  "items": [
+    {
+      "id": "mock2-1",
+      "title": "Mock 2 — Respond to a Situation Q1 (Academic conference invitation)",
+      "category": "mock-2",
+      "situation": "Your tutor invites you to attend an academic conference. However, you are unsure what preparations you should make and whether this opportunity will contribute to your future academic development. What will you say to your tutor?",
+      "sampleAnswer": "Hi! I would like to discuss an issue that I have encountered with the academic conference. The background is that I am unsure what preparations I should make for the conference and whether it will contribute to my future academic development. In this situation, what I can think of is to ask for preparation advice. Besides, another thing that comes to my mind is to check its value for my study.",
+      "sampleAnswerNote": "This is a SAMPLE answer for the AI's reference only, not the expected/required student response. Students will phrase their own answer differently; the AI should judge whether the student achieved the communication goal of the situation, not whether they match this wording.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/respond-to-situation-1.mp3"
+    },
+    {
+      "id": "mock2-2",
+      "title": "Mock 2 — Respond to a Situation Q2 (Declining a party invitation)",
+      "category": "mock-2",
+      "situation": "You are in the library studying for a very important exam. Your classmate invites you to a party this weekend, but you really need to focus on your studies. You want to politely decline their invitation without hurting their feelings. What would you say?",
+      "sampleAnswer": "Hi! I would like to discuss an issue we have encountered with your invitation to the party this weekend. The background is that I am in the library studying for a very important exam. You invite me to a party this weekend, but I really need to focus on my studies. In the situation, what I can think of is to thank you for inviting me. Besides, another thing that comes to my mind is to join you next time.",
+      "sampleAnswerNote": "This is a SAMPLE answer for the AI's reference only, not the expected/required student response. Students will phrase their own answer differently; the AI should judge whether the student achieved the communication goal of the situation, not whether they match this wording.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/respond-to-situation-2.mp3"
+    },
+    {
+      "id": "mock2-3",
+      "title": "Mock 2 — Respond to a Situation Q3 (Spa day not as advertised)",
+      "category": "mock-2",
+      "situation": "You book a spa day based on glowing reviews and a wide range of services listed online. When you arrive, half the services are unavailable, and the facilities are not as advertised. How do you address this with the spa manager?",
+      "sampleAnswer": "Hi! I would like to discuss an issue we have encountered with the spa services. The background is that I book a spa day based on glowing reviews and a wide range of services listed online. When I arrive, half the services are unavailable, and the facilities are not as advertised. In the situation, what I can think of is to ask for an explanation about the service. Besides, another thing that comes to my mind is to request a partial refund.",
+      "sampleAnswerNote": "This is a SAMPLE answer for the AI's reference only, not the expected/required student response. Students will phrase their own answer differently; the AI should judge whether the student achieved the communication goal of the situation, not whether they match this wording.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/respond-to-situation-3.mp3"
+    }
+  ]
 }

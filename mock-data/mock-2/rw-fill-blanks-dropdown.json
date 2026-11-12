@@ -108,6 +108,160 @@
           "correctAnswer": "possible"
         }
       ]
+    },
+    {
+      "id": "mock2-3",
+      "title": "Mock 2 — Reading Fill in the Blanks (Dropdown) Q3 (Music lessons and IQ)",
+      "category": "mock-2",
+      "passage": "Researchers have debunked the much-publicised idea, known as the Mozart effect, that listening to classical music improves children's ability to reason about spatial relations and other nonverbal tasks. Learning to play a musical instrument or to sing, {1}, may indeed give youngsters an intellectual edge over their peers, a new {2} suggests. Six-year-olds who took weekly piano or singing lessons throughout the school year {3} an average IQ increase of 7.0 points, says psychologist E. Glenn Schellenberg of the University of Toronto at Mississauga. Other 6-year-olds who {4} took weekly drama lessons or received no extracurricular lessons displayed an average IQ rise of 4.3 points, Schellenberg reports in the August Psychological Science.",
+      "blanks": [
+        {
+          "id": "1",
+          "options": [
+            "thus",
+            "besides",
+            "however",
+            "instead"
+          ],
+          "correctAnswer": "however"
+        },
+        {
+          "id": "2",
+          "options": [
+            "argument",
+            "result",
+            "study",
+            "report"
+          ],
+          "correctAnswer": "study"
+        },
+        {
+          "id": "3",
+          "options": [
+            "exhibiting",
+            "exhibited",
+            "would exhibit",
+            "has exhibited"
+          ],
+          "correctAnswer": "exhibited"
+        },
+        {
+          "id": "4",
+          "options": [
+            "neither",
+            "as well as",
+            "either",
+            "both"
+          ],
+          "correctAnswer": "either"
+        }
+      ]
+    },
+    {
+      "id": "mock2-4",
+      "title": "Mock 2 — Reading Fill in the Blanks (Dropdown) Q4 (Sleepwalking)",
+      "category": "mock-2",
+      "passage": "Sleepwalking is a disorder that occurs during sleep, in which a person may get up and walk around. It usually happens at {1} times of the night, especially during the deeper stages of sleep. People who sleepwalk are not aware of their actions and often do not remember {2} they have done when they wake up. Sleepwalking is more {3} in children than in adults, and many children grow out of it over time. Sleepwalking is not the only type of unusual sleep behavior. {4} include sleep talking, nightmares, and night terrors.",
+      "blanks": [
+        {
+          "id": "1",
+          "options": [
+            "other",
+            "certain",
+            "some",
+            "few"
+          ],
+          "correctAnswer": "certain"
+        },
+        {
+          "id": "2",
+          "options": [
+            "where",
+            "when",
+            "what",
+            "how"
+          ],
+          "correctAnswer": "what"
+        },
+        {
+          "id": "3",
+          "options": [
+            "visible",
+            "rare",
+            "absurd",
+            "common"
+          ],
+          "correctAnswer": "common"
+        },
+        {
+          "id": "4",
+          "options": [
+            "The other",
+            "Another",
+            "Other",
+            "Others"
+          ],
+          "correctAnswer": "Others"
+        }
+      ]
+    },
+    {
+      "id": "mock2-5",
+      "title": "Mock 2 — Reading Fill in the Blanks (Dropdown) Q5 (The Brain Bus)",
+      "category": "mock-2",
+      "passage": "Why does the smell of cut grass remind you of summer? How can you measure your nerve endings with a paper fastener? And how can you create the sound of church bells with just a serving spoon and a piece of string ...? These {1} questions and more will be revealed by University of Manchester scientists when they take to the road on their 'Brain Bus'. The bus is taking hands-on {2} to test the senses to the suburbs, to show young and old alike how the brain works and how science can answer some of life's most captivating questions. Organizer Dr Stuart Allan, lecturer at the Faculty of Life Sciences, explains: \"Three-year-olds and upwards can understand the senses and it's an area that is {3} to all ages.\" It takes effort to get out of bed on a Saturday morning and go to the Museum. We are bringing science to your doorstep and going further afield this year in the hope of finding new and different {4}. \"We want people to see that science is interesting as well as important in our lives, and to {5} people who may not consider it possible to go to University.\"",
+      "blanks": [
+        {
+          "id": "1",
+          "options": [
+            "fascinating",
+            "unattended",
+            "gratuitous",
+            "underlying"
+          ],
+          "correctAnswer": "fascinating"
+        },
+        {
+          "id": "2",
+          "options": [
+            "activities",
+            "images",
+            "facets",
+            "revenues"
+          ],
+          "correctAnswer": "activities"
+        },
+        {
+          "id": "3",
+          "options": [
+            "misleading",
+            "disproportionate",
+            "intriguing",
+            "proximal"
+          ],
+          "correctAnswer": "intriguing"
+        },
+        {
+          "id": "4",
+          "options": [
+            "groups",
+            "mobs",
+            "auditors",
+            "audiences"
+          ],
+          "correctAnswer": "audiences"
+        },
+        {
+          "id": "5",
+          "options": [
+            "force",
+            "plead",
+            "credit",
+            "encourage"
+          ],
+          "correctAnswer": "encourage"
+        }
+      ]
     }
   ]
 }

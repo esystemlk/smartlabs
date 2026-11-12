@@ -2,5 +2,103 @@
   "section": "reading",
   "taskType": "fill-blanks",
   "source": "mock-2",
-  "items": []
+  "items": [
+    {
+      "id": "mock2-1",
+      "title": "Mock 2 — Fill in the Blanks Drag & Drop Q1 (British Isles and the sunken continent)",
+      "category": "mock-2",
+      "passage": "The passage is about the separation of the British Isles from the continent. A continent once bordered with Britain has sunk, but not many people {BLANK} that Britain is a relatively recent {BLANK}. Scientists have been able to {BLANK} this ancient continent with the help of modern technologies. However, no archaeological {BLANK} has ever been found to fully support this claim, leaving the mystery unresolved.",
+      "correctWords": [
+        "realize",
+        "entity",
+        "reconstruct",
+        "evidence"
+      ],
+      "extraWords": [
+        "suggest",
+        "dissolve",
+        "country",
+        "provision",
+        "reordering"
+      ]
+    },
+    {
+      "id": "mock2-2",
+      "title": "Mock 2 — Fill in the Blanks Drag & Drop Q2 (Childcare and maternal employment)",
+      "category": "mock-2",
+      "passage": "Affordable early years education and childcare potentially enables parents, particularly mothers, to be in paid employment. International studies have found that countries with greater enrolment rates in publicly funded or provided childcare also have higher maternal employment rates, {BLANK} untangling causal relationships is complex. From the point of view of the household, additional income, especially for the less well-off, is itself associated with better outcomes for children, as child poverty has been shown to be a key independent determinant of children's outcomes. And, {BLANK} the point of view of the public purse, as mothers {BLANK} employment they are likely to claim fewer benefits and to generate extra revenues {BLANK} income tax and national insurance.",
+      "correctWords": [
+        "although",
+        "from",
+        "enter",
+        "through"
+      ],
+      "extraWords": [
+        "except",
+        "call",
+        "at",
+        "against"
+      ]
+    },
+    {
+      "id": "mock2-3",
+      "title": "Mock 2 — Fill in the Blanks Drag & Drop Q3 (Hippocrates and rational medicine)",
+      "category": "mock-2",
+      "passage": "Hippocrates allowed observation, rationality and his own genuine respect for his patients to {BLANK} his practice. Using the scientific method, he carefully recorded his patient's symptoms and {BLANK} to treatments and used the data {BLANK} to evaluate and prescribe the most successful regimens. His prestige as a great {BLANK} practitioner, educator, and author helped spread these ideals of {BLANK} medicine throughout the ancient world.",
+      "correctWords": [
+        "guide",
+        "responses",
+        "gathered",
+        "medical",
+        "rational"
+      ],
+      "extraWords": [
+        "patient",
+        "expressions",
+        "plotted",
+        "credit",
+        "emotional",
+        "predicted"
+      ]
+    },
+    {
+      "id": "mock2-4",
+      "title": "Mock 2 — Fill in the Blanks Drag & Drop Q4 (The speed of sound and altitude)",
+      "category": "mock-2",
+      "passage": "The speed of sound (otherwise known as Mach 1) varies with temperature. At sea level on a 'standard day', the temperature is 59°F, and Mach 1 is approximately 761 mph. As the altitude increases, the temperature and speed of sound {BLANK} decrease until about 36,000 feet, after which the temperature {BLANK} steady until about 60,000 feet. Within that 36,000 – 60,000 foot range, Mach 1 is about 661 mph. Because of the {BLANK}, it is possible for an airplane flying supersonic at high altitude to be slower than a subsonic flight at sea level. The transonic band (the 'sound barrier') extends {BLANK} around Mach 0.8 — when the first supersonic shock waves form on the wing — to Mach 1.2, when the entire wing has gone supersonic.",
+      "correctWords": [
+        "both",
+        "remains",
+        "variation",
+        "from"
+      ],
+      "extraWords": [
+        "via",
+        "towards",
+        "differences",
+        "either",
+        "tends"
+      ]
+    },
+    {
+      "id": "mock2-5",
+      "title": "Mock 2 — Fill in the Blanks Drag & Drop Q5 (The tomato)",
+      "category": "mock-2",
+      "passage": "The tomato is probably the most widely grown {BLANK} by the home gardener because of its {BLANK} value, many uses, and relative ease of {BLANK}. Originating in Central and South America, the tomato was domesticated in Mexico. There are many related {BLANK} species in South America. \"Tomati\" was the name {BLANK} by Native Americans.",
+      "correctWords": [
+        "vegetable",
+        "food",
+        "culture",
+        "wild",
+        "used"
+      ],
+      "extraWords": [
+        "fruit",
+        "stuff",
+        "cooking",
+        "took",
+        "eating"
+      ]
+    }
+  ]
 }

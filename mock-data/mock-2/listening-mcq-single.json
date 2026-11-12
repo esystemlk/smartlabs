@@ -3,5 +3,36 @@
   "taskType": "listening-mcq-single",
   "storagePrefix": "listening-mcq-single",
   "source": "mock-2",
-  "items": []
+  "items": [
+    {
+      "id": "mock2-1",
+      "title": "Mock 2 — Listening MCQ Single Q1 (Birding)",
+      "category": "mock-2",
+      "audioText": "In a time of stagnation and collective uncertainty, birding has given me the opportunity to get out of my head and commune with nature. While it has admittedly brought me some moments of frustration and disappointment, it's also allowed me to experience just pure, unadulterated stoke. It's provided moments of rapture and awe, surprise and delight - just looking at birds doing their thing in their natural habitats. It's fun as hell. But what comes to mind when you picture a birder? For a lot of people, the prompt conjures up an image of a person in a khaki vest, maybe, with a pair of binoculars hanging around their neck. Whatever preconceived notions are coming up, I want you to set them aside because there are all kinds of birders. And there's no right way to bird. All the tips in this episode or just that, tips. Take them or leave them depending on what you want your version of birding to be like.",
+      "question": "What is the speaker's attitude expressed towards birding?",
+      "options": [
+        "Birding has always provided positive emotional experience for her.",
+        "There is no fixed way of birding.",
+        "Birding is not suitable for non-professional people.",
+        "Of the various ways to bird, none is better than the others."
+      ],
+      "correctAnswer": "There is no fixed way of birding.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/listening-mcq-single-1.mp3"
+    },
+    {
+      "id": "mock2-2",
+      "title": "Mock 2 — Listening MCQ Single Q2 (Financial intimacy and equality)",
+      "category": "mock-2",
+      "audioText": "MIGAKI: In your role as a financial therapist, you've got sort of a five-step process for something that you call financial intimacy. I'm wondering if you can help us define that and talk us through it.\n\nCLAYMAN: So with the first one, equality, what we want to capture here in a healthy financial dynamic is that both partners have equal say and equal power about what's going to happen with the money. So sometimes when a couple comes to me with an inequality imbalance, there's a partner that either has - maybe is bringing in the bulk of the income and then thus feels like they should have more say. Or sometimes there's a partner that's just more anxious about money and so really needs money to be a source of control for them and feels like their partner is just - in not agreeing with them and not doing what they say should be done with the money, that this is threatening to them. And they want their partner to kind of come to heel, if you will. So where I would approach that is, all right, well, we need to have both parties present in the decisions about the money. Just because you're more anxious or because you make more of a contribution to the income doesn't mean that you get an outsized say in this.",
+      "question": "According to the financial therapist, why does a couple experience the inequality imbalance?",
+      "options": [
+        "Because one is not bringing all the income and then feels that he or she should have more say.",
+        "One is anxious about money and so needs money to be a source of security.",
+        "Because one contributes more to the income and believes this gives more say.",
+        "One is unconcerned with money and so needs more money to consume."
+      ],
+      "correctAnswer": "Because one contributes more to the income and believes this gives more say.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/listening-mcq-single-2.mp3"
+    }
+  ]
 }

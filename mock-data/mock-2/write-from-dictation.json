@@ -3,5 +3,27 @@
   "taskType": "write-from-dictation",
   "storagePrefix": "write-from-dictation",
   "source": "mock-2",
-  "items": []
+  "items": [
+    {
+      "id": "mock2-1",
+      "title": "Mock 2 — Write from Dictation Q1",
+      "category": "mock-2",
+      "text": "Food containing ample calories provides little or no nutritional value.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/write-from-dictation-1.mp3"
+    },
+    {
+      "id": "mock2-2",
+      "title": "Mock 2 — Write from Dictation Q2",
+      "category": "mock-2",
+      "text": "The course places considerable emphasis on critical thinking skills.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/write-from-dictation-2.mp3"
+    },
+    {
+      "id": "mock2-3",
+      "title": "Mock 2 — Write from Dictation Q3",
+      "category": "mock-2",
+      "text": "Global connections thrive in academic communities, thanks to social media.",
+      "localPath": "C:/Users/SMART LABS/Downloads/smartlabs-mock2-audio/write-from-dictation-3.mp3"
+    }
+  ]
 }

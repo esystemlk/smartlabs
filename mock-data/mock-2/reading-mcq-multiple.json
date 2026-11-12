@@ -2,5 +2,44 @@
   "section": "reading",
   "taskType": "mcq-multiple",
   "source": "mock-2",
-  "items": []
+  "items": [
+    {
+      "id": "mock2-1",
+      "title": "Mock 2 — Reading MCQ Multiple Q1 (Amazon hydropower and climate change)",
+      "category": "mock-2",
+      "passage": "Hydropower is the dominant source of energy in the Amazon region, the world's largest river basin and a hotspot for future hydropower development. However, a new Global Environmental Change study warns that in the coming decades, climate change-driven reductions in precipitation and river discharge will diminish the Amazon's hydropower capacity.\n\nThe study's authors examined 351 proposed hydropower projects in the Amazon basin. Their findings suggest that hydrologic shifts by midcentury will reduce hydropower generation at many locations. As river discharge becomes increasingly variable and hydropower output declines, alternative energy sources like solar and wind are expected to become ever more important.\n\nHydropower needs to be designed to operate in concert with alternative energy sources like solar and wind so periods of low river flows do not disrupt electrical grids that supply vital power to cities and industries. New hydropower facilities should be carefully sited in locations of more reliable flows, and designed to operate over a broader range of flows than historical experience would indicate.\n\nAlmeida concludes, \"Energy planners need to focus on climate resilience. Brazil, for example, has over 200 million people and hydropower is the dominant energy source. This year, Brazilian hydropower reservoirs are at record lows due to extreme drought; as a result, Brazil might need to start rationing power. Ensuring energy security into the future will require diversifying energy sources to include solar and wind, and adapting hydropower plans to suit future -- not historic -- river flows.\"",
+      "question": "Which of the following statements are correct?",
+      "options": [
+        "Hydrologic changes will reduce hydropower generation in many places by the middle of the century.",
+        "New hydropower facilities should be carefully sited where the flow is less reliable.",
+        "Hydroelectric reservoirs in Brazil are at record lows due to extreme drought.",
+        "Hydropower is the only source of energy in the Amazon.",
+        "Alternative energy sources such as solar and wind will become increasingly important."
+      ],
+      "correctAnswers": [
+        "Hydrologic changes will reduce hydropower generation in many places by the middle of the century.",
+        "Hydroelectric reservoirs in Brazil are at record lows due to extreme drought.",
+        "Alternative energy sources such as solar and wind will become increasingly important."
+      ]
+    },
+    {
+      "id": "mock2-2",
+      "title": "Mock 2 — Reading MCQ Multiple Q2 (Energy-absorbing traffic lights)",
+      "category": "mock-2",
+      "passage": "Game-changing technology to design traffic lights that absorb kinetic energy, stopping them from crumpling when hit by a vehicle, will prevent thousands of fatalities and injuries each year and make our roads much safer.\n\nThat's the prediction from University of South Australia (UniSA) senior lecturer and research lead Dr Mohammad Uddin, who is partnering with manufacturing company Impact Absorbing Systems (IAS) on a new project to minimise collision-related injuries as well as damage to traffic lights and vehicles.\n\nThe $640,000 project, partially funded by the Innovative Manufacturing CRC (IMCRC), will leverage IAS's expertise in road safety and UniSA's engineering design and advanced manufacturing skills to ensure traffic lights absorb a high-impact crash, remain undamaged and operational, and save pedestrian and motorists' lives.\n\nThe technology involves replicating existing IAS-fabricated energy absorbing bollards and tuning the design to better suit the shape, length and size of common traffic lights, while satisfying regulatory standards.\n\n\"Recent statistics show that in Australia, traffic light collisions cost $18.5 million a year in fatalities, $53.7 million for injuries and up to $16 million annually to repair, install and maintain traffic lights,\" Dr Uddin says. Worldwide, the figure is much higher.",
+      "question": "What are the functions of traffic lights that absorb kinetic energy?",
+      "options": [
+        "Increase collision damage.",
+        "Save the lives of pedestrians and drivers.",
+        "Meet regulatory standards.",
+        "The normal operation.",
+        "Make our roads safer."
+      ],
+      "correctAnswers": [
+        "Save the lives of pedestrians and drivers.",
+        "The normal operation.",
+        "Make our roads safer."
+      ]
+    }
+  ]
 }

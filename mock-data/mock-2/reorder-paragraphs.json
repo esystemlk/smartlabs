@@ -2,5 +2,29 @@
   "section": "reading",
   "taskType": "reorder-paragraphs",
   "source": "mock-2",
-  "items": []
+  "items": [
+    {
+      "id": "mock2-1",
+      "title": "Mock 2 — Reorder Paragraphs Q1 (Customer feedback)",
+      "category": "mock-2",
+      "paragraphs": [
+        "Customer feedback is invaluable for refining sales strategies.",
+        "It offers insights into customer satisfaction and areas needing improvement.",
+        "On the one hand, actively seeking and acting upon customer feedback can lead to enhanced product offerings and services.",
+        "On the other hand, negative feedback, if not managed properly, can harm a company's reputation and customer trust."
+      ]
+    },
+    {
+      "id": "mock2-2",
+      "title": "Mock 2 — Reorder Paragraphs Q2 (Sunlight and plant growth experiment)",
+      "category": "mock-2",
+      "paragraphs": [
+        "A scientific experiment began with the hypothesis that increased sunlight exposure would enhance plant growth.",
+        "To test this, a group of plants was placed in an environment with extended daylight hours.",
+        "Another group of plants was kept under normal light conditions as a control group.",
+        "Over several weeks, the first group showed significantly faster growth than the control group.",
+        "This outcome suggested a strong causal relationship between sunlight exposure and plant growth."
+      ]
+    }
+  ]
 }
