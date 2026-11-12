@@ -5,8 +5,8 @@ import { adminDb } from '@/lib/firebase-admin';
 import { verifyAuthed } from '@/lib/api-auth';
 import { getMockCredits } from '@/lib/mock-credits';
 import { FREE_MOCK_LIMIT } from '@/lib/mock-packages';
-import { FULL_BANK } from '@/lib/full-mock-bank';
-import { FULL_MOCK_ID, FULL_TASKS, PARTS, aggregateFullScores, speakingTask, type FullAttempt, type FullAnswer } from '@/lib/full-mock';
+import { FULL_BANKS } from '@/lib/full-mock-bank';
+import { fullMockNo, fullMockId, fullMockSessionId, attemptMockNo, FULL_TASKS, PARTS, aggregateFullScores, speakingTask, type FullAttempt, type FullAnswer } from '@/lib/full-mock';
 import { scoreFullQuestion } from '@/lib/full-mock-scoring';
 import { hasMockAiKey } from '@/lib/mock-ai-context';
 
@@ -91,7 +91,7 @@ async function state(id: string, canReview: boolean) {
       return { ...q, index:i, answer: row.answer ?? '', audioUrl, score: row.score, source: row.source?.data || {}, imageUrl: row.source?.imageUrl || '', referenceAudioUrl: row.source?.audioUrl || '', lecturerNote: row.lecturerNote || '' };
     }));
   }
-  return { id, status:a.status, current:a.current, total:a.questions.length, serverNow:Date.now(),
+  return { id, mock:attemptMockNo((a as any).mockId), status:a.status, current:a.current, total:a.questions.length, serverNow:Date.now(),
     partEndsAt:a.partEndsAt, questionStartedAt:a.questionStartedAt, questionEndsAt:a.questionEndsAt,
     pending, scored:a.current-pending.length, results:a.results || null,
     question: current && r ? { ...current, ...studentQuestion(r.source,current.type), answer:r.answer ?? '', played:!!r.played, audioPath: r.audioPath || '', responseStartsAt: r.responseStartsAt || 0 } : null,
@@ -110,14 +110,15 @@ export async function GET(req: Request) {
       const users = [...new Set(list.docs.map(d=>d.data().userId as string))];
       const profiles = users.length ? await adminDb!.getAll(...users.map(uid=>adminDb!.collection('users').doc(uid))) : [];
       const names = new Map(profiles.map(p=>[p.id,p.data()?.displayName || p.data()?.email || p.id]));
-      return NextResponse.json({attempts:list.docs.map(d=>({id:d.id,userId:d.data().userId,student:names.get(d.data().userId),status:d.data().status,createdAt:d.data().createdAt,results:d.data().results || null}))});
+      return NextResponse.json({attempts:list.docs.map(d=>({id:d.id,userId:d.data().userId,student:names.get(d.data().userId),status:d.data().status,createdAt:d.data().createdAt,results:d.data().results || null,mock:attemptMockNo(d.data().mockId)}))});
     }
+    const mock = fullMockNo(new URL(req.url).searchParams.get('mock'));
     const [credits, slot, history] = await Promise.all([
-      getMockCredits(auth.uid), adminDb!.collection('pte_full_mock_sessions').doc(auth.uid).get(),
+      getMockCredits(auth.uid), adminDb!.collection('pte_full_mock_sessions').doc(fullMockSessionId(auth.uid,mock)).get(),
       attempts().where('userId','==',auth.uid).get(),
     ]);
     return NextResponse.json({ credits, aiReady:aiReady(), attemptId:slot.data()?.attemptId || null, tasks:FULL_TASKS, parts:PARTS,
-      history: history.docs.map(d => ({ id:d.id, status:d.data().status, createdAt:d.data().createdAt, results:d.data().results || null })).sort((a,b)=>b.createdAt-a.createdAt).slice(0,20) });
+      history: history.docs.filter(d => attemptMockNo(d.data().mockId) === mock).map(d => ({ id:d.id, status:d.data().status, createdAt:d.data().createdAt, results:d.data().results || null })).sort((a,b)=>b.createdAt-a.createdAt).slice(0,20) });
   } catch(e) { return failure(e); }
 }
 function failure(e: unknown) {
@@ -148,11 +149,14 @@ export async function POST(req: Request) {
     const body = await req.json();
     if (body.action === 'start') {
       // Validate all source documents BEFORE any debit. No guessed media URLs or partial exams.
+      const mock = fullMockNo(body.mock);
+      const FULL_BANK = FULL_BANKS[mock];
+      if (FULL_BANK.length !== 66) throw new ExamError(`Mock ${mock} is not ready yet. No mock credit has been used.`,409);
       const docs = await adminDb!.getAll(...FULL_BANK.map(q => adminDb!.collection('pte_questions').doc(q.id)));
       const problems = docs.filter((d,i) => !d.exists || d.data()?.taskType !== FULL_BANK[i].type || !d.data()?.data || ('localPath' in FULL_BANK[i].item && !d.data()?.audioUrl && !d.data()?.imageUrl));
-      if (FULL_BANK.length !== 66 || problems.length) throw new ExamError('Mock 1 is not ready: some question documents or media are missing. Please contact Smart Labs.',409);
+      if (problems.length) throw new ExamError(`Mock ${mock} is not ready: some question documents or media are missing. Please contact Smart Labs.`,409);
       const newRef = attempts().doc();
-      const session = adminDb!.collection('pte_full_mock_sessions').doc(uid);
+      const session = adminDb!.collection('pte_full_mock_sessions').doc(fullMockSessionId(uid,mock));
       const userRef = adminDb!.collection('users').doc(uid);
       const id = await adminDb!.runTransaction(async tx => {
         const [slot,user] = await Promise.all([tx.get(session),tx.get(userRef)]);
@@ -174,7 +178,7 @@ export async function POST(req: Request) {
           questions:FULL_BANK.map(q => ({id:q.id,type:q.type,part:FULL_TASKS.find(t=>t.type===q.type)!.part})),
           partEndsAt:now+PARTS[0].seconds*1000,questionStartedAt:now,questionEndsAt:0,expiresAt:now+4*60*60*1000 };
         startClock(a,now);
-        tx.set(newRef,{...a,mockId:FULL_MOCK_ID,weightVersion:'pearson-average-v1-half-percent',creditCharged:!unlimited});
+        tx.set(newRef,{...a,mockId:fullMockId(mock),weightVersion:'pearson-average-v1-half-percent',creditCharged:!unlimited});
         docs.forEach((doc,i) => {
           const source=doc.data()!;
           if (FULL_BANK[i].type==='reorder-paragraphs') source.data={...source.data,paragraphIds:source.data.paragraphs.map(()=>randomUUID())};

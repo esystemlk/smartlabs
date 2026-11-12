@@ -1,0 +1,13 @@
+{
+  "section": "writing",
+  "taskType": "write-essay",
+  "source": "mock-2",
+  "items": [
+    {
+      "id": "mock2-1",
+      "title": "Mock 2 — Write Essay Q1 (Medical technology and life expectancy)",
+      "category": "mock-2",
+      "text": "Medical technology is responsible for increasing the average life expectancy. Do you think it is a curse or a blessing?"
+    }
+  ]
+}

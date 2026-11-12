@@ -1,0 +1,7 @@
+{
+  "section": "listening",
+  "taskType": "summarize-spoken-text",
+  "storagePrefix": "summarize-spoken-text",
+  "source": "mock-2",
+  "items": []
+}

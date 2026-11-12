@@ -1,4 +1,13 @@
-export const FULL_MOCK_ID = 'pte-full-mock-1';
+export type FullMockNo = '1' | '2';
+export const FULL_MOCK_NOS: FullMockNo[] = ['1', '2'];
+// Mocks shown to students. Add '2' once its 66 questions and media are seeded and verified.
+export const FULL_MOCKS_LIVE: FullMockNo[] = ['1'];
+export const fullMockNo =(v: unknown): FullMockNo => FULL_MOCK_NOS.includes(v as FullMockNo) ? v as FullMockNo : '1';
+export const fullMockId = (n: FullMockNo) => `pte-full-mock-${n}`;
+// Mock 1 kept the bare uid as its session doc; later mocks get their own slot so attempts never collide.
+export const fullMockSessionId = (uid: string, n: FullMockNo) => n === '1' ? uid : `${uid}__mock-${n}`;
+// Attempts saved before Mock 2 existed have no usable mockId other than mock 1.
+export const attemptMockNo = (mockId: unknown): FullMockNo => fullMockNo(String(mockId || '').replace('pte-full-mock-', ''));
 export type Skill = 'overall' | 'listening' | 'reading' | 'speaking' | 'writing';
 export const SKILLS: Skill[] = ['overall', 'listening', 'reading', 'speaking', 'writing'];
 // User-supplied Pearson average weighting table. <1% entries use the approved 0.5% estimate.

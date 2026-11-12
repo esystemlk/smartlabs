@@ -67,7 +67,7 @@ async function uploadOne(localPath, destPrefix) {
       imageUrl: imageUrl ?? null,
       data: dataItem,
       active: false,
-      source: 'mock-1',
+      source: manifest.source || 'mock-1',
       prediction: false,
       group: null,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),

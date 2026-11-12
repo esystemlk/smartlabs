@@ -1,0 +1,113 @@
+{
+  "section": "reading",
+  "taskType": "rw-fill-blanks",
+  "source": "mock-2",
+  "items": [
+    {
+      "id": "mock2-1",
+      "title": "Mock 2 — Reading Fill in the Blanks (Dropdown) Q1 (SpaceX Falcon 9 launch)",
+      "category": "mock-2",
+      "passage": "SpaceX's Falcon 9 rocket lifted off from Cape Canaveral, Florida, on Friday at 1845 GMT (1445 EDT), reaching orbit 9 minutes later. The rocket lofted an uncrewed {1} of SpaceX's Dragon capsule, which is designed to one-day carry both crew and cargo to orbit. 'This has been a good day for SpaceX and a {2} development for the US human space flight program,' said Robyn Ringuette of SpaceX in a webcast of the launch. In a teleconference with the media on Thursday, SpaceX's CEO, Paypal co-founder Elon Musk, said he would consider the flight 100 percent successful if it reached {3}. 'Even if we prove out just that the first stage functions correctly, I'd still say that's a good day for a test,' he said. 'It's a great day if both stages work correctly.' SpaceX hopes to win a NASA {4} to launch astronauts to the International Space Station using the Falcon 9. US government space shuttles, which currently make these trips, are scheduled to be {5} for safety reasons at the end of 2010.",
+      "blanks": [
+        {
+          "id": "1",
+          "options": [
+            "replication",
+            "mockup",
+            "setting",
+            "base"
+          ],
+          "correctAnswer": "mockup"
+        },
+        {
+          "id": "2",
+          "options": [
+            "promising",
+            "hopefully",
+            "signifying",
+            "encouraging"
+          ],
+          "correctAnswer": "promising"
+        },
+        {
+          "id": "3",
+          "options": [
+            "track",
+            "orbit",
+            "circulation",
+            "trajectory"
+          ],
+          "correctAnswer": "orbit"
+        },
+        {
+          "id": "4",
+          "options": [
+            "award",
+            "contract",
+            "case",
+            "bid"
+          ],
+          "correctAnswer": "contract"
+        },
+        {
+          "id": "5",
+          "options": [
+            "ceased",
+            "fixed",
+            "removed",
+            "retired"
+          ],
+          "correctAnswer": "retired"
+        }
+      ]
+    },
+    {
+      "id": "mock2-2",
+      "title": "Mock 2 — Reading Fill in the Blanks (Dropdown) Q2 (Alchemy)",
+      "category": "mock-2",
+      "passage": "To learn the speech of alchemy, an early form of chemistry in which people attempted to turn metals into gold, it helps to think back to a time when there was no science: no atomic number or weight, no periodic chart, no list of elements. To the alchemists the {1} was not made of leptons, bosons, gluons, and quarks. Instead it was made of substances, and one substance-say, walnut oil-could be just as {2} as another—say, silver—even though modern {3} would say one is heterogeneous and the other homogeneous. Without knowledge of atomic structures, how would it be {4} to tell elements from compounds?",
+      "blanks": [
+        {
+          "id": "1",
+          "options": [
+            "universe",
+            "metallurgy",
+            "material",
+            "spirit"
+          ],
+          "correctAnswer": "universe"
+        },
+        {
+          "id": "2",
+          "options": [
+            "all",
+            "completed",
+            "pure",
+            "wholesome"
+          ],
+          "correctAnswer": "pure"
+        },
+        {
+          "id": "3",
+          "options": [
+            "affidavits",
+            "laws",
+            "scientists",
+            "medicines"
+          ],
+          "correctAnswer": "scientists"
+        },
+        {
+          "id": "4",
+          "options": [
+            "proper",
+            "necessary",
+            "capable",
+            "possible"
+          ],
+          "correctAnswer": "possible"
+        }
+      ]
+    }
+  ]
+}

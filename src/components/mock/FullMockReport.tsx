@@ -70,7 +70,7 @@ export function FullMockReport({ exam, api }: { exam: any; api: (body?: any, id?
   const summary = FULL_TASKS.map(t => ({ ...t, rows: rows.filter(r => r.type === t.type), percent: rows.filter(r => r.type === t.type).reduce((a, r) => a + (r.score?.percent || 0), 0) / t.count }));
   const priorities = [...summary].sort((a, b) => a.percent - b.percent).slice(0, 3);
   const copyLink = async () => {
-    try { await navigator.clipboard.writeText(`${window.location.origin}/mock/full-1?attemptId=${exam.id}`); setCopied(true); setCopyError(''); }
+    try { await navigator.clipboard.writeText(`${window.location.origin}/mock/full-${exam.mock || '1'}?attemptId=${exam.id}`); setCopied(true); setCopyError(''); }
     catch { setCopyError('The link could not be copied. You can share the report URL from your address bar.'); }
   };
 

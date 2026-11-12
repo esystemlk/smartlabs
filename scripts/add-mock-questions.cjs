@@ -8,7 +8,8 @@ if (!admin.apps.length) admin.initializeApp({ credential: admin.credential.cert(
 const db = admin.firestore();
 
 const itemsFile = process.argv[3];
-const { section, taskType, items } = JSON.parse(fs.readFileSync(itemsFile, 'utf-8'));
+const manifest = JSON.parse(fs.readFileSync(itemsFile, 'utf-8'));
+const { section, taskType, items } = manifest;
 
 const safeId = (s) => String(s).replace(/[^A-Za-z0-9_-]/g, '-');
 
@@ -34,7 +35,7 @@ function promptOf(q) {
       imageUrl: item.imageUrl ?? null,
       data: item,
       active: false, // hidden from public practice; still selectable in the admin mock builder
-      source: 'mock-1',
+      source: manifest.source || 'mock-1',
       prediction: false,
       group: null,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),

@@ -1,4 +1,4 @@
-// Read-only audit: node scripts/verify-mock-questions.cjs [.env.local]
+// Read-only audit: node scripts/verify-mock-questions.cjs [.env.local] [mock-1|mock-2]
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -7,18 +7,19 @@ const admin = require('firebase-admin');
 const env = require('dotenv').parse(fs.readFileSync(process.argv[2] || '.env.local'));
 const account = JSON.parse(env.FIREBASE_ADMIN_CONFIG);
 admin.initializeApp({ credential: admin.credential.cert(account) });
+const MOCK = process.argv[3] || 'mock-1';
 const safeId = s => String(s).replace(/[^A-Za-z0-9_-]/g, '-');
 const hash = b => crypto.createHash('sha256').update(b).digest('hex');
 const promptOf = q => ['passage', 'topic', 'transcript', 'text', 'question', 'situation', 'describe', 'audioText', 'title'].map(k => q[k]).find(v => typeof v === 'string' && v.trim()) || '';
 
 (async () => {
   const expected = [];
-  for (const file of fs.readdirSync('mock-data/mock-1').filter(f => f.endsWith('.json'))) {
-    const batch = JSON.parse(fs.readFileSync(path.join('mock-data/mock-1', file)));
+  for (const file of fs.readdirSync(path.join('mock-data', MOCK)).filter(f => f.endsWith('.json'))) {
+    const batch = JSON.parse(fs.readFileSync(path.join(path.join('mock-data', MOCK), file)));
     for (const item of batch.items) expected.push({ ...batch, items: undefined, item, id: `${safeId(batch.taskType)}__${safeId(item.id)}` });
   }
   if (new Set(expected.map(q => q.id)).size !== expected.length) throw new Error('Duplicate manifest IDs');
-  const snapshot = await admin.firestore().collection('pte_questions').where('source', '==', 'mock-1').get();
+  const snapshot = await admin.firestore().collection('pte_questions').where('source', '==', MOCK).get();
   const docs = new Map(snapshot.docs.map(d => [d.id, d.data()]));
   const issues = [];
   let media = 0;
@@ -26,7 +27,7 @@ const promptOf = q => ['passage', 'topic', 'transcript', 'text', 'question', 'si
   for (const q of expected) {
     const d = docs.get(q.id);
     if (!d) { issues.push(`${q.id}: missing document`); continue; }
-    for (const [key, value] of Object.entries({ section: q.section, taskType: q.taskType, title: q.item.title ?? '', content: promptOf(q.item), category: q.item.category ?? null, active: false, source: 'mock-1', prediction: false, group: null })) {
+    for (const [key, value] of Object.entries({ section: q.section, taskType: q.taskType, title: q.item.title ?? '', content: promptOf(q.item), category: q.item.category ?? null, active: false, source: MOCK, prediction: false, group: null })) {
       if (!isDeepStrictEqual(d[key], value)) issues.push(`${q.id}: ${key} mismatch`);
     }
     for (const [key, value] of Object.entries(q.item)) {
@@ -50,7 +51,7 @@ const promptOf = q => ['passage', 'topic', 'transcript', 'text', 'question', 'si
     }
   }
   const ids = new Set(expected.map(q => q.id));
-  for (const id of docs.keys()) if (!ids.has(id)) issues.push(`${id}: unexpected mock-1 document`);
+  for (const id of docs.keys()) if (!ids.has(id)) issues.push(`${id}: unexpected ${MOCK} document`);
   console.log(JSON.stringify({ project: account.project_id, expected: expected.length, firestore: docs.size, mediaVerified: media, byteIdentical: identical, issues }, null, 2));
   await admin.app().delete();
   process.exitCode = issues.length ? 1 : 0;
