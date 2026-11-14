@@ -3,6 +3,7 @@ import { logAiCall } from '@/lib/services/ai-usage.service';
 import { isInternalRequest } from '@/lib/internal-auth';
 import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
 import { generateWithFailover, AiBusyError } from '@/lib/gemini-fetch';
+import { getCachedScore, putCachedScore, scoreCacheKey } from '@/lib/score-cache';
 
 const extractJson = (text: string): string => {
   let c = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
@@ -248,6 +249,11 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Transcript and summary are required.' }, { status: 400 });
     }
 
+    // Same summary → same score: reuse the saved result for this exact text.
+    const cacheKey = scoreCacheKey('pte-sst', 'v1', [transcript, summary]);
+    const cached = await getCachedScore<Record<string, unknown>>(cacheKey);
+    if (cached) return Response.json({ ...cached, _cached: true });
+
     const form = scoreForm(summary);
 
     const userMessage = `LECTURE TRANSCRIPT (reference — the student heard this as audio):
@@ -271,6 +277,7 @@ Score CONTENT (0-4) and VOCABULARY BASE (0-2), and list EVERY grammar and spelli
         contents: [{ role: 'user', parts: [{ text: userMessage }] }],
         systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         generationConfig: { temperature: 0.2, maxOutputTokens: 8192 },
+        stable: true,
         validate: (t) => { try { JSON.parse(extractJson(t)); return true; } catch { return false; } },
       });
       responseText = extractJson(r.text);
@@ -316,7 +323,7 @@ Score CONTENT (0-4) and VOCABULARY BASE (0-2), and list EVERY grammar and spelli
       try { await deductSstCredit(uid); } catch (e) { console.warn('[score-sst] credit deduct failed:', e); }
     }
 
-    return Response.json({
+    const result = {
       ...parsed,
       scores: { content, grammar, vocabulary, spelling, form: form.form },
       grammarMistakes,
@@ -328,7 +335,9 @@ Score CONTENT (0-4) and VOCABULARY BASE (0-2), and list EVERY grammar and spelli
       band,
       wordCount: form.wordCount,
       formReason: form.reason,
-    });
+    };
+    await putCachedScore(cacheKey, 'pte-sst', result);
+    return Response.json(result);
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Unknown error';
     console.error('[score-sst] error:', error);

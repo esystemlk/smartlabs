@@ -5,6 +5,7 @@ import { logAiCall } from '@/lib/services/ai-usage.service';
 import { isInternalRequest } from '@/lib/internal-auth';
 import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
 import { generateWithFailover, AiBusyError } from '@/lib/gemini-fetch';
+import { getCachedScore, putCachedScore, scoreCacheKey } from '@/lib/score-cache';
 
 // ─── Retry helpers ────────────────────────────────────────────────────────────
 const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
@@ -688,6 +689,11 @@ export async function POST(request: Request) {
       );
     }
 
+    // Same essay → same score: reuse the saved result for this exact text and options.
+    const cacheKey = scoreCacheKey('pte-essay', 'v1', [topic, essay, !!requestModelEssay, typeof targetScore === 'number' ? targetScore : null]);
+    const cached = await getCachedScore<Record<string, unknown>>(cacheKey);
+    if (cached) return NextResponse.json({ ...cached, _cached: true });
+
     let userMessage = `Essay Topic: ${topic}
 
 Student Essay (${wordCount} words):
@@ -745,6 +751,7 @@ Note: Only list criteria in criteriaGaps that are actually below the required th
         contents: [{ role: 'user', parts: [{ text: userMessage }] }],
         systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         generationConfig: { maxOutputTokens: 65536, temperature: 0.1 },
+        stable: true,
         validate: (t) => { try { JSON.parse(extractJson(t)); return true; } catch { return false; } },
       });
       responseText = extractJson(r.text);
@@ -805,10 +812,9 @@ Note: Only list criteria in criteriaGaps that are actually below the required th
       ]);
     }
 
-    return NextResponse.json({
-      ...parsed,
-      _metadata: { modelUsed: usedModel },
-    });
+    const result = { ...parsed, _metadata: { modelUsed: usedModel } };
+    await putCachedScore(cacheKey, 'pte-essay', result);
+    return NextResponse.json(result);
 
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';

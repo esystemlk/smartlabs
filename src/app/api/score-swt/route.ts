@@ -3,6 +3,7 @@ import { logAiCall } from '@/lib/services/ai-usage.service';
 import { isInternalRequest } from '@/lib/internal-auth';
 import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
 import { generateWithFailover, AiBusyError } from '@/lib/gemini-fetch';
+import { getCachedScore, putCachedScore, scoreCacheKey } from '@/lib/score-cache';
 
 const extractJson = (text: string): string => {
   let c = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
@@ -240,6 +241,11 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Passage and summary are required.' }, { status: 400 });
     }
 
+    // Same summary → same score: reuse the saved result for this exact text.
+    const cacheKey = scoreCacheKey('pte-swt', 'v1', [passage, summary]);
+    const cached = await getCachedScore<Record<string, unknown>>(cacheKey);
+    if (cached) return Response.json({ ...cached, _cached: true });
+
     const form = scoreForm(summary);
 
     const userMessage = `SOURCE PASSAGE:
@@ -261,6 +267,7 @@ The system has already scored FORM = ${form.form}/1 (${form.reasons.join(' ')}).
         contents: [{ role: 'user', parts: [{ text: userMessage }] }],
         systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         generationConfig: { temperature: 0.2, maxOutputTokens: 8192 },
+        stable: true,
         validate: (t) => { try { JSON.parse(extractJson(t)); return true; } catch { return false; } },
       });
       responseText = extractJson(r.text);
@@ -291,14 +298,16 @@ The system has already scored FORM = ${form.form}/1 (${form.reasons.join(' ')}).
       try { await deductSwtCredit(uid); } catch (e) { console.warn('[score-swt] credit deduct failed:', e); }
     }
 
-    return Response.json({
+    const result = {
       ...parsed,
       scores: { content, form: form.form, grammar, vocabulary },
       total,
       maxTotal: 9,
       wordCount: form.wordCount,
       formReasons: form.reasons,
-    });
+    };
+    await putCachedScore(cacheKey, 'pte-swt', result);
+    return Response.json(result);
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Unknown error';
     console.error('[score-swt] error:', error);

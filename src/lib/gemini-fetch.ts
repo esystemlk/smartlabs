@@ -65,7 +65,11 @@ interface GeminiCallOpts {
   attemptMs?: number; // cap per call so a hung model fails over; default: all remaining time
   /** Return false to reject a response (e.g. invalid JSON) and fail over to the next model/key. */
   validate?: (text: string) => boolean;
+  /** Scoring: make the model as repeatable as Gemini allows (temperature 0, narrowest sampling, fixed seed). */
+  stable?: boolean;
 }
+
+const STABLE_CONFIG = { temperature: 0, topP: 1, topK: 1, seed: 20251 };
 
 /**
  * Calls Gemini, failing over across keys then models until one succeeds or the
@@ -73,7 +77,8 @@ interface GeminiCallOpts {
  * route can tell the student to try again (no hard error dump).
  */
 export async function generateWithFailover(opts: GeminiCallOpts): Promise<GeminiCallResult> {
-  const { contents, systemInstruction, generationConfig, models = GENAI_MODELS, deadlineMs = 55_000, attemptMs = deadlineMs, validate } = opts;
+  const { contents, systemInstruction, models = GENAI_MODELS, deadlineMs = 55_000, attemptMs = deadlineMs, validate } = opts;
+  const generationConfig = opts.stable ? { ...opts.generationConfig, ...STABLE_CONFIG } : opts.generationConfig;
   const deadline = Date.now() + deadlineMs;
   // Admin "use only one key" switch: that key for everything (mocks included), no switching keys.
   const mode = await getKeyMode();

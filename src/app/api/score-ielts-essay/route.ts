@@ -5,6 +5,7 @@ import { isInternalRequest } from '@/lib/internal-auth';
 import { ieltsOverallBand, ieltsBandLabel } from '@/types/ielts-essay';
 import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
 import { generateWithFailover, AiBusyError } from '@/lib/gemini-fetch';
+import { getCachedScore, putCachedScore, scoreCacheKey } from '@/lib/score-cache';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -197,6 +198,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Topic and essay content are required.' }, { status: 400 });
     }
 
+    // Same essay → same band: reuse the saved result for this exact text and target.
+    const cacheKey = scoreCacheKey('ielts-task2', 'v1', [topic, essay, typeof targetBand === 'number' ? targetBand : null]);
+    const cached = await getCachedScore<Record<string, unknown>>(cacheKey);
+    if (cached) return NextResponse.json({ ...cached, _cached: true });
+
     let userMessage = `IELTS Writing Task 2 question:\n${topic}\n\nStudent essay (${wordCount ?? 'unknown'} words):\n${essay}\n\nEvaluate this essay strictly using the four IELTS criteria. Return ONLY valid JSON in the required shape.`;
 
     if (typeof targetBand === 'number') {
@@ -224,6 +230,7 @@ The "achieved" and "gap" fields are corrected server-side — focus on accurate 
         contents: [{ role: 'user', parts: [{ text: userMessage }] }],
         systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         generationConfig: { maxOutputTokens: 32768, temperature: 0.1 },
+        stable: true,
         deadlineMs: 100_000, attemptMs: 45_000, // stays inside maxDuration (120s)
         validate: (t) => { try { JSON.parse(extractJson(t)); return true; } catch { return false; } },
       });
@@ -259,7 +266,9 @@ The "achieved" and "gap" fields are corrected server-side — focus on accurate 
     // Must be awaited — serverless kills fire-and-forget promises after the response.
     if (!unlimited) await deductIeltsCredit(uid);
 
-    return NextResponse.json({ ...parsed, _metadata: { modelUsed: usedModel } });
+    const result = { ...parsed, _metadata: { modelUsed: usedModel } };
+    await putCachedScore(cacheKey, 'ielts-task2', result);
+    return NextResponse.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('[score-ielts-essay] internal error:', error);

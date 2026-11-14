@@ -5,6 +5,7 @@ import { isInternalRequest } from '@/lib/internal-auth';
 import { ieltsOverallBand, ieltsBandLabel } from '@/types/ielts-essay';
 import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
 import { generateWithFailover, AiBusyError } from '@/lib/gemini-fetch';
+import { getCachedScore, putCachedScore, scoreCacheKey } from '@/lib/score-cache';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -184,6 +185,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'The task image is too large to score.' }, { status: 413 });
     }
 
+    // Same answer → same band. The task's chart goes with its prompt, so the prompt identifies it.
+    const cacheKey = scoreCacheKey('ielts-task1', 'v1', [prompt, answer, visualType ?? null, typeof targetBand === 'number' ? targetBand : null]);
+    const cached = await getCachedScore<Record<string, unknown>>(cacheKey);
+    if (cached) return NextResponse.json({ ...cached, _cached: true });
+
 
     let userMessage = `IELTS Academic Writing Task 1 prompt:\n${prompt}\n`;
     if (visualType) userMessage += `\nVisual type: ${visualType}`;
@@ -222,6 +228,7 @@ The "achieved" and "gap" fields are corrected server-side — focus on accurate 
         contents: [{ role: 'user', parts }],
         systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         generationConfig: { maxOutputTokens: 32768, temperature: 0.1 },
+        stable: true,
         deadlineMs: 100_000, attemptMs: 45_000, // stays inside maxDuration (120s)
         validate: (t) => { try { JSON.parse(extractJson(t)); return true; } catch { return false; } },
       });
@@ -254,7 +261,9 @@ The "achieved" and "gap" fields are corrected server-side — focus on accurate 
 
     if (!unlimited) await deductIeltsCredit(uid);
 
-    return NextResponse.json({ ...parsed, _metadata: { modelUsed: usedModel } });
+    const result = { ...parsed, _metadata: { modelUsed: usedModel } };
+    await putCachedScore(cacheKey, 'ielts-task1', result);
+    return NextResponse.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('[score-ielts-task1] internal error:', error);
