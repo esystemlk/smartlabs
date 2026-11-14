@@ -2,20 +2,26 @@ import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
 import type { AiCallLog } from '@/lib/services/ai-usage.service';
 import { currentMockAiKey } from '@/lib/mock-ai-context';
+import { getKeyMode, peekKeyMode } from '@/lib/ai-key-mode';
 
 const getApiKeys = (): string[] => {
+  // Admin "use only one key" switch (last known value; callWithFallback awaits a fresh read).
+  const mode = peekKeyMode();
+  if (mode.mode === 'single') return [mode.key];
+
   const keys = [
     process.env.GOOGLE_GENAI_API_KEY_1,
     process.env.GOOGLE_GENAI_API_KEY_2,
     process.env.GOOGLE_GENAI_API_KEY_3,
     process.env.GOOGLE_GENAI_API_KEY_4,
     process.env.GOOGLE_GENAI_API_KEY_5,
+    process.env.GOOGLE_GENAI_API_KEY_6, // all 6 keys share the load in automatic mode
   ].filter(Boolean) as string[];
 
-  // Full mocks prefer the dedicated key 6, then fall back to the pool so a
-  // missing/exhausted key 6 never dead-ends mock scoring.
+  // Full mocks prefer the dedicated key 6, then fall back to the rest of the pool so
+  // a missing/exhausted key 6 never dead-ends mock scoring.
   const mockKey = currentMockAiKey();
-  if (mockKey) return [mockKey, ...keys];
+  if (mockKey) return [mockKey, ...keys.filter(k => k !== mockKey)];
 
   if (keys.length === 0) {
     const legacy = process.env.GOOGLE_GENAI_API_KEY;
@@ -110,6 +116,8 @@ async function logKeyUsage(
  * Returns a Genkit AI instance using round-robin key selection.
  */
 export const getAi = () => {
+  const mode = peekKeyMode();
+  if (mode.mode === 'single') return getInstance(mode.key);
   const mockKey = currentMockAiKey();
   if (mockKey) return getInstance(mockKey);
   const keys = getApiKeys();
@@ -127,10 +135,13 @@ export const callWithFallback = async <T>(
   fn: (ai: any) => Promise<T>,
   meta?: { task?: AiCallLog['task']; ip?: string | null; userId?: string | null; email?: string | null }
 ): Promise<T> => {
-  const keys = getApiKeys();
-  const mockRequest = !!currentMockAiKey();
-  const startIndex = mockRequest ? 0 : counter % keys.length;
-  if (!mockRequest) counter = (counter + 1) % keys.length;
+  // Admin "use only one key" switch: every call (mocks included) uses that key only.
+  const mode = await getKeyMode();
+  const single = mode.mode === 'single';
+  const keys = single ? [mode.key] : getApiKeys();
+  const mockRequest = !single && !!currentMockAiKey();
+  const startIndex = single || mockRequest ? 0 : counter % keys.length;
+  if (!single && !mockRequest) counter = (counter + 1) % keys.length;
 
   const task  = meta?.task   ?? 'server-action';
   const ip    = meta?.ip     ?? null;
@@ -139,7 +150,7 @@ export const callWithFallback = async <T>(
 
   for (let attempt = 0; attempt < keys.length; attempt++) {
     const keyIndex = (startIndex + attempt) % keys.length;
-    const usageKeyIndex = mockRequest ? 6 : keyIndex + 1;
+    const usageKeyIndex = single ? mode.slot : mockRequest ? 6 : keyIndex + 1;
     const ai = getInstance(keys[keyIndex]);
 
     let lastError: any = null;
@@ -153,7 +164,14 @@ export const callWithFallback = async <T>(
         const rateLimit = isRateLimitError(error);
 
         if (rateLimit) {
-          // Rate limit → skip to next key immediately, no retries
+          // One fixed key: no other key to try, so wait the rate limit out and retry (1.5s, 3s).
+          if (single && retry < MAX_RETRIES_PER_KEY) {
+            const delay = 1500 * (retry + 1);
+            console.warn(`[genkit] KEY_${usageKeyIndex} rate-limited (single-key mode, retry ${retry + 1}/${MAX_RETRIES_PER_KEY}), waiting ${delay}ms…`);
+            await sleep(delay);
+            continue;
+          }
+          // Auto → skip to next key immediately, no retries
           break;
         }
 

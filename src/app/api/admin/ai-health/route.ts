@@ -50,11 +50,10 @@ export async function GET(request: Request) {
     const role = (await adminDb.collection('users').doc(uid).get()).data()?.role as string | undefined;
     if (!STAFF.has(role ?? '')) return NextResponse.json({ error: 'Developer/admin access required.' }, { status: 403 });
 
-    // Per-key health — the practice pool (KEY_1..5) that the app rotates through,
-    // plus the dedicated full-mock key (KEY_6) used only by mock scoring.
-    const poolSlots = [1, 2, 3, 4, 5].map(i => ({ label: `KEY_${i}`, key: process.env[`GOOGLE_GENAI_API_KEY_${i}`] ?? '' }));
-    const slots = [...poolSlots, { label: 'KEY_6 (mock)', key: process.env.GOOGLE_GENAI_API_KEY_6 ?? '' }];
-    const present = poolSlots.filter(s => s.key); // load burst rotates the practice pool only
+    // Per-key health for all 6 keys the app rotates through (KEY_6 is also tried first by full mocks).
+    const poolSlots = [1, 2, 3, 4, 5, 6].map(i => ({ label: i === 6 ? 'KEY_6 (mock)' : `KEY_${i}`, key: process.env[`GOOGLE_GENAI_API_KEY_${i}`] ?? '' }));
+    const slots = poolSlots;
+    const present = poolSlots.filter(s => s.key); // load burst rotates across all present keys
     const keys = await Promise.all(slots.map(async (s) => {
       if (!s.key) return { label: s.label, present: false as const };
       const r = await ping(s.key);

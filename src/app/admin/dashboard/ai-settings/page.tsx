@@ -11,6 +11,7 @@ import { Label }   from '@/components/ui/label';
 import { Badge }   from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { AiKeyModeCard } from '@/components/admin/ai-key-mode-card';
 import {
   ChevronLeft, KeyRound, Bot, Activity, History, ShieldCheck,
   Eye, EyeOff, CheckCircle2, XCircle, Loader2, RefreshCw, Save,
@@ -790,6 +791,8 @@ export default function AiSettingsPage() {
           ════════════════════════════════════════ */}
           {activeTab === 'keys' && (
             <div className="space-y-6">
+              <AiKeyModeCard />
+
               {/* ── Live API health check ── */}
               <Card>
                 <CardHeader className="pb-3">

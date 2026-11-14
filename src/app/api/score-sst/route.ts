@@ -278,7 +278,7 @@ Score CONTENT (0-4) and VOCABULARY BASE (0-2), and list EVERY grammar and spelli
       logAiCall({ userId: uid, email: userEmail, ip, task: 'sst', keyLabel: r.keyLabel, keyIndex: r.keyIndex, model: r.model, success: true, isRateLimit: false, error: null, timestamp: new Date() }).catch(() => {});
     } catch (err) {
       if (err instanceof Error && err.message === 'NO_KEYS') {
-        return Response.json({ error: 'No GOOGLE_GENAI_API_KEY_1..5 keys found on the server.' }, { status: 500 });
+        return Response.json({ error: 'No GOOGLE_GENAI_API_KEY_1..6 keys found on the server.' }, { status: 500 });
       }
       const busy = err instanceof AiBusyError;
       logAiCall({ userId: uid, email: userEmail, ip, task: 'sst', keyLabel: 'FAILOVER', keyIndex: 0, model: null, success: false, isRateLimit: busy, error: busy ? 'AI_BUSY' : (err instanceof Error ? err.message : String(err)), timestamp: new Date() }).catch(() => {});
