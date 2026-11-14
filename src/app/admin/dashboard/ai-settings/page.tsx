@@ -180,7 +180,7 @@ export default function AiSettingsPage() {
 
   // Live AI key health check (pings each env key + a concurrency burst).
   type KeyHealth = { label: string; present: boolean; ok?: boolean; latencyMs?: number; error?: string };
-  type HealthReport = { checkedAt: string; model: string; configuredKeys: number; workingKeys: number; healthy: boolean; keys: KeyHealth[]; load: { attempted: number; succeeded: number; avgLatencyMs: number } | null };
+  type HealthReport = { checkedAt: string; model: string; configuredKeys: number; workingKeys: number; healthy: boolean; keys: KeyHealth[]; key6Models?: { model: string; ok: boolean; latencyMs: number; error?: string }[]; load: { attempted: number; succeeded: number; avgLatencyMs: number } | null };
   const [health, setHealth]             = useState<HealthReport | null>(null);
   const [healthChecking, setHealthChecking] = useState(false);
   const [healthError, setHealthError]   = useState('');
@@ -827,6 +827,19 @@ export default function AiSettingsPage() {
                           </div>
                         ))}
                       </div>
+                      {!!health.key6Models?.length && (
+                        <div className="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                          <p className="font-semibold mb-1">KEY_6 (paid) model ladder <span className="font-normal text-muted-foreground">— scoring tries these in this order before any other key</span></p>
+                          <ol className="grid gap-1 sm:grid-cols-2 xl:grid-cols-3">
+                            {health.key6Models.map((m, i) => (
+                              <li key={m.model} className={`rounded border px-2 py-1 flex justify-between gap-2 ${m.ok ? 'border-emerald-200 bg-emerald-50/40' : 'border-red-200 bg-red-50/40'}`}>
+                                <span className="font-mono text-xs">{i + 1}. {m.model}</span>
+                                {m.ok ? <span className="text-emerald-700 text-xs font-semibold">✓ {m.latencyMs}ms</span> : <span className="text-red-600 text-xs font-semibold" title={m.error}>✗ {m.error?.slice(0, 30)}</span>}
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      )}
                       {health.load && (
                         <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm">
                           <span className="font-semibold">Load test:</span> {health.load.succeeded}/{health.load.attempted} parallel requests succeeded

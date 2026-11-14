@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
+import { KEY6_MODELS } from '@/lib/gemini-fetch';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -9,14 +10,14 @@ const STAFF = new Set(['admin', 'developer']);
 const MODEL = 'gemini-flash-latest'; // the model the live scorers use
 
 // Ping one Gemini key with a tiny prompt; returns ok + latency, never throws.
-async function ping(key: string): Promise<{ ok: boolean; latencyMs: number; error?: string }> {
+async function ping(key: string, model: string = MODEL): Promise<{ ok: boolean; latencyMs: number; error?: string }> {
   const started = Date.now();
   // Hard timeout per key so one hung request can't stall the whole function
   // until the platform kills it (which returns a non-JSON error to the client).
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 15000);
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${key}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
       // Flash is a thinking model — give enough output budget that thinking tokens
       // don't starve the actual reply and make a working key look empty/failed.
@@ -74,6 +75,10 @@ export async function GET(request: Request) {
       };
     }
 
+    // The paid KEY_6: test every model on its approved ladder (the order scoring tries them in).
+    const key6 = process.env.GOOGLE_GENAI_API_KEY_6 ?? '';
+    const key6Models = key6 ? await Promise.all(KEY6_MODELS.map(async m => ({ model: m.name, ...(await ping(key6, m.name)) }))) : [];
+
     const workingKeys = keys.filter(k => k.present && k.ok).length;
     return NextResponse.json({
       checkedAt: new Date().toISOString(),
@@ -82,6 +87,7 @@ export async function GET(request: Request) {
       workingKeys,
       healthy: workingKeys > 0,
       keys,
+      key6Models,
       load,
     });
   } catch (error) {

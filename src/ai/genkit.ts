@@ -3,6 +3,7 @@ import { googleAI } from '@genkit-ai/googleai';
 import type { AiCallLog } from '@/lib/services/ai-usage.service';
 import { currentMockAiKey } from '@/lib/mock-ai-context';
 import { getKeyMode, peekKeyMode } from '@/lib/ai-key-mode';
+import { KEY6_MODELS } from '@/lib/gemini-fetch';
 
 const getApiKeys = (): string[] => {
   // Admin "use only one key" switch (last known value; callWithFallback awaits a fresh read).
@@ -35,21 +36,52 @@ const getApiKeys = (): string[] => {
   return keys;
 };
 
-// One Genkit instance per API key, lazily created
+// One Genkit instance per API key + model, lazily created
 const instances: Map<string, any> = new Map();
+const DEFAULT_MODEL = 'gemini-flash-latest';
 
-const getInstance = (apiKey: string) => {
-  if (!instances.has(apiKey)) {
+const getInstance = (apiKey: string, model: string = DEFAULT_MODEL) => {
+  const id = `${model}|${apiKey}`;
+  if (!instances.has(id)) {
     instances.set(
-      apiKey,
+      id,
       genkit({
         plugins: [googleAI({ apiKey })],
-        model: 'googleai/gemini-flash-latest',
+        model: `googleai/${model}`,
       })
     );
   }
-  return instances.get(apiKey)!;
+  return instances.get(id)!;
 };
+
+type Attempt = { key: string; slot: number; model: string };
+const PAID_SLOT = 6;
+const slotKey = (slot: number) => (process.env[`GOOGLE_GENAI_API_KEY_${slot}`] ?? '').trim();
+
+/**
+ * Ordered (key, model) attempts for one call:
+ * - one-key mode: that key only (KEY_6 walks its approved model ladder);
+ * - automatic: the paid KEY_6 first through its approved ladder, then the free keys 1–5
+ *   (rotated) on the default model — so a failing model moves to the next MODEL on KEY_6
+ *   before any other key is used.
+ */
+function attemptPlan(mode: Awaited<ReturnType<typeof getKeyMode>>): Attempt[] {
+  const ladder = KEY6_MODELS.map(m => m.name);
+  if (mode.mode === 'single') {
+    return (mode.slot === PAID_SLOT ? ladder : [DEFAULT_MODEL]).map(model => ({ key: mode.key, slot: mode.slot, model }));
+  }
+  const paidKey = (currentMockAiKey() || slotKey(PAID_SLOT)).trim();
+  const free = [1, 2, 3, 4, 5].map(slot => ({ slot, key: slotKey(slot) })).filter(k => k.key && k.key !== paidKey);
+  const start = free.length > 1 ? counter++ % free.length : 0;
+  const rotated = [...free.slice(start), ...free.slice(0, start)];
+  const plan: Attempt[] = [
+    ...(paidKey ? ladder.map(model => ({ key: paidKey, slot: PAID_SLOT, model })) : []),
+    ...rotated.map(k => ({ key: k.key, slot: k.slot, model: DEFAULT_MODEL })),
+  ];
+  if (plan.length) return plan;
+  const legacy = process.env.GOOGLE_GENAI_API_KEY;
+  return [{ key: legacy || 'missing-api-key', slot: 0, model: DEFAULT_MODEL }];
+}
 
 // Round-robin counter (module-level, shared across requests in the same process)
 let counter = 0;
@@ -113,13 +145,14 @@ async function logKeyUsage(
 }
 
 /**
- * Returns a Genkit AI instance using round-robin key selection.
+ * Returns a Genkit AI instance (synchronous): the chosen key in one-key mode, else the paid
+ * KEY_6, else round-robin over the free keys. Real calls go through callWithFallback.
  */
 export const getAi = () => {
   const mode = peekKeyMode();
   if (mode.mode === 'single') return getInstance(mode.key);
-  const mockKey = currentMockAiKey();
-  if (mockKey) return getInstance(mockKey);
+  const paid = currentMockAiKey() || slotKey(PAID_SLOT);
+  if (paid) return getInstance(paid);
   const keys = getApiKeys();
   const key = keys[counter % keys.length];
   counter = (counter + 1) % keys.length;
@@ -135,29 +168,27 @@ export const callWithFallback = async <T>(
   fn: (ai: any) => Promise<T>,
   meta?: { task?: AiCallLog['task']; ip?: string | null; userId?: string | null; email?: string | null }
 ): Promise<T> => {
-  // Admin "use only one key" switch: every call (mocks included) uses that key only.
+  // Admin "use only one key" switch, else KEY_6 (paid) first through its model ladder.
   const mode = await getKeyMode();
   const single = mode.mode === 'single';
-  const keys = single ? [mode.key] : getApiKeys();
-  const mockRequest = !single && !!currentMockAiKey();
-  const startIndex = single || mockRequest ? 0 : counter % keys.length;
-  if (!single && !mockRequest) counter = (counter + 1) % keys.length;
+  const plan = attemptPlan(mode);
 
   const task  = meta?.task   ?? 'server-action';
   const ip    = meta?.ip     ?? null;
   const userId = meta?.userId ?? null;
   const email  = meta?.email  ?? null;
 
-  for (let attempt = 0; attempt < keys.length; attempt++) {
-    const keyIndex = (startIndex + attempt) % keys.length;
-    const usageKeyIndex = single ? mode.slot : mockRequest ? 6 : keyIndex + 1;
-    const ai = getInstance(keys[keyIndex]);
+  for (let attempt = 0; attempt < plan.length; attempt++) {
+    const { key, slot, model } = plan[attempt];
+    const keyIndex = slot - 1; // for the existing log lines (they print keyIndex + 1)
+    const usageKeyIndex = slot;
+    const ai = getInstance(key, model);
 
     let lastError: any = null;
     for (let retry = 0; retry <= MAX_RETRIES_PER_KEY; retry++) {
       try {
         const result = await fn(ai);
-        logKeyUsage(usageKeyIndex, true, false, null, task, ip, userId, email, 'gemini-2.5-flash');
+        logKeyUsage(usageKeyIndex, true, false, null, task, ip, userId, email, model);
         return result;
       } catch (error: any) {
         lastError = error;
@@ -190,19 +221,19 @@ export const callWithFallback = async <T>(
     const errMsg = lastError?.message || String(lastError);
     const rateLimit = isRateLimitError(lastError);
 
-    if (rateLimit && attempt < keys.length - 1) {
-      console.warn(`API key [${keyIndex + 1}] hit rate limit. Falling back to next key.`);
-      logKeyUsage(usageKeyIndex, false, true, errMsg, task, ip, userId, email, 'gemini-2.5-flash');
+    if (rateLimit && attempt < plan.length - 1) {
+      console.warn(`[genkit] KEY_${slot} / ${model} hit a rate limit. Trying the next model/key.`);
+      logKeyUsage(usageKeyIndex, false, true, errMsg, task, ip, userId, email, model);
       continue;
     }
 
-    if (attempt < keys.length - 1) {
-      console.warn(`API key [${keyIndex + 1}] failed after retries. Trying next key.`);
-      logKeyUsage(usageKeyIndex, false, false, errMsg, task, ip, userId, email, 'gemini-2.5-flash');
+    if (attempt < plan.length - 1) {
+      console.warn(`[genkit] KEY_${slot} / ${model} failed after retries. Trying the next model/key.`);
+      logKeyUsage(usageKeyIndex, false, false, errMsg, task, ip, userId, email, model);
       continue;
     }
 
-    logKeyUsage(usageKeyIndex, false, rateLimit, errMsg, task, ip, userId, email, 'gemini-2.5-flash');
+    logKeyUsage(usageKeyIndex, false, rateLimit, errMsg, task, ip, userId, email, model);
     throw lastError;
   }
 

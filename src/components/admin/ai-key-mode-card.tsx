@@ -50,7 +50,7 @@ export function AiKeyModeCard() {
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2"><KeyRound className="h-4 w-4 text-primary" /> Which key the AI uses</CardTitle>
         <p className="text-xs text-muted-foreground mt-1">
-          Choose one key to score <b>everything</b> — PTE &amp; IELTS full mocks, practice scorers and AI flows — with no switching between keys.
+          Automatic uses the paid <b>KEY_6</b> first for everything, trying its approved models in order, then the free keys. Or choose one key to score <b>everything</b> — PTE &amp; IELTS full mocks, practice scorers and AI flows — with no switching between keys.
           If that key is briefly busy, the AI waits and retries on the same key instead of jumping to another one. Automatic rotates through all keys as before.
           The essay tutor chat is not affected.
         </p>

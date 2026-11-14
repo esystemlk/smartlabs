@@ -14,7 +14,8 @@ globalThis.fetch = (async (url: string) => {
   calls.push({ key, model });
   const next = script.shift() ?? 'ok';
   if (next === 'ok') return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'hello' }] } }] }), { status: 200 });
-  return new Response(JSON.stringify({ error: { message: next === 429 ? 'Resource exhausted' : 'The model is overloaded' } }), { status: next });
+  const message = next === 429 ? 'Resource exhausted' : next === 404 ? 'models/x is not found for API version v1beta' : 'The model is overloaded';
+  return new Response(JSON.stringify({ error: { message } }), { status: next });
 }) as typeof fetch;
 
 const opts = { contents: [{ role: 'user', parts: [{ text: 'hi' }] }], deadlineMs: 30_000 };
@@ -40,11 +41,38 @@ const opts = { contents: [{ role: 'user', parts: [{ text: 'hi' }] }], deadlineMs
   await assert.rejects(generateWithFailover({ ...opts, deadlineMs: 8_000 }), AiBusyError);
   assert.ok(calls.length > 0 && calls.every(c => c.key === 'fake-key-3'));
 
-  // Automatic mode: unchanged — a busy key moves straight on to another key.
+  // Automatic: the paid KEY_6 goes first, on the first approved model.
   primeKeyMode('auto');
+  calls = []; script = ['ok'];
+  r = await generateWithFailover(opts);
+  assert.deepEqual(calls[0], { key: 'fake-key-6', model: 'gemini-flash-latest' });
+
+  // Automatic: a busy KEY_6 model gets one retry, then the NEXT MODEL on KEY_6 (not another key).
+  calls = []; script = [503, 503, 'ok'];
+  r = await generateWithFailover(opts);
+  assert.deepEqual(calls.map(c => c.key), ['fake-key-6', 'fake-key-6', 'fake-key-6']);
+  assert.deepEqual(calls.map(c => c.model), ['gemini-flash-latest', 'gemini-flash-latest', 'gemini-pro-latest']);
+
+  // Automatic: only the approved ladder is ever used on KEY_6, and the free keys come after it.
+  calls = []; script = [404, 404, 404, 404, 404, 'ok'];
+  r = await generateWithFailover(opts);
+  assert.deepEqual(calls.slice(0, 5).map(c => c.model), ['gemini-flash-latest', 'gemini-pro-latest', 'gemini-3.1-pro-preview', 'gemini-3.7-flash', 'gemini-3.8-flash']);
+  assert.ok(calls.slice(0, 5).every(c => c.key === 'fake-key-6'));
+  assert.notEqual(calls[5].key, 'fake-key-6', 'falls back to a free key after the whole ladder');
+
+  // Without KEY_6, free keys behave as before: a busy key moves straight on to another key.
+  const k6 = process.env.GOOGLE_GENAI_API_KEY_6; delete process.env.GOOGLE_GENAI_API_KEY_6;
   calls = []; script = [429, 'ok'];
   r = await generateWithFailover(opts);
-  assert.notEqual(calls[0].key, calls[1].key, 'auto switches keys');
+  assert.notEqual(calls[0].key, calls[1].key, 'free keys switch on busy');
+  process.env.GOOGLE_GENAI_API_KEY_6 = k6;
+
+  // One-key mode on KEY_6 walks the same approved ladder.
+  primeKeyMode('single', 6);
+  calls = []; script = [404, 'ok'];
+  r = await generateWithFailover(opts);
+  assert.deepEqual(calls.map(c => c.model), ['gemini-flash-latest', 'gemini-pro-latest']);
+  primeKeyMode('auto');
 
   // A slot with no key on the server falls back to automatic.
   delete process.env.GOOGLE_GENAI_API_KEY_5;

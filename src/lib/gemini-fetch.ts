@@ -16,6 +16,18 @@ export const GENAI_MODELS = [
   { name: 'gemini-2.0-flash',    api: 'v1beta' },
 ] as const;
 
+// KEY_6 is the paid key with credit. Owner-approved model ladder (14 Nov 2026), benchmarked on
+// the real PTE essay rubric: these five gave the IDENTICAL score and criteria, so moving to the
+// next one on a failure never changes a student's score. Do not add models without approval.
+export const KEY6_MODELS = [
+  { name: 'gemini-flash-latest',    api: 'v1beta' },
+  { name: 'gemini-pro-latest',      api: 'v1beta' },
+  { name: 'gemini-3.1-pro-preview', api: 'v1beta' },
+  { name: 'gemini-3.7-flash',       api: 'v1beta' },
+  { name: 'gemini-3.8-flash',       api: 'v1beta' },
+] as const;
+const PAID_KEY = 6;
+
 const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
 
 const isRateLimit = (status: number, msg: string) =>
@@ -35,20 +47,25 @@ function priorityOrder(): number[] {
 }
 
 let _rot = 0;
-/** Present keys, in priority order, rotated so load spreads across them. */
+/**
+ * Keys to try, in order: the paid KEY_6 always first (for every request, mocks included),
+ * then the free keys 1–5 rotated so their load spreads. So nothing dead-ends if KEY_6 is
+ * missing or out of credit.
+ */
 function keysInOrder(): { key: string; label: string; keyIndex: number }[] {
-  const mockKey = currentMockAiKey();
-  const order = priorityOrder();
-  const present = order
+  const paid = (currentMockAiKey() || process.env[`GOOGLE_GENAI_API_KEY_${PAID_KEY}`] || '').trim();
+  const rest = priorityOrder()
+    .filter(i => i !== PAID_KEY)
     .map(i => ({ key: process.env[`GOOGLE_GENAI_API_KEY_${i}`] ?? '', label: `KEY_${i}`, keyIndex: i }))
-    .filter(k => k.key.length > 0);
-  // Full mocks prefer the dedicated key 6, then fall back to the rest of the pool so
-  // a missing/exhausted key 6 never dead-ends mock scoring.
-  if (mockKey) return [{ key:mockKey, label:'KEY_6', keyIndex:6 }, ...present.filter(k => k.key !== mockKey)];
-  if (present.length <= 1) return present;
-  const start = _rot++ % present.length;
-  return [...present.slice(start), ...present.slice(0, start)];
+    .filter(k => k.key.length > 0 && k.key !== paid);
+  const start = rest.length > 1 ? _rot++ % rest.length : 0;
+  const rotated = [...rest.slice(start), ...rest.slice(0, start)];
+  return paid ? [{ key: paid, label: `KEY_${PAID_KEY}`, keyIndex: PAID_KEY }, ...rotated] : rotated;
 }
+
+/** Models to try on a key: KEY_6 walks the approved ladder; other keys keep the standard list. */
+const modelsFor = (keyIndex: number, fallback: readonly { name: string; api: string }[]) =>
+  keyIndex === PAID_KEY ? KEY6_MODELS : fallback;
 
 export class AiBusyError extends Error {
   constructor() { super('AI_BUSY'); this.name = 'AiBusyError'; }
@@ -114,7 +131,7 @@ export async function generateWithFailover(opts: GeminiCallOpts): Promise<Gemini
     // One fixed key: nowhere to switch to, so a busy moment is waited out on the same key
     // (1.5s, then 3s) before moving to the next model — instead of failing straight away.
     const [{ key, label, keyIndex }] = keys;
-    for (const { name: model, api } of models) {
+    for (const { name: model, api } of modelsFor(keyIndex, models)) {
       for (let attempt = 0; attempt <= 2; attempt++) {
         if (Date.now() > deadline) throw new AiBusyError();
         const r = await tryOnce(key, label, keyIndex, model, api);
@@ -128,14 +145,22 @@ export async function generateWithFailover(opts: GeminiCallOpts): Promise<Gemini
     throw new AiBusyError();
   }
 
-  // Automatic: outer loop keys (priority-ordered), inner loop models. A busy key is
-  // abandoned at once, moving straight to the next key.
+  // Automatic: outer loop keys (KEY_6 first), inner loop models.
+  // KEY_6 (paid): a failing model gets one short retry, then the NEXT MODEL on KEY_6 — the key is
+  // only left after its whole approved ladder has been tried. Free keys: a busy key is abandoned
+  // at once, moving straight to the next key (as before).
   for (const { key, label, keyIndex } of keys) {
-    for (const { name: model, api } of models) {
-      if (Date.now() > deadline) throw new AiBusyError();
-      const r = await tryOnce(key, label, keyIndex, model, api);
-      if (typeof r === 'object') return r.ok;
-      if (r === 'busy') break; // next key
+    const paid = keyIndex === PAID_KEY;
+    for (const { name: model, api } of modelsFor(keyIndex, models)) {
+      let r: Awaited<ReturnType<typeof tryOnce>> = 'skip';
+      for (let attempt = 0; attempt <= (paid ? 1 : 0); attempt++) {
+        if (Date.now() > deadline) throw new AiBusyError();
+        r = await tryOnce(key, label, keyIndex, model, api);
+        if (typeof r === 'object') return r.ok;
+        if (r === 'skip' || !paid || attempt === 1 || Date.now() + 1000 >= deadline) break;
+        await sleep(1000); // paid key, busy model: one quick retry
+      }
+      if (r === 'busy' && !paid) break; // free key busy → next key
     }
     // Brief pause before the next key so a burst doesn't hammer all keys at once.
     if (Date.now() < deadline) await sleep(150);
