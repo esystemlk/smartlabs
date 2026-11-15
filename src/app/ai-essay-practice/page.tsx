@@ -1,5 +1,6 @@
 'use client';
 
+import { normalizeEssayResult } from '@/lib/essay-result-normalize';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -585,7 +586,7 @@ function AIEssayPracticeInner() {
         throw new Error(errorData.error || "Failed to process essay.");
       }
 
-      const result: AIResponse = await response.json();
+      const result: AIResponse = normalizeEssayResult(await response.json());
       setAiResult(result);
       setShowResults(true);
       setSavedSessionId(null);

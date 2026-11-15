@@ -6,6 +6,7 @@ import { ieltsOverallBand, ieltsBandLabel } from '@/types/ielts-essay';
 import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
 import { generateWithFailover, AiBusyError } from '@/lib/gemini-fetch';
 import { getCachedScore, putCachedScore, scoreCacheKey } from '@/lib/score-cache';
+import { normalizeIeltsResult } from '@/lib/essay-result-normalize';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -201,7 +202,7 @@ export async function POST(request: Request) {
     // Same essay → same band: reuse the saved result for this exact text and target.
     const cacheKey = scoreCacheKey('ielts-task2', 'v1', [topic, essay, typeof targetBand === 'number' ? targetBand : null]);
     const cached = await getCachedScore<Record<string, unknown>>(cacheKey);
-    if (cached) return NextResponse.json({ ...cached, _cached: true });
+    if (cached) return NextResponse.json({ ...normalizeIeltsResult(cached), _cached: true });
 
     let userMessage = `IELTS Writing Task 2 question:\n${topic}\n\nStudent essay (${wordCount ?? 'unknown'} words):\n${essay}\n\nEvaluate this essay strictly using the four IELTS criteria. Return ONLY valid JSON in the required shape.`;
 
@@ -266,7 +267,7 @@ The "achieved" and "gap" fields are corrected server-side — focus on accurate 
     // Must be awaited — serverless kills fire-and-forget promises after the response.
     if (!unlimited) await deductIeltsCredit(uid);
 
-    const result = { ...parsed, _metadata: { modelUsed: usedModel } };
+    const result = { ...normalizeIeltsResult(parsed), _metadata: { modelUsed: usedModel } }; // text lists must hold text
     await putCachedScore(cacheKey, 'ielts-task2', result);
     return NextResponse.json(result);
   } catch (error) {

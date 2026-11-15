@@ -3,6 +3,7 @@
 import React from 'react';
 import { Target, AlertTriangle, ArrowUpRight, CheckCircle2 } from 'lucide-react';
 import type { IeltsEssayResult, IeltsCriterion } from '@/types/ielts-essay';
+import { normalizeIeltsResult } from '@/lib/essay-result-normalize';
 
 // Crimson is the IELTS part's theme, distinct from the PTE parts.
 const CRIMSON = '#dc2626';
@@ -119,7 +120,9 @@ function CriterionCard({ c }: { c: IeltsCriterion }) {
   );
 }
 
-export function IeltsEssayResultView({ result }: { result: IeltsEssayResult }) {
+export function IeltsEssayResultView({ result: rawResult }: { result: IeltsEssayResult }) {
+  // Older saved results (incl. mock attempts) may hold objects in text lists, which would crash React.
+  const result = normalizeIeltsResult(rawResult);
   const tone = bandTone(result.overallBand);
   const t = result.targetBandAnalysis;
 

@@ -6,6 +6,7 @@ import { ieltsOverallBand, ieltsBandLabel } from '@/types/ielts-essay';
 import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
 import { generateWithFailover, AiBusyError } from '@/lib/gemini-fetch';
 import { getCachedScore, putCachedScore, scoreCacheKey } from '@/lib/score-cache';
+import { normalizeIeltsResult } from '@/lib/essay-result-normalize';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -188,7 +189,7 @@ export async function POST(request: Request) {
     // Same answer → same band. The task's chart goes with its prompt, so the prompt identifies it.
     const cacheKey = scoreCacheKey('ielts-task1', 'v1', [prompt, answer, visualType ?? null, typeof targetBand === 'number' ? targetBand : null]);
     const cached = await getCachedScore<Record<string, unknown>>(cacheKey);
-    if (cached) return NextResponse.json({ ...cached, _cached: true });
+    if (cached) return NextResponse.json({ ...normalizeIeltsResult(cached), _cached: true });
 
 
     let userMessage = `IELTS Academic Writing Task 1 prompt:\n${prompt}\n`;
@@ -261,7 +262,7 @@ The "achieved" and "gap" fields are corrected server-side — focus on accurate 
 
     if (!unlimited) await deductIeltsCredit(uid);
 
-    const result = { ...parsed, _metadata: { modelUsed: usedModel } };
+    const result = { ...normalizeIeltsResult(parsed), _metadata: { modelUsed: usedModel } }; // text lists must hold text
     await putCachedScore(cacheKey, 'ielts-task1', result);
     return NextResponse.json(result);
   } catch (error) {

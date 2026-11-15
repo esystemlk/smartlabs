@@ -6,6 +6,7 @@ import { isInternalRequest } from '@/lib/internal-auth';
 import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
 import { generateWithFailover, AiBusyError } from '@/lib/gemini-fetch';
 import { getCachedScore, putCachedScore, scoreCacheKey } from '@/lib/score-cache';
+import { normalizeEssayResult } from '@/lib/essay-result-normalize';
 
 // ─── Retry helpers ────────────────────────────────────────────────────────────
 const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
@@ -692,7 +693,7 @@ export async function POST(request: Request) {
     // Same essay → same score: reuse the saved result for this exact text and options.
     const cacheKey = scoreCacheKey('pte-essay', 'v1', [topic, essay, !!requestModelEssay, typeof targetScore === 'number' ? targetScore : null]);
     const cached = await getCachedScore<Record<string, unknown>>(cacheKey);
-    if (cached) return NextResponse.json({ ...cached, _cached: true });
+    if (cached) return NextResponse.json({ ...normalizeEssayResult(cached), _cached: true });
 
     let userMessage = `Essay Topic: ${topic}
 
@@ -812,7 +813,8 @@ Note: Only list criteria in criteriaGaps that are actually below the required th
       ]);
     }
 
-    const result = { ...parsed, _metadata: { modelUsed: usedModel } };
+    // Text lists must hold text: the AI sometimes puts objects there, which crashed the result page.
+    const result = { ...normalizeEssayResult(parsed), _metadata: { modelUsed: usedModel } };
     await putCachedScore(cacheKey, 'pte-essay', result);
     return NextResponse.json(result);
 

@@ -4,6 +4,7 @@ import React from 'react';
 import { Markdown } from '@/components/ui/markdown';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import type { AIResponse } from '@/types/essay';
+import { normalizeEssayResult } from '@/lib/essay-result-normalize';
 
 /**
  * Complete, read-only display of a PTE essay scoring result.
@@ -68,7 +69,7 @@ function Bullets({ items, tone = 'slate', symbol = '•' }: { items?: string[]; 
 }
 
 export function EssayResultDetails({
-  result,
+  result: rawResult,
   essayText,
   targetScore,
 }: {
@@ -77,6 +78,8 @@ export function EssayResultDetails({
   topic?: string;
   targetScore?: number | null;
 }) {
+  // Older saved results may hold objects in text lists, which would crash React.
+  const result = normalizeEssayResult(rawResult);
   const wordCount = essayText ? essayText.trim().split(/\s+/).filter(Boolean).length : undefined;
   const tsa = result.targetScoreAnalysis;
 
