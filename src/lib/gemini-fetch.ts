@@ -16,15 +16,15 @@ export const GENAI_MODELS = [
   { name: 'gemini-2.0-flash',    api: 'v1beta' },
 ] as const;
 
-// KEY_6 is the paid key with credit. Owner-approved model ladder (14 Nov 2026), benchmarked on
-// the real PTE essay rubric: these five gave the IDENTICAL score and criteria, so moving to the
-// next one on a failure never changes a student's score. Do not add models without approval.
+// KEY_6 is the paid key with credit. Owner-approved ladder (15 Nov 2026), benchmarked on the real
+// PTE essay rubric with 3 full-length essays. Use real model ids, not aliases: flash-latest,
+// 3.7-flash and 3.8-flash are all 3.8 Flash (one shared quota), pro-latest is 3.1 Pro.
+// 3.5 Flash Lite first: ~1/3 the cost and ~5x faster than 3.8 Flash, own large quota
+// (4M tokens/min), scores within 1-2 criterion points. Do not add models without approval.
 export const KEY6_MODELS = [
-  { name: 'gemini-flash-latest',    api: 'v1beta' },
-  { name: 'gemini-pro-latest',      api: 'v1beta' },
-  { name: 'gemini-3.1-pro-preview', api: 'v1beta' },
-  { name: 'gemini-3.7-flash',       api: 'v1beta' },
+  { name: 'gemini-3.5-flash-lite',  api: 'v1beta' },
   { name: 'gemini-3.8-flash',       api: 'v1beta' },
+  { name: 'gemini-3.1-pro-preview', api: 'v1beta' },
 ] as const;
 const PAID_KEY = 6;
 

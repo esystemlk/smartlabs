@@ -45,20 +45,20 @@ const opts = { contents: [{ role: 'user', parts: [{ text: 'hi' }] }], deadlineMs
   primeKeyMode('auto');
   calls = []; script = ['ok'];
   r = await generateWithFailover(opts);
-  assert.deepEqual(calls[0], { key: 'fake-key-6', model: 'gemini-flash-latest' });
+  assert.deepEqual(calls[0], { key: 'fake-key-6', model: 'gemini-3.5-flash-lite' });
 
   // Automatic: a busy KEY_6 model gets one retry, then the NEXT MODEL on KEY_6 (not another key).
   calls = []; script = [503, 503, 'ok'];
   r = await generateWithFailover(opts);
   assert.deepEqual(calls.map(c => c.key), ['fake-key-6', 'fake-key-6', 'fake-key-6']);
-  assert.deepEqual(calls.map(c => c.model), ['gemini-flash-latest', 'gemini-flash-latest', 'gemini-pro-latest']);
+  assert.deepEqual(calls.map(c => c.model), ['gemini-3.5-flash-lite', 'gemini-3.5-flash-lite', 'gemini-3.8-flash']);
 
   // Automatic: only the approved ladder is ever used on KEY_6, and the free keys come after it.
-  calls = []; script = [404, 404, 404, 404, 404, 'ok'];
+  calls = []; script = [404, 404, 404, 'ok'];
   r = await generateWithFailover(opts);
-  assert.deepEqual(calls.slice(0, 5).map(c => c.model), ['gemini-flash-latest', 'gemini-pro-latest', 'gemini-3.1-pro-preview', 'gemini-3.7-flash', 'gemini-3.8-flash']);
-  assert.ok(calls.slice(0, 5).every(c => c.key === 'fake-key-6'));
-  assert.notEqual(calls[5].key, 'fake-key-6', 'falls back to a free key after the whole ladder');
+  assert.deepEqual(calls.slice(0, 3).map(c => c.model), ['gemini-3.5-flash-lite', 'gemini-3.8-flash', 'gemini-3.1-pro-preview']);
+  assert.ok(calls.slice(0, 3).every(c => c.key === 'fake-key-6'));
+  assert.notEqual(calls[3].key, 'fake-key-6', 'falls back to a free key after the whole ladder');
 
   // Without KEY_6, free keys behave as before: a busy key moves straight on to another key.
   const k6 = process.env.GOOGLE_GENAI_API_KEY_6; delete process.env.GOOGLE_GENAI_API_KEY_6;
@@ -71,7 +71,7 @@ const opts = { contents: [{ role: 'user', parts: [{ text: 'hi' }] }], deadlineMs
   primeKeyMode('single', 6);
   calls = []; script = [404, 'ok'];
   r = await generateWithFailover(opts);
-  assert.deepEqual(calls.map(c => c.model), ['gemini-flash-latest', 'gemini-pro-latest']);
+  assert.deepEqual(calls.map(c => c.model), ['gemini-3.5-flash-lite', 'gemini-3.8-flash']);
   primeKeyMode('auto');
 
   // A slot with no key on the server falls back to automatic.
