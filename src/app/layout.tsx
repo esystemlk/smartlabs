@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   description:
     'Smart Labs is Sri Lanka’s AI-powered PTE Academic institute — expert PTE trainers, AI-scored practice, full mock tests and PTE Boostify courses online and in Nugegoda. Also IELTS, KET & PET.',
   keywords: BASE_KEYWORDS,
-  alternates: { canonical: '/' },
+  // No site-wide canonical: every page inherited '/' and told Google it was a copy of the homepage.
   robots: {
     index: true,
     follow: true,

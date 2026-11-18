@@ -7,6 +7,7 @@ import {
 import { CommissionTiers } from '@/components/partners/commission-tiers';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/partners' },
   title: 'Become a Partner — SmartLabs Referral Programme',
   description:
     'Refer students to SmartLabs and earn tiered commission up to 15%. Businesses and individuals can join the SmartLabs referral partner programme and track every referral from their own workspace.',

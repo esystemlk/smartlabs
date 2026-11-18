@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/feedback-club' },
   title: 'Feedback Club — Weekly Expert PTE Feedback Sessions',
   description:
     'The Smart Labs Feedback Club: weekly live sessions where Academic Mentors review your PTE responses and give detailed feedback. Every Saturday · LKR 5,000 per session · advance booking required.',
