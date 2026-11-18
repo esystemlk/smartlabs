@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trash2, Mail, Clock, Database, Archive } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Delete Your Account | SmartLabs',
+  title: 'Delete Your Account',
   description:
     'How to request deletion of your SmartLabs account and associated data, what is deleted, and what is retained.',
 };

@@ -258,7 +258,7 @@ export default function CorporateTraining() {
               </p>
               <Button 
                 size="xl" 
-                className="bg-white text-primary hover:bg-white/90 shadow-xl"
+                className="bg-white text-primary hover:bg-white/90 shadow-xl max-w-full h-auto min-h-14 py-3 whitespace-normal text-center"
                 asChild
               >
                 <Link href="/contact">

@@ -19,6 +19,7 @@ const footerLinks = {
   ],
   company: [
     { name: "Blog", href: "/blog" },
+    { name: "Videos", href: "/videos" },
     { name: "Apps", href: "/apps" },
     { name: "Become a Partner", href: "/partners" },
     { name: "Partner Login", href: "/partners/login" },

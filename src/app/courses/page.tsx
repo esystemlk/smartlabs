@@ -6,7 +6,7 @@ import { IELTS_COURSE } from '@/lib/ielts-course';
 import { ArrowRight, Clock, MapPin, Monitor, Video, GraduationCap } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Courses & Fees | Smart Labs',
+  title: 'Courses & Fees',
   description: 'PTE and IELTS courses at Smart Labs — online and physical classes, class recordings. Register and pay online.',
 };
 

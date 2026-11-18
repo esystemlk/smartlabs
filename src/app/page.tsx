@@ -2,6 +2,7 @@
 import {IeltsText} from '@/components/ielts/ielts-text';
 import Link from "next/link";
 import { SeasonalHero } from '@/components/seasonal/seasonal-hero';
+import { HomeVideos } from '@/components/home-videos';
 import { SeasonalCompanions } from '@/components/seasonal/seasonal-companions';
 import Script from "next/script";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
@@ -637,6 +638,9 @@ export default function Home() {
       {popupsReady && <EventPopup />}
 
 
+      {/* The page's single H1 (the big hero words are visual only). */}
+      <h1 className="sr-only">Smart Labs — PTE, IELTS and English Classes in Sri Lanka</h1>
+
       {/* Hero Section — Diagonal Split (animations defined in globals.css) */}
       <SeasonalHero />
       <SeasonalCompanions placement="homeIntro" />
@@ -678,11 +682,11 @@ export default function Home() {
             </motion.p>
 
             <div style={{ overflowX: 'visible', overflowY: 'hidden' }}>
-              <motion.h1 initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ duration: 0.85, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              <motion.p initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ duration: 0.85, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 className="font-black text-slate-900 leading-none tracking-tighter"
                 style={{ fontSize: 'clamp(4rem, 10vw, 8.5rem)', lineHeight: 0.95, paddingRight: '0.05em' }}>
                 SMART
-              </motion.h1>
+              </motion.p>
             </div>
             <div style={{ overflowX: 'visible', overflowY: 'hidden', marginBottom: '1.75rem' }}>
               <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ duration: 0.85, delay: 0.52, ease: [0.16, 1, 0.3, 1] }}
@@ -843,10 +847,10 @@ export default function Home() {
               Welcome to
             </p>
             <div style={{ overflowX: 'visible', overflowY: 'hidden' }}>
-              <h1 className="hero-rise-in font-black text-slate-900 leading-none tracking-tighter"
+              <p className="hero-rise-in font-black text-slate-900 leading-none tracking-tighter"
                 style={{ fontSize: '18vw', lineHeight: 0.95, animationDelay: '0.05s' }}>
                 SMART
-              </h1>
+              </p>
             </div>
             <div style={{ overflowX: 'visible', overflowY: 'hidden', marginBottom: '1rem' }}>
               <div className="hero-rise-in font-black leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent-3 to-accent-1"
@@ -1652,6 +1656,9 @@ export default function Home() {
 
       {/* Google Reviews Section */}
       <GoogleReviews />
+
+      {/* Free video lessons (latest YouTube videos) */}
+      <HomeVideos />
 
       {/* FAQ Section - Ultra Modern Accordion */}
       <section className="py-24 sm:py-32 bg-slate-50 dark:bg-slate-900/50 relative overflow-hidden">

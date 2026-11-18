@@ -241,6 +241,7 @@ const ieltsQuickLinks = [
 // Courses mega-menu, and the footer (which shows on every public page).
 const navLinks = [
   { name: "Home", href: "/" },
+  { name: "Videos", href: "/videos" },
 ];
 
 // Mock notifications moved to Firebase service

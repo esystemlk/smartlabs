@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'PTE Exam Preparation Guide — Videos & What to Expect | Smart Labs',
+  title: 'PTE Exam Preparation Guide — Videos & What to Expect',
   description:
     'Get familiar with your PTE exam before test day: inside the test centre, IELTS vs PTE, booking your exam, creating your MyPTE account and more — explained with short videos from Smart Labs.',
 };

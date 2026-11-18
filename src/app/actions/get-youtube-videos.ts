@@ -12,14 +12,10 @@ export interface YouTubeVideo {
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const CHANNEL_ID = process.env.NEXT_PUBLIC_YOUTUBE_CHANNEL_ID;
 
+/** Latest channel videos, cached for an hour (so pages calling this don't use up the YouTube quota). [] if unavailable. */
 export async function getLatestVideos(): Promise<YouTubeVideo[]> {
-    console.log("--- DEBUGGING YOUTUBE ---");
-    console.log("API KEY (Exists?):", !!YOUTUBE_API_KEY);
-    console.log("CHANNEL ID:", CHANNEL_ID);
-
-    // Fallback to empty array if keys are missing, allowing UI to show mock data
     if (!YOUTUBE_API_KEY || !CHANNEL_ID) {
-        console.log("YouTube API keys missing, using mock data mode.");
+        console.warn("[youtube] YOUTUBE_API_KEY or NEXT_PUBLIC_YOUTUBE_CHANNEL_ID is not set.");
         return [];
     }
 

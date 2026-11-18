@@ -29,7 +29,7 @@ export function SeasonalHero() {
     <SeasonalSnow hero />
     <div className="seasonal-hero-copy">
       <p className="seasonal-eyebrow">{themeLabel(config.id)} at Smart Labs</p>
-      <h1>{config.hero.title.split('\n').map((line, index) => <span key={index} className={index === 0 ? 'seasonal-hero-first-line' : undefined}>{index > 0 && <br />}{line}</span>)}</h1>
+      <p className="seasonal-hero-title">{config.hero.title.split('\n').map((line, index) => <span key={index} className={index === 0 ? 'seasonal-hero-first-line' : undefined}>{index > 0 && <br />}{line}</span>)}</p>
       <p className="seasonal-hero-greeting">{config.hero.greeting}</p>
       <p>{config.hero.body}</p>
       <div className="flex flex-wrap gap-3 mt-8"><Link className="seasonal-cta" href={config.hero.primaryHref}>{config.hero.primaryLabel}</Link><Link className="seasonal-cta seasonal-cta-outline" href={config.hero.secondaryHref}>{config.hero.secondaryLabel}</Link></div>

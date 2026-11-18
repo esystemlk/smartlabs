@@ -86,7 +86,7 @@ export default function WindowsDownloadPage() {
                     </motion.p>
                 </div>
 
-                <div className="grid lg:grid-cols-12 gap-8 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
                     {/* Main Download Card */}
                     <motion.div
@@ -108,7 +108,7 @@ export default function WindowsDownloadPage() {
                                     </div>
                                 </div>
 
-                                <div className="grid md:grid-cols-2 gap-8 mb-12">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                                     {features.map((feature, i) => (
                                         <div key={i} className="flex gap-4">
                                             <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center shrink-0 group-hover:border-primary/30 transition-colors">
@@ -142,7 +142,7 @@ export default function WindowsDownloadPage() {
                         </SpotlightCard>
 
                         {/* Installation Guide */}
-                        <div className="grid sm:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                             <div className="glass-card p-8 rounded-[32px] border-white/5 bg-white/[0.02]">
                                 <h3 className="text-lg font-black text-white mb-6 flex items-center gap-2">
                                     <Info className="h-5 w-5 text-primary" />

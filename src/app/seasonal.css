@@ -8,7 +8,7 @@ body[data-seasonal="christmas"] .seasonal-companions-pageIntro .seasonal-compani
 body[data-seasonal="christmas"] :is(.seasonal-controls,.seasonal-popup) { background-color: #163532; border-color: #628b82; }
 body[data-seasonal="christmas"] .seasonal-controls button:hover { background: #254c44; }
 body[data-seasonal="christmas"] .seasonal-cta-outline { background: #0c2020a6; border-color: #a9dce8; }
-body[data-seasonal="christmas"] .seasonal-eyebrow,body[data-seasonal="christmas"] .seasonal-hero h1 span:not(.seasonal-hero-first-line) { color: #f6c66a; }
+body[data-seasonal="christmas"] .seasonal-eyebrow,body[data-seasonal="christmas"] .seasonal-hero .seasonal-hero-title span:not(.seasonal-hero-first-line) { color: #f6c66a; }
 body[data-seasonal="christmas"] [data-seasonal-text-backplate] { background-color: #0c2020 !important; }
 .seasonal-snow { overflow: hidden; pointer-events: none; contain: layout paint; }
 .seasonal-snow-hero { position: absolute; inset: 0; z-index: 1; }
@@ -83,9 +83,9 @@ body[data-seasonal-palette] :where(.transition-all,.transition-colors),body[data
 @media(max-width:767px) { .seasonal-effect-desktop { display: none; } .seasonal-hero-desktop-motion .seasonal-hero-picture img { animation: none; } .seasonal-hero-desktop-motion .seasonal-hero-atmosphere { display: none; } .seasonal-flying-bat:nth-child(n+3) { display: none; } }
 @media(prefers-reduced-motion:reduce) { .seasonal-flight,.seasonal-hero-atmosphere { display: none !important; } .seasonal-hero-animated .seasonal-hero-picture img { animation: none !important; } }
 .seasonal-eyebrow { color: #ffb66d; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; font-weight: 700; }
-.seasonal-hero h1 { font-size: clamp(44px,5.6vw,82px); line-height: 1.08; letter-spacing: -.045em; font-weight: 800; margin: 24px 0; color: #fff6e8; }
-.seasonal-hero h1 span { color: #ffb66d; }
-.seasonal-hero h1 .seasonal-hero-first-line { color: #fff6e8; }
+.seasonal-hero .seasonal-hero-title { font-size: clamp(44px,5.6vw,82px); line-height: 1.08; letter-spacing: -.045em; font-weight: 800; margin: 24px 0; color: #fff6e8; }
+.seasonal-hero .seasonal-hero-title span { color: #ffb66d; }
+.seasonal-hero .seasonal-hero-title .seasonal-hero-first-line { color: #fff6e8; }
 .seasonal-hero-copy > p:not(.seasonal-eyebrow) { max-width: 510px; line-height: 1.8; color: #e5d9ed; }
 .seasonal-hero-greeting { font-size: 21px; margin-bottom: 12px; }
 .seasonal-hero-note { margin-top: 28px; font-size: 12px; }

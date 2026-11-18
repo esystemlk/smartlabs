@@ -316,7 +316,7 @@ export default function GrammarClinicPage() {
             {/* Conversion Trigger Section */}
             <section className="py-24 bg-gradient-to-br from-background to-blue-50">
                 <div className="container mx-auto px-4 lg:px-8">
-                    <div className="grid lg:grid-cols-2 gap-12 items-center">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                         <div className="space-y-8">
                             <h2 className="text-4xl md:text-5xl font-black font-headline tracking-tighter leading-tight">Why this Clinic <br /><span className="text-[#1E40AF]">is important</span></h2>
                             <div className="space-y-6">
@@ -356,7 +356,7 @@ export default function GrammarClinicPage() {
 
                                 <div className="space-y-4 pt-8 border-t border-muted">
                                     <p className="text-sm font-black text-muted-foreground uppercase opacity-60">Ready for elite prep?</p>
-                                    <Button asChild variant="hero" size="xl" className="w-full rounded-2xl bg-[#1E40AF] group">
+                                    <Button asChild variant="hero" size="xl" className="w-full rounded-2xl bg-[#1E40AF] group h-auto min-h-14 py-3 whitespace-normal text-center">
                                         <Link href="/courses">
                                             Join PTE Boostify Program  →
                                         </Link>
