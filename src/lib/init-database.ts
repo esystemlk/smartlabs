@@ -12,7 +12,7 @@ export async function initializeDatabase() {
         // 1. Initialize Site Stats
         const statsRef = doc(db, 'site_stats', 'global_stats');
         await setDoc(statsRef, {
-            studentsCount: 5000,
+            studentsCount: 7100,
             successRate: 95,
             targetWeeks: '6–8',
             reviewsCount: 1200,

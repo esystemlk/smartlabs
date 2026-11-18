@@ -24,7 +24,7 @@ export async function getSiteStats(): Promise<SiteStats> {
         if (statsSnap.exists()) {
             const data = statsSnap.data();
             return {
-                studentsCount: data.studentsCount || 5000,
+                studentsCount: data.studentsCount || 7100,
                 successRate: data.successRate || 95,
                 targetWeeks: data.targetWeeks || '6–8',
                 reviewsCount: data.reviewsCount || 1200,
@@ -36,7 +36,7 @@ export async function getSiteStats(): Promise<SiteStats> {
 
         // Initialize with default values if doesn't exist
         const defaultStats: SiteStats = {
-            studentsCount: 5000,
+            studentsCount: 7100,
             successRate: 95,
             targetWeeks: '6–8',
             reviewsCount: 1200,
@@ -51,7 +51,7 @@ export async function getSiteStats(): Promise<SiteStats> {
         console.error('Error fetching site stats:', error);
         // Return defaults on error
         return {
-            studentsCount: 5000,
+            studentsCount: 7100,
             successRate: 95,
             targetWeeks: '6–8',
             reviewsCount: 1200,

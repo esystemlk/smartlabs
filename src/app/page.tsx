@@ -153,7 +153,7 @@ type Stat = {
 };
 
 const stats: Stat[] = [
-  { value: 5000, suffix: "+", label: "Students Trained", color: "text-accent-1" },
+  { value: 7100, suffix: "+", label: "Students Trained", color: "text-accent-1" },
   { value: 95, suffix: "%", label: "Success Rate", color: "text-accent-2" },
   { valueString: "6–8", suffix: " Weeks", label: "Target Achievement", color: "text-accent-3" },
   { value: 24, suffix: "/7", label: "AI Support", color: "text-accent-4" },
@@ -910,7 +910,7 @@ export default function Home() {
           <div style={{ display: 'flex', width: 'max-content', animation: 'hero-marquee 30s linear infinite', willChange: 'transform' }}>
             {[...Array(2)].flatMap((_, ri) =>
               ["PTE Academic","·","IELTS","·","KET Exam","·","PET Exam","·",
-               "5,000+ Students","·","95% Success Rate","·","AI Powered Scoring","·",
+               "7,100+ Students","·","95% Success Rate","·","AI Powered Scoring","·",
                "Live Expert Classes","·","6–8 Weeks to Target","·","Pearson Certified","·"].map((item, i) => (
                 <span key={`${ri}-${i}`}
                   className={item === "·"

@@ -18,7 +18,7 @@ export default function AdminDataPage() {
     const [updating, setUpdating] = useState(false);
 
     const [formData, setFormData] = useState({
-        studentsCount: 5000,
+        studentsCount: 7100,
         successRate: 95,
         targetWeeks: '6–8',
         reviewsCount: 1200,

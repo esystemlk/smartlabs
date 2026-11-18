@@ -104,7 +104,7 @@ export function WorkshopPopup() {
                             </Button>
                             
                             <p className="text-center text-xs text-muted-foreground font-bold uppercase tracking-widest">
-                                ⚡ Join 5,000+ students globally
+                                ⚡ Join 7,100+ students globally
                             </p>
                         </div>
                     </motion.div>
