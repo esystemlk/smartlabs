@@ -240,7 +240,8 @@ const ieltsQuickLinks = [
 // bar to reduce clutter. They remain reachable from the homepage hero, the
 // Courses mega-menu, and the footer (which shows on every public page).
 const navLinks = [
-  { name: "Home", href: "/" },
+  // The logo already links home, so the text link only shows where the bar has room.
+  { name: "Home", href: "/", desktopClass: "hidden xl:flex" },
   { name: "Videos", href: "/videos" },
 ];
 
@@ -359,7 +360,7 @@ export default function Header() {
               onMouseLeave={() => setCoursesOpen(false)}
             >
               <button className={cn(
-                "flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all group",
+                "flex items-center gap-1.5 px-3 xl:px-4 py-2 rounded-xl text-sm font-semibold transition-all group",
                 coursesOpen ? "text-primary bg-primary/5" : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}>
                 Courses
@@ -465,7 +466,7 @@ export default function Header() {
               onMouseLeave={() => setPteAiOpen(false)}
             >
               <button className={cn(
-                "flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all group",
+                "flex items-center gap-1.5 px-3 xl:px-4 py-2 rounded-xl text-sm font-semibold transition-all group",
                 pteAiOpen ? "text-primary bg-primary/5" : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}>
                 <Bot className="h-4 w-4" />
@@ -535,7 +536,7 @@ export default function Header() {
               onMouseLeave={() => setIeltsOpen(false)}
             >
               <button className={cn(
-                "flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all group",
+                "flex items-center gap-1.5 px-3 xl:px-4 py-2 rounded-xl text-sm font-semibold transition-all group",
                 ieltsOpen ? "text-red-600 bg-red-500/5" : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}>
                 <GraduationCap className="h-4 w-4" />
@@ -626,7 +627,7 @@ export default function Header() {
                   <Link
                     href="/dashboard"
                     className={cn(
-                      "relative px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2",
+                      "relative px-3 xl:px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2",
                       pathname === "/dashboard"
                         ? "text-primary bg-primary/5"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -643,7 +644,8 @@ export default function Header() {
                     target={link.external ? "_blank" : undefined}
                     rel={link.external ? "noopener noreferrer" : undefined}
                     className={cn(
-                      "relative px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2",
+                      "relative px-3 xl:px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2",
+                      link.desktopClass,
                       pathname === link.href
                         ? "text-primary bg-primary/5"
                         : link.highlight
@@ -672,10 +674,10 @@ export default function Header() {
             <button
               onClick={() => window.dispatchEvent(new Event('open-command-palette'))}
               aria-label="Search the site"
-              className="flex items-center gap-2 h-10 pl-3 pr-2 rounded-xl border border-border/60 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-2 h-10 px-2.5 xl:pl-3 xl:pr-2 rounded-xl border border-border/60 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
             >
               <Search className="h-4 w-4" />
-              <span className="text-xs font-semibold">Search</span>
+              <span className="hidden xl:inline text-xs font-semibold">Search</span>
               <kbd className="ml-1 hidden xl:inline-flex items-center rounded-md bg-background border border-border px-1.5 py-0.5 text-[9px] font-black text-muted-foreground">Ctrl K</kbd>
             </button>
 
