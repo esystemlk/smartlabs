@@ -1471,6 +1471,52 @@ export default function Home() {
         </div>
       </section>
 
+      {/* One-to-One Sessions */}
+      <section aria-labelledby="home-one-to-one" className="relative py-12 sm:py-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 dark:border-slate-800 dark:bg-slate-900 sm:p-10"
+          >
+            <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
+            <div className="relative grid gap-8 lg:grid-cols-[1.3fr_1fr] lg:items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-black uppercase tracking-widest text-primary">
+                  <User className="h-3.5 w-3.5" /> New · Private coaching
+                </div>
+                <h2 id="home-one-to-one" className="mt-4 text-2xl font-black sm:text-3xl">One-to-One Sessions with a SmartLabs lecturer</h2>
+                <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+                  Book a private PTE or IELTS session built around you. Choose your lecturer, pick an open time and learn online on Zoom or in person.
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link href="/one-to-one" className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3.5 text-sm font-black text-primary-foreground transition-opacity hover:opacity-90">
+                    <Calendar className="h-4 w-4" /> Book a session <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <Link href="/one-to-one/my-bookings" className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-6 py-3.5 text-sm font-bold dark:border-slate-700">
+                    My bookings
+                  </Link>
+                </div>
+              </div>
+              <ul className="grid gap-3 text-sm">
+                {[
+                  { icon: Users, title: 'Choose your lecturer', text: 'See each lecturer’s profile, subjects and hourly price.' },
+                  { icon: Clock, title: '1, 2 or 3 hours', text: 'Pick a length and any open start time that suits you.' },
+                  { icon: Video, title: 'Online or physical', text: 'Your Zoom link opens 30 minutes before class.' },
+                  { icon: Check, title: 'Fair refund policy', text: 'Full refund when you cancel 3+ days ahead.' },
+                ].map(item => (
+                  <li key={item.title} className="flex gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/60">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><item.icon className="h-4 w-4" /></span>
+                    <span><strong className="block">{item.title}</strong><span className="text-muted-foreground">{item.text}</span></span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Learning Methods Section - Advanced Grid */}
       <section className="relative py-24 sm:py-32 overflow-hidden bg-white dark:bg-slate-950">
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-accent-3/5 blur-[160px] rounded-full -z-10" />
