@@ -74,6 +74,11 @@ export const adminNavigation: {title:string;items:AdminTool[]}[] = [
         "href": "/admin/dashboard/webinars"
       },
       {
+        "title": "One-to-One Sessions",
+        "description": "Lecturers, bookings, session confirmations, refunds & lecturer pay",
+        "href": "/admin/dashboard/one-to-one"
+      },
+      {
         "title": "Session Manager",
         "description": "Active Zoom session links for live classes",
         "href": "/admin/dashboard/sessions"

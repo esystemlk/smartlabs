@@ -25,6 +25,7 @@ const ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.S
   { path: '/workshops', priority: 0.6, changeFrequency: 'weekly' },
   { path: '/webinar', priority: 0.6, changeFrequency: 'weekly' },
   { path: '/videos', priority: 0.6, changeFrequency: 'weekly' },
+  { path: '/one-to-one', priority: 0.7, changeFrequency: 'weekly' },
   { path: '/apps', priority: 0.6, changeFrequency: 'monthly' },
   { path: '/download/windows', priority: 0.5, changeFrequency: 'monthly' },
   { path: '/contact', priority: 0.6, changeFrequency: 'yearly' },

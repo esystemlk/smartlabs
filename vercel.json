@@ -15,6 +15,14 @@
     {
       "path": "/api/cron/cleanup-pending-payments",
       "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/one-to-one-reminders?run=evening",
+      "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/cron/one-to-one-reminders?run=morning",
+      "schedule": "0 2 * * *"
     }
   ]
 }

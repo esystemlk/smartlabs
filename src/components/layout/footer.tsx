@@ -14,6 +14,7 @@ const footerLinks = {
     { name: "All Courses", href: "/courses" },
     { name: "Feedback Club", href: "/feedback-club" },
     { name: "Level Test", href: "/level-test" },
+    { name: "One-to-One Sessions", href: "/one-to-one" },
     { name: "Corporate Training", href: "/corporate-training" },
     { name: "LMS Portal", href: LMS_URL },
   ],
