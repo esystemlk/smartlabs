@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Smart Labs — IELTS Reel Ads</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --navy:#020617; --navy2:#0b1220; --blue:#3b82f6; --blue-l:#60a5fa;
+    --violet:#8b5cf6; --violet-l:#a78bfa; --ink:#f8fafc; --muted:#94a3b8;
+    --stageW:1080px; --stageH:1920px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%; background:#000; font-family:'Poppins',system-ui,sans-serif; -webkit-font-smoothing:antialiased}
+  body{display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden}
+
+  /* ---- controls (hidden while recording / fullscreen) ---- */
+  .bar{position:fixed; top:0; left:0; right:0; z-index:50; display:flex; gap:8px; justify-content:center;
+       padding:10px; background:rgba(2,6,23,.85); backdrop-filter:blur(8px); color:#fff; font-size:13px; flex-wrap:wrap}
+  .bar button{font:inherit; font-weight:700; color:#fff; background:#1e293b; border:1px solid #334155;
+              padding:8px 14px; border-radius:999px; cursor:pointer; transition:.2s}
+  .bar button:hover{background:#334155}
+  .bar button.on{background:var(--blue); border-color:var(--blue)}
+  body.rec .bar{display:none}
+
+  /* ---- 9:16 stage, scaled to fit the window ---- */
+  .stageWrap{display:flex; align-items:center; justify-content:center; width:100vw; height:100vh}
+  .stage{position:relative; width:var(--stageW); height:var(--stageH); overflow:hidden;
+         transform-origin:center center; background:radial-gradient(130% 90% at 50% 0%, #0b1220 0%, #020617 55%, #01030a 100%);
+         border-radius:0; color:var(--ink)}
+
+  /* animated background */
+  .orb{position:absolute; border-radius:50%; filter:blur(70px); opacity:.55; animation:float 9s ease-in-out infinite}
+  .orb.b{width:520px; height:520px; background:var(--blue); top:-120px; right:-120px}
+  .orb.v{width:560px; height:560px; background:var(--violet); bottom:-160px; left:-140px; animation-delay:-4s}
+  @keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(40px) scale(1.08)}}
+  .grid{position:absolute; inset:0; opacity:.14;
+        background-image:linear-gradient(#ffffff22 1px,transparent 1px),linear-gradient(90deg,#ffffff22 1px,transparent 1px);
+        background-size:64px 64px; mask-image:radial-gradient(70% 70% at 50% 40%,#000 40%,transparent 100%)}
+  .accentline{position:absolute; top:0; left:0; right:0; height:8px;
+              background:linear-gradient(90deg,var(--blue),var(--violet),var(--blue-l))}
+
+  /* brand chrome */
+  .wordmark{position:absolute; top:46px; left:0; right:0; text-align:center; z-index:5;
+            font-weight:900; letter-spacing:.5px; font-size:40px}
+  .wordmark b{background:linear-gradient(90deg,var(--blue-l),var(--violet-l)); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .wordmark span{display:block; font-size:13px; font-weight:800; letter-spacing:8px; color:var(--muted); margin-top:4px}
+  .footer{position:absolute; bottom:40px; left:0; right:0; text-align:center; z-index:5; color:var(--muted); font-size:22px; font-weight:600}
+  .footer b{color:var(--ink)}
+
+  /* progress dots */
+  .dots{position:absolute; top:150px; left:0; right:0; display:flex; gap:10px; justify-content:center; z-index:6}
+  .dots i{width:46px; height:5px; border-radius:999px; background:#ffffff22; overflow:hidden; position:relative}
+  .dots i.active::after{content:""; position:absolute; inset:0; background:var(--blue-l); animation:fill linear forwards; transform-origin:left}
+  @keyframes fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  .dots i.done{background:var(--blue-l)}
+
+  /* ---- scene ---- */
+  .scene{position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center;
+         text-align:center; padding:0 90px; z-index:4}
+  .scene.show{display:flex}
+  .eyebrow{font-size:26px; font-weight:800; letter-spacing:4px; text-transform:uppercase; color:var(--blue-l)}
+  .big{font-size:96px; line-height:1.02; font-weight:900; margin:18px 0}
+  .big .g{background:linear-gradient(90deg,var(--blue-l),var(--violet-l)); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .med{font-size:58px; line-height:1.1; font-weight:800; margin:14px 0}
+  .sub{font-size:34px; font-weight:500; color:#cbd5e1; margin-top:10px; line-height:1.4}
+  .price{font-size:120px; font-weight:900; color:#fff; line-height:1}
+  .price small{display:block; font-size:30px; font-weight:700; color:var(--blue-l); letter-spacing:3px; text-transform:uppercase; margin-bottom:10px}
+
+  .list{display:flex; flex-direction:column; gap:22px; margin-top:26px; width:100%}
+  .list .row{display:flex; align-items:center; gap:22px; font-size:40px; font-weight:700; text-align:left;
+             background:#ffffff0d; border:1px solid #ffffff1a; border-radius:26px; padding:24px 30px}
+  .list .row .tick{flex:none; width:54px; height:54px; border-radius:50%; display:grid; place-items:center;
+                   background:linear-gradient(135deg,var(--blue),var(--violet)); font-size:30px}
+
+  .pill{display:inline-flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:30px}
+  .pill span{font-size:34px; font-weight:800; padding:16px 30px; border-radius:999px;
+             background:#ffffff10; border:1px solid #ffffff24}
+
+  .stat{display:flex; gap:60px; justify-content:center; margin-top:10px}
+  .stat div{display:flex; flex-direction:column}
+  .stat .n{font-size:110px; font-weight:900; line-height:1;
+           background:linear-gradient(90deg,var(--blue-l),var(--violet-l)); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .stat .l{font-size:28px; font-weight:700; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-top:12px}
+
+  /* CTA phone */
+  .cta{display:flex; flex-direction:column; align-items:center; gap:26px}
+  .cta .call{font-size:30px; font-weight:800; letter-spacing:4px; text-transform:uppercase; color:var(--blue-l)}
+  .phone{display:flex; align-items:center; gap:26px; font-size:84px; font-weight:900;
+         background:linear-gradient(135deg,var(--blue),var(--violet)); padding:30px 56px; border-radius:40px;
+         box-shadow:0 24px 70px -20px var(--violet)}
+  .phone .ic{width:84px; height:84px; border-radius:50%; background:#ffffff22; display:grid; place-items:center; font-size:48px}
+  .wa{font-size:34px; font-weight:700; color:#cbd5e1}
+  .wa b{color:#25D366}
+
+  /* entrance animations */
+  .scene.show .anim{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+  .scene.show .anim.d1{animation-delay:.12s}
+  .scene.show .anim.d2{animation-delay:.26s}
+  .scene.show .anim.d3{animation-delay:.4s}
+  .scene.show .anim.d4{animation-delay:.54s}
+  .scene.show .anim.d5{animation-delay:.68s}
+  .scene.show .pop{animation:pop .6s cubic-bezier(.2,1.2,.3,1) both}
+  @keyframes rise{from{opacity:0; transform:translateY(42px)}to{opacity:1; transform:translateY(0)}}
+  @keyframes pop{from{opacity:0; transform:scale(.7)}to{opacity:1; transform:scale(1)}}
+</style>
+</head>
+<body>
+  <div class="bar" id="bar">
+    <button data-ad="0" class="on">Ad 1 · Target your band</button>
+    <button data-ad="1">Ad 2 · Everything included</button>
+    <button data-ad="2">Ad 3 · Enrol now</button>
+    <button id="loopAll">▶ Play all (loop)</button>
+    <button id="fs">⛶ Fullscreen + record</button>
+  </div>
+
+  <div class="stageWrap">
+    <div class="stage" id="stage">
+      <div class="accentline"></div>
+      <div class="orb b"></div><div class="orb v"></div><div class="grid"></div>
+      <div class="wordmark">SMART<b>LABS</b><span>SRI LANKA'S #1 ENGLISH TRAINING</span></div>
+      <div class="dots" id="dots"></div>
+      <div id="scenes"></div>
+      <div class="footer" id="footer">smartlabs.lk &nbsp;·&nbsp; <b>Register today</b></div>
+    </div>
+  </div>
+
+<script>
+const PHONE = "070 691 4652";
+const callBlock = `
+  <div class="cta">
+    <div class="call anim d1">Call &amp; WhatsApp</div>
+    <div class="phone pop">
+      <div class="ic">📞</div>${PHONE}
+    </div>
+    <div class="wa anim d3">Message us on <b>WhatsApp</b> — batches filling now</div>
+  </div>`;
+
+// Each ad = ordered scenes. ms = how long the scene holds.
+const ADS = [
+  // AD 1 — Target your band
+  [
+    {ms:2600, html:`<div class="eyebrow anim">Study · Work · Migrate abroad</div>
+      <div class="big anim d1">Your <span class="g">IELTS band</span><br>opens the door 🌍</div>`},
+    {ms:2800, html:`<div class="eyebrow anim">Smart Labs IELTS Program</div>
+      <div class="med anim d1">Band-focused coaching<br>for your target score</div>
+      <div class="sub anim d2">Academic &amp; General · All four skills</div>`},
+    {ms:3600, html:`<div class="eyebrow anim">What you get</div>
+      <div class="list">
+        <div class="row anim d1"><div class="tick">✓</div>Listening · Reading · Writing · Speaking</div>
+        <div class="row anim d2"><div class="tick">✓</div>Cambridge-style tests, instant marking</div>
+        <div class="row anim d3"><div class="tick">✓</div>Writing feedback — Task 1 &amp; Task 2</div>
+        <div class="row anim d4"><div class="tick">✓</div>Exam strategy &amp; timing for test day</div>
+      </div>`},
+    {ms:2800, html:`<div class="stat">
+        <div><div class="n pop">5,281+</div><div class="l anim d2">Students trained</div></div>
+        <div><div class="n pop">95%</div><div class="l anim d3">Success rate</div></div>
+      </div>`},
+    {ms:3000, html:`<div class="price pop"><small>1-Month IELTS Program</small>LKR 20,000</div>
+      <div class="sub anim d3">Expert coaching · Full dashboard access</div>`},
+    {ms:3400, html:callBlock},
+  ],
+  // AD 2 — Everything included
+  [
+    {ms:2600, html:`<div class="eyebrow anim">Smart Labs IELTS</div>
+      <div class="big anim d1">Prep <span class="g">smarter</span>,<br>not harder.</div>`},
+    {ms:3200, html:`<div class="eyebrow anim">All four skills — covered</div>
+      <div class="pill">
+        <span class="anim d1">🎧 Listening</span><span class="anim d2">📖 Reading</span>
+        <span class="anim d3">✍️ Writing</span><span class="anim d4">🎤 Speaking</span>
+      </div>
+      <div class="sub anim d5">Strategy + real practice for each paper</div>`},
+    {ms:3200, html:`<div class="med anim">Cambridge-style<br>practice tests</div>
+      <div class="sub anim d2">Listening &amp; Reading with <b>instant marking</b><br>right on your dashboard</div>`},
+    {ms:3000, html:`<div class="med anim">Real writing feedback</div>
+      <div class="sub anim d2">Task 1 &amp; Task 2 — structure, ideas,<br>grammar and band-boosting tips</div>`},
+    {ms:2800, html:`<div class="price pop"><small>1-Month Program</small>LKR 20,000</div>
+      <div class="sub anim d3">Batch details via email &amp; WhatsApp after you register</div>`},
+    {ms:3400, html:callBlock},
+  ],
+  // AD 3 — Enrol now (short, punchy)
+  [
+    {ms:2200, html:`<div class="big anim">Targeting <span class="g">Band 7+?</span></div>`},
+    {ms:2200, html:`<div class="big anim">We'll get<br>you there. 🚀</div>`},
+    {ms:2800, html:`<div class="pill">
+        <span class="anim d1">All 4 skills</span><span class="anim d2">Expert coaching</span><span class="anim d3">Just 1 month</span>
+      </div>`},
+    {ms:2800, html:`<div class="price pop"><small>Smart Labs IELTS</small>LKR 20,000</div>
+      <div class="sub anim d3">Seats are limited — batches filling now</div>`},
+    {ms:3600, html:callBlock},
+  ],
+];
+
+const scenesEl = document.getElementById('scenes');
+const dotsEl = document.getElementById('dots');
+let adIdx = 0, scIdx = 0, timer = null, loopAll = false;
+
+function fitStage(){
+  const s = document.getElementById('stage');
+  const scale = Math.min(window.innerWidth/1080, window.innerHeight/1920);
+  s.style.transform = `scale(${scale})`;
+}
+window.addEventListener('resize', fitStage); fitStage();
+
+function buildDots(n){
+  dotsEl.innerHTML = '';
+  for(let i=0;i<n;i++){ const d=document.createElement('i'); dotsEl.appendChild(d); }
+}
+
+function renderScene(){
+  const ad = ADS[adIdx], sc = ad[scIdx];
+  scenesEl.innerHTML = `<div class="scene show">${sc.html}</div>`;
+  // dots
+  [...dotsEl.children].forEach((d,i)=>{
+    d.className = i<scIdx ? 'done' : (i===scIdx ? 'active' : '');
+    if(i===scIdx){ d.style.setProperty('--d', sc.ms+'ms'); d.querySelector; }
+  });
+  const active = dotsEl.children[scIdx];
+  if(active){ active.style.cssText = ''; active.classList.add('active'); active.style.setProperty('animation-duration', sc.ms+'ms');
+    active.innerHTML=''; } // active::after uses animation-duration via inline
+  // apply fill duration to the ::after by setting it on the element
+  styleActiveDot(sc.ms);
+  clearTimeout(timer);
+  timer = setTimeout(nextScene, sc.ms);
+}
+
+function styleActiveDot(ms){
+  // inject per-active-dot fill duration
+  let st = document.getElementById('dotdur'); if(!st){ st=document.createElement('style'); st.id='dotdur'; document.head.appendChild(st); }
+  st.textContent = `.dots i.active::after{animation-duration:${ms}ms}`;
+}
+
+function nextScene(){
+  scIdx++;
+  if(scIdx >= ADS[adIdx].length){
+    if(loopAll){ adIdx = (adIdx+1) % ADS.length; syncButtons(); }
+    scIdx = 0;
+    buildDots(ADS[adIdx].length);
+  }
+  renderScene();
+}
+
+function playAd(i){
+  adIdx = i; scIdx = 0; buildDots(ADS[adIdx].length); renderScene();
+}
+
+function syncButtons(){
+  document.querySelectorAll('[data-ad]').forEach(b=>b.classList.toggle('on', +b.dataset.ad===adIdx));
+}
+
+document.querySelectorAll('[data-ad]').forEach(b=>{
+  b.onclick = ()=>{ loopAll=false; document.getElementById('loopAll').classList.remove('on'); playAd(+b.dataset.ad); syncButtons(); };
+});
+document.getElementById('loopAll').onclick = (e)=>{ loopAll=true; e.target.classList.add('on'); playAd(0); syncButtons(); };
+document.getElementById('fs').onclick = ()=>{
+  document.body.classList.add('rec');
+  (document.documentElement.requestFullscreen?.() || Promise.resolve());
+};
+document.addEventListener('fullscreenchange', ()=>{ if(!document.fullscreenElement) document.body.classList.remove('rec'); });
+
+playAd(0);
+</script>
+</body>
+</html>

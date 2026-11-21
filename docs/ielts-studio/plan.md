@@ -115,3 +115,21 @@ and use instead:
 2. Should smartlabs.lk keep its own IELTS section, or link to IELTS Studio after launch?
 3. Same prices on both sites? (Recommended: yes.)
 4. Phase 2 one-click hand-off: now or later?
+
+## 9. Packages (decided 12 Nov 2026)
+
+IELTS Studio will be rebuilt as a **separate web app in its own repo**, using the same Firebase project. Packages, all in USD:
+
+| Package | Price | Includes |
+|---|---|---|
+| Free | $0 | Listening and Reading practice for books 15–21, instant results, 1 Writing Task 2 essay with AI feedback |
+| Plus | $15 per month | Everything in Free, AI focused feedback on every part, Speaking practice, Writing Task 1 and Task 2 up to 5 a day for each |
+| Unlimited | $35 per month | Everything in Plus, with no daily Writing limit (Task 1 and Task 2) |
+| Full mock test | $5 per credit | One full mock (Listening, Reading, Writing). Separate from packages, available on any plan |
+
+Rules:
+- Plus and Unlimited are **paid manually each month** (no automatic renewal). Each payment gives one month of access; when it ends the account returns to Free and keeps its history.
+- Mock credits **do not expire** while the account is used. They expire only after **more than 12 months without signing in** (the app must record last sign-in and run a cleanup).
+- Plus: Task 1 and Task 2 each limited to 5 submissions a day (confirmed 12 Nov 2026).
+
+Design sample: `pricing.html`.
