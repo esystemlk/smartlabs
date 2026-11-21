@@ -23,7 +23,7 @@ export async function GET(request: Request) {
       if (typeof d?.seconds === 'number') return d.seconds * 1000;
       return 0;
     };
-    const rows = snap.docs.map((doc) => {
+    const rows = snap.docs.filter((doc) => doc.data().status !== 'chargedback').map((doc) => {
       const e = doc.data();
       return {
         orderId: String(e.orderId ?? doc.id),

@@ -53,6 +53,32 @@ export async function POST(request: NextRequest) {
       return new Response('OK', { status: 200 });
     }
 
+    const cert = certSnap.data()!;
+    if (cert.paymentStatus === 'chargedback') return new Response('OK', { status: 200 });
+
+    // Only the order that actually paid for this request can be charged back.
+    if (status_code === '-3') {
+      if (cert.paymentStatus !== 'paid' || cert.paymentOrderId !== orderIdStr) return new Response('OK', { status: 200 });
+      const issued = cert.status === 'approved';
+      await certRef.update({
+        paymentStatus: 'chargedback',
+        ...(issued ? {} : { status: 'rejected', adminNotes: 'Payment was charged back.' }),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+      console.warn(`[cert-notify] chargeback: request ${requestId} order ${orderIdStr}`);
+      try {
+        await sendMail({
+          to: 'contact@smartlabs.lk',
+          subject: `Chargeback — certificate (${orderIdStr})`,
+          html: `<p>PayHere reported a chargeback for certificate request <b>${requestId}</b>, order <b>${orderIdStr}</b>, user <b>${cert.userId}</b>.</p><p>${issued ? 'This certificate was already issued and has not been revoked. Please decide what to do with it.' : 'The request has been rejected and can no longer be approved.'}</p>`,
+        });
+      } catch (e) { console.error('[cert-notify] chargeback alert failed:', e); }
+      return new Response('OK', { status: 200 });
+    }
+
+    // PayHere retries, and a repeat must not reset an approved request.
+    if (cert.paymentStatus === 'paid') return new Response('OK', { status: 200 });
+
     if (status_code === '2') {
       await certRef.update({
         paymentStatus: 'paid',
@@ -61,7 +87,7 @@ export async function POST(request: NextRequest) {
         updatedAt: FieldValue.serverTimestamp(),
       });
 
-      const certData = certSnap.data()!;
+      const certData = cert;
       const notificationEmail = process.env.NOTIFICATION_EMAIL || process.env.GMAIL_USER || '';
 
       // Notify admin

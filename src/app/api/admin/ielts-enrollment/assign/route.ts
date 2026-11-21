@@ -38,7 +38,8 @@ export async function POST(request: Request) {
     const ref = adminDb!.collection('ielts_course_enrollments').doc(String(orderId));
     const snap = await ref.get();
     if (!snap.exists) return NextResponse.json({ error: 'Enrolment not found.' }, { status: 404 });
-    const e = snap.data() as { userId?: string; email?: string; fullName?: string };
+    const e = snap.data() as { userId?: string; email?: string; fullName?: string; status?: string };
+    if (e.status === 'chargedback') return NextResponse.json({ error: 'Payment for this enrolment was charged back.' }, { status: 409 });
 
     const now = FieldValue.serverTimestamp();
     const batch = {

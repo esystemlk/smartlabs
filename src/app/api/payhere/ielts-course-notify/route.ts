@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { createHash } from 'crypto';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { applyChargeback } from '@/lib/payhere-chargeback';
 import { sendMail } from '@/lib/mail';
 import { renderIeltsReceiptEmail } from '@/lib/ielts-receipt-email';
 import { renderAdminPaymentAlert } from '@/lib/admin-payment-email';
@@ -34,6 +35,19 @@ export async function POST(request: NextRequest) {
 
     const orderDoc = ordersSnap.docs[0];
     const orderData = orderDoc.data();
+    if (orderData.paymentStatus === 'chargedback') return new Response('OK', { status: 200 });
+
+    // A chargeback arrives after success, so handle it before the success guard.
+    if (String(status_code) === '-3') {
+      await applyChargeback(orderDoc, String(order_id), 'IELTS course (also remove the student from any batch group)', {
+        accessRows: [
+          adminDb.collection('ielts_course_enrollments').doc(String(order_id)),
+          adminDb.collection('users').doc(String(orderData.userId)).collection('enrollments').doc(String(order_id)),
+        ],
+      });
+      return new Response('OK', { status: 200 });
+    }
+
     if (orderData.paymentStatus === 'success') return new Response('OK', { status: 200 });
 
     const sc = String(status_code);
@@ -51,7 +65,7 @@ export async function POST(request: NextRequest) {
 
       await adminDb.runTransaction(async (tx) => {
         const fresh = await tx.get(orderDoc.ref);
-        if (fresh.data()?.paymentStatus === 'success') return; // idempotent
+        if (['success', 'chargedback'].includes(fresh.data()?.paymentStatus)) return; // idempotent
 
         tx.update(orderDoc.ref, { paymentStatus: 'success', payherePaymentId: String(payment_id), updatedAt: FieldValue.serverTimestamp() });
 

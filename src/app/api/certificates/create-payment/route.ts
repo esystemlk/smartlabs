@@ -36,6 +36,9 @@ export async function POST(request: NextRequest) {
     if (certRequest.paymentStatus === 'paid') {
       return NextResponse.json({ error: 'Already paid' }, { status: 400 });
     }
+    if (certRequest.paymentStatus === 'chargedback') {
+      return NextResponse.json({ error: 'This request was charged back. Please contact support.' }, { status: 400 });
+    }
 
     const merchantId = process.env.NEXT_PUBLIC_PAYHERE_MERCHANT_ID;
     const merchantSecret = process.env.PAYHERE_MERCHANT_SECRET;

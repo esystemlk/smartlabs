@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { applyChargeback } from '@/lib/payhere-chargeback';
 
 // Pinned explicitly: this route needs node crypto (MD5 signature check) and
 // firebase-admin, neither of which exist on the edge runtime.
@@ -67,6 +68,17 @@ export async function POST(request: NextRequest) {
     const orderDoc  = ordersSnap.docs[0];
     const orderData = orderDoc.data();
 
+    if (orderData.paymentStatus === 'chargedback') return new Response('OK', { status: 200 });
+
+    // A chargeback arrives after success, so handle it before the success guard.
+    if (String(status_code) === '-3') {
+      await applyChargeback(orderDoc, String(order_id), 'essay credits', {
+        credits: { essayGenCredits: orderData.genCredits, ...(orderData.packageId === 'essay_unlimited' ? {} : { essayPaidCredits: orderData.scoringCredits }) },
+        ...(orderData.packageId === 'essay_unlimited' ? { monthly: { field: 'essayMonthlyExpiry', days: 40 } } : {}),
+      });
+      return new Response('OK', { status: 200 });
+    }
+
     // ── 4. IDEMPOTENCY GUARD — skip if already processed ─────────────────
     // PayHere retries notify several times. We must not grant credits twice.
     if (orderData.paymentStatus === 'success') {
@@ -112,7 +124,7 @@ export async function POST(request: NextRequest) {
       await adminDb.runTransaction(async tx => {
         // Re-read the order inside transaction to prevent race conditions
         const freshOrder = await tx.get(orderDoc.ref);
-        if (freshOrder.data()?.paymentStatus === 'success') {
+        if (['success', 'chargedback'].includes(freshOrder.data()?.paymentStatus)) {
           // Another concurrent webhook already processed this — abort
           return;
         }
@@ -145,14 +157,6 @@ export async function POST(request: NextRequest) {
         updatedAt:     FieldValue.serverTimestamp(),
       });
       console.log(`[essay-notify] ❌ Payment failed — order=${order_id}`);
-
-    } else if (sc === '-3') {
-      // Payment CHARGED BACK
-      await orderDoc.ref.update({
-        paymentStatus: 'chargedback',
-        updatedAt:     FieldValue.serverTimestamp(),
-      });
-      console.log(`[essay-notify] ⚠️ Chargeback — order=${order_id}`);
     }
 
     // PayHere requires plain "OK" 200 response — never return 4xx/5xx

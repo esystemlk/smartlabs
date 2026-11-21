@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { createHash } from 'crypto';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { applyChargeback } from '@/lib/payhere-chargeback';
 
 // Needs node crypto (MD5 signature) and firebase-admin — not the edge runtime.
 export const runtime = 'nodejs';
@@ -40,6 +41,14 @@ export async function POST(request: NextRequest) {
 
     const orderDoc = ordersSnap.docs[0];
     const orderData = orderDoc.data();
+    if (orderData.paymentStatus === 'chargedback') return new Response('OK', { status: 200 });
+
+    // A chargeback arrives after success, so handle it before the success guard.
+    if (String(status_code) === '-3') {
+      await applyChargeback(orderDoc, String(order_id), 'speaking credits', orderData.packageId === 'speaking_unlimited' ? { monthly: { field: 'speakingMonthlyExpiry', days: 40 } } : { credits: { speakingPaidCredits: orderData.scoringCredits } });
+      return new Response('OK', { status: 200 });
+    }
+
     if (orderData.paymentStatus === 'success') return new Response('OK', { status: 200 });
 
     const { userId, packageId, scoringCredits } = orderData as {
@@ -60,7 +69,7 @@ export async function POST(request: NextRequest) {
       }
       await adminDb.runTransaction(async tx => {
         const fresh = await tx.get(orderDoc.ref);
-        if (fresh.data()?.paymentStatus === 'success') return;
+        if (['success', 'chargedback'].includes(fresh.data()?.paymentStatus)) return;
         tx.update(orderDoc.ref, { paymentStatus: 'success', payherePaymentId: String(payment_id), updatedAt: FieldValue.serverTimestamp() });
         tx.update(userRef, userUpdates);
       });
@@ -69,8 +78,6 @@ export async function POST(request: NextRequest) {
       await orderDoc.ref.update({ paymentStatus: 'cancelled', updatedAt: FieldValue.serverTimestamp() });
     } else if (sc === '-2') {
       await orderDoc.ref.update({ paymentStatus: 'failed', updatedAt: FieldValue.serverTimestamp() });
-    } else if (sc === '-3') {
-      await orderDoc.ref.update({ paymentStatus: 'chargedback', updatedAt: FieldValue.serverTimestamp() });
     }
     return new Response('OK', { status: 200 });
   } catch (error) {

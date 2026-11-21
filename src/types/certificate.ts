@@ -1,7 +1,7 @@
 export type CertType = 'digital' | 'printed';
 export type CertStatus = 'pending_payment' | 'pending_verification' | 'approved' | 'rejected';
 export type IdentityType = 'nic' | 'passport';
-export type PaymentStatus = 'pending' | 'paid';
+export type PaymentStatus = 'pending' | 'paid' | 'chargedback';
 
 export interface CertificateRequest {
   id?: string;

@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { createHash } from 'crypto';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { applyChargeback } from '@/lib/payhere-chargeback';
 import { ACCESS_DAYS } from '@/types/recording';
 
 // Pinned explicitly: this route needs node crypto (MD5 signature check) and
@@ -38,6 +39,14 @@ export async function POST(request: NextRequest) {
 
     const orderDoc = ordersSnap.docs[0];
     const orderData = orderDoc.data();
+    if (orderData.paymentStatus === 'chargedback') return new Response('OK', { status: 200 });
+
+    // A chargeback arrives after success, so handle it before the success guard.
+    if (String(status_code) === '-3') {
+      await applyChargeback(orderDoc, String(order_id), 'class recording', { accessRows: [adminDb.collection('recording_access').doc(`${orderData.userId}_${orderData.recordingId}`)] });
+      return new Response('OK', { status: 200 });
+    }
+
     if (orderData.paymentStatus === 'success') return new Response('OK', { status: 200 });
 
     const { userId, recordingId, recordingTitle, paymentAmount } = orderData as {
@@ -81,7 +90,7 @@ export async function POST(request: NextRequest) {
 
       await adminDb.runTransaction(async tx => {
         const fresh = await tx.get(orderDoc.ref);
-        if (fresh.data()?.paymentStatus === 'success') return;
+        if (['success', 'chargedback'].includes(fresh.data()?.paymentStatus)) return;
         tx.update(orderDoc.ref, {
           paymentStatus: 'success',
           payherePaymentId: String(payment_id),
@@ -105,8 +114,6 @@ export async function POST(request: NextRequest) {
       await orderDoc.ref.update({ paymentStatus: 'cancelled', updatedAt: FieldValue.serverTimestamp() });
     } else if (sc === '-2') {
       await orderDoc.ref.update({ paymentStatus: 'failed', updatedAt: FieldValue.serverTimestamp() });
-    } else if (sc === '-3') {
-      await orderDoc.ref.update({ paymentStatus: 'chargedback', updatedAt: FieldValue.serverTimestamp() });
     }
     return new Response('OK', { status: 200 });
   } catch (error) {

@@ -38,6 +38,9 @@ export async function POST(request: NextRequest) {
     if (!certRequest) {
       return NextResponse.json({ error: 'Certificate request not found' }, { status: 404 });
     }
+    if (certRequest.paymentStatus === 'chargedback') {
+      return NextResponse.json({ error: 'Payment for this request was charged back.' }, { status: 409 });
+    }
 
     const studentName = overrideName || certRequest.nameOnCertificate;
     const certificateNumber = generateCertificateNumber(requestId);

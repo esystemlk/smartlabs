@@ -32,6 +32,7 @@ interface Batch {
 
 interface Enrollment {
   id: string;
+  status?: string;
   fullName?: string;
   email?: string;
   phone?: string;
@@ -89,7 +90,7 @@ export default function AdminPteBatchesPage() {
     [firestore, viewEnrollBatch]
   );
   const { data: enrollRaw } = useCollection(enrollQuery);
-  const enrollments = (enrollRaw as Enrollment[] | undefined) ?? [];
+  const enrollments = ((enrollRaw as Enrollment[] | undefined) ?? []).filter(e => e.status !== 'chargedback');
 
   const openAdd = () => { setForm(emptyForm()); setEditingId(null); setShowForm(true); };
   const openEdit = (b: Batch) => {
@@ -149,7 +150,7 @@ export default function AdminPteBatchesPage() {
     setVerifying(true); setVerifyResult(null);
     try {
       const snap = await getDocs(query(collection(firestore, 'pte_course_enrollments'), where('phoneKey', '==', key)));
-      setVerifyResult(snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<Enrollment, 'id'>) })));
+      setVerifyResult(snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<Enrollment, 'id'>) })).filter(e => e.status !== 'chargedback'));
     } catch (e) {
       console.error(e);
       toast({ variant: 'destructive', title: 'Lookup failed' });
