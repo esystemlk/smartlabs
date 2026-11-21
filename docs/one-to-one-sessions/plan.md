@@ -12,10 +12,15 @@ Status: BUILT 2026-11-21 (not yet deployed). Differences from the plan below:
 ### Reminder trigger setup (free)
 Vercel Hobby only allows daily jobs, so `vercel.json` runs the job daily at ~6:30 PM and ~7:30 AM
 (Sri Lanka) as a backup. For the 1-hour and starting reminders, add a free pinger:
-1. Make a free account at https://cron-job.org → Create cronjob.
-2. URL: `https://smartlabs.lk/api/cron/one-to-one-reminders`, schedule: every 10 minutes.
-3. If `CRON_SECRET` is set in Vercel, add a request header `Authorization: Bearer <CRON_SECRET>`
-   (Advanced → Headers). Without the header the job answers 401 and nothing is sent.
+1. Make a pinger key (PowerShell): `[guid]::NewGuid().ToString('N') + [guid]::NewGuid().ToString('N')`.
+   In Vercel → smartlabs → Settings → Environment Variables → Add: name `REMINDER_PINGER_KEY`,
+   value = that key, all environments → Save → Deployments → ⋯ → Redeploy.
+   (The job accepts `CRON_SECRET` from Vercel's own runs *or* this key — CRON_SECRET stays unchanged,
+   so the Google reviews refresh job keeps working.)
+2. Make a free account at https://cron-job.org → Create cronjob. URL:
+   `https://www.smartlabs.lk/api/cron/one-to-one-reminders` (use **www** — the bare domain redirects and
+   drops the header), schedule: every 10 minutes.
+3. Advanced → Headers → add `Authorization` = `Bearer <REMINDER_PINGER_KEY>`.
 4. Save, then press "Test run" and check the response says `"ok":true`.
 - If a lecturer can't teach, admin cancels the booking → full refund (no reschedule tool).
 - Code: `src/lib/one-to-one.ts` (+ `.test.ts`), `src/lib/one-to-one-server.ts`, `src/app/api/one-to-one/*`,

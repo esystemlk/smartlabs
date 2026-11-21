@@ -55,8 +55,9 @@ const MESSAGES: Record<ReminderKind, (b: B) => { subject: string; heading: strin
  * Triggered by Vercel Cron (daily backups) and an external pinger every 10 minutes.
  */
 export async function GET(request: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  if (secret && request.headers.get('Authorization') !== `Bearer ${secret}`) {
+  // CRON_SECRET = Vercel's daily runs; REMINDER_PINGER_KEY = the external 10-minute pinger (own key, so CRON_SECRET never leaves Vercel).
+  const keys = [process.env.CRON_SECRET, process.env.REMINDER_PINGER_KEY].filter((k): k is string => !!k);
+  if (keys.length && !keys.some(k => request.headers.get('Authorization') === `Bearer ${k}`)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   if (!adminDb) return NextResponse.json({ error: 'Server not configured' }, { status: 500 });
