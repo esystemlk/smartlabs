@@ -71,6 +71,26 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+  poweredByHeader: false,
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          // Microphone stays on for speaking practice and mock tests.
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(self), geolocation=(), browsing-topics=()' },
+        ],
+      },
+      // Private pages: kept out of search results without listing them in robots.txt.
+      ...['/sl-console-9f3k2x/:path*', '/smreg/:path*', '/site-status'].map(source => ({
+        source,
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      })),
+    ];
+  },
 };
 
 export default nextConfig;

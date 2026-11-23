@@ -9,8 +9,9 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
         disallow: [
           '/admin', '/api/', '/dashboard', '/login', '/signup', '/forgot-password',
-          '/payment', '/payment-success', '/payment-cancel', '/smreg', '/welcome',
-          '/site-status', '/sl-console-9f3k2x', '/my-purchases', '/enroll',
+          // Private console/registration paths are not listed here (that advertised them); they send X-Robots-Tag: noindex instead.
+          '/payment', '/payment-success', '/payment-cancel', '/welcome',
+          '/my-purchases', '/enroll',
         ],
       },
     ],

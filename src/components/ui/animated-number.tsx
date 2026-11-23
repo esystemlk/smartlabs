@@ -34,5 +34,6 @@ export function AnimatedNumber({ value, className, decimals = 0 }: AnimatedNumbe
     [springValue, decimals]
   );
 
-  return <span className={className} ref={ref}>0</span>;
+  // Real number in the HTML (search engines and no-JS visitors saw "0"); it still counts up when scrolled into view.
+  return <span className={className} ref={ref}>{value.toFixed(decimals)}</span>;
 }

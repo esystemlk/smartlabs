@@ -31,8 +31,8 @@ const footerLinks = {
     { name: "Help Center", href: "/support" },
     { name: "Certificate", href: "/dashboard/certificate-request" },
     { name: "Contact Us", href: "/contact" },
-    { name: "Privacy Policy", href: "/policies" },
-    { name: "Terms of Service", href: "/policies" },
+    { name: "Privacy Policy", href: "/policies#privacy" },
+    { name: "Terms of Service", href: "/policies#terms" },
   ],
 };
 
@@ -167,9 +167,9 @@ export default function Footer() {
             </p>
           </div>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <Link href="/policies" className="hover:text-primary transition-colors">Privacy</Link>
-            <Link href="/policies" className="hover:text-primary transition-colors">Terms</Link>
-            <Link href="/policies" className="hover:text-primary transition-colors">Cookies</Link>
+            <Link href="/policies#privacy" className="hover:text-primary transition-colors">Privacy</Link>
+            <Link href="/policies#terms" className="hover:text-primary transition-colors">Terms</Link>
+            <Link href="/policies#cookies" className="hover:text-primary transition-colors">Cookies</Link>
           </div>
         </div>
       </div>

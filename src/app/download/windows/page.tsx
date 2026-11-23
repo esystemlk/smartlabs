@@ -27,8 +27,8 @@ export default function WindowsDownloadPage() {
 
     const features = [
         { icon: Zap, title: "Peak Performance", desc: "Native Windows optimization for zero-latency AI analysis." },
-        { icon: ShieldCheck, title: "Secure Environment", desc: "Built-in anti-cheat and secure browser protocols." },
-        { icon: Globe, title: "Offline Ready", desc: "Access core practice modules even without an internet connection." },
+        { icon: ShieldCheck, title: "Private Account", desc: "Sign in with your Smart Labs account; your practice history stays with you." },
+        { icon: Globe, title: "Always in Sync", desc: "Progress syncs with your Smart Labs account on the web and desktop (internet required)." },
         { icon: Monitor, title: "Native UI", desc: "Seamless integration with Windows 10 & 11 features." },
     ];
 
@@ -40,7 +40,7 @@ export default function WindowsDownloadPage() {
     ];
 
     const steps = [
-        "Click the 'Download for Windows' button below.",
+        "Click the 'Download Now' button below.",
         "Open the 'SmartLabs_Setup.exe' file from your downloads.",
         "Follow the on-screen instructions to complete installation.",
         "Sign in with your Smart Labs account and start practicing!"
@@ -104,7 +104,7 @@ export default function WindowsDownloadPage() {
                                     </div>
                                     <div className="px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-2 text-green-400 text-xs font-bold">
                                         <ShieldCheck className="h-4 w-4" />
-                                        <span>Verified Secure</span>
+                                        <span>Windows 10 &amp; 11</span>
                                     </div>
                                 </div>
 
@@ -134,7 +134,7 @@ export default function WindowsDownloadPage() {
                                         </a>
                                     </Button>
                                     <div className="flex flex-col px-6">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Release Notes</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Version</span>
                                         <span className="text-sm font-bold text-white/80">V1.0 - Stable Build (Online)</span>
                                     </div>
                                 </div>

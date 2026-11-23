@@ -1,9 +1,9 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { EXISTING_LEARNERS } from '@/lib/student-community';
+import { EXISTING_LEARNERS, LAST_KNOWN_TOTAL } from '@/lib/student-community';
 
 export function useStudentCommunity() {
-  const [total, setTotal] = useState(EXISTING_LEARNERS);
+  const [total, setTotal] = useState(LAST_KNOWN_TOTAL);
   useEffect(() => {
     const controller = new AbortController();
     let pending = false;
@@ -15,7 +15,7 @@ export function useStudentCommunity() {
         if (!response.ok) return;
         const data = await response.json();
         if (!controller.signal.aborted && Number.isSafeInteger(data.total) && data.total >= EXISTING_LEARNERS) setTotal(data.total);
-      } catch { /* Keep the last known total, or the confirmed 6,000-learner baseline. */ }
+      } catch { /* Keep the last known total. */ }
       finally { pending = false; }
     };
     void refresh();

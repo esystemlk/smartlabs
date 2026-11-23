@@ -274,7 +274,7 @@ const roadmapSteps = [
     id: "04",
     title: "Target Achieved",
     desc: "Clear the exam with confidence! Check our student feedbacks and success stories.",
-    link: "#testimonials",
+    link: "/videos",
     icon: Trophy,
     color: "text-accent-4",
     bg: "bg-accent-4/10"
@@ -400,6 +400,11 @@ const itemVariants = {
 };
 
 
+// A card that only becomes a link when it has somewhere to go (no dead href="#").
+function MaybeLink({ href, className, children }: { href?: string; className?: string; children: React.ReactNode }) {
+  return href ? <Link href={href} className={className}>{children}</Link> : <div className={className}>{children}</div>;
+}
+
 export default function Home() {
   const { toast } = useToast();
   const [user, loading] = useAuthState(auth);
@@ -445,7 +450,9 @@ export default function Home() {
     icon: iconMap[feature.icon] || Cpu
   })) : features;
 
-  const displayFAQs = (realFAQs && realFAQs.length > 0) ? realFAQs : faqs;
+  // Skip admin FAQs saved without an answer (they showed as empty panels).
+  const answeredFAQs = (realFAQs || []).filter(f => String((f as any).answer ?? '').trim());
+  const displayFAQs = answeredFAQs.length > 0 ? answeredFAQs : faqs;
   const displayComparisons = (realComparisons && realComparisons.length > 0) ? realComparisons : comparisons;
   const displayTestimonials = (realTestimonials && realTestimonials.length > 0) ? realTestimonials : testimonials;
   const featuredCourses = (() => {
@@ -996,7 +1003,8 @@ export default function Home() {
                 desc: "Focused groups of 3-10 students for personalized attention.",
                 color: "bg-primary/10 text-primary",
                 badge: "Limited Seats",
-                href: "/courses"
+                href: "/courses",
+                cta: "View Courses"
               },
               {
                 icon: Zap,
@@ -1004,11 +1012,12 @@ export default function Home() {
                 desc: "Intensive 2-hour sessions targeting your weakest components.",
                 color: "bg-accent-3/10 text-accent-3",
                 badge: "Live Daily",
-                href: "https://register.smartlabs.lk"
+                href: "https://register.smartlabs.lk",
+                cta: "Register Now"
               },
               {
                 icon: Laptop,
-                title: "Essay Practise",
+                title: "Essay Practice",
                 desc: "Practise PTE essays with instant scoring and detailed feedback using Gemini AI.",
                 color: "bg-accent-1/10 text-accent-1",
                 badge: "New Release",
@@ -1035,7 +1044,7 @@ export default function Home() {
                     <h3 className="text-xl font-black mb-3 tracking-tight"><IeltsText>{item.title}</IeltsText></h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
                     <div className="mt-6 flex items-center gap-2 text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span>{item.href.startsWith('http') ? 'Register Now' : 'Try Practice Arena'}</span>
+                      <span>{item.cta ?? 'Try Practice Arena'}</span>
                       <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
@@ -1551,7 +1560,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Link href={method.href || "#"} className="group block h-full">
+                <MaybeLink href={method.href} className="group block h-full">
                   <div className="h-full p-10 rounded-[48px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 transition-all duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] hover:-translate-y-3 hover:bg-white dark:hover:bg-slate-800 hover:border-primary/30 flex flex-col items-center text-center">
                     <div className={cn("w-20 h-20 rounded-[32px] flex items-center justify-center mb-8 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-2xl", method.color)}>
                       <method.icon className="h-10 w-10" />
@@ -1560,11 +1569,11 @@ export default function Home() {
                     <p className="text-sm text-muted-foreground leading-relaxed flex-grow">{method.description}</p>
                     {method.href && (
                       <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800 w-full flex items-center justify-center gap-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all">
-                        Initialize <ArrowRight className="h-4 w-4" />
+                        Learn more <ArrowRight className="h-4 w-4" />
                       </div>
                     )}
                   </div>
-                </Link>
+                </MaybeLink>
               </motion.div>
             ))}
           </div>
@@ -1711,7 +1720,7 @@ export default function Home() {
                   <AccordionTrigger className="flex gap-6 p-8 rounded-[32px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:no-underline hover:border-primary/30 transition-all text-left data-[state=open]:rounded-b-none data-[state=open]:border-b-0 group">
                     <span className="text-xl font-black tracking-tight group-hover:text-primary transition-colors">{question}</span>
                   </AccordionTrigger>
-                  <AccordionContent className="p-8 pt-0 rounded-b-[32px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-t-0 text-lg text-muted-foreground leading-relaxed">
+                  <AccordionContent forceMount className="p-8 pt-0 rounded-b-[32px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-t-0 text-lg text-muted-foreground leading-relaxed">
                     {answer}
                   </AccordionContent>
                 </AccordionItem>

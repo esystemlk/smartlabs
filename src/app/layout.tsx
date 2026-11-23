@@ -20,7 +20,7 @@ import { LayoutManager } from '@/components/layout/layout-manager';
 import { WindowControls } from '@/components/layout/window-controls';
 import { LayoutExtras } from '@/components/layout/layout-extras';
 import { CookieBanner } from '@/components/cookie-banner';
-import { BASE_KEYWORDS, orgJsonLd, websiteJsonLd, faqJsonLd, HOME_FAQS } from '@/lib/seo';
+import { orgJsonLd, websiteJsonLd, faqJsonLd, HOME_FAQS } from '@/lib/seo';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://smartlabs.lk';
 
@@ -32,7 +32,6 @@ export const metadata: Metadata = {
   },
   description:
     'Smart Labs is Sri Lanka’s AI-powered PTE Academic institute — expert PTE trainers, AI-scored practice, full mock tests and PTE Boostify courses online and in Nugegoda. Also IELTS, KET & PET.',
-  keywords: BASE_KEYWORDS,
   // No site-wide canonical: every page inherited '/' and told Google it was a copy of the homepage.
   robots: {
     index: true,
@@ -41,18 +40,18 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: 'website',
-    url: APP_URL,
+    // No url here: every page inherited the homepage as its share URL. Share image: opengraph-image.tsx.
     siteName: 'Smart Labs',
     locale: 'en_LK',
     title: 'Smart Labs — Best PTE Academic Classes & Training in Sri Lanka',
     description:
       'AI-scored PTE practice, mock tests and expert PTE Boostify courses — online and in Nugegoda. Sri Lanka’s smart way to your target PTE score.',
-    images: [{ url: '/logo.png' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Smart Labs — Best PTE Academic Classes in Sri Lanka',
-    description: 'AI-scored PTE practice, mock tests and expert-led courses in Sri Lanka.',
+    title: 'Smart Labs — Best PTE Academic Classes & Training in Sri Lanka',
+    description:
+      'AI-scored PTE practice, mock tests and expert PTE Boostify courses — online and in Nugegoda. Sri Lanka’s smart way to your target PTE score.',
   },
   icons: { icon: '/favicon.ico' },
   manifest: '/manifest.json',

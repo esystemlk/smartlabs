@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Ban, Shield, FileText } from 'lucide-react';
+import Link from 'next/link';
+import { Ban, Shield, FileText, Cookie } from 'lucide-react';
 
 export default function PoliciesPage() {
   return (
@@ -10,12 +11,13 @@ export default function PoliciesPage() {
           <div className="text-center mb-12">
             <h1 className="text-3xl md:text-4xl font-headline font-bold">Our Policies</h1>
             <p className="mt-4 text-base md:text-lg text-muted-foreground">
-              Please review our policies regarding refunds, privacy, and terms of service.
+              Please review our policies regarding refunds, privacy, cookies, and terms of service.
             </p>
+            <p className="mt-2 text-sm text-muted-foreground">Last updated: 23 November 2026</p>
           </div>
 
           <div className="space-y-12">
-            <Card>
+            <Card id="refunds" className="scroll-mt-24">
               <CardHeader>
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-destructive/10 rounded-lg">
@@ -37,7 +39,7 @@ export default function PoliciesPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card id="privacy" className="scroll-mt-24">
               <CardHeader>
                  <div className="flex items-center gap-4">
                     <div className="p-3 bg-primary/10 rounded-lg">
@@ -56,10 +58,57 @@ export default function PoliciesPage() {
                     <li>Students are responsible for maintaining the confidentiality of their login credentials.</li>
                     <li>By using our website, you consent to the collection and use of information as outlined in this policy.</li>
                 </ul>
+                <h2>Services that process your data</h2>
+                <ul>
+                    <li><strong>Google Firebase</strong> stores your account, course progress and practice results.</li>
+                    <li><strong>Vercel</strong> hosts this website.</li>
+                    <li><strong>PayHere</strong> processes card and online payments. We never see or store your full card number.</li>
+                    <li><strong>Google Gemini AI</strong> scores the essays, summaries and other answers you submit to our AI practice tools. Only the text or audio of your answer is sent, not your name or contact details.</li>
+                    <li><strong>YouTube</strong> plays the videos embedded on our pages.</li>
+                    <li><strong>Meta (Facebook)</strong> measures how our adverts perform (see Cookies below).</li>
+                </ul>
+                <h2>How long we keep your data</h2>
+                <ul>
+                    <li>We keep your account and learning records while your account is active, so you can return to your courses and results.</li>
+                    <li>Payment records are kept for as long as accounting and tax law requires.</li>
+                    <li>When you delete your account, we remove your personal details, except records we must keep by law.</li>
+                </ul>
+                <h2>Your rights</h2>
+                <ul>
+                    <li>You can ask to see, correct or delete the personal information we hold about you.</li>
+                    <li>You can delete your account at any time from the <Link href="/delete-account">account deletion page</Link>.</li>
+                    <li>You can unsubscribe from marketing messages at any time.</li>
+                </ul>
+                <h2>Children</h2>
+                <ul>
+                    <li>Learners under 18 should use our website and pay for courses only with a parent or guardian's permission.</li>
+                </ul>
+                <h2>Contact us about privacy</h2>
+                <p>Email <a href="mailto:info@smartlabs.lk">info@smartlabs.lk</a> or call 076 691 4650. We reply to privacy requests within 30 days.</p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card id="cookies" className="scroll-mt-24">
+              <CardHeader>
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-primary/10 rounded-lg">
+                        <Cookie className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle className="font-headline text-2xl">Cookie Policy</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="prose max-w-none text-muted-foreground">
+                <p>Cookies are small files your browser stores for a website.</p>
+                <ul>
+                    <li><strong>Essential:</strong> keep you signed in and remember your settings, such as dark mode. The site does not work without them.</li>
+                    <li><strong>Advertising measurement:</strong> the Meta (Facebook) Pixel tells us which adverts bring visitors to our website.</li>
+                    <li><strong>Embedded videos:</strong> YouTube may set its own cookies when you play a video.</li>
+                </ul>
+                <p>You can block or delete cookies in your browser settings. Blocking essential cookies will sign you out.</p>
+              </CardContent>
+            </Card>
+
+            <Card id="terms" className="scroll-mt-24">
               <CardHeader>
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-secondary rounded-lg">
