@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { brandFontClass } from '@/lib/brand-fonts';
 
 export const metadata: Metadata = {
   title: "PTE Summarize Spoken Text Practice with AI",
@@ -7,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return children;
+  return <div className={brandFontClass}>{children}</div>;
 }

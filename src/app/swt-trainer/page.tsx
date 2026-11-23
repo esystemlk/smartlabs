@@ -14,7 +14,7 @@ import { SWTResultDetails, type SWTResult } from '@/components/swt/SWTResultDeta
 import { recordPracticeResult } from '@/lib/services/activity.service';
 import { useToast } from '@/hooks/use-toast';
 import {
-  BookOpenText, Sparkles, ArrowRight, ArrowLeft, Lock, CheckCircle2, XCircle,
+  BookOpenText, BadgeCheck, ArrowRight, ArrowLeft, Lock, CheckCircle2, XCircle,
   Loader2, CreditCard, Infinity as InfinityIcon, X, Zap,
 } from 'lucide-react';
 import { AiRetryDialog } from '@/components/ui/ai-retry-dialog';
@@ -289,7 +289,7 @@ function SWTInner() {
                 );
               })}
             </div>
-            <p className="text-center text-xs text-slate-400 mt-4">🔒 Secured by PayHere · LKR · Credits never expire (except unlimited plan)</p>
+            <p className="text-center text-xs text-slate-400 mt-4">Secured by PayHere · LKR · Credits never expire (except unlimited plan)</p>
           </div>
         </div>
       )}

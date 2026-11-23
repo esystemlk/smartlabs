@@ -13,7 +13,7 @@ import { useCursorTracking } from '@/hooks/useCursorTracking';
 import { WalkingLoader } from '@/components/ui/walking-loader';
 import { Markdown } from '@/components/ui/markdown';
 import {
-  Send, Mic, ArrowLeft, Volume2, VolumeX, Loader2, Sparkles, BookOpen,
+  Send, Mic, ArrowLeft, Volume2, VolumeX, Loader2, BadgeCheck, BookOpen,
 } from 'lucide-react';
 
 interface ChatMessage {
@@ -269,7 +269,7 @@ function TutorInner() {
             <ArrowLeft size={16} /> Back to Essay Practice
           </Link>
           <div className="flex items-center gap-2 text-sm font-black text-slate-800">
-            <Sparkles size={16} className="text-[#f97316]" /> AI Tutor
+            <BadgeCheck size={16} className="text-[#f97316]" /> AI Tutor
           </div>
         </div>
       </div>

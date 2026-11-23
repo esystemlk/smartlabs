@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
   ChevronLeft,
-  Sparkles,
+  BadgeCheck,
   Loader2,
   AlertCircle,
   Search,
@@ -235,7 +235,7 @@ export default function AiCreditsEarningsPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-headline font-bold flex items-center gap-2">
-              <Sparkles className="h-7 w-7 text-primary" />
+              <BadgeCheck className="h-7 w-7 text-primary" />
               AI Credits Earnings
             </h1>
             <p className="text-muted-foreground mt-1 text-lg">Successful AI-credit payments only — pending and failed orders are excluded.</p>

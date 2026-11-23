@@ -300,7 +300,7 @@ function MockTestsInner() {
                 </div>
               ))}
             </div>
-            <p className="text-center text-xs text-slate-400 mt-4">🔒 Secured by PayHere · LKR</p>
+            <p className="text-center text-xs text-slate-400 mt-4">Secured by PayHere · LKR</p>
           </div>
         </div>
       )}

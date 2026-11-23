@@ -12,7 +12,7 @@ export const maxDuration = 60;
 const CONTACT = 'contact@smartlabs.lk';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.smartlabs.lk';
 const DASH = `${APP_URL}/dashboard`;
-const DEFAULT_SUBJECT = 'New on Smart Labs: fresh IELTS & PTE practice is waiting 🎯';
+const DEFAULT_SUBJECT = 'New on Smart Labs: fresh IELTS & PTE practice is waiting';
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function requireStaff(request: Request): Promise<{ uid: string; email: string | null } | NextResponse> {

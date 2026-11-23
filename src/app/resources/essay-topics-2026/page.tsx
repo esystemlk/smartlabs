@@ -10,7 +10,7 @@ import {
     Award,
     FileText,
     Target,
-    Sparkles,
+    BadgeCheck,
     Lightbulb
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -374,7 +374,7 @@ export default function EssayTopics2026Page() {
                                 {/* Super Condensed Cheat Sheet */}
                                 <div className="p-12 bg-gradient-to-br from-slate-900 to-slate-800 dark:from-primary dark:to-primary-600 rounded-[64px] text-white my-20 shadow-2xl">
                                     <div className="flex items-center gap-4 mb-8">
-                                        <Sparkles className="h-10 w-10" />
+                                        <BadgeCheck className="h-10 w-10" />
                                         <h2 className="text-3xl font-black m-0 text-white">PTE Super-Condensed Visual Essay Cheat Sheet</h2>
                                     </div>
                                     <p className="text-white/90 font-bold mb-10">Complex & Compound Sentences for Maximum Scores</p>
@@ -508,7 +508,7 @@ export default function EssayTopics2026Page() {
 
                                         {/* Pro Tip */}
                                         <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 backdrop-blur-md p-6 rounded-2xl border-2 border-yellow-400/40">
-                                            <p className="text-white font-black text-lg mb-2">💡 Pro Tip:</p>
+                                            <p className="text-white font-black text-lg mb-2">Pro Tip:</p>
                                             <p className="text-white/90 font-medium">Fill each blank with your idea, example, or reasoning. Use the linking phrases and compound-complex sentence prompts to create a cohesive and high-scoring essay.</p>
                                         </div>
                                     </div>

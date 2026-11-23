@@ -5,7 +5,7 @@ import {
   Building2, 
   CheckCircle, 
   ArrowRight,
-  Sparkles,
+  BadgeCheck,
   Users,
   Target,
   BarChart3,
@@ -195,7 +195,7 @@ export default function CorporateTraining() {
             className="text-center mb-16"
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-              <Sparkles className="h-4 w-4" />
+              <BadgeCheck className="h-4 w-4" />
               <span>What We Offer</span>
             </div>
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-4">

@@ -10,7 +10,7 @@ import { IeltsEssayResultView } from '@/components/ielts-essay/IeltsEssayResult'
 import type { IeltsEssayResult } from '@/types/ielts-essay';
 import type { IeltsWritingTest } from '@/lib/ielts-writing/cambridge-21';
 import {
-  Loader2, PenLine, Sparkles, Target, Lightbulb, ShieldAlert, RotateCcw,
+  Loader2, PenLine, BadgeCheck, Target, Lightbulb, ShieldAlert, RotateCcw,
   CreditCard, ImageIcon, ArrowLeft,
 } from 'lucide-react';
 
@@ -232,7 +232,7 @@ export function WritingRunner({ test }: { test: IeltsWritingTest }) {
             )}
 
             <button onClick={submit} className="w-full py-4 rounded-2xl text-white font-black text-sm flex items-center justify-center gap-2" style={{ backgroundColor: CRIMSON }}>
-              <Sparkles size={16} /> Score my {active === 'task1' ? 'Task 1' : 'essay'}
+              <BadgeCheck size={16} /> Score my {active === 'task1' ? 'Task 1' : 'essay'}
             </button>
 
             <p className="inline-flex items-start gap-1.5 text-[11px] text-slate-400">

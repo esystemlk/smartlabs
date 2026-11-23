@@ -3,7 +3,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { CheckCircle2, GraduationCap, ArrowRight, Sparkles, LayoutDashboard } from 'lucide-react';
+import { CheckCircle2, GraduationCap, ArrowRight, BadgeCheck, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
@@ -60,7 +60,7 @@ function SuccessContent() {
                     <Card className="rounded-3xl border-border/40 shadow-sm overflow-hidden bg-gradient-to-br from-background to-muted/30">
                         <CardContent className="p-8 text-center flex flex-col items-center gap-4">
                             <div className="p-3 bg-accent-3/10 rounded-2xl">
-                                <Sparkles className="h-6 w-6 text-accent-3" />
+                                <BadgeCheck className="h-6 w-6 text-accent-3" />
                             </div>
                             <div>
                                 <h3 className="font-bold text-lg mb-1">Bonus Perks</h3>

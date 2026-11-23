@@ -33,7 +33,7 @@ export async function POST(req: Request) {
             
             <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 24px 0;">
               <p style="margin: 0; font-size: 16px;">
-                📅 <strong>Date:</strong> ${dateStr}<br>
+                <strong>Date:</strong> ${dateStr}<br>
                 ⏰ <strong>Time:</strong> ${timeStr} (Sri Lanka Time)
               </p>
             </div>

@@ -1,0 +1,54 @@
+/* Login page (design: ChatGPT mockup, matches the new homepage/dashboard). Scoped under .sl-login. */
+.sl-login { --ink: #0a1733; --ink-2: #4b587a; --ink-3: #8a94ad; --blue: #2563eb; --yellow: #fab605;
+  min-height: 100dvh; display: grid; place-items: center; padding: clamp(12px, 3vw, 40px); color: var(--ink);
+  background: radial-gradient(900px 600px at 0% 0%, #dbeafe 0%, transparent 60%), radial-gradient(800px 500px at 100% 0%, #fef9c3 0%, transparent 55%), radial-gradient(800px 600px at 50% 110%, #dcfce7 0%, transparent 60%), #f5f7fc; }
+.sl-login .frame { width: min(1180px, 100%); display: grid; grid-template-columns: 1.1fr .9fr; gap: 0; border-radius: 34px; padding: 7px;
+  background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.9); box-shadow: 0 30px 80px -40px rgba(10,23,51,.45), inset 0 1px 0 #fff; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+.sl-login .side { position: relative; overflow: hidden; border-radius: 28px 0 0 28px; padding: clamp(28px, 4vw, 52px); min-height: 640px; display: flex; flex-direction: column;
+  background: url(/images/dashboard/pte.webp) right -60px bottom -10px / 135% auto no-repeat, linear-gradient(160deg, #eaf2ff, #f6fbff 55%, #eefcf3); }
+.sl-login .side::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(240,246,255,.96) 0%, rgba(240,246,255,.75) 34%, rgba(240,246,255,0) 52%); pointer-events: none; }
+.sl-login .side > * { position: relative; z-index: 1; }
+.sl-login .brand img { height: 46px; width: auto; }
+.sl-login .side h2 { font-family: var(--font-bricolage), sans-serif; font-weight: 800; font-size: clamp(32px, 3.6vw, 48px); line-height: 1.02; letter-spacing: -.04em; margin: 44px 0 0; }
+.sl-login em { font-family: var(--font-instrument), serif; font-weight: 400; color: var(--blue); }
+.sl-login .side h2 em { position: relative; }
+.sl-login .side h2 em::after { content: ""; position: absolute; left: 4%; right: 8%; bottom: -.08em; height: .12em; border-radius: 99px; background: var(--yellow); }
+.sl-login .side p { margin-top: 18px; color: var(--ink-2); font-size: 16px; line-height: 1.6; max-width: 30ch; }
+.sl-login .card { display: flex; flex-direction: column; justify-content: center; padding: clamp(28px, 4vw, 56px); background: #fff; border-radius: 0 28px 28px 0; }
+.sl-login .card .brand { display: flex; justify-content: center; margin-bottom: 26px; }
+.sl-login .card h1 { font-family: var(--font-bricolage), sans-serif; font-weight: 800; font-size: clamp(34px, 4vw, 48px); letter-spacing: -.04em; line-height: 1; }
+.sl-login .card .lead { color: var(--ink-2); margin-top: 10px; font-size: 15px; }
+.sl-login .google { margin-top: 26px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 52px; border-radius: 999px; border: 1px solid #dbe3ef; background: #fff; font-weight: 700; font-size: 15px; color: var(--ink); transition: background .2s, box-shadow .2s; }
+.sl-login .google:hover { background: #f8fafc; box-shadow: 0 8px 20px -14px rgba(10,23,51,.4); }
+.sl-login .or { display: flex; align-items: center; gap: 14px; margin: 20px 0; color: var(--ink-3); font-size: 13px; }
+.sl-login .or::before, .sl-login .or::after { content: ""; flex: 1; height: 1px; background: #e2e8f0; }
+.sl-login .field { position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 16px; border-radius: 999px; border: 1px solid #dbe3ef; background: #f8faff; transition: border-color .2s, box-shadow .2s; }
+.sl-login .field:focus-within { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(37,99,235,.12); background: #fff; }
+.sl-login .field.err { border-color: #e11d48; box-shadow: 0 0 0 4px rgba(225,29,72,.08); }
+.sl-login .field svg { width: 18px; height: 18px; color: var(--ink-3); flex: none; }
+.sl-login .field input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font-size: 15px; color: var(--ink); }
+.sl-login .eye { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; color: var(--ink-3); }
+.sl-login .eye:hover { background: #eef2ff; color: var(--blue); }
+.sl-login .msg { color: #e11d48; font-size: 12.5px; margin: 6px 0 0 16px; }
+.sl-login .stack { display: grid; gap: 14px; }
+.sl-login .forgot { justify-self: end; font-size: 14px; color: var(--blue); font-weight: 600; }
+.sl-login .forgot:hover { text-decoration: underline; }
+.sl-login .submit { width: 100%; min-height: 54px; border-radius: 999px; background: var(--blue); color: #fff; font-weight: 700; font-size: 17px; box-shadow: 0 14px 30px -14px rgba(37,99,235,.85); transition: transform .2s, background .2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.sl-login .submit:hover { transform: translateY(-1px); background: #1d4ed8; }
+.sl-login .submit:disabled, .sl-login .google:disabled { opacity: .65; cursor: progress; transform: none; }
+.sl-login .foot { margin-top: 22px; text-align: center; color: var(--ink-2); font-size: 14px; }
+.sl-login .foot a { color: var(--blue); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.sl-login .home { display: block; text-align: center; margin-top: 12px; font-size: 13px; color: var(--ink-3); }
+.sl-login .home:hover { color: var(--blue); }
+@media (max-width: 860px) {
+  .sl-login { padding: 10px; align-items: start; }
+  .sl-login .frame { grid-template-columns: 1fr; border-radius: 30px; }
+  .sl-login .side { border-radius: 24px 24px 0 0; min-height: 0; padding: 22px 22px 150px; align-items: center; text-align: center;
+    background: url(/images/dashboard/pte-sm.webp) center bottom / 125% auto no-repeat, linear-gradient(160deg, #eaf2ff, #f6fbff 55%, #eefcf3); }
+  .sl-login .side::after { background: linear-gradient(180deg, rgba(240,246,255,.95) 0%, rgba(240,246,255,.6) 45%, rgba(240,246,255,0) 70%); }
+  .sl-login .side h2 { font-size: 26px; margin-top: 14px; }
+  .sl-login .side p { display: none; }
+  .sl-login .card { border-radius: 0 0 24px 24px; padding: 26px 20px 28px; }
+  .sl-login .card .brand { display: none; }
+  .sl-login .card h1 { font-size: 34px; }
+}

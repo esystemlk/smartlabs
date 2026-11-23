@@ -523,7 +523,7 @@ export default function EssayCreditsAdminPage() {
                     </button>
                     <button
                       onClick={() => {
-                        if (confirm(`⚠️ RESET ALL CREDITS for ${target.email}? This will zero out scoring, gen credits and monthly plan.`))
+                        if (confirm(`RESET ALL CREDITS for ${target.email}? This will zero out scoring, gen credits and monthly plan.`))
                           applyAction('reset_all');
                       }}
                       disabled={applying}

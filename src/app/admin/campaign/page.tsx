@@ -7,7 +7,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { useUser, useFirestore } from '@/firebase';
 import { ArrowLeft, Loader2, Megaphone, Send, Mail, CheckCircle2, AlertTriangle } from 'lucide-react';
 
-const DEFAULT_SUBJECT = 'New on Smart Labs: fresh IELTS & PTE practice is waiting 🎯';
+const DEFAULT_SUBJECT = 'New on Smart Labs: fresh IELTS & PTE practice is waiting';
 
 export default function CampaignPage() {
   const { user, isUserLoading } = useUser();

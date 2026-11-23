@@ -5,6 +5,8 @@ type NavLink = {
 };
 
 export const LMS_URL = process.env.NEXT_PUBLIC_LMS_URL || 'https://lms.smartlabs.lk';
+/** IELTS lives on its own site (IELTS Studio). Every IELTS button points here. */
+export const IELTS_URL = 'https://ielts.smartlabs.lk';
 
 export const NAV_LINKS: NavLink[] = [
   { href: '/', label: 'Home' },

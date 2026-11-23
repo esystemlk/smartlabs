@@ -105,7 +105,7 @@ export function SWTResultDetails({ result }: { result: SWTResult }) {
       {(result.mainIdeas?.length || result.supportingIdeas?.length || result.detailsToOmit?.length) ? (
         <div className="grid md:grid-cols-3 gap-4">
           {result.mainIdeas && result.mainIdeas.length > 0 && (
-            <div><Section title="Main Ideas"><Card><Bullets items={result.mainIdeas} tone="violet" symbol="✦" /></Card></Section></div>
+            <div><Section title="Main Ideas"><Card><Bullets items={result.mainIdeas} tone="violet" symbol="•" /></Card></Section></div>
           )}
           {result.supportingIdeas && result.supportingIdeas.length > 0 && (
             <div><Section title="Supporting Ideas"><Card><Bullets items={result.supportingIdeas} tone="slate" /></Card></Section></div>
@@ -126,7 +126,7 @@ export function SWTResultDetails({ result }: { result: SWTResult }) {
                 <div key={i} className={`rounded-2xl border p-3 ${pick ? 'bg-emerald-50/50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
                   <div className="flex items-center justify-between gap-2 mb-1">
                     <span className={`text-[11px] font-black uppercase tracking-wider ${pick ? 'text-emerald-700' : 'text-slate-500'}`}>
-                      {pick ? '✅ Pick' : '❌ Skip'}
+                      {pick ? 'Pick' : 'Skip'}
                     </span>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-500">{x.importance}</span>
                   </div>

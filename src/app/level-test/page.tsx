@@ -950,7 +950,7 @@ function ResultStep({ result }: { result: any }) {
                                     </Link>
                                 </Button>
                                 <Button asChild className="w-full h-12 rounded-xl group" variant="outline">
-                                    <Link href={result.level.includes("Beginner") ? "https://wa.me/yourwhatsappnumber?text=I'd like to enroll in Grammar Clinic after my level test" : "/courses"}>
+                                    <Link href={result.level.includes("Beginner") ? "/courses/grammar-clinic" : "/courses"}>
                                         Proceed to Payment
                                         <CreditCard className="ml-2 h-4 w-4" />
                                     </Link>

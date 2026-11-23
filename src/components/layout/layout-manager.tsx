@@ -20,8 +20,9 @@ export function LayoutManager() {
 
   useEffect(() => {
     const isSpecialLayout = pathname.startsWith('/studio') || pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/welcome' || pathname.startsWith('/payment')
-      || pathname === '/ai-sst-practice' || pathname === '/swt-trainer' || pathname.startsWith('/ai-wfd-practice') || pathname.startsWith('/mock/') || pathname === '/site-status' || pathname.startsWith(DEV_CONSOLE_PATH);
-    
+      || pathname === '/ai-sst-practice' || pathname === '/swt-trainer' || pathname.startsWith('/ai-wfd-practice') || pathname.startsWith('/mock/') || pathname === '/site-status' || pathname.startsWith(DEV_CONSOLE_PATH)
+      || pathname === '/'; // the homepage has no global header, so no top padding
+
     // This component only manages the main marketing site layout.
     // Special layouts handle their own padding.
     if (isSpecialLayout) {

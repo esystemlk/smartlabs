@@ -1,3 +1,16 @@
 .pte-task-studio{--background:218 50% 98%;--foreground:218 43% 19%;--card:0 0% 100%;--card-foreground:218 43% 19%;--muted:218 33% 95%;--muted-foreground:216 18% 42%;--border:218 32% 88%;--input:218 32% 84%;--popover:0 0% 100%;--popover-foreground:218 43% 19%;background:#f7f9fd;color:#1c304c;border-radius:27px;padding:25px 28px 30px;max-width:1280px;margin:0 auto;min-width:0;color-scheme:light}
 .pte-task-orientation{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:0 0 19px;border-bottom:1px solid #e4eaf3;margin-bottom:14px}.pte-task-orientation>span{font-size:9px;font-weight:800;letter-spacing:.15em;color:#556b8a;white-space:nowrap}.pte-task-orientation p{font-size:11px;line-height:1.8;color:#637791;margin:0}.pte-task-studio h1{letter-spacing:-.04em!important;line-height:1.2}.pte-task-studio .bg-card{border-radius:23px;box-shadow:0 8px 28px #1f3d6805}.pte-task-studio :is(button,select,textarea,input:not([type=checkbox]):not([type=radio])){border-radius:12px}.pte-task-studio textarea{font-size:16px;line-height:1.85;padding:18px}.pte-task-studio button:disabled{cursor:not-allowed}.pte-task-studio :is(a,button,input,textarea,select):focus-visible{outline:3px solid #416cc4;outline-offset:3px}.pte-task-studio .text-xs{line-height:1.7}
 @media(max-width:760px){.pte-task-studio{padding:19px 14px 24px;border-radius:22px;margin:0 -6px}.pte-task-orientation{align-items:flex-start;flex-direction:column;gap:8px;padding-bottom:15px}.pte-task-orientation p{font-size:11px}.pte-task-studio .bg-card{border-radius:19px}.pte-task-studio h1{font-size:27px}}
+
+/* ── New light design for every dashboard PTE task (visual only; recording, checking and AI scoring untouched) ── */
+.pte-task-studio{--primary:221 83% 53%;--primary-foreground:0 0% 100%;--ring:221 83% 53%;--accent:214 100% 97%;--accent-foreground:222 64% 12%;
+  background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.95);border-radius:32px;box-shadow:0 24px 60px -40px rgba(10,23,51,.45),inset 0 0 0 6px rgba(255,255,255,.35);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.pte-task-studio :is(h1,h2,h3){font-family:var(--font-bricolage),Inter,sans-serif}
+.pte-task-orientation{border:0;margin:0 0 18px;padding:14px 18px;border-radius:20px;background:linear-gradient(120deg,#eff6ff,#fefce8 60%,#f0fdf4)}
+.pte-task-orientation>span{color:#2563eb;font-size:11px}
+.pte-task-orientation p{color:#4b587a;font-size:13px}
+.pte-task-studio .bg-card{border:1px solid #fff;border-radius:24px;box-shadow:0 14px 34px -26px rgba(10,23,51,.4)}
+.pte-task-studio button:not([role=tab]):not([role=checkbox]):not([role=radio]){border-radius:999px}
+.pte-task-studio textarea{border-radius:20px}
+.pte-task-studio :is(input:not([type=checkbox]):not([type=radio]),select){border-radius:14px}
+@media(max-width:760px){.pte-task-orientation{padding:12px 14px}}

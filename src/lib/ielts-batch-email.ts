@@ -24,7 +24,7 @@ export function renderIeltsBatchEmail(o: IeltsBatchEmailData): string {
   return `
   <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;background:#f4f5f7;padding:24px;">
     <div style="background:${NAVY};padding:28px 24px;border-radius:12px 12px 0 0;text-align:center;">
-      <div style="font-size:38px;line-height:1;margin-bottom:6px;">🎓</div>
+      
       <h1 style="color:#ffffff;margin:0;font-size:22px;">You're enrolled!</h1>
       <p style="color:${GOLD};margin:8px 0 0;font-size:14px;font-weight:bold;">${esc(o.batchName)}</p>
     </div>

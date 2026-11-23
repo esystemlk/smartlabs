@@ -5,7 +5,7 @@ import { ExamFooter } from '@/components/dashboard/student-views';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useSyncExternalStore, type CSSProperties } from 'react';
-import { ArrowUpRight, ArrowRight, ChevronDown, Headphones, BookOpen, PenLine, Mic, Check, Clock3, Layers3, Sparkles } from 'lucide-react';
+import { ArrowUpRight, ArrowRight, ChevronDown, Headphones, BookOpen, PenLine, Mic, Check, Clock3, Layers3, BadgeCheck } from 'lucide-react';
 import { ieltsSkills } from '@/lib/ielts-catalog';
 const icons = { listening: Headphones, reading: BookOpen, writing: PenLine, speaking: Mic };
 type ReadingTest = { n: number; title: string; desc: string };
@@ -172,7 +172,7 @@ export function IeltsStudio({ section }: { section?: string }) {
       </section>; })}
       </div></> : <div className="studio-parts">{groups?.map((group, i) => { const live = skill.id === 'writing' && i === 1; return <section className="studio-part" key={group}><span className="studio-part-number">0{i + 1}</span><div><h3>{group}</h3><p>{live ? 'Develop your essay and receive AI practice feedback.' : 'Questions for this section are being prepared.'}</p></div>{live ? <Link className="studio-primary" href="/ai-ielts-essay-practice">Start practice <ArrowUpRight size={16} /></Link> : <span className="studio-soon">Coming soon</span>}</section>; })}</div>}
       <section className="studio-types"><h2>What you’ll practise</h2><div>{types?.map(type => <span key={type}>{type}</span>)}</div><p>These are the planned practice categories. Question collections will appear here as they become available.</p></section>
-      {skill.id !== 'writing' && !books && <section className="studio-empty"><Sparkles size={24} /><h2>Your next practice collection is on its way.</h2><p>While we prepare these questions, you can start building your writing confidence.</p><Link href="/ai-ielts-essay-practice">Try Writing Task 2 <ArrowRight size={17} /></Link></section>}
+      {skill.id !== 'writing' && !books && <section className="studio-empty"><BadgeCheck size={24} /><h2>Your next practice collection is on its way.</h2><p>While we prepare these questions, you can start building your writing confidence.</p><Link href="/ai-ielts-essay-practice">Try Writing Task 2 <ArrowRight size={17} /></Link></section>}
     </> : <section className="studio-empty studio-mock"><Clock3 size={38} /><p className="studio-eyebrow">IELTS MOCK TESTS</p><h1>Bring your skills together.</h1><p>Timed section tests and full practice tests are being prepared. They’ll appear here when the questions and review tools are ready.</p><span className="studio-soon">Coming soon</span><Link href="/dashboard/ielts/writing">Explore writing practice <ArrowRight size={17} /></Link></section>}
     <div className="mt-8"><ExamFooter exam="ielts" /></div>
   </div>;

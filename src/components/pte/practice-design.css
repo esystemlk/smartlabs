@@ -19,3 +19,46 @@
 .pte-compact-library{--background:0 0% 100%;--foreground:218 43% 19%;--card:0 0% 100%;--card-foreground:218 43% 19%;--muted:218 33% 95%;--muted-foreground:216 18% 42%;--border:218 32% 88%;--primary:var(--practice-primary-hsl,243 44% 50%);--primary-foreground:0 0% 100%}.pte-compact-library button{cursor:pointer}.pte-compact-library :is(button,input):focus-visible{outline:3px solid var(--practice-accent);outline-offset:2px}
 
 .pte-practice-top-up{font-size:11px;font-weight:700;color:var(--practice-accent);padding:8px 2px}@media(max-width:760px){.pte-practice-top-up{font-size:10px}}
+
+/* ── New light design (matches homepage + dashboard). Visual only: no change to how answers are scored. ── */
+.pte-practice-studio,.pte-practice-studio[data-practice]{--practice-ink:#0a1733;--practice-muted:#4b587a;--practice-accent:#2563eb;--practice-tint:#eff6ff;--practice-line:#e2e8f3;
+  background:radial-gradient(1100px 600px at 0% -10%,#dbeafe 0%,transparent 60%),radial-gradient(900px 500px at 100% 0%,#fef9c3 0%,transparent 55%),radial-gradient(900px 700px at 50% 110%,#dcfce7 0%,transparent 60%),#f5f7fc;background-attachment:fixed}
+.pte-practice-studio :is(h1,h2,h3){font-family:var(--font-bricolage),Inter,sans-serif;letter-spacing:-.035em}
+.pte-practice-topbar{position:sticky;top:10px;margin:10px auto 0;max-width:1240px;border-radius:26px;border:1px solid rgba(255,255,255,.95);background:rgba(255,255,255,.72);box-shadow:0 10px 30px -18px rgba(10,23,51,.35);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%)}
+.pte-practice-topbar-inner{padding:12px 18px}
+.pte-practice-back,.pte-practice-top-up{border-radius:999px!important}
+.pte-practice-task-nav{padding:0 18px 12px}
+.pte-practice-task-nav a{border-radius:999px}
+.pte-practice-task-nav a[aria-current=page]{background:#0a1733!important;color:#fff!important}
+.pte-practice-hero{border:1px solid #fff;border-radius:32px;box-shadow:0 24px 60px -36px rgba(10,23,51,.4),inset 0 0 0 6px rgba(255,255,255,.35);background:linear-gradient(120deg,#fff 0%,#fff 45%,#f3f7ff 100%)}
+.pte-practice-hero h1{color:#0a1733}
+.pte-practice-eyebrow{color:#2563eb!important}
+.pte-practice-task-name{color:#2563eb!important;font-family:var(--font-instrument),serif;font-style:italic;font-size:22px!important;font-weight:400!important;letter-spacing:0}
+.pte-practice-primary,.pte-practice-secondary{border-radius:999px;font-size:14px;min-height:48px;padding:0 22px}
+.pte-practice-primary{background:#2563eb;box-shadow:0 12px 26px -12px rgba(37,99,235,.8)}
+.pte-practice-secondary{padding:0 18px!important;background:#fff;border:1px solid #dbeafe;color:#0a1733}
+.pte-practice-facts>span{font-size:12px;padding:6px 12px;border-radius:999px;background:#eff6ff;color:#1e3a8a}
+.pte-practice-facts svg{color:#16a34a}
+/* Hero art is now the dashboard illustration. */
+.pte-practice-art{min-height:320px;border-radius:26px;background:#eef4ff center right/cover no-repeat;box-shadow:inset 0 0 0 1px #fff}
+.pte-practice-how>li{border-radius:22px;background:#fff;border:1px solid #fff;box-shadow:0 12px 30px -24px rgba(10,23,51,.4)}
+.pte-practice-how>li>span{background:#fab605!important;color:#0a1733!important;border-radius:12px}
+/* How you are scored */
+.pte-practice-scoring{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:24px;align-items:center;margin-top:18px;padding:26px 28px;border-radius:26px;background:linear-gradient(120deg,#fefce8,#f0fdf4);border:1px solid #fff;box-shadow:0 14px 34px -26px rgba(10,23,51,.4)}
+.pte-practice-scoring h2{font-size:24px;margin:8px 0 6px;color:#0a1733}
+.pte-practice-scoring p{font-size:13px;color:#4b587a}
+.pte-practice-scoring ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.pte-practice-scoring li{display:grid;gap:2px;padding:12px 14px;border-radius:16px;background:#fff;border:1px solid #fff}
+.pte-practice-scoring li b{font-size:14px;color:#0a1733}
+.pte-practice-scoring li span{font-size:12px;color:#64748b;line-height:1.5}
+.pte-practice-library,.pte-practice-session{border-radius:28px}
+.pte-practice-tip{border-radius:20px;background:#fffbeb;border-color:#fde68a}
+.pte-practice-progress li[aria-current=step] span{background:#2563eb;color:#fff}
+.pte-practice-studio textarea{border-radius:20px!important;border-color:#dbeafe!important;background:#fff}
+.pte-practice-studio textarea:focus{border-color:#2563eb!important;box-shadow:0 0 0 4px rgba(37,99,235,.12)!important}
+@media(max-width:760px){
+  .pte-practice-topbar{top:6px;margin:6px 8px 0;border-radius:22px}
+  .pte-practice-art{min-height:180px;order:-1;background-position:center bottom}
+  .pte-practice-scoring{grid-template-columns:1fr;padding:20px}
+  .pte-practice-task-name{font-size:19px!important}
+}

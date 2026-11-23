@@ -86,7 +86,7 @@ export default function IeltsEnrollmentsPage() {
 
   const sendWhatsApp = (r: Enrollment) => {
     const lines = [
-      `Hi ${r.fullName || 'there'}, this is Smart Labs 👋`,
+      `Hi ${r.fullName || 'there'}, this is Smart Labs`,
       `You're enrolled in our IELTS course${r.batchName ? ` — ${r.batchName}` : ''}.`,
       r.startDate ? `Start date: ${r.startDate}` : '',
       r.schedule ? `Schedule: ${r.schedule}` : '',

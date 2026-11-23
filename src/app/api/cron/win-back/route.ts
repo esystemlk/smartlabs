@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
       try {
         await sendMail({
           to: u.email, replyTo: CONTACT,
-          subject: 'We miss you at Smart Labs 👋 — your practice is waiting',
+          subject: 'We miss you at Smart Labs — your practice is waiting',
           html: renderWinBackEmail({ fullName: u.displayName || 'there', dashboardUrl: DASH, daysAway, unsubscribeUrl: unsubscribeUrl(doc.id, APP_URL) }),
         });
         await doc.ref.set({ winBackSentAt: FieldValue.serverTimestamp() }, { merge: true });

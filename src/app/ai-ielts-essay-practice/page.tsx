@@ -15,7 +15,7 @@ import { payhereUrls } from '@/lib/payhere';
 import type { IeltsEssayResult } from '@/types/ielts-essay';
 import { recordPracticeResult } from '@/lib/services/activity.service';
 import {
-  Loader2, PenLine, Sparkles, Target, ArrowLeft, Lightbulb, ShieldAlert, RotateCcw,
+  Loader2, PenLine, BadgeCheck, Target, ArrowLeft, Lightbulb, ShieldAlert, RotateCcw,
   CreditCard, X, Check, FileDown,
 } from 'lucide-react';
 
@@ -320,7 +320,7 @@ export default function IeltsEssayPractice() {
               className="w-full py-4 rounded-2xl text-white font-black text-sm flex items-center justify-center gap-2"
               style={{ backgroundColor: CRIMSON }}
             >
-              <Sparkles size={16} /> Score my essay
+              <BadgeCheck size={16} /> Score my essay
             </button>
           </div>
         )}

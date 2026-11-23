@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import {
     PenTool,
     Loader2,
-    Sparkles,
+    BadgeCheck,
     ArrowLeft,
     Clock,
     Award,
@@ -153,7 +153,7 @@ export default function WritingTaskPage() {
                 <div className="flex items-center gap-4">
                     {isGenerated && (
                         <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none font-black animate-pulse shadow-lg shadow-purple-500/20">
-                            <Sparkles className="h-3 w-3 mr-1" /> AI GENERATED
+                            <BadgeCheck className="h-3 w-3 mr-1" /> AI GENERATED
                         </Badge>
                     )}
                     <div className={`px-4 py-1.5 rounded-full border border-border/50 bg-card flex items-center gap-2 font-black text-xs ${timeLeft < 60 ? 'text-red-500 animate-pulse' : 'text-primary'}`}>
@@ -179,7 +179,7 @@ export default function WritingTaskPage() {
                                 </div>
                             </div>
                             <div className="bg-white/50 dark:bg-black/20 p-6 rounded-2xl border border-border/50 relative overflow-hidden group">
-                                {isGenerated && <div className="absolute top-0 right-0 p-2 opacity-50"><Sparkles className="h-10 w-10 text-primary/10" /></div>}
+                                {isGenerated && <div className="absolute top-0 right-0 p-2 opacity-50"><BadgeCheck className="h-10 w-10 text-primary/10" /></div>}
                                 <p className="text-sm font-bold text-foreground leading-relaxed italic relative z-10">
                                     {task === 'write-essay' ? questionData.prompt : questionData.text}
                                 </p>
@@ -204,7 +204,7 @@ export default function WritingTaskPage() {
                                     disabled={isLoading || wordCount < 5}
                                     className="h-14 px-10 rounded-2xl font-black tracking-widest bg-primary shadow-xl shadow-primary/20 hover:scale-105 transition-transform"
                                 >
-                                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Sparkles className="h-5 w-5 mr-2" />}
+                                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <BadgeCheck className="h-5 w-5 mr-2" />}
                                     RUN ANALYSIS
                                 </Button>
                             )}
@@ -223,7 +223,7 @@ export default function WritingTaskPage() {
                             >
                                 <SpotlightCard className="rounded-[2.5rem] border-none bg-[#020617] text-white p-8 shadow-2xl relative">
                                     <h3 className="text-xl font-black mb-8 uppercase tracking-widest flex items-center gap-2">
-                                        <Sparkles className="h-5 w-5 text-accent-2" /> Grammar Matrix
+                                        <BadgeCheck className="h-5 w-5 text-accent-2" /> Grammar Matrix
                                     </h3>
 
                                     <div className="space-y-8">

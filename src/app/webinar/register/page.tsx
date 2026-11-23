@@ -213,7 +213,7 @@ export default function WebinarRegisterPage() {
                                             transition={{ delay: 0.2, type: 'spring' }}
                                             className="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-50 to-sky-50 dark:from-blue-900/20 dark:to-sky-900/20 flex items-center justify-center mx-auto"
                                         >
-                                            <span className="text-5xl">🎉</span>
+                                            
                                         </motion.div>
                                         <h2 className="text-2xl font-black text-gray-900 dark:text-white">Successfully Registered!</h2>
                                         <p className="text-gray-500 dark:text-gray-400 leading-relaxed">
@@ -221,7 +221,7 @@ export default function WebinarRegisterPage() {
                                         </p>
                                         <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30">
                                             <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                                                📧 Check your inbox at <span className="font-bold">{email}</span> for confirmation details.
+                                                Check your inbox at <span className="font-bold">{email}</span> for confirmation details.
                                             </p>
                                         </div>
                                         <div className="pt-4 flex flex-col gap-3">

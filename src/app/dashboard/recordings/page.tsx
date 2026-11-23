@@ -232,7 +232,7 @@ function RecordingsInner() {
             >
               {buying ? <Loader2 className="animate-spin" size={16} /> : <CreditCard size={16} />} Pay with PayHere
             </button>
-            <p className="text-center text-[10px] text-slate-400 mt-2">🔒 Secured by PayHere · LKR</p>
+            <p className="text-center text-[10px] text-slate-400 mt-2">Secured by PayHere · LKR</p>
           </div>
         </div>
       )}

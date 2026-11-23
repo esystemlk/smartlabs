@@ -15,25 +15,8 @@ import {
 } from 'firebase/auth';
 import { useAuth, useFirebase } from '@/firebase';
 import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, UserPlus } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, UserRound } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { incrementStudentCount } from '@/lib/services/stats.service';
@@ -55,6 +38,7 @@ export default function SignupPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const auth = useAuth();
   const { firestore } = useFirebase();
 
@@ -195,93 +179,60 @@ export default function SignupPage() {
     }
   };
 
+  const { errors } = form.formState;
   return (
-    <div className="w-full">
+    <div className="sl-login">
       {showSuccess && <RegisterSuccess />}
-      <div className="container mx-auto flex min-h-[calc(100vh-8rem)] items-center justify-center py-12">
-        <div className="w-full max-w-md">
-          <Card className="shadow-lg">
-            <CardHeader className="text-center">
-              <CardTitle className="font-headline text-3xl">Create Account</CardTitle>
-              <CardDescription>Join Smart Labs to start learning.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="displayName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Full Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="John Doe" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input type="email" placeholder="your.email@example.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="••••••••" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    {isLoading ? 'Creating Account...' : 'Sign Up'}
-                  </Button>
-                </form>
-              </Form>
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-                </div>
-              </div>
-              <Button variant="outline" className="w-full" size="lg" onClick={handleGoogleSignIn} disabled={isLoading}>
-                <Image src="/google-logo.svg" alt="Google" width={20} height={20} className="mr-2" />
-                Sign up with Google
-              </Button>
+      <div className="frame">
+        <aside className="side" aria-hidden="true">
+          <Link href="/" className="brand" tabIndex={-1}><Image src="/logo.png" alt="" width={140} height={78} priority /></Link>
+          <h2>Start your PTE<br />journey <em>today.</em></h2>
+          <p>Free account. AI-scored practice, mock tests and your results in one place.</p>
+        </aside>
 
-              <div className="mt-6 text-center text-sm text-muted-foreground">
-                <p className="mb-2">
-                  Already have an account?{' '}
-                  <Link href="/login" className="font-semibold text-primary hover:underline">
-                    Login
-                  </Link>
-                </p>
-                <p className="mb-3"><Link href="/guide" className="font-semibold text-primary hover:underline">New here? Read the website guide</Link></p>
-                <Link href="/" className="hover:underline hover:text-primary">
-                  <ArrowLeft className="inline-block mr-1 h-4 w-4" />
-                  Back to Home
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <main className="card">
+          <Link href="/" className="brand"><Image src="/logo.png" alt="Smart Labs home" width={170} height={95} /></Link>
+          <h1>Create your <em>account</em></h1>
+          <p className="lead">Join Smart Labs to start practising</p>
+
+          <button type="button" className="google" onClick={handleGoogleSignIn} disabled={isLoading}>
+            <Image src="/google-logo.svg" alt="" width={20} height={20} />
+            Continue with Google
+          </button>
+          <div className="or">or</div>
+
+          <form onSubmit={form.handleSubmit(onSubmit)} className="stack" noValidate>
+            <div>
+              <label className={`field${errors.displayName ? ' err' : ''}`}>
+                <UserRound aria-hidden="true" />
+                <input autoComplete="name" placeholder="Full name" aria-label="Full name" aria-invalid={!!errors.displayName} {...form.register('displayName')} />
+              </label>
+              {errors.displayName && <p className="msg" role="alert">{errors.displayName.message}</p>}
+            </div>
+            <div>
+              <label className={`field${errors.email ? ' err' : ''}`}>
+                <Mail aria-hidden="true" />
+                <input type="email" autoComplete="email" placeholder="Email address" aria-label="Email address" aria-invalid={!!errors.email} {...form.register('email')} />
+              </label>
+              {errors.email && <p className="msg" role="alert">{errors.email.message}</p>}
+            </div>
+            <div>
+              <label className={`field${errors.password ? ' err' : ''}`}>
+                <Lock aria-hidden="true" />
+                <input type={showPassword ? 'text' : 'password'} autoComplete="new-password" placeholder="Password (at least 6 characters)" aria-label="Password" aria-invalid={!!errors.password} {...form.register('password')} />
+                <button type="button" className="eye" onClick={() => setShowPassword(s => !s)} aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </label>
+              {errors.password && <p className="msg" role="alert">{errors.password.message}</p>}
+            </div>
+            <button type="submit" className="submit" disabled={isLoading}>{isLoading ? 'Creating account…' : 'Create account'}</button>
+          </form>
+
+          <p className="foot">Already have an account? <Link href="/login">Log in</Link></p>
+          <Link href="/guide" className="home">New here? Read the website guide</Link>
+          <Link href="/" className="home">← Back to home</Link>
+        </main>
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
 import {
-    Target, Globe, Zap, Sparkles, Video, Search,
+    Target, Globe, Zap, BadgeCheck, Video, Search,
     Home, Book, LayoutDashboard, Settings, User, LogOut,
     ArrowRight, MessageSquare
 } from "lucide-react";
@@ -74,7 +74,7 @@ export function CommandPalette() {
 
                             <Command.List className="max-h-[400px] overflow-y-auto p-4 space-y-4 no-scrollbar">
                                 <Command.Empty className="px-4 py-12 text-center">
-                                    <div className="text-2xl mb-2">🤔</div>
+                                    
                                     <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">No results matched your query</p>
                                 </Command.Empty>
 
@@ -88,7 +88,7 @@ export function CommandPalette() {
 
                                 <Command.Group heading="PTE Practice" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/50 px-3 mb-2">
                                     <div className="space-y-1 mt-2">
-                                        <SearchItem icon={Sparkles} color="text-orange-500" label="Write Essay — AI Scoring" desc="Band score, analysis & model essay" onSelect={() => runCommand(() => router.push("/ai-essay-practice"))} />
+                                        <SearchItem icon={BadgeCheck} color="text-orange-500" label="Write Essay — AI Scoring" desc="Band score, analysis & model essay" onSelect={() => runCommand(() => router.push("/ai-essay-practice"))} />
                                         <SearchItem icon={Book} color="text-violet-500" label="Summarize Written Text" desc="One-sentence summary trainer" onSelect={() => runCommand(() => router.push("/swt-trainer"))} />
                                         <SearchItem icon={MessageSquare} color="text-emerald-500" label="Summarize Spoken Text" desc="Listen & summarize — AI scored" onSelect={() => runCommand(() => router.push("/ai-sst-practice"))} />
                                         <SearchItem icon={Target} color="text-accent-1" label="Level Test" desc="Find your current band" onSelect={() => runCommand(() => router.push("/level-test"))} />
@@ -97,7 +97,7 @@ export function CommandPalette() {
 
                                 <Command.Group heading="IELTS Practice" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/50 px-3 mb-2">
                                     <div className="space-y-1 mt-2">
-                                        <SearchItem icon={Sparkles} color="text-red-500" label="IELTS Essay — Task 2 Scoring" desc="Examiner band scoring on all 4 criteria" onSelect={() => runCommand(() => router.push("/ai-ielts-essay-practice"))} />
+                                        <SearchItem icon={BadgeCheck} color="text-red-500" label="IELTS Essay — Task 2 Scoring" desc="Examiner band scoring on all 4 criteria" onSelect={() => runCommand(() => router.push("/ai-ielts-essay-practice"))} />
                                     </div>
                                 </Command.Group>
 
@@ -110,7 +110,7 @@ export function CommandPalette() {
 
                                 <Command.Group heading="Tools & Discovery" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/50 px-3 mb-2">
                                     <div className="space-y-1 mt-2">
-                                        <SearchItem icon={Sparkles} label="AI Mock Test Lab" desc="Simulate real exams" onSelect={() => runCommand(() => router.push("/mock-tests"))} />
+                                        <SearchItem icon={BadgeCheck} label="AI Mock Test Lab" desc="Simulate real exams" onSelect={() => runCommand(() => router.push("/mock-tests"))} />
                                         <SearchItem icon={Video} label="One-to-One Sessions" desc="Book a private lecturer" onSelect={() => runCommand(() => router.push("/one-to-one"))} />
                                         <SearchItem icon={Video} label="Class Recordings" desc="Recorded class packages" onSelect={() => runCommand(() => router.push("/dashboard/recordings"))} />
                                         <SearchItem icon={Video} label="Video Masterclasses" desc="Expert-led strategies" onSelect={() => runCommand(() => router.push("/videos"))} />

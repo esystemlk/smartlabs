@@ -11,7 +11,7 @@ import { useUser } from '@/firebase';
 import { recordPracticeResult } from '@/lib/services/activity.service';
 import {
   Mic, Square, Loader2, RotateCcw, Play, Search, ChevronLeft, ChevronRight,
-  Shuffle, Volume2, ArrowLeft, Sparkles, ListChecks, AlertTriangle,
+  Shuffle, Volume2, ArrowLeft, BadgeCheck, ListChecks, AlertTriangle,
 } from 'lucide-react';
 
 // Fixed theme classes per catalogue hue (Tailwind can't build dynamic names).
@@ -323,7 +323,7 @@ export function SpeakingTrainer<Q extends SpeakingQuestion>(p: Props<Q>) {
         <div className="flex flex-wrap items-center justify-end gap-2">
           <CreditsPill pool="speaking" />
           <Link href="/dashboard/speaking-recordings" className="rounded-xl border px-3 py-2 text-xs font-semibold">My recordings</Link>
-          <span className={`hidden sm:inline-flex items-center gap-1 rounded-full ${t.soft} ${t.text} px-3 py-1 text-xs font-bold`}><Sparkles className="h-3 w-3" /> AI Score · {p.weight}</span>
+          <span className={`hidden sm:inline-flex items-center gap-1 rounded-full ${t.soft} ${t.text} px-3 py-1 text-xs font-bold`}><BadgeCheck className="h-3 w-3" /> AI Score · {p.weight}</span>
         </div>
       </div>
 

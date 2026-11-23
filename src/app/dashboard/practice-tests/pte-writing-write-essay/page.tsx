@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { scorePteWriteEssay } from '@/ai/flows/score-pte-writing-write-essay';
 import type { PteWriteEssayInput, PteWriteEssayOutput } from '@/ai/flows/pte-writing.types';
 import { pteWriteEssayData } from '@/lib/pte-writing-write-essay-data';
-import { ArrowLeft, Loader2, RefreshCw, Sparkles } from 'lucide-react';
+import { ArrowLeft, Loader2, RefreshCw, BadgeCheck } from 'lucide-react';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
@@ -101,7 +101,7 @@ export default function PteWriteEssayPage() {
 
             {!isTestTaken ? (
               <Button onClick={handleSubmit} disabled={isLoading} className="mt-8 w-full" size="lg">
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <BadgeCheck className="mr-2 h-4 w-4" />}
                 {isLoading ? 'Getting Feedback...' : 'Get AI Score & Feedback'}
               </Button>
             ) : (

@@ -1,0 +1,33 @@
+/* Essay page in the new brand colours. Scoped to .pte-essay-theme (see layout.tsx); visual only — the
+   essay page's scoring, credits and PayHere code are unchanged. Orange (#f97316) becomes brand blue. */
+.pte-essay-theme { --brand: #2563eb; --brand-hover: #1d4ed8; --brand-soft: #eff6ff; --brand-line: #bfdbfe; }
+.pte-essay-theme > .min-h-screen { background: radial-gradient(1100px 600px at 0% -10%, #dbeafe 0%, transparent 60%), radial-gradient(900px 500px at 100% 0%, #fef9c3 0%, transparent 55%), #f7f9fd !important; }
+.pte-essay-theme :is(h1, h2) { font-family: var(--font-bricolage), Inter, sans-serif; letter-spacing: -.03em; }
+
+/* Solid brand surfaces */
+.pte-essay-theme .bg-\[\#f97316\], .pte-essay-theme .bg-orange-500, .pte-essay-theme .bg-orange-600 { background-color: var(--brand) !important; }
+.pte-essay-theme .hover\:bg-\[\#fb923c\]:hover, .pte-essay-theme .hover\:bg-orange-600:hover { background-color: var(--brand-hover) !important; }
+.pte-essay-theme .from-\[\#f97316\] { --tw-gradient-from: var(--brand) var(--tw-gradient-from-position) !important; --tw-gradient-to: rgb(37 99 235 / 0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
+.pte-essay-theme .to-\[\#fb923c\] { --tw-gradient-to: #3b82f6 var(--tw-gradient-to-position) !important; }
+.pte-essay-theme .border-\[\#f97316\] { border-color: var(--brand) !important; }
+.pte-essay-theme .text-\[\#f97316\], .pte-essay-theme :is(.text-orange-500, .text-orange-600, .text-orange-700) { color: var(--brand) !important; }
+.pte-essay-theme .selection\:bg-\[\#f97316\]\/20 ::selection { background: rgb(37 99 235 / .2); }
+
+/* Orange tints → light blue tints */
+.pte-essay-theme :is(.bg-orange-50, .bg-orange-50\/60, .bg-orange-100\/40) { background-color: var(--brand-soft) !important; }
+.pte-essay-theme :is(.bg-orange-100, .bg-orange-100\/80) { background-color: #dbeafe !important; }
+.pte-essay-theme .hover\:bg-orange-50:hover { background-color: var(--brand-soft) !important; }
+.pte-essay-theme :is(.border-orange-200) { border-color: var(--brand-line) !important; }
+.pte-essay-theme :is(.text-orange-200) { color: #bfdbfe !important; }
+.pte-essay-theme :is(.bg-orange-800) { background-color: #1e3a8a !important; }
+.pte-essay-theme :is(.border-orange-800) { border-color: #1e3a8a !important; }
+.pte-essay-theme :is(.bg-orange-900\/30) { background-color: rgb(30 58 138 / .3) !important; }
+.pte-essay-theme :is(.shadow-orange-100, .shadow-orange-200, .hover\:shadow-orange-200:hover) { --tw-shadow-color: rgb(191 219 254 / .9) !important; }
+.pte-essay-theme .shadow-orange-500\/20 { --tw-shadow-color: rgb(37 99 235 / .2) !important; }
+
+/* Dark credit band → brand navy */
+.pte-essay-theme .from-slate-900.via-slate-800 { --tw-gradient-from: #0a1733 var(--tw-gradient-from-position) !important; --tw-gradient-stops: #0a1733, #12306e, #0a1733 !important; }
+
+/* Softer, rounder controls like the rest of the site */
+.pte-essay-theme textarea { border-radius: 20px !important; }
+.pte-essay-theme textarea:focus { border-color: var(--brand) !important; box-shadow: 0 0 0 4px rgb(37 99 235 / .12) !important; }

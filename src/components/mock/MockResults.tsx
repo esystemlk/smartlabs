@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, AlertTriangle, Home, RotateCcw, ArrowRight, Sparkles } from 'lucide-react';
+import { ChevronDown, AlertTriangle, Home, RotateCcw, ArrowRight, BadgeCheck } from 'lucide-react';
 import { TASK_WEIGHT, bandLabel, type MockTaskScore, type MockOverall, type MockTaskType } from '@/types/mock-test';
 
 const TASK_LABEL: Record<MockTaskType, string> = {
@@ -159,7 +159,7 @@ export function MockResults({
         {/* ── Contribution breakdown ──────────────────────────────────────── */}
         <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Sparkles size={15} className="text-slate-400" />
+            <BadgeCheck size={15} className="text-slate-400" />
             <h2 className="text-sm font-black uppercase tracking-wider text-slate-700">Contribution to Writing</h2>
           </div>
           <div className="space-y-3">

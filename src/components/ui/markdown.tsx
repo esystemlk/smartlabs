@@ -4,7 +4,7 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
-import { Zap, Sparkles, Brain, Info, AlertTriangle, CheckCircle2, Target } from 'lucide-react';
+import { Zap, BadgeCheck, Brain, Info, AlertTriangle, CheckCircle2, Target } from 'lucide-react';
 
 interface MarkdownProps {
     content: string;
@@ -65,11 +65,11 @@ export function Markdown({ content, className }: MarkdownProps) {
                             return (
                                 <div className="my-6 p-6 rounded-[2rem] bg-emerald-500/5 border-2 border-emerald-500/20 shadow-xl shadow-emerald-500/5 relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-125 transition-transform duration-700">
-                                        <Sparkles className="h-16 w-16 fill-emerald-500" />
+                                        <BadgeCheck className="h-16 w-16 fill-emerald-500" />
                                     </div>
                                     <div className="flex items-center gap-3 mb-3 text-emerald-500 relative z-10">
                                         <div className="h-8 w-8 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                                            <Sparkles className="h-4 w-4 fill-emerald-500" />
+                                            <BadgeCheck className="h-4 w-4 fill-emerald-500" />
                                         </div>
                                         <span className="text-[10px] font-black uppercase tracking-[0.3em] font-display">Model Answer</span>
                                     </div>

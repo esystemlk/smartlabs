@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { CompactQuestionBank } from './compact-question-bank';
 import { Reorder } from 'framer-motion';
 import {
-  ArrowLeft, Search, ChevronLeft, ChevronRight, Shuffle, Sparkles,
+  ArrowLeft, Search, ChevronLeft, ChevronRight, Shuffle, BadgeCheck,
   Eye, RotateCcw, Languages, Timer, CheckCircle2, XCircle, GripVertical,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -151,7 +151,7 @@ export function ReadingTrainer(p: Props) {
               <Timer className="h-4 w-4" /> {fmt(elapsed)}
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1.5 text-xs font-bold backdrop-blur-sm">
-              <Sparkles className="h-3.5 w-3.5" /> {p.weight}
+              <BadgeCheck className="h-3.5 w-3.5" /> {p.weight}
             </span>
           </div>
         </div>

@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, LayoutDashboard, LogOut, Target, Globe, Zap, Sparkles, Book, Video, Phone, ArrowRight, Search, Bot, PenLine, FileText, Headphones, Volume2, Mic, BookOpen, Clock, GraduationCap, Coins } from "lucide-react";
+import { Menu, X, ChevronDown, LayoutDashboard, LogOut, Target, Globe, Zap, BadgeCheck, Book, Video, Phone, ArrowRight, Search, Bot, PenLine, FileText, Headphones, Volume2, Mic, BookOpen, Clock, GraduationCap, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth } from "@/firebase";
@@ -41,7 +41,7 @@ import { useNotifications } from "@/hooks/use-notifications";
 import { useUserActivity } from "@/hooks/use-user-activity";
 import { usePerformanceData } from "@/hooks/use-performance-data";
 import { calculateStudyStreak } from "@/lib/streak";
-import { LMS_URL } from "@/lib/constants";
+import { LMS_URL, IELTS_URL } from "@/lib/constants";
 import { DEV_CONSOLE_PATH } from "@/lib/site-mode";
 import { PTE_CATALOG } from "@/lib/pte-catalog";
 
@@ -61,34 +61,13 @@ const courses = [
     hoverBorder: "hover:border-blue-500/50"
   },
   {
-    name: "KET Exam",
-    href: "/courses",
-    description: "Cambridge A2 Key — coming soon.",
-    icon: Globe,
-    color: "text-emerald-500",
-    bgColor: "bg-emerald-500/10",
-    hoverBorder: "hover:border-emerald-500/50",
-    disabled: true,
-  },
-  {
     name: "IELTS",
-    href: "/courses",
-    description: "International English Language Testing System — coming soon.",
+    href: IELTS_URL,
+    description: "International English Language Testing System — courses & batches.",
     icon: Zap,
     color: "text-violet-500",
     bgColor: "bg-violet-500/10",
     hoverBorder: "hover:border-violet-500/50",
-    disabled: true,
-  },
-  {
-    name: "PET Exam",
-    href: "/courses",
-    description: "Cambridge B1 Preliminary — coming soon.",
-    icon: Sparkles,
-    color: "text-amber-500",
-    bgColor: "bg-amber-500/10",
-    hoverBorder: "hover:border-amber-500/50",
-    disabled: true,
   },
 ];
 
@@ -162,10 +141,10 @@ const pteAiQuickLinks = [
 // IELTS trainers. Only Writing Task 2 (Essay) is live; the rest are shown but
 // disabled until each part is built, so students can see what's coming.
 const ieltsTools = [
-  { name: "IELTS Studio", href: "/dashboard/ielts", description: "Your dedicated space for all four IELTS skills.", icon: BookOpen, color: "text-red-500", bgColor: "bg-red-500/10", hoverBorder: "hover:border-red-500/50", tag: "New", active: true },
+  { name: "IELTS Studio", href: IELTS_URL, description: "Your dedicated space for all four IELTS skills.", icon: BookOpen, color: "text-red-500", bgColor: "bg-red-500/10", hoverBorder: "hover:border-red-500/50", tag: "New", active: true },
   {
     name: "Writing Task 2 · Essay",
-    href: "/ai-ielts-essay-practice",
+    href: IELTS_URL,
     description: "Examiner band scoring on all four criteria.",
     icon: PenLine,
     color: "text-red-500",
@@ -176,14 +155,14 @@ const ieltsTools = [
   },
   {
     name: "Writing Task 1",
-    href: "#",
+    href: IELTS_URL,
     description: "Academic charts & General letters.",
     icon: FileText,
     color: "text-red-500",
     bgColor: "bg-red-500/10",
-    hoverBorder: "",
-    tag: "Soon",
-    active: false,
+    hoverBorder: "hover:border-red-500/50",
+    tag: "Live",
+    active: true,
   },
   {
     name: "Speaking",
@@ -198,41 +177,41 @@ const ieltsTools = [
   },
   {
     name: "Reading",
-    href: "#",
+    href: IELTS_URL,
     description: "Skimming, scanning & comprehension.",
     icon: BookOpen,
     color: "text-red-500",
     bgColor: "bg-red-500/10",
-    hoverBorder: "",
-    tag: "Soon",
-    active: false,
+    hoverBorder: "hover:border-red-500/50",
+    tag: "Live",
+    active: true,
   },
   {
     name: "Listening",
-    href: "#",
+    href: IELTS_URL,
     description: "All four listening sections.",
     icon: Headphones,
     color: "text-red-500",
     bgColor: "bg-red-500/10",
-    hoverBorder: "",
-    tag: "Soon",
-    active: false,
+    hoverBorder: "hover:border-red-500/50",
+    tag: "Live",
+    active: true,
   },
   {
     name: "IELTS Mock Test",
-    href: "#",
+    href: IELTS_URL,
     description: "Full timed mock, AI scored.",
     icon: Clock,
     color: "text-red-500",
     bgColor: "bg-red-500/10",
-    hoverBorder: "",
-    tag: "Soon",
-    active: false,
+    hoverBorder: "hover:border-red-500/50",
+    tag: "Live",
+    active: true,
   },
 ];
 
 const ieltsQuickLinks = [
-  { name: "IELTS Essay Trainer", href: "/ai-ielts-essay-practice", icon: PenLine, description: "Score your Task 2 essay now." },
+  { name: "IELTS Essay Trainer", href: IELTS_URL, icon: PenLine, description: "Score your Task 2 essay now." },
   { name: "Level Test", href: "/level-test", icon: Target, description: "Find your current band." },
 ];
 
@@ -320,7 +299,8 @@ export default function Header() {
   const isSpecialLayout = pathname.startsWith('/studio') || pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/welcome' || pathname.startsWith('/payment')
     || pathname.startsWith('/ai-essay-practice') || pathname.startsWith('/ai-sst-practice') || pathname.startsWith('/swt-trainer')
     || pathname.startsWith('/ai-wfd-practice')
-    || pathname.startsWith('/mock/') || pathname === '/site-status' || pathname.startsWith(DEV_CONSOLE_PATH);
+    || pathname.startsWith('/mock/') || pathname === '/site-status' || pathname.startsWith(DEV_CONSOLE_PATH)
+    || pathname === '/'; // the homepage hero has its own nav (desktop) and tab bar (phones)
 
   if (isSpecialLayout) {
     return null;
@@ -443,7 +423,7 @@ export default function Header() {
                           <Link href="/dashboard/certificate-request" className="group block p-3 rounded-2xl hover:bg-amber-500/5 transition-colors border border-transparent hover:border-amber-500/20">
                             <div className="flex items-center gap-3">
                               <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500">
-                                <Sparkles className="h-4 w-4" />
+                                <BadgeCheck className="h-4 w-4" />
                               </div>
                               <div>
                                 <div className="font-bold text-xs text-amber-600">Get Certificate</div>
@@ -653,7 +633,7 @@ export default function Header() {
                           : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     )}
                   >
-                    {link.highlight && <Sparkles className="h-3.5 w-3.5 animate-pulse" />}
+                    {link.highlight && <BadgeCheck className="h-3.5 w-3.5 animate-pulse" />}
                     {link.name}
                     {link.highlight && (
                       <span className="absolute -top-1 -right-1 flex h-2 w-2">
@@ -711,7 +691,7 @@ export default function Header() {
                               n.type === 'warning' ? "bg-accent-3/10 text-accent-3" :
                                 "bg-accent-2/10 text-accent-2"
                           )}>
-                            {n.type === 'success' ? <Sparkles className="h-5 w-5" /> :
+                            {n.type === 'success' ? <BadgeCheck className="h-5 w-5" /> :
                               n.type === 'warning' ? <BellDot className="h-5 w-5" /> :
                                 <Megaphone className="h-5 w-5" />}
                           </div>
@@ -972,7 +952,7 @@ export default function Header() {
                       : "text-foreground hover:bg-muted"
                   )}
                 >
-                  {link.highlight && <Sparkles className="h-4 w-4" />}
+                  {link.highlight && <BadgeCheck className="h-4 w-4" />}
                   {link.name}
                 </Link>
               ))}
@@ -1012,7 +992,7 @@ export default function Header() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={() => setDevNotice(false)}>
           <div className="w-full max-w-sm rounded-2xl bg-card p-6 text-center shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Sparkles className="h-7 w-7" />
+              <BadgeCheck className="h-7 w-7" />
             </div>
             <h3 className="text-lg font-bold">We&rsquo;re polishing this feature</h3>
             <p className="mt-2 text-sm text-muted-foreground">

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, Calendar, ArrowRight, Video } from 'lucide-react';
+import { X, BadgeCheck, Calendar, ArrowRight, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -68,7 +68,7 @@ export function WorkshopPopup() {
                         <div className="p-10 pt-16 space-y-8">
                             <div className="space-y-4">
                                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">
-                                    <Sparkles className="h-4 w-4" />
+                                    <BadgeCheck className="h-4 w-4" />
                                     Free Live Training
                                 </div>
                                 <h2 className="text-4xl font-black font-headline tracking-tight leading-[1.1]">
@@ -104,7 +104,7 @@ export function WorkshopPopup() {
                             </Button>
                             
                             <p className="text-center text-xs text-muted-foreground font-bold uppercase tracking-widest">
-                                ⚡ Join 7,100+ students globally
+                                Join 7,100+ students globally
                             </p>
                         </div>
                     </motion.div>

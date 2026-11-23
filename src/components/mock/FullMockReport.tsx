@@ -2,7 +2,7 @@
 
 import { useState, type CSSProperties } from 'react';
 import Link from 'next/link';
-import { Award, ArrowRight, BookOpen, ChevronDown, Printer, Check, MessageSquare, Mic, Sparkles, Headphones, PenLine, Target, Layers3, Fingerprint } from 'lucide-react';
+import { Award, ArrowRight, BookOpen, ChevronDown, Printer, Check, MessageSquare, Mic, BadgeCheck, Headphones, PenLine, Target, Layers3, Fingerprint } from 'lucide-react';
 import { FULL_TASKS, PARTS, SKILLS } from '@/lib/full-mock';
 import './full-mock-report.css';
 
@@ -78,13 +78,13 @@ export function FullMockReport({ exam, api }: { exam: any; api: (body?: any, id?
     <header className="sl-report-hero">
       <div className="sl-report-hero-pattern" aria-hidden="true"><svg viewBox="0 0 480 240"><path d="M-40 200C120 200 120 20 280 20S400 220 520 100" /><path d="M-40 220C120 220 120 40 280 40S400 240 520 120" /><path d="M-40 180C120 180 120 0 280 0S400 200 520 80" /></svg></div>
       <div className="sl-report-hero-copy">
-        <div className="sl-report-brand"><span className="sl-report-brand-mark">S<span>✦</span></span><span>SMART LABS <span className="sl-report-brand-divider">/</span> SCORE STUDIO</span></div>
+        <div className="sl-report-brand"><span className="sl-report-brand-mark">S</span><span>SMART LABS <span className="sl-report-brand-divider">/</span> SCORE STUDIO</span></div>
         <p className="sl-report-eyebrow">PTE ACADEMIC · FULL MOCK 01</p>
         <h1>Your performance,<br /><span>explained in colour.</span></h1>
         <p className="sl-report-hero-description">Understand every skill. Find your focus. Take your next step with a clearer direction.</p>
         <div className="sl-report-hero-tags"><span><Check size={14} /> {rows.length} responses reviewed</span><span><Layers3 size={14} /> {FULL_TASKS.length} task types</span><span><Fingerprint size={14} /> Your personal skills profile</span></div>
       </div>
-      <div className="sl-report-hero-art" aria-hidden="true"><span className="sl-report-orbit sl-report-orbit-one" /><span className="sl-report-orbit sl-report-orbit-two" /><div className="sl-report-seal"><span>SMART LABS</span><Sparkles size={44} strokeWidth={1.2} /><strong>YOUR ENGLISH.<br />YOUR NEXT STEP.</strong><span>LEARN · PRACTISE · GROW</span></div><span className="sl-report-art-dot sl-report-dot-blue" /><span className="sl-report-art-dot sl-report-dot-coral" /><span className="sl-report-art-star">✦</span></div>
+      <div className="sl-report-hero-art" aria-hidden="true"><span className="sl-report-orbit sl-report-orbit-one" /><span className="sl-report-orbit sl-report-orbit-two" /><div className="sl-report-seal"><span>SMART LABS</span><BadgeCheck size={44} strokeWidth={1.2} /><strong>YOUR ENGLISH.<br />YOUR NEXT STEP.</strong><span>LEARN · PRACTISE · GROW</span></div><span className="sl-report-art-dot sl-report-dot-blue" /><span className="sl-report-art-dot sl-report-dot-coral" /></div>
     </header>
 
     <div className="sl-report-toolbar print:hidden"><p><span className="sl-report-live-dot" /> Assessment complete <span className="sl-report-toolbar-divider">/</span> Keep this report for your next lecturer session</p><div><button className="sl-report-button sl-report-button-light" onClick={() => window.print()}><Printer size={16} /> Print report</button><button className="sl-report-button sl-report-button-dark" onClick={() => void copyLink()}>{copied ? <Check size={16} /> : <MessageSquare size={16} />}{copied ? 'Link copied' : 'Share with your lecturer'}</button></div></div>
@@ -94,7 +94,7 @@ export function FullMockReport({ exam, api }: { exam: any; api: (body?: any, id?
     <details className="sl-report-method"><summary><span><Award size={15} /> About your practice scores</span><ChevronDown size={15} /></summary><p>These Smart Labs practice estimates use normalized average question weights and a linear 10–90 conversion. Overall is calculated independently from question contributions. Pearson’s official scores also use proprietary difficulty calibration and cannot be reproduced from the weighting table. Published “&lt;1%” Overall entries use 0.5% in this mock.</p></details>
 
     <section className="sl-report-panel sl-report-profile">
-      <div className="sl-report-section-heading"><div><p className="sl-report-kicker">THE BIGGER PICTURE</p><h2>Your Skills Profile<span className="sl-report-heading-spark">✦</span></h2><p>Discover your strengths across the ways you use English.</p></div><span className="sl-report-section-icon"><Fingerprint size={28} strokeWidth={1.4} /></span></div>
+      <div className="sl-report-section-heading"><div><p className="sl-report-kicker">THE BIGGER PICTURE</p><h2>Your Skills Profile</h2><p>Discover your strengths across the ways you use English.</p></div><span className="sl-report-section-icon"><Fingerprint size={28} strokeWidth={1.4} /></span></div>
       <div className="sl-report-profile-grid">{Object.entries(PROFILE_GROUPS).map(([name, types], i) => {
         const relevant = summary.filter(t => types.includes(t.type));
         const value = relevant.reduce((a, t) => a + t.percent, 0) / relevant.length;
@@ -114,12 +114,12 @@ export function FullMockReport({ exam, api }: { exam: any; api: (body?: any, id?
     <section className="sl-report-answers"><div className="sl-report-section-heading"><div><p className="sl-report-kicker">YOUR RESPONSE REVIEW</p><h2>Small details. Better next attempts.</h2><p>Compare, listen, and leave with something specific to practise.</p></div><label className="sl-report-focus-toggle"><input type="checkbox" checked={onlyWeak} onChange={e => setOnlyWeak(e.target.checked)} /> Focus areas only (&lt;65%)</label></div><div className="sl-report-tabs print:hidden">{['All sections', ...PARTS.map(p => p.label)].map((p, i) => <button key={p} aria-pressed={part === i - 1} className={part === i - 1 ? 'sl-report-tab-active' : ''} onClick={() => setPart(i - 1)}>{p}</button>)}</div>
       {summary.filter(t => part < 0 || t.part === part).map(t => <div key={t.type} id={`task-${t.type}`} className="sl-answer-task" style={vars(PART_COLOURS[t.part])}><h3 className="sl-answer-task-heading"><span />{t.label}<small>{PARTS[t.part].label}</small></h3><div className="space-y-3">{t.rows.filter(r => !onlyWeak || r.score?.percent < 65).map(r => <details key={r.index} className="sl-answer-card"><summary><span className="sl-answer-number">Q{String(r.index + 1).padStart(2, '0')}</span><span className="sl-answer-title">{r.source.title || t.label}</span><span className={`sl-answer-mark ${r.score.percent < 65 ? 'sl-answer-mark-focus' : ''}`}><strong>{Math.round(r.score.percent)}%</strong><small>{Number(r.score.raw.toFixed(2))}/{Number(r.score.max.toFixed(2))} marks</small></span><ChevronDown size={17} /></summary>
         <div className="sl-answer-body"><div className="sl-answer-comparison"><div className="sl-answer-reference"><h4><BookOpen size={15} /> Question / reference</h4>{r.source.passage && <p>{r.source.passage}</p>}{r.source.topic && <p>{r.source.topic}</p>}{r.source.situation && <p>{r.source.situation}</p>}{r.source.question && <p>{r.source.question}</p>}{r.imageUrl && <img src={r.imageUrl} alt="Question reference" className="mb-4 max-h-60 w-full object-contain" />}{r.referenceAudioUrl && <audio src={r.referenceAudioUrl} controls className="mb-4 w-full" />}<p>{Array.isArray(reference(r)) ? reference(r).join(' ') : reference(r)}</p>{r.source.sampleAnswer && <small>Sample wording is an example. Equivalent valid responses are accepted.</small>}</div><div className="sl-answer-response"><h4><PenLine size={15} /> Student response</h4>{r.audioUrl && <audio controls src={r.audioUrl} className="mb-4 w-full" />}<p>{Array.isArray(r.answer) ? r.answer.map((v: any, i: number) => `${i + 1}. ${t.type === 'reorder-paragraphs' ? r.source.paragraphs[r.source.paragraphIds ? r.source.paragraphIds.indexOf(String(v)) : v] : t.type === 'highlight-incorrect-words' ? r.source.transcript[v] : v}`).join('\n') : r.answer || (!r.audioUrl ? 'No response submitted.' : 'See recording and transcript below.')}</p></div></div>
-          {r.score.detail && <div className="sl-answer-feedback"><h4><Sparkles size={17} /> Assessment and feedback</h4><Detail value={r.score.detail} /></div>}
+          {r.score.detail && <div className="sl-answer-feedback"><h4><BadgeCheck size={17} /> Assessment and feedback</h4><Detail value={r.score.detail} /></div>}
           {r.lecturerNote && <div className="sl-lecturer-feedback"><h4><MessageSquare size={16} /> Your lecturer’s notes</h4><p>{r.lecturerNote}</p></div>}
           {exam.canAnnotate && <LecturerNote id={exam.id} index={r.index} initial={r.lecturerNote} api={api} />}
         </div></details>)}</div>{onlyWeak && !t.rows.some(r => r.score?.percent < 65) && <p className="sl-report-empty-focus"><Check size={15} /> No responses below 65% in this question type.</p>}</div>)}
     </section>
-    <footer className="sl-report-footer"><div><span className="sl-report-footer-brand">SMART LABS<span>✦</span></span><p>More understanding. More confident practice.</p></div><Link href="/mock-tests" className="sl-report-button sl-report-button-dark print:hidden">Back to Mock Tests <ArrowRight size={16} /></Link></footer>
+    <footer className="sl-report-footer"><div><span className="sl-report-footer-brand">SMART LABS</span><p>More understanding. More confident practice.</p></div><Link href="/mock-tests" className="sl-report-button sl-report-button-dark print:hidden">Back to Mock Tests <ArrowRight size={16} /></Link></footer>
   </div>;
 }
 

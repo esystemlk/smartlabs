@@ -14,25 +14,8 @@ import {
 } from 'firebase/auth';
 import { useAuth, useFirebase } from '@/firebase';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, LogIn } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -49,6 +32,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const auth = useAuth();
   const { firestore } = useFirebase();
 
@@ -135,6 +119,8 @@ export default function LoginPage() {
 
     if (invalidCredentialCodes.includes(error.code)) {
       description = 'Invalid email or password. Please try again.';
+      // Also show it under the password field, as in the design.
+      form.setError('password', { message: 'Incorrect email or password' });
     }
 
     toast({
@@ -167,86 +153,52 @@ export default function LoginPage() {
     }
   };
 
+  const { errors } = form.formState;
   return (
-    <div className="w-full">
-      <div className="container mx-auto flex min-h-[calc(100vh-8rem)] items-center justify-center py-12">
-        <div className="w-full max-w-md">
-          <Card className="shadow-lg">
-            <CardHeader className="text-center items-center">
-              <Image src="/logo.png" alt="Smart Labs Logo" width={64} height={64} className="mb-4" />
-              <CardTitle className="font-headline text-3xl">Login</CardTitle>
-              <CardDescription>Access your student dashboard.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input type="email" placeholder="your.email@example.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="flex items-center justify-between">
-                          <FormLabel>Password</FormLabel>
-                          <Link
-                            href="/forgot-password"
-                            className="text-sm font-medium text-primary hover:underline"
-                          >
-                            Forgot password?
-                          </Link>
-                        </div>
-                        <FormControl>
-                          <Input type="password" placeholder="••••••••" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                    <LogIn className="mr-2 h-4 w-4" />
-                    {isLoading ? 'Logging in...' : 'Login'}
-                  </Button>
-                </form>
-              </Form>
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-                </div>
-              </div>
-              <Button variant="outline" className="w-full" size="lg" onClick={handleGoogleSignIn} disabled={isLoading}>
-                <Image src="/google-logo.svg" alt="Google" width={20} height={20} className="mr-2" />
-                Sign in with Google
-              </Button>
-              <div className="mt-6 text-center text-sm text-muted-foreground">
-                <p className="mb-2">
-                  Don't have an account?{' '}
-                  <Link href="/signup" className="font-semibold text-primary hover:underline">
-                    Sign up
-                  </Link>
-                </p>
-                <Link href="/" className="hover:underline hover:text-primary">
-                  <ArrowLeft className="inline-block mr-1 h-4 w-4" />
-                  Back to Home
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+    <div className="sl-login">
+      <div className="frame">
+        <aside className="side" aria-hidden="true">
+          <Link href="/" className="brand" tabIndex={-1}><Image src="/logo.png" alt="" width={140} height={78} priority /></Link>
+          <h2>Your PTE journey<br />starts <em>here.</em></h2>
+          <p>Practise smarter. Score higher. Achieve your goals.</p>
+        </aside>
+
+        <main className="card">
+          <Link href="/" className="brand"><Image src="/logo.png" alt="Smart Labs home" width={170} height={95} /></Link>
+          <h1>Welcome <em>back</em></h1>
+          <p className="lead">Log in to continue your practice</p>
+
+          <button type="button" className="google" onClick={handleGoogleSignIn} disabled={isLoading}>
+            <Image src="/google-logo.svg" alt="" width={20} height={20} />
+            Continue with Google
+          </button>
+          <div className="or">or</div>
+
+          <form onSubmit={form.handleSubmit(onSubmit)} className="stack" noValidate>
+            <div>
+              <label className={`field${errors.email ? ' err' : ''}`}>
+                <Mail aria-hidden="true" />
+                <input type="email" autoComplete="email" placeholder="Email address" aria-label="Email address" aria-invalid={!!errors.email} {...form.register('email')} />
+              </label>
+              {errors.email && <p className="msg" role="alert">{errors.email.message}</p>}
+            </div>
+            <div>
+              <label className={`field${errors.password ? ' err' : ''}`}>
+                <Lock aria-hidden="true" />
+                <input type={showPassword ? 'text' : 'password'} autoComplete="current-password" placeholder="Password" aria-label="Password" aria-invalid={!!errors.password} {...form.register('password')} />
+                <button type="button" className="eye" onClick={() => setShowPassword(s => !s)} aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </label>
+              {errors.password && <p className="msg" role="alert">{errors.password.message}</p>}
+            </div>
+            <Link href="/forgot-password" className="forgot">Forgot password?</Link>
+            <button type="submit" className="submit" disabled={isLoading}>{isLoading ? 'Logging in…' : 'Log in'}</button>
+          </form>
+
+          <p className="foot">New to Smart Labs? <Link href="/signup">Create an account</Link></p>
+          <Link href="/" className="home">← Back to home</Link>
+        </main>
       </div>
     </div>
   );

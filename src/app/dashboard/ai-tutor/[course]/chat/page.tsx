@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
     Bot,
     Send,
-    Sparkles,
+    BadgeCheck,
     ArrowLeft,
     MessageSquare,
     Zap,
@@ -374,7 +374,7 @@ export default function AITutorClassroom() {
                             <RotateCcw className="h-4 w-4 text-muted-foreground" />
                         </Button>
                         <Button className="rounded-xl h-10 px-4 gap-2 bg-primary font-black tracking-[0.1em] text-[10px] shadow-lg shadow-primary/10">
-                            <Sparkles className="h-3.5 w-3.5" /> <span className="hidden xs:inline">UPGRADE</span>
+                            <BadgeCheck className="h-3.5 w-3.5" /> <span className="hidden xs:inline">UPGRADE</span>
                         </Button>
                     </div>
                 </div>
@@ -416,7 +416,7 @@ export default function AITutorClassroom() {
                                                     <div className="flex items-center justify-between mb-2 opacity-50 relative z-10">
                                                         <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-widest">
                                                             {msg.role === 'assistant' ? persona.name : 'Student Voice'}
-                                                            {msg.role === 'assistant' && <Sparkles className="h-3 w-3" />}
+                                                            {msg.role === 'assistant' && <BadgeCheck className="h-3 w-3" />}
                                                         </div>
                                                         {msg.role === 'assistant' && (
                                                             <button
@@ -674,7 +674,7 @@ export default function AITutorClassroom() {
                                             {savedInsights.map((msg, i) => (
                                                 <Card key={i} className="p-6 rounded-[2rem] border-2 border-border/50 bg-card hover:border-primary/50 transition-all">
                                                     <div className="flex items-center gap-2 mb-3 opacity-50 text-[8px] font-black uppercase tracking-widest">
-                                                        <Sparkles className="h-3 w-3" /> Expert Insight
+                                                        <BadgeCheck className="h-3 w-3" /> Expert Insight
                                                     </div>
                                                     <div className="line-clamp-4 text-xs font-medium leading-relaxed italic">
                                                         <Markdown content={msg.content} />

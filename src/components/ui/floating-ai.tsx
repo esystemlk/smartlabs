@@ -7,7 +7,7 @@ import {
     X,
     Send,
     Bot,
-    Sparkles,
+    BadgeCheck,
     User,
     Loader2,
     Zap,
@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
 export function FloatingAI() {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<any[]>([
-        { role: 'assistant', content: 'Hi! 👋 I\'m your Smart Labs assistant. I can help you with information about our courses, pricing, enrollment, and more. What would you like to know?' },
+        { role: 'assistant', content: 'Hi! I\'m your Smart Labs assistant. I can help you with information about our courses, pricing, enrollment, and more. What would you like to know?' },
     ]);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
@@ -135,7 +135,7 @@ export function FloatingAI() {
                                                 : 'bg-muted/40 text-foreground rounded-tl-none border-2 border-border/50 hover:bg-muted/60'
                                         )}>
                                             <div className="flex items-center gap-2 mb-1.5 opacity-40 text-[9px] font-bold uppercase tracking-widest">
-                                                {msg.role === 'assistant' ? <Sparkles className="h-3.5 w-3.5 text-primary" /> : <User className="h-3.5 w-3.5" />}
+                                                {msg.role === 'assistant' ? <BadgeCheck className="h-3.5 w-3.5 text-primary" /> : <User className="h-3.5 w-3.5" />}
                                                 {msg.role === 'assistant' ? 'Smart Labs' : 'You'}
                                             </div>
                                             <div className="whitespace-pre-wrap select-none">

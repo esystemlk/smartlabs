@@ -14,7 +14,7 @@ import {
     Clock,
     CheckCircle2,
     ArrowRight,
-    Sparkles,
+    BadgeCheck,
     Loader2,
     AlertCircle,
     Link as LinkIcon,
@@ -264,7 +264,7 @@ function RegistrationContent() {
                                     <div className="p-8 bg-white dark:bg-slate-900 border border-border/50 rounded-[32px] hover:border-accent-3/50 hover:shadow-xl transition-all h-full flex flex-col justify-between space-y-4">
                                         <div className="space-y-4">
                                             <div className="h-12 w-12 rounded-2xl bg-accent-3/10 flex items-center justify-center text-accent-3 group-hover:scale-110 transition-transform">
-                                                <Sparkles className="h-6 w-6" />
+                                                <BadgeCheck className="h-6 w-6" />
                                             </div>
                                             <div className="space-y-1">
                                                 <h4 className="text-xl font-black">Workshop Document</h4>
@@ -309,7 +309,7 @@ function RegistrationContent() {
                     </Card>
 
                     <div className="p-8 bg-accent-1/10 rounded-[32px] border border-accent-1/20 space-y-4">
-                        <Sparkles className="h-8 w-8 text-accent-1" />
+                        <BadgeCheck className="h-8 w-8 text-accent-1" />
                         <h4 className="text-lg font-black tracking-tight leading-tight">Smart Labs Exclusive</h4>
                         <p className="text-xs text-muted-foreground font-bold leading-relaxed uppercase tracking-wider">
                             This is an authorized session. All attendees are logged for certification and attendance tracking.

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
   CalendarDays, Clock, Timer, Tag, CheckCircle2, Users, MessageSquare,
-  Target, Lightbulb, Sparkles, ArrowRight, AlertTriangle, Phone,
+  Target, Lightbulb, BadgeCheck, ArrowRight, AlertTriangle, Phone,
 } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -44,7 +44,7 @@ export default function FeedbackClubPage() {
         <div className="pointer-events-none absolute -left-16 bottom-0 h-72 w-72 rounded-full bg-accent-1/10 blur-[120px]" />
         <div className="container relative mx-auto px-4 py-16 md:py-20">
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
-            <Sparkles className="h-3.5 w-3.5" /> Smart Labs Feedback Club
+            <BadgeCheck className="h-3.5 w-3.5" /> Smart Labs Feedback Club
           </span>
           <h1 className="mt-5 max-w-3xl text-3xl font-black leading-tight md:text-5xl">
             Practise with confidence. Improve with feedback. <span className="gradient-text">Achieve your target score.</span>

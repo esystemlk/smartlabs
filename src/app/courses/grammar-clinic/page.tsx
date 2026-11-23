@@ -12,7 +12,7 @@ import {
     Check,
     Target,
     Users,
-    Sparkles,
+    BadgeCheck,
     ShieldCheck,
     Monitor,
     Zap

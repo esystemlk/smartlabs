@@ -38,7 +38,7 @@ export function renderCampaignEmail(o: CampaignEmailData = {}): string {
   <div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:0 auto;background:#f4f5f7;padding:24px;">
     <div style="background:${NAVY};padding:28px 24px;border-radius:12px 12px 0 0;text-align:center;">
       <h1 style="color:${GOLD};margin:0;font-size:22px;">Smart Labs</h1>
-      <p style="color:rgba(255,255,255,0.8);margin:8px 0 0;font-size:14px;">Your next band score is one practice away 🎯</p>
+      <p style="color:rgba(255,255,255,0.8);margin:8px 0 0;font-size:14px;">Your next band score is one practice away</p>
     </div>
 
     <div style="background:#fff;padding:24px;border:1px solid #e5e7eb;border-top:none;">

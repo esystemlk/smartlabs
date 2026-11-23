@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, User, Users, CheckCircle2, ArrowRight, Play, FileText, Sparkles } from 'lucide-react';
+import { Calendar, Clock, User, Users, CheckCircle2, ArrowRight, Play, FileText, BadgeCheck } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -35,7 +35,7 @@ export default function WorkshopsPage() {
                             animate={{ opacity: 1, scale: 1 }}
                             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-black uppercase tracking-widest"
                         >
-                            <Sparkles className="h-4 w-4" />
+                            <BadgeCheck className="h-4 w-4" />
                             Free Monthly Knowledge Series
                         </motion.div>
                         <h1 className="text-6xl md:text-8xl font-black font-headline tracking-tighter leading-[0.9] text-slate-900 dark:text-white">

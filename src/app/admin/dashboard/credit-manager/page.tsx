@@ -386,7 +386,7 @@ export default function CreditManagerPage() {
                     className="w-full flex items-center gap-2 bg-slate-700 hover:bg-amber-900/50 border border-slate-600 hover:border-amber-700 disabled:opacity-40 text-slate-300 hover:text-amber-300 font-bold text-xs px-4 py-2.5 rounded-xl transition-all">
                     <XCircle size={13} /> Remove Unlimited Plan
                   </button>
-                  <button onClick={() => { if (confirm(`⚠️ RESET all universal credits AND plan for ${selected.email}?`)) manageUniversal('reset'); }} disabled={applying}
+                  <button onClick={() => { if (confirm(`RESET all universal credits AND plan for ${selected.email}?`)) manageUniversal('reset'); }} disabled={applying}
                     className="w-full flex items-center gap-2 bg-slate-700 hover:bg-red-900/50 border border-slate-600 hover:border-red-700 disabled:opacity-40 text-slate-300 hover:text-red-300 font-bold text-xs px-4 py-2.5 rounded-xl transition-all">
                     <Trash2 size={13} /> Reset Universal Credits
                   </button>

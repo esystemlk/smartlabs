@@ -5,8 +5,8 @@ import type { User } from 'firebase/auth';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import {
   LayoutDashboard, Users, Share2, Coins, UserCog, Copy, Check, Link2, Plus,
-  Loader2, TrendingUp, Sparkles, Crown, MessageCircle, Mail, Save, Send,
-  Target, Calendar, Hash, AtSign, BadgeCheck, Wallet, RefreshCw, Calculator,
+  Loader2, TrendingUp, BadgeCheck, Crown, MessageCircle, Mail, Save, Send,
+  Target, Calendar, Hash, AtSign, Wallet, RefreshCw, Calculator,
 } from 'lucide-react';
 
 interface PartnerDoc {
@@ -36,7 +36,7 @@ const LKR = (n: number) => 'LKR ' + Math.round(n).toLocaleString('en-LK');
 
 const TIERS = [
   { min: 0, max: 10, rate: 10, label: '1–10 students', icon: TrendingUp },
-  { min: 10, max: 20, rate: 12, label: '11–20 students', icon: Sparkles },
+  { min: 10, max: 20, rate: 12, label: '11–20 students', icon: BadgeCheck },
   { min: 20, max: Infinity, rate: 15, label: '20+ students', icon: Crown },
 ];
 const tierFor = (n: number) => (n > 20 ? TIERS[2] : n > 10 ? TIERS[1] : TIERS[0]);

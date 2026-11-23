@@ -18,7 +18,7 @@ import {
     Save,
     CheckCircle2,
     Calendar,
-    Sparkles,
+    BadgeCheck,
     Download
 } from 'lucide-react';
 import Link from 'next/link';
@@ -288,7 +288,7 @@ export default function SessionManagerPage() {
                     </Table>
                     {(!filteredEvents || filteredEvents.length === 0) && (
                         <div className="p-20 text-center">
-                            <Sparkles className="h-10 w-10 text-muted-foreground/30 mx-auto mb-4" />
+                            <BadgeCheck className="h-10 w-10 text-muted-foreground/30 mx-auto mb-4" />
                             <p className="text-muted-foreground font-bold">No events found matching your search.</p>
                         </div>
                     )}

@@ -29,7 +29,7 @@ import {
     Filter,
     LayoutGrid,
     List,
-    Sparkles,
+    BadgeCheck,
     ExternalLink
 } from 'lucide-react';
 import Link from 'next/link';
@@ -217,7 +217,7 @@ export default function AdminWorkshopsPage() {
                                 animate={{ opacity: 1, x: 0 }}
                                 className="flex items-center gap-2 text-primary font-black text-xs uppercase tracking-[0.2em]"
                             >
-                                <Sparkles className="h-4 w-4" />
+                                <BadgeCheck className="h-4 w-4" />
                                 Workshop Control Center
                             </motion.div>
                             <h1 className="text-4xl md:text-6xl font-black font-headline tracking-tighter leading-tight">
@@ -460,7 +460,7 @@ export default function AdminWorkshopsPage() {
                             </DialogHeader>
                         </div>
                         {/* Decorative Background Icon */}
-                        <Sparkles className="absolute top-1/2 right-10 -translate-y-1/2 h-64 w-64 text-white/10 rotate-12 pointer-events-none" />
+                        <BadgeCheck className="absolute top-1/2 right-10 -translate-y-1/2 h-64 w-64 text-white/10 rotate-12 pointer-events-none" />
                     </div>
                     
                     <form onSubmit={handleSubmit} className="p-10 space-y-10">

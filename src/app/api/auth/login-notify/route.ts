@@ -52,7 +52,7 @@ export async function POST(request: Request) {
       try {
         await sendMail({
           to: email, replyTo: CONTACT,
-          subject: '🎉 Welcome to Smart Labs — your account is ready!',
+          subject: 'Welcome to Smart Labs — your account is ready!',
           html: renderWelcomeNewUserEmail({ fullName: name, dashboardUrl: DASH }),
         });
       } catch (e) { console.error('[login-notify] welcome email failed:', e); }
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     try {
       await sendMail({
         to: email, replyTo: CONTACT,
-        subject: 'Welcome back to Smart Labs 👋',
+        subject: 'Welcome back to Smart Labs',
         html: renderWelcomeBackEmail({ fullName: name, dashboardUrl: DASH, signedInAt }),
       });
     } catch (e) { console.error('[login-notify] welcome-back email failed:', e); }

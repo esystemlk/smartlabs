@@ -26,7 +26,7 @@ export function renderIeltsReceiptEmail(o: IeltsReceiptData): string {
   <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;background:#f4f5f7;padding:24px;">
     <div style="background:${NAVY};padding:26px 24px;border-radius:12px 12px 0 0;text-align:center;">
       <h1 style="color:${GOLD};margin:0;font-size:21px;">Smart Labs — IELTS</h1>
-      <p style="color:rgba(255,255,255,0.8);margin:8px 0 0;font-size:14px;">Payment received 🎉</p>
+      <p style="color:rgba(255,255,255,0.8);margin:8px 0 0;font-size:14px;">Payment received</p>
     </div>
     <div style="background:#fff;padding:24px;border:1px solid #e5e7eb;border-top:none;">
       <p style="font-size:15px;margin:0 0 16px;color:#111827;">Hi <b>${esc(o.fullName) || 'there'}</b>, thank you for registering for the Smart Labs IELTS course. Here is your receipt.</p>

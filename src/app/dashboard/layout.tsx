@@ -13,7 +13,19 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useState, useEffect, type CSSProperties } from 'react';
 import { cn } from '@/lib/utils';
 import { StudentDock, StudentMoreMenu } from '@/components/dashboard/student-dock';
+import { DashboardHero, type DashboardArt } from '@/components/dashboard/student-views';
 import { isStudioHost } from '@/lib/studio';
+
+// Banners for pages whose own code has no hero (their content renders underneath).
+const PAGE_HEROES: Record<string, { image: DashboardArt; eyebrow: string; title: string; text: string }> = {
+  '/dashboard/recorded-sessions': { image: 'recorded', eyebrow: 'RECORDED COURSES', title: 'Watch your classes', text: 'Your recorded lessons and course videos, ready whenever you are.' },
+  '/dashboard/support': { image: 'help', eyebrow: 'HELP CENTRE', title: "We're here to help", text: 'Ask a question or chat with our team about your courses and practice.' },
+  '/dashboard/settings': { image: 'help', eyebrow: 'YOUR ACCOUNT', title: 'Settings', text: 'Update your profile, password and preferences.' },
+  '/dashboard/guide': { image: 'help', eyebrow: 'WEBSITE GUIDE', title: 'Find your way around', text: 'A quick tour of practice, results, registrations and courses.' },
+};
+
+// IELTS practice now lives on ielts.smartlabs.lk, so the dashboard search only lists PTE and general pages.
+const pteResults = (q: string) => searchStudentTasks(q).filter(item => !item.href.startsWith('/dashboard/ielts'));
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, isUserLoading } = useUser();
@@ -66,7 +78,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Full-width content; reserve space for the floating dock outside exams. */}
       <main className={cn('min-h-screen', !isExam && !studio && 'student-dock-content')}>
-        <div className="p-4 sm:p-6 lg:p-8">{!isExam && !studio && <div className="student-search"><label className="sr-only" htmlFor="practice-search">Find PTE or IELTS practice</label><input id="practice-search" type="search" placeholder="Find practice: PTE writing, IELTS reading…" value={search} onChange={event=>setSearch(event.target.value)} onKeyDown={event=>{if(event.key==='Escape')setSearch('')}}/>{search.trim() && <div className="student-search-results">{searchStudentTasks(search).length ? searchStudentTasks(search).map(item=><Link key={item.href} href={item.href} onClick={()=>setSearch('')}>{item.label}<small>{item.context}</small></Link>):<p className="p-4 text-sm">No matching practice. Try an exam or skill name.</p>}</div>}</div>}<DashboardSeasonalBanner/>{children}</div>
+        <div className="p-4 sm:p-6 lg:p-8">{!isExam && !studio && <div className="student-search"><label className="sr-only" htmlFor="practice-search">Find PTE practice</label><input id="practice-search" type="search" placeholder="Find PTE practice: speaking, essay, dictation…" value={search} onChange={event=>setSearch(event.target.value)} onKeyDown={event=>{if(event.key==='Escape')setSearch('')}}/>{search.trim() && <div className="student-search-results">{pteResults(search).length ? pteResults(search).map(item=><Link key={item.href} href={item.href} onClick={()=>setSearch('')}>{item.label}<small>{item.context}</small></Link>):<p className="p-4 text-sm">No matching practice. Try a skill or task name.</p>}</div>}</div>}<DashboardSeasonalBanner/>{PAGE_HEROES[pathname] && <div className="student-page dash-page-hero"><DashboardHero {...PAGE_HEROES[pathname]} /></div>}{children}</div>
       </main>
       {!isExam && !studio && <StudentDock pathname={pathname} onSignOut={handleLogout}/>}
     </div></DashboardSeasonalFrame>

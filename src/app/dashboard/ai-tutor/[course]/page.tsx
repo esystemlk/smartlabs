@@ -3,7 +3,7 @@
 import React from 'react';
 import {
     Bot,
-    Sparkles,
+    BadgeCheck,
     ArrowRight,
     ArrowLeft,
     CheckCircle2,
@@ -144,7 +144,7 @@ export default function CourseDetailLanding() {
                     <div className="w-full xl:w-auto flex flex-col sm:flex-row gap-4">
                         <Button asChild className="h-20 px-12 rounded-[2rem] bg-primary text-base font-black tracking-[0.2em] shadow-[0_20px_50px_rgba(79,70,229,0.3)] hover:scale-105 active:scale-95 transition-all flex-grow sm:flex-none">
                             <Link href={`/dashboard/ai-tutor/${courseId}/chat`}>
-                                START LEARNING NOW <Sparkles className="ml-3 h-5 w-5 fill-white" />
+                                START LEARNING NOW <BadgeCheck className="ml-3 h-5 w-5 fill-white" />
                             </Link>
                         </Button>
                         <Button variant="outline" size="icon" className="hidden sm:flex h-20 w-20 rounded-[2rem] border-2 border-border/50 hover:bg-primary/5 active:scale-95 transition-all">

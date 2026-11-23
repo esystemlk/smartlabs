@@ -7,7 +7,7 @@ import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { payhereUrls } from '@/lib/payhere';
 import {
-  Coins, Check, Crown, Loader2, ShieldCheck, ChevronLeft, Sparkles, AlertCircle,
+  Coins, Check, Crown, Loader2, ShieldCheck, ChevronLeft, BadgeCheck, AlertCircle,
 } from 'lucide-react';
 
 interface Pkg { id: string; label: string; price: number; priceUSD: number; scoring: number; best?: boolean }
@@ -155,7 +155,7 @@ function CreditsInner() {
         {!isUserLoading && user && (
           <div className="mt-6 flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4">
             <div className="flex items-center gap-3">
-              <Sparkles size={18} className="text-orange-500" />
+              <BadgeCheck size={18} className="text-orange-500" />
               <div>
                 <p className="text-sm font-bold text-slate-900">Your balance</p>
                 <p className="text-xs text-slate-500">shared with the SmartLabs mobile app</p>

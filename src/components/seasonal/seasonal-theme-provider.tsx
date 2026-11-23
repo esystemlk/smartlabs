@@ -13,6 +13,8 @@ import { dashboardThemeGroup, eligibleDashboardRoute } from '@/lib/seasonal-them
 type ThemeState = { config: SeasonalTheme; active: boolean; paused: boolean; preview: boolean; dashboardAvailable: boolean; dashboardActive: boolean; toggleStandard: () => void; togglePause: () => void };
 const ThemeContext = createContext<ThemeState>({ config: defaultTheme, active: false, paused: false, preview: false, dashboardAvailable:false, dashboardActive:false, toggleStandard:()=>{}, togglePause:()=>{} });
 export const useSeasonalTheme = () => useContext(ThemeContext);
+/** Master switch for seasonal themes on the live site. Set to true and redeploy to bring them back. */
+export const SEASONAL_THEMES_ON = false;
 const preference = (key: string) => { try { return localStorage.getItem(key); } catch { return null; } };
 const remember = (key: string, value: string) => { try { localStorage.setItem(key, value); } catch { /* Storage can be disabled. */ } };
 function hsl(hex: string) {
@@ -54,6 +56,8 @@ export function SeasonalThemeProvider({ children }: { children: React.ReactNode 
     let inFlight = false;
     let abort: AbortController | undefined;
     const isPreview = new URLSearchParams(location.search).get('seasonal-preview') === '1';
+    // Switched off site-wide for now (owner request, 23 Nov 2026); admin previews still work.
+    if (!SEASONAL_THEMES_ON && !isPreview) return;
     const load = async () => {
       if (inFlight || document.hidden) return;
       inFlight = true;

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, RefreshCw, Sparkles, Timer } from 'lucide-react';
+import { ArrowLeft, Loader2, RefreshCw, BadgeCheck, Timer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -104,7 +104,7 @@ export default function PteSummarizeWrittenTextPage() {
 
                         {!isTestTaken ? (
                             <Button onClick={handleSubmit} disabled={isLoading} className="mt-8 w-full" size="lg">
-                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <BadgeCheck className="mr-2 h-4 w-4" />}
                                 {isLoading ? 'Getting Feedback...' : 'Get AI Score & Feedback'}
                             </Button>
                         ) : (

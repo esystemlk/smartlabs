@@ -3,7 +3,7 @@
 import React from 'react';
 import {
     Bot,
-    Sparkles,
+    BadgeCheck,
     ArrowRight,
     GraduationCap,
     Zap,
@@ -13,7 +13,8 @@ import {
     MessageSquare,
     TrendingUp,
     Globe,
-    Flame
+    Flame,
+    Star
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -99,7 +100,7 @@ export default function AITutorLanding() {
                                     </span>
                                 </h1>
                                 <p className="text-muted-foreground font-bold italic flex items-center gap-2 text-sm sm:text-base">
-                                    <Sparkles className="h-5 w-5 text-accent-1" /> Smart Adaptive Coaching for Exam Success
+                                    <BadgeCheck className="h-5 w-5 text-accent-1" /> Smart Adaptive Coaching for Exam Success
                                 </p>
                             </div>
                         </div>
@@ -204,7 +205,7 @@ export default function AITutorLanding() {
                                         <div className="flex flex-col">
                                             <span className="text-[9px] font-black uppercase tracking-widest opacity-40">User Rating</span>
                                             <span className="text-base font-black text-primary flex items-center gap-1">
-                                                ★ {course.rating}
+                                                <Star className="h-4 w-4 fill-current" aria-hidden="true" /> {course.rating}
                                             </span>
                                         </div>
                                         <Button size="icon" className="rounded-[1.5rem] h-14 w-14 bg-primary shadow-xl shadow-primary/20 group-hover/btn:scale-110 group-hover/btn:rotate-12 transition-all">

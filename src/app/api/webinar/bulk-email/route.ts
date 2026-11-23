@@ -33,14 +33,14 @@ export async function POST(req: Request) {
             
             <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 24px 0;">
               <p style="margin: 0; font-size: 16px;">
-                📅 <strong>Date:</strong> ${dateStr}<br>
+                <strong>Date:</strong> ${dateStr}<br>
                 ⏰ <strong>Time:</strong> ${timeStr} (Sri Lanka Time)<br>
-                👨‍🏫 <strong>Lecturer:</strong> ${lecturerName}
+                <strong>Lecturer:</strong> ${lecturerName}
               </p>
             </div>
 
             <div style="margin: 24px 0; padding: 20px; background-color: #eff6ff; border-radius: 12px; border: 1px solid #bfdbfe;">
-              <h3 style="margin-top: 0; color: #1e40af;">🔗 Access Links</h3>
+              <h3 style="margin-top: 0; color: #1e40af;">Access Links</h3>
               <p style="margin-bottom: 12px;">
                 <strong>Join the Webinar:</strong><br>
                 <a href="${zoomLink}" style="color: #3b82f6; word-break: break-all;">${zoomLink}</a>

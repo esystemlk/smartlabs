@@ -20,22 +20,22 @@ export function renderWinBackEmail(o: WinBackEmailData = {}): string {
   const name = (o.fullName || 'there').trim();
   const dash = o.dashboardUrl || 'https://www.smartlabs.lk/dashboard';
   const awayLine = o.daysAway && o.daysAway > 0
-    ? `It's been about ${o.daysAway} days since your last visit — your target score hasn't gone anywhere, and neither have we. 💙`
-    : `It's been a while since your last visit — your target score hasn't gone anywhere, and neither have we. 💙`;
+    ? `It's been about ${o.daysAway} days since your last visit — your target score hasn't gone anywhere, and neither have we.`
+    : `It's been a while since your last visit — your target score hasn't gone anywhere, and neither have we.`;
   const reasons: { emoji: string; text: string }[] = [
-    { emoji: '🎧', text: 'New IELTS Listening tests (Cambridge 11–15) with instant marking' },
-    { emoji: '📖', text: 'Academic Reading across Cambridge 11–21' },
-    { emoji: '✍️', text: 'AI feedback on your Writing Task 2 essays' },
-    { emoji: '⏱️', text: 'Just 15 minutes a day keeps your momentum going' },
+    { emoji: '', text: 'New IELTS Listening tests (Cambridge 11–15) with instant marking' },
+    { emoji: '', text: 'Academic Reading across Cambridge 11–21' },
+    { emoji: '', text: 'AI feedback on your Writing Task 2 essays' },
+    { emoji: '', text: 'Just 15 minutes a day keeps your momentum going' },
   ];
   const list = reasons
-    .map(r => `<tr><td style="padding:7px 0;font-size:14px;color:#374151;"><span style="display:inline-block;width:26px;font-size:17px;">${r.emoji}</span>${r.text}</td></tr>`)
+    .map(r => `<tr><td style="padding:7px 0;font-size:14px;color:#374151;"><span style="display:inline-block;width:8px;height:8px;border-radius:4px;background:#2563eb;margin-right:12px;vertical-align:middle;"></span>${r.text}</td></tr>`)
     .join('');
 
   return `
   <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;background:#f4f5f7;padding:24px;">
     <div style="background:${NAVY};padding:34px 24px 30px;border-radius:16px 16px 0 0;text-align:center;">
-      <div style="font-size:40px;line-height:1;margin-bottom:6px;">👋</div>
+      
       <h1 style="color:#ffffff;margin:0;font-size:24px;">We've missed you, ${name}!</h1>
       <p style="color:${GOLD};margin:9px 0 0;font-size:14px;font-weight:bold;">Pick up right where you left off</p>
     </div>

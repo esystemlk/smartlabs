@@ -33,7 +33,7 @@ export function renderWelcomeBackEmail(o: WelcomeBackEmailData = {}): string {
   <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;background:#f4f5f7;padding:24px;">
     <div style="background:${NAVY};padding:24px;border-radius:12px 12px 0 0;text-align:center;">
       <h1 style="color:${GOLD};margin:0;font-size:20px;">Smart Labs</h1>
-      <p style="color:rgba(255,255,255,0.8);margin:6px 0 0;font-size:13px;">Welcome back 👋</p>
+      <p style="color:rgba(255,255,255,0.8);margin:6px 0 0;font-size:13px;">Welcome back</p>
     </div>
 
     <div style="background:#fff;padding:24px;border:1px solid #e5e7eb;border-top:none;">

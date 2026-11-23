@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
               <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f4f5f7;padding:24px;">
                 <div style="background:#0D1B35;padding:24px;border-radius:12px 12px 0 0;text-align:center;">
                   <h1 style="color:#F5D978;margin:0;font-size:20px;">Smart Labs — Payment Receipt</h1>
-                  <p style="color:rgba(255,255,255,0.75);margin:6px 0 0;font-size:13px;">Your recorded sessions are unlocked 🎬</p>
+                  <p style="color:rgba(255,255,255,0.75);margin:6px 0 0;font-size:13px;">Your recorded sessions are unlocked</p>
                 </div>
                 <div style="background:#fff;padding:22px;border:1px solid #e5e7eb;border-top:none;">
                   <p style="font-size:14px;margin:0 0 14px;">Hi <b>${userName ?? 'Student'}</b>, thank you for your purchase.</p>

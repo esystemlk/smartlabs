@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { courseData } from '@/lib/constants';
-import { Sparkles, Bot } from 'lucide-react';
+import { BadgeCheck, Bot } from 'lucide-react';
 
 export default function StudyPlanPage() {
   const [isPlanGenerated, setIsPlanGenerated] = useState(false);
@@ -86,7 +86,7 @@ export default function StudyPlanPage() {
                   </div>
 
                   <Button type="submit" className="w-full" size="lg">
-                    <Sparkles className="mr-2 h-4 w-4" />
+                    <BadgeCheck className="mr-2 h-4 w-4" />
                     Generate Plan
                   </Button>
                 </form>
@@ -155,7 +155,7 @@ export default function StudyPlanPage() {
               ) : (
                 <div className="h-full flex items-center justify-center bg-muted/50 rounded-lg p-8 min-h-[300px] md:min-h-full">
                     <div className="text-center">
-                        <Sparkles className="mx-auto h-12 w-12 text-muted-foreground/50" />
+                        <BadgeCheck className="mx-auto h-12 w-12 text-muted-foreground/50" />
                         <p className="mt-4 text-muted-foreground">Your study plan will appear here.</p>
                     </div>
                 </div>

@@ -88,7 +88,7 @@ Next response as the 100% Success {{courseId}} Tutor:`,
             return text;
         } catch (error: any) {
             console.error('AI Tutor Chat Error:', error);
-            return "I'm sorry, I'm having trouble connecting to my neural matrix. Please check your internet connection or try again in a moment. 😊";
+            return "I'm sorry, I'm having trouble connecting to my neural matrix. Please check your internet connection or try again in a moment.";
         }
     });
 }

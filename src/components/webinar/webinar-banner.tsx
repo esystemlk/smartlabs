@@ -152,7 +152,7 @@ export function WebinarBanner() {
                                         <div className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800/30">
                                             <CalendarBlank weight="bold" className="h-4 w-4 text-blue-500" />
                                             <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
-                                                📅 {formatDate(settings.date)}
+                                                {formatDate(settings.date)}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-2 px-4 py-2.5 bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl border border-yellow-200 dark:border-yellow-800/30">

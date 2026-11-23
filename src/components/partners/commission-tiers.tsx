@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { TrendingUp, Sparkles, Crown, Calculator, Users, Coins } from 'lucide-react';
+import { TrendingUp, BadgeCheck, Crown, Calculator, Users, Coins } from 'lucide-react';
 
 /**
  * Tiered referral commission — resets every month.
@@ -16,7 +16,7 @@ interface Tier {
 }
 const TIERS: Tier[] = [
   { key: 't1', range: '1 – 10', label: 'students / month', rate: 10, icon: TrendingUp, accent: 'from-sky-500 to-blue-600', ring: 'ring-blue-200', chip: 'bg-blue-50 text-blue-700', note: 'Starter tier — every partner begins here each month.' },
-  { key: 't2', range: '11 – 20', label: 'students / month', rate: 12, icon: Sparkles, accent: 'from-violet-500 to-indigo-600', ring: 'ring-indigo-200', chip: 'bg-indigo-50 text-indigo-700', note: 'From your 11th student, the rate steps up.', popular: true },
+  { key: 't2', range: '11 – 20', label: 'students / month', rate: 12, icon: BadgeCheck, accent: 'from-violet-500 to-indigo-600', ring: 'ring-indigo-200', chip: 'bg-indigo-50 text-indigo-700', note: 'From your 11th student, the rate steps up.', popular: true },
   { key: 't3', range: '20+', label: 'students / month', rate: 15, icon: Crown, accent: 'from-amber-500 to-orange-600', ring: 'ring-amber-200', chip: 'bg-amber-50 text-amber-700', note: 'Top tier — from your 21st student onward.' },
 ];
 

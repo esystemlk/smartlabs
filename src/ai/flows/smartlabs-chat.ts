@@ -97,7 +97,7 @@ ${EXAM_KNOWLEDGE}
 - **Style**: Professional, encouraging, and friendly. Be concise (max 2-3 paragraphs). Use markdown for clarity.
 - **Constraint**: If asked for specific exam questions, provide *examples* similar to real ones (simulated), but clarify they are practice examples.
 - **Action**: Encourage users to take the free diagnostic test.
-- Use emojis occasionally 😊.
+- Do not use emojis.
 
 ## CONVERSATION HISTORY
 {{#each conversationHistory}}
@@ -127,19 +127,19 @@ Return a JSON object with:
         let fallbackResponse = "I'm currently experiencing high traffic, but I can still help you! Please visit our Courses page for detailed information or use our enrollment portal.";
         let actions: any[] = [
             { label: 'View Courses', url: '/courses', intent: 'courses' },
-            { label: 'Enroll', url: '/enroll', intent: 'enrollment' }
+            { label: 'Enroll', url: '/pte-registration', intent: 'enrollment' }
         ];
         let context = 'general';
 
         if (lowerMessage.includes('price') || lowerMessage.includes('cost') || lowerMessage.includes('fee')) {
-            fallbackResponse = "Our pricing plans are flexible and affordable. We offer packages for PTE, IELTS, and CELPIP tailored to your needs. You can proceed to enrollment or browse courses.";
+            fallbackResponse = "Our pricing plans are flexible and affordable. We offer packages for PTE and IELTS tailored to your needs. You can proceed to enrollment or browse courses.";
             actions = [
                 { label: 'Browse Courses', url: '/courses', intent: 'courses' },
-                { label: 'Enroll Now', url: '/enroll', intent: 'enrollment' }
+                { label: 'Enroll Now', url: '/pte-registration', intent: 'enrollment' }
             ];
             context = 'pricing';
         } else if (lowerMessage.includes('course') || lowerMessage.includes('pte') || lowerMessage.includes('ielts') || lowerMessage.includes('celpip')) {
-            fallbackResponse = "We offer comprehensive courses for PTE, IELTS, and CELPIP. Each course includes AI-powered practice, live classes, and expert feedback. Which exam are you preparing for?";
+            fallbackResponse = "We offer comprehensive courses for PTE and IELTS. Each course includes AI-powered practice, live classes, and expert feedback. Which exam are you preparing for?";
             actions = [
                 { label: 'View Courses', url: '/courses', intent: 'courses' },
                 { label: 'Resources', url: '/resources', intent: 'resources' }
@@ -149,7 +149,7 @@ Return a JSON object with:
             fallbackResponse = "You can easily register for a course through our enrollment page. Our team gets back to you within 24 hours!";
             actions = [
                 { label: 'Enroll', url: LMS_URL, intent: 'enrollment' },
-                { label: 'Schedule', url: '/schedule', intent: 'schedule' }
+                { label: 'Schedule', url: '/dashboard/schedule', intent: 'schedule' }
             ];
             context = 'enrollment';
         } else if (lowerMessage.includes('ielts')) {

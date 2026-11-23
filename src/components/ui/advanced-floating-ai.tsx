@@ -7,7 +7,7 @@ import {
     X,
     Send,
     Bot,
-    Sparkles,
+    BadgeCheck,
     User,
     Loader2,
     Zap,
@@ -84,7 +84,7 @@ export function AdvancedFloatingAI() {
     const [messages, setMessages] = useState<Message[]>([
         {
             role: 'assistant',
-            content: 'Hi! 👋 I\'m your **Smart Labs AI Assistant**. Select a mode above to get specialized help for PTE or CELPIP, or ask me anything!',
+            content: 'Hi! I\'m your **Smart Labs AI Assistant**. Select a mode above to get specialized help for PTE or CELPIP, or ask me anything!',
             timestamp: new Date(),
             type: 'text'
         },
@@ -362,7 +362,7 @@ export function AdvancedFloatingAI() {
                                                     <div className="flex items-center gap-2 mb-2 opacity-50 text-[9px] font-black uppercase tracking-widest">
                                                         {msg.role === 'assistant' ? (
                                                             <>
-                                                                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                                                                <BadgeCheck className="h-3.5 w-3.5 text-primary" />
                                                                 Smart Labs AI
                                                             </>
                                                         ) : (
@@ -572,7 +572,7 @@ export function AdvancedFloatingAI() {
                             transition={{ duration: 2, repeat: Infinity }}
                             className="absolute -top-2 -right-2 h-7 w-7 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center text-[11px] font-black border-4 border-background shadow-lg"
                         >
-                            <Sparkles className="h-4 w-4" />
+                            <BadgeCheck className="h-4 w-4" />
                         </motion.div>
                         <MessageSquare className="h-8 w-8 group-hover:scale-110 transition-transform" />
                     </>

@@ -18,15 +18,15 @@ export function renderWelcomeNewUserEmail(o: WelcomeNewUserEmailData = {}): stri
   const name = (o.fullName || 'there').trim();
   const dash = o.dashboardUrl || 'https://www.smartlabs.lk/dashboard';
   const steps: { emoji: string; title: string; detail: string; bg: string; ink: string }[] = [
-    { emoji: '🎧', title: 'Try an IELTS Listening test', detail: 'Full Cambridge audio tests with instant marking.', bg: '#eef2ff', ink: '#3730a3' },
-    { emoji: '📖', title: 'Practise Academic Reading', detail: 'Timed passages with auto-scored answers.', bg: '#ecfeff', ink: '#155e75' },
-    { emoji: '✍️', title: 'Get Writing Task 2 feedback', detail: 'AI feedback on ideas, structure and grammar.', bg: '#fef3f2', ink: '#b42318' },
-    { emoji: '🎯', title: 'Explore the PTE suite', detail: 'Speaking, Reading, Listening and Writing tasks.', bg: '#ecfdf5', ink: '#065f46' },
+    { emoji: '1', title: 'Try an IELTS Listening test', detail: 'Full Cambridge audio tests with instant marking.', bg: '#eef2ff', ink: '#3730a3' },
+    { emoji: '2', title: 'Practise Academic Reading', detail: 'Timed passages with auto-scored answers.', bg: '#ecfeff', ink: '#155e75' },
+    { emoji: '3', title: 'Get Writing Task 2 feedback', detail: 'AI feedback on ideas, structure and grammar.', bg: '#fef3f2', ink: '#b42318' },
+    { emoji: '4', title: 'Explore the PTE suite', detail: 'Speaking, Reading, Listening and Writing tasks.', bg: '#ecfdf5', ink: '#065f46' },
   ];
   const cards = steps.map(s => `
     <tr><td style="padding:14px 16px;background:${s.bg};border-radius:12px;">
       <table role="presentation" style="width:100%;border-collapse:collapse;"><tr>
-        <td style="width:34px;font-size:22px;vertical-align:top;line-height:1;">${s.emoji}</td>
+        <td style="width:34px;vertical-align:top;"><span style="display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;border-radius:12px;background:${s.ink};color:#fff;font-size:12px;font-weight:bold;">${s.emoji}</span></td>
         <td><b style="color:${s.ink};font-size:14px;">${s.title}</b>
         <div style="color:#475467;font-size:13px;margin-top:3px;line-height:1.5;">${s.detail}</div></td>
       </tr></table>
@@ -37,9 +37,9 @@ export function renderWelcomeNewUserEmail(o: WelcomeNewUserEmailData = {}): stri
   <div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:0 auto;background:#f4f5f7;padding:24px;">
     <!-- Colourful gradient hero -->
     <div style="background:${NAVY};background-image:linear-gradient(135deg,#4f46e5 0%,#0D1B35 45%,#0ea5a4 100%);padding:40px 24px 34px;border-radius:16px 16px 0 0;text-align:center;">
-      <div style="font-size:44px;line-height:1;margin-bottom:8px;">🎉</div>
+      
       <h1 style="color:#ffffff;margin:0;font-size:26px;">Welcome aboard, ${name}!</h1>
-      <p style="color:${GOLD};margin:10px 0 0;font-size:15px;font-weight:bold;">Your Smart Labs account is ready 🚀</p>
+      <p style="color:${GOLD};margin:10px 0 0;font-size:15px;font-weight:bold;">Your Smart Labs account is ready</p>
     </div>
 
     <div style="background:#fff;padding:26px 24px;border:1px solid #e5e7eb;border-top:none;">

@@ -10,7 +10,7 @@ import { payhereUrls } from '@/lib/payhere';
 import { PTE_PACKAGES, formatLkr, type PtePackage } from '@/lib/pte-packages';
 import {
   Check, CheckCircle2, AlertTriangle, Loader2, ArrowRight, Clock, MapPin,
-  Users, CalendarDays, ShieldCheck, Sparkles, Phone, GraduationCap, Star,
+  Users, CalendarDays, ShieldCheck, BadgeCheck, Phone, GraduationCap, Star,
 } from 'lucide-react';
 
 interface Batch {
@@ -134,7 +134,7 @@ function RegistrationInner() {
   // Payment return.
   useEffect(() => {
     const p = searchParams?.get('payment');
-    if (p === 'success') toast({ title: 'Payment successful! 🎉', description: 'Check your email for the receipt and access details.' });
+    if (p === 'success') toast({ title: 'Payment successful!', description: 'Check your email for the receipt and access details.' });
     else if (p === 'cancelled') toast({ title: 'Payment cancelled', variant: 'destructive' });
   }, [searchParams]); // eslint-disable-line
 
@@ -191,7 +191,7 @@ function RegistrationInner() {
         <div className="pointer-events-none absolute bottom-[-10%] right-[-10%] h-[40%] w-[40%] rounded-full bg-accent-1/10 blur-[120px]" />
         <div className="container relative mx-auto px-4 py-16 md:py-20 text-center">
           <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
-            <Sparkles className="h-3.5 w-3.5" /> PTE Academic Preparation Programmes
+            <BadgeCheck className="h-3.5 w-3.5" /> PTE Academic Preparation Programmes
           </span>
           <h1 className="mt-5 text-3xl md:text-5xl font-headline font-bold">
             More Than a Course. <span className="gradient-text">A Mentorship.</span>

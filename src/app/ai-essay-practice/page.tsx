@@ -1272,7 +1272,7 @@ function AIEssayPracticeInner() {
             <CreditCard size={18} weight="bold" /> Go to AI Credits
           </Link>
           <p className="mt-5 text-center text-xs text-slate-500 font-medium">
-            🔒 Secured by PayHere · pay in LKR or USD
+            Secured by PayHere · pay in LKR or USD
           </p>
         </div>
       </section>
@@ -1299,7 +1299,7 @@ function AIEssayPracticeInner() {
                     : "text-slate-600 hover:text-slate-900"
                   }`}
               >
-                🔮 Predictions
+                Predictions
                 <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${topicView === "predictions" ? "bg-white/25 text-white" : "bg-slate-200 text-slate-600"}`}>{PREDICTIONS.length}</span>
               </button>
               <button
@@ -2573,7 +2573,7 @@ function AIEssayPracticeInner() {
             </div>
 
             <p className="text-center text-xs text-slate-400 font-medium">
-              🔒 Secured by PayHere · Credits added instantly after payment
+              Secured by PayHere · Credits added instantly after payment
             </p>
 
             <div className="flex justify-center mt-3">

@@ -120,7 +120,7 @@ export async function registerForWebinar(
             }
         }).catch(err => console.error('Failed to trigger notification:', err));
 
-        return { success: true, message: '🎉 You are successfully registered for the webinar. A confirmation email has been sent to you.' };
+        return { success: true, message: 'You are successfully registered for the webinar. A confirmation email has been sent to you.' };
     } catch (error) {
         console.error('Error registering for webinar:', error);
         return { success: false, message: 'Failed to register. Please try again.' };

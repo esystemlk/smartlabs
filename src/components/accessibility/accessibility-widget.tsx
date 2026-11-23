@@ -11,7 +11,7 @@ import {
     LayoutTemplate, Mic, BoxSelect, ShieldAlert,
     PinOff, PlayCircle, MousePointerClick, Info, Lightbulb,
     BookOpen, ListFilter, EyeOff, Keyboard,
-    Settings2, Activity, Sparkles, MessageSquare,
+    Settings2, Activity, BadgeCheck, MessageSquare,
     Torus, MousePointer2, Languages, CaseSensitive,
     MoreHorizontal, Ghost
 } from 'lucide-react';
@@ -160,7 +160,7 @@ export function AccessibilityWidget() {
         if (settings.magnifier) {
             document.body.style.transition = 'transform 0.1s ease-out';
             toast({
-                title: "🔍 Magnifier Active!",
+                title: "Magnifier active",
                 description: "PC: Press 'ESC' or Click the lens to exit. Mobile: Tap the Lens or the Red Button to exit.",
                 duration: 6000,
             });
@@ -331,7 +331,7 @@ export function AccessibilityWidget() {
                             <IconTab active={activeTab === 'content'} onClick={() => setActiveTab('content')} icon={Type} label="Text" />
                             <IconTab active={activeTab === 'display'} onClick={() => setActiveTab('display')} icon={Eye} label="Look" />
                             <IconTab active={activeTab === 'tools'} onClick={() => setActiveTab('tools')} icon={Settings2} label="Tools" />
-                            <IconTab active={activeTab === 'advanced'} onClick={() => setActiveTab('advanced')} icon={Sparkles} label="Elite" />
+                            <IconTab active={activeTab === 'advanced'} onClick={() => setActiveTab('advanced')} icon={BadgeCheck} label="Elite" />
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-8 space-y-12 scroll-smooth no-scrollbar">
@@ -525,7 +525,7 @@ function EliteToggle({ active, onClick, icon: Icon, label, desc }: any) {
     return (<button onClick={onClick} className={cn("flex items-center gap-5 p-5 rounded-[40px] border-2 transition-all text-left overflow-hidden relative group", active ? "bg-indigo-600 text-white border-indigo-500 shadow-2xl scale-[1.02]" : "bg-card hover:bg-secondary/20 border-border/40 shadow-sm")}>
         <div className={cn("p-4 rounded-2xl transition-transform", active ? "bg-white/20" : "bg-secondary group-hover:scale-110")}><Icon className="w-6 h-6" /></div>
         <div className="flex flex-col"><span className="text-sm font-black uppercase tracking-tight">{label}</span><span className="text-[9px] opacity-70 font-bold uppercase leading-tight mt-1">{desc}</span></div>
-        <Sparkles className={cn("absolute -top-3 -right-3 w-12 h-12 opacity-15 rotate-12 transition-transform", active ? "scale-150 rotate-0" : "scale-0")} />
+        <BadgeCheck className={cn("absolute -top-3 -right-3 w-12 h-12 opacity-15 rotate-12 transition-transform", active ? "scale-150 rotate-0" : "scale-0")} />
     </button>)
 }
 
@@ -542,13 +542,15 @@ function applySettingsToDom(s: AccessibilityState) {
     body.style.letterSpacing = `${s.letterSpacing}px`;
     body.style.wordSpacing = `${s.wordSpacing}px`;
 
-    let filters = [`saturate(${s.saturation})`];
+    // Only filter the page when a colour option is on: a no-op filter on <html> still forces the
+    // whole page through a filter layer (slow scrolling everywhere) and breaks position:fixed.
+    let filters: string[] = s.saturation !== 1 ? [`saturate(${s.saturation})`] : [];
     if (s.contrast === 'invert') filters.push('invert(1)');
     if (s.contrast === 'high-contrast') filters.push('contrast(180%) brightness(110%)');
     if (s.monochrome) filters.push('grayscale(100%)');
     if (s.colorBlindness === 'protanopia') filters.push('sepia(20%) hue-rotate(-50deg)');
     if (s.colorBlindness === 'deuteranopia') filters.push('sepia(20%) hue-rotate(-20deg)');
-    root.style.filter = filters.join(' ');
+    root.style.filter = filters.length ? filters.join(' ') : '';
 
     root.classList.remove('dark', 'light', 'theme-solarized', 'theme-matrix');
     if (s.contrast === 'dark') root.classList.add('dark');

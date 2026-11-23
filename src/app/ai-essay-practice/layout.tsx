@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { brandFontClass } from '@/lib/brand-fonts';
+import './essay-theme.css';
 
 export const metadata: Metadata = {
   title: "AI PTE Essay Scoring & Practice",
@@ -7,5 +9,6 @@ export const metadata: Metadata = {
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return children;
+  // pte-essay-theme: brand colours via essay-theme.css; the page logic is untouched.
+  return <div className={`pte-essay-theme ${brandFontClass}`}>{children}</div>;
 }

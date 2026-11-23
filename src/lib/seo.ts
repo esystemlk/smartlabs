@@ -44,7 +44,7 @@ export const BASE_KEYWORDS = [
   'PTE classes Nugegoda', 'PTE class Nugegoda', 'PTE institute Nugegoda', 'PTE classes Colombo', 'PTE online classes Sri Lanka',
   'PTE Academic preparation Sri Lanka', 'PTE Boostify', 'PTE mock test', 'PTE mock test Sri Lanka',
   'AI PTE practice', 'PTE speaking practice', 'PTE writing AI feedback', 'PTE tutor Sri Lanka',
-  'PTE score improvement', 'IELTS Sri Lanka', 'IELTS classes Colombo', 'KET', 'PET',
+  'PTE score improvement', 'IELTS Sri Lanka', 'IELTS classes Colombo',
   'English exam Sri Lanka', 'Smart Labs',
 ];
 
@@ -93,9 +93,9 @@ export function orgJsonLd() {
     telephone: SITE.phone,
     email: SITE.email,
     description:
-      'Smart Labs is a leading PTE Academic, IELTS, KET and PET training institute in Sri Lanka, offering AI-scored practice, mock tests and expert-led courses at our Nugegoda centre and online.',
+      'Smart Labs is a leading PTE Academic and IELTS training institute in Sri Lanka, offering AI-scored practice, mock tests and expert-led courses at our Nugegoda centre and online.',
     areaServed: { '@type': 'Country', name: SITE.areaServed },
-    knowsAbout: ['PTE Academic', 'IELTS', 'KET', 'PET', 'English language testing', 'AI exam scoring'],
+    knowsAbout: ['PTE Academic', 'IELTS', 'English language testing', 'AI exam scoring'],
     sameAs: SITE.sameAs,
     address: {
       '@type': 'PostalAddress',

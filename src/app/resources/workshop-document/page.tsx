@@ -10,7 +10,7 @@ import {
     Languages,
     Target,
     Zap,
-    Sparkles,
+    BadgeCheck,
     Star,
     Award,
     CheckCircle2,

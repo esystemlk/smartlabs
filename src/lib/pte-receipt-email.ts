@@ -42,7 +42,7 @@ export function renderPteReceiptEmail(o: PteReceiptData): string {
   <div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:0 auto;background:#f4f5f7;padding:24px;">
     <div style="background:#0D1B35;padding:28px 24px;border-radius:12px 12px 0 0;text-align:center;">
       <h1 style="color:#F5D978;margin:0;font-size:22px;">Smart Labs — Payment Receipt</h1>
-      <p style="color:rgba(255,255,255,0.75);margin:8px 0 0;font-size:14px;">Your PTE registration is confirmed 🎉</p>
+      <p style="color:rgba(255,255,255,0.75);margin:8px 0 0;font-size:14px;">Your PTE registration is confirmed</p>
     </div>
 
     <div style="background:#fff;padding:24px;border:1px solid #e5e7eb;border-top:none;">

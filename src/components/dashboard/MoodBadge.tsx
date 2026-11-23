@@ -15,7 +15,7 @@ export function MoodBadge({ mood, className = '' }: { mood?: string | null; clas
       className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-black ${m.chip} ${className}`}
       title={`Today you're feeling ${m.label}`}
     >
-      <span className="text-sm leading-none">{m.emoji}</span>
+      <m.icon className="h-3.5 w-3.5" aria-hidden="true" />
       Feeling {m.label}
     </span>
   );

@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { Star, Home, ArrowUpRight, MapPin, Phone, Sparkles } from 'lucide-react';
+import { Star, Home, ArrowUpRight, MapPin, Phone, BadgeCheck } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Welcome to Smart Labs',
@@ -53,7 +53,7 @@ export default function WelcomePage() {
             Welcome to Smart Labs
           </h1>
           <p className="mx-auto mt-2 flex max-w-xs items-center justify-center gap-1.5 text-center text-sm text-slate-500">
-            <Sparkles className="h-4 w-4 text-primary" /> Thanks for scanning — how can we help?
+            <BadgeCheck className="h-4 w-4 text-primary" /> Thanks for scanning — how can we help?
           </p>
 
           {/* Buttons */}
