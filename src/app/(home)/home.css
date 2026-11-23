@@ -326,8 +326,6 @@
 .slh .tabbar a { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; color: rgba(255,255,255,.75); }
 .slh .tabbar a svg { width: 21px; height: 21px; }
 .slh .tabbar a.home { width: auto; padding: 0 14px 0 12px; border-radius: 999px; background: #fff; color: var(--ink); display: flex; gap: 6px; font-family: var(--f-ui); font-weight: 700; font-size: 13px; }
-.slh .tabbar a.fab { width: 60px; height: 60px; margin-top: -34px; background: var(--yellow); color: var(--ink); box-shadow: 0 12px 26px -8px rgba(250,182,5,.9), 0 0 0 6px var(--paper); }
-.slh .tabbar a.fab svg { width: 26px; height: 26px; }
 /* Keep the floating accessibility button above the phone tab bar on the homepage. */
 @media (max-width: 720px) {
   body:has(.slh) .smartlabs-accessibility-launcher:not(.top-4) { bottom: calc(96px + env(safe-area-inset-bottom)) !important; }
@@ -346,8 +344,6 @@
 
 /* Readable accent word on light phone cards (overrides the yellow used on dark photos). */
 .slh .fcard .f-body h3 em { color: var(--blue); }
-/* Centre tab button: plain play icon, sized for a filled triangle. */
-.slh .tabbar a.fab svg { width: 24px; height: 24px; margin-left: 3px; }
 .slh .spark svg { width: 18px; height: 18px; }
 .slh .stars { display: inline-flex; gap: 2px; color: var(--yellow); }
 .slh .stars svg { width: 18px; height: 18px; }

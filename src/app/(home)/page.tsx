@@ -66,8 +66,6 @@ const LEVELS = [
   { name: 'Advanced', course: 'PTE Boostify · Standard' },
 ];
 
-const PHONE = '076 691 4650';
-const TEL = 'tel:+94766914650';
 const PHONES = [
   { label: '076 691 4650', tel: 'tel:+94766914650' },
   { label: '077 453 3233', tel: 'tel:+94774533233' },
@@ -240,7 +238,6 @@ export default function HomePage() {
                 <button className="gp" onClick={openSearch} aria-label="Search the site">{ICONS.search}<span className="hide-md">Search</span></button>
               </div>
               <div className="pills">
-                <a className="gp hide-md" href={TEL}>{ICONS.phone}{PHONE}</a>
                 {user ? (
                   <Link className="cta-w" href="/dashboard">Dashboard <i>→</i></Link>
                 ) : (<>
@@ -450,7 +447,7 @@ export default function HomePage() {
       <nav className="tabbar m" aria-label="Quick">
         <Link className="home" href="/">{ICONS.home}<span>Home</span></Link>
         <Link href="/courses" aria-label="Courses">{ICONS.book}</Link>
-        <Link className="fab" href="/ai-essay-practice" aria-label="Start AI practice">{ICONS.play}</Link>
+        <Link href="/ai-essay-practice" aria-label="AI practice">{ICONS.pen}</Link>
         <Link href="/mock-tests" aria-label="Mock tests">{ICONS.sheet}</Link>
         <Link href={account} aria-label={user ? 'Dashboard' : 'Log in'}>{ICONS.user}</Link>
       </nav>
