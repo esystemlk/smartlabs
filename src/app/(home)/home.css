@@ -383,6 +383,8 @@ html[data-intro=done] .slh .tabbar { animation: slh-up .7s cubic-bezier(.2,.8,.2
 .slh .slides, .slh .th, .slh .tile img, .slh .vid .t, .slh .hv .t {
   background-image: linear-gradient(100deg, rgba(226,232,245,.9) 30%, rgba(246,248,253,.95) 50%, rgba(226,232,245,.9) 70%);
   background-size: 200% 100%; animation: slh-shimmer 1.4s linear infinite; }
+/* Real thumbnails: the shimmer's 200% width stretched them and showed YouTube's black bars; cover crops the bars off. */
+.slh .vid .t[style], .slh .hv .t[style] { background-size: cover; background-position: center; animation: none; }
 @media (prefers-reduced-motion: reduce) {
   html[data-intro=done] .slh * { animation: none !important; }
 }
