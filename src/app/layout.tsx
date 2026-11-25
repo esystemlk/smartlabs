@@ -19,6 +19,7 @@ import { SeasonalCompanions } from '@/components/seasonal/seasonal-companions';
 import { LayoutManager } from '@/components/layout/layout-manager';
 import { WindowControls } from '@/components/layout/window-controls';
 import { LayoutExtras } from '@/components/layout/layout-extras';
+import { DevToolsGuard } from '@/components/layout/devtools-guard';
 import { CookieBanner } from '@/components/cookie-banner';
 import { orgJsonLd, websiteJsonLd, faqJsonLd, HOME_FAQS } from '@/lib/seo';
 
@@ -97,6 +98,7 @@ export default function RootLayout({
           <Toaster />
           <CookieBanner />
           <LayoutExtras />
+          <DevToolsGuard />
           </SeasonalThemeProvider>
         </FirebaseClientProvider>
       </body>
