@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
+import { levelForScore } from '@/lib/level-test-data';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -46,7 +47,9 @@ export default function LevelTestsAdminPage() {
         [firestore]
     );
 
-    const { data: results, isLoading } = useCollection(resultsQuery);
+    const { data: rawResults, isLoading } = useCollection(resultsQuery);
+    // Recompute the level from the score: older results were banded out of 55 instead of 50.
+    const results = useMemo(() => rawResults?.map((r: any) => ({ ...r, level: levelForScore(r.scores?.total ?? 0) })), [rawResults]);
 
     const filteredResults = useMemo(() => {
         if (!results) return [];
@@ -54,7 +57,7 @@ export default function LevelTestsAdminPage() {
             const matchesSearch =
                 r.userName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 r.userEmail?.toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesLevel = levelFilter === 'All' || r.level.includes(levelFilter);
+            const matchesLevel = levelFilter === 'All' || r.level.split(' (')[0] === levelFilter;
             return matchesSearch && matchesLevel;
         });
     }, [results, searchQuery, levelFilter]);
@@ -220,7 +223,7 @@ function ResultDetail({ result, history }: { result: any, history: any[] }) {
                             <ScoreBox label="Vocabulary" value={result.scores.vocabulary} total={5} />
                             <ScoreBox label="Spelling" value={result.scores.spelling} total={5} />
                             <ScoreBox label="Reading" value={result.scores.reading} total={10} />
-                            <ScoreBox label="Writing" value={result.scores.sentences} total={5} />
+                            <ScoreBox label="Writing" value={result.scores.sentences} total={10} />
                             <ScoreBox label="Speaking" value={result.scores.speaking} total={10} />
                         </div>
 
@@ -288,16 +291,23 @@ function ResultDetail({ result, history }: { result: any, history: any[] }) {
                                     <TabsTrigger value="mcq">MCQ Review</TabsTrigger>
                                 </TabsList>
                                 <TabsContent value="sentences" className="pt-4 space-y-4">
-                                    {result.aiFeedback.sentences.map((s: any, idx: number) => (
+                                    {result.aiFeedback.sentences.map((s: any, idx: number) => {
+                                        // The paragraph task (id 25.5) is marked out of 5 and stored separately from the sentences.
+                                        const isPara = s.id === 25.5;
+                                        const text = isPara ? result.answers.paragraph : result.answers.sentences?.[s.id];
+                                        return (
                                         <div key={idx} className="p-4 border rounded-xl space-y-2">
                                             <div className="flex justify-between items-center">
-                                                <span className="text-xs font-black uppercase text-slate-400 tracking-tighter">Sentence {idx + 1}</span>
-                                                <Badge variant={s.score === 1 ? 'default' : 'destructive'}>{s.score === 1 ? 'Correct' : 'Incorrect'}</Badge>
+                                                <span className="text-xs font-black uppercase text-slate-400 tracking-tighter">{isPara ? 'Paragraph' : `Sentence ${idx + 1}`}</span>
+                                                {isPara
+                                                    ? <Badge variant={s.score > 0 ? 'default' : 'destructive'}>{s.score}/5</Badge>
+                                                    : <Badge variant={s.score === 1 ? 'default' : 'destructive'}>{s.score === 1 ? 'Correct' : 'Incorrect'}</Badge>}
                                             </div>
-                                            <p className="font-medium text-slate-800">"{result.answers.sentences[s.id]}"</p>
+                                            <p className="font-medium text-slate-800">{text ? `"${text}"` : <span className="italic text-slate-400">{isPara && result.answers.paragraph === undefined ? 'Paragraph text was not saved for tests taken before 26 Nov 2026' : 'No answer'}</span>}</p>
                                             <p className="text-xs text-muted-foreground">Feedback: {s.feedback}</p>
                                         </div>
-                                    ))}
+                                        );
+                                    })}
                                 </TabsContent>
                                 <TabsContent value="speaking" className="pt-4 space-y-4">
                                     <div className="p-6 bg-slate-900 text-white rounded-2xl space-y-4">

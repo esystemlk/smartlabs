@@ -67,3 +67,15 @@ export const LEVEL_TEST_DATA = {
         }
     ]
 };
+
+// Marks: grammar 10 + vocabulary 5 + spelling 5 + writing 10 (5 sentences + 5 paragraph) + reading 10 + speaking 10.
+export const LEVEL_TEST_MAX = 50;
+
+export function levelForScore(total: number): string {
+    const pct = (total / LEVEL_TEST_MAX) * 100;
+    if (pct <= 30) return 'Beginner (A1–A2)';
+    if (pct <= 50) return 'Intermediate (B1)';
+    if (pct <= 70) return 'Upper-Intermediate (B2)';
+    if (pct <= 85) return 'Advanced (C1)';
+    return 'Highly Advanced (C2)';
+}

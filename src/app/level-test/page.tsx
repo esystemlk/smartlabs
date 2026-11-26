@@ -36,7 +36,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { LEVEL_TEST_DATA } from '@/lib/level-test-data';
+import { LEVEL_TEST_DATA, LEVEL_TEST_MAX, levelForScore } from '@/lib/level-test-data';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { scoreLevelTest } from '@/ai/flows/score-level-test';
 
@@ -162,15 +162,10 @@ export default function LevelTestPage() {
             );
 
             const totalScore = grammarScore + vocabularyScore + spellingScore + sentenceScore + readingScore + speakingScore;
-            const percentageScore = (totalScore / 55) * 100;
+            const percentageScore = (totalScore / LEVEL_TEST_MAX) * 100;
 
             // Level Classification
-            let level = "";
-            if (percentageScore <= 30) level = "Beginner (A1–A2)";
-            else if (percentageScore <= 50) level = "Intermediate (B1)";
-            else if (percentageScore <= 70) level = "Upper-Intermediate (B2)";
-            else if (percentageScore <= 85) level = "Advanced (C1)";
-            else level = "Highly Advanced (C2)";
+            const level = levelForScore(totalScore);
 
             const resultData = {
                 userId: user?.uid,
@@ -193,6 +188,7 @@ export default function LevelTestPage() {
                     vocabulary: answers.vocabulary,
                     spelling: answers.spelling,
                     sentences: answers.sentences,
+                    paragraph: answers.paragraph || "",
                     reading: answers.reading
                 }
             };
@@ -539,7 +535,7 @@ function SentenceSection({ answers, setAnswers }: any) {
                 <CardDescription>Write one sentence according to the specific instructions below. (5 Marks - AI Scored)</CardDescription>
             </CardHeader>
             <CardContent className="px-0 space-y-6">
-                {LEVEL_TEST_DATA.sentenceConstruction.map((q, idx) => (
+                {LEVEL_TEST_DATA.sentenceConstruction.filter(q => !(q as any).isParagraph).map((q, idx) => (
                     <div key={q.id} className="p-6 bg-card border rounded-2xl space-y-4">
                         <Label className="text-lg font-bold flex gap-3 italic">
                             <span className="text-primary/40 font-mono not-italic">{idx + 21}.</span>
