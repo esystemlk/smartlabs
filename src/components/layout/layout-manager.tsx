@@ -1,6 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
+import { COORD_PATH } from '@/lib/coordinators';
 import { DEV_CONSOLE_PATH } from '@/lib/site-mode'
 import { useEffect, useState } from 'react'
 
@@ -19,7 +20,7 @@ export function LayoutManager() {
   }, []);
 
   useEffect(() => {
-    const isSpecialLayout = pathname.startsWith('/studio') || pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/welcome' || pathname.startsWith('/payment')
+    const isSpecialLayout = pathname.startsWith('/studio') || pathname.startsWith(COORD_PATH) || pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/welcome' || pathname.startsWith('/payment')
       || pathname === '/ai-sst-practice' || pathname === '/swt-trainer' || pathname.startsWith('/ai-wfd-practice') || pathname.startsWith('/mock/') || pathname === '/site-status' || pathname.startsWith(DEV_CONSOLE_PATH)
       || pathname === '/'; // the homepage has no global header, so no top padding
 

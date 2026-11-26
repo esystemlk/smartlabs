@@ -47,6 +47,18 @@ export default function SignupPage() {
     defaultValues: { displayName: '', email: '', password: '' },
   });
 
+  // Right after an account is created, Firestore can still be using the signed-out session for a
+  // moment, so the first profile read/write is refused ("insufficient permissions"). Retry briefly.
+  const withAuthRetry = async <T,>(fn: () => Promise<T>): Promise<T> => {
+    for (let i = 0; ; i++) {
+      try { return await fn(); }
+      catch (e: any) {
+        if (e?.code !== 'permission-denied' || i >= 4) throw e;
+        await new Promise(r => setTimeout(r, 400 * (i + 1)));
+      }
+    }
+  };
+
   const handleAuthSuccess = async (user: User, displayNameFromForm?: string) => {
     if (!firestore) {
       handleAuthError(new Error("Firestore is not initialized."));
@@ -54,7 +66,8 @@ export default function SignupPage() {
     }
     try {
       const userRef = doc(firestore, 'users', user.uid);
-      const userDoc = await getDoc(userRef);
+      await user.getIdToken();
+      const userDoc = await withAuthRetry(() => getDoc(userRef));
 
       const finalDisplayName = displayNameFromForm || user.displayName;
 
@@ -66,7 +79,7 @@ export default function SignupPage() {
           userRole = userEmail === "thimira.vishwa2003@gmail.com" ? 'developer' : 'admin';
           hasCompletedOnboarding = true; // Admins skip onboarding
         }
-        await setDoc(userRef, {
+        await withAuthRetry(() => setDoc(userRef, {
           uid: user.uid,
           email: user.email,
           displayName: finalDisplayName,
@@ -75,7 +88,7 @@ export default function SignupPage() {
           createdAt: serverTimestamp(),
           lastLogin: serverTimestamp(),
           hasCompletedOnboarding: hasCompletedOnboarding,
-        });
+        }));
 
         // Increment global student count
         await incrementStudentCount();
