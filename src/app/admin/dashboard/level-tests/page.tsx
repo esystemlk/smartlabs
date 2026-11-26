@@ -31,7 +31,6 @@ import {
     DialogTitle,
     DialogTrigger
 } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import Link from 'next/link';
@@ -215,7 +214,7 @@ function ResultDetail({ result, history }: { result: any, history: any[] }) {
                     </div>
                 </DialogHeader>
 
-                <ScrollArea className="flex-1">
+                <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
                     <div className="p-8 space-y-10">
                         {/* Score Grid */}
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -328,7 +327,7 @@ function ResultDetail({ result, history }: { result: any, history: any[] }) {
                             </Tabs>
                         </div>
                     </div>
-                </ScrollArea>
+                </div>
 
                 <div className="p-6 bg-slate-50 border-t flex justify-end">
                     <Button onClick={() => window.print()} variant="outline">Print Report</Button>
