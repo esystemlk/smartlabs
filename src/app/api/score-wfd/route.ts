@@ -1,4 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
+import { saveAnswerForReview } from '@/lib/server/answer-reviews';
+import { isInternalRequest } from '@/lib/internal-auth';
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { scoreWfd, performanceSummary } from '@/lib/wfd-scoring';
 
@@ -29,8 +31,9 @@ export async function POST(request: Request) {
         { status: 401 }
       );
     }
+    let uid: string;
     try {
-      await adminAuth.verifyIdToken(header.slice(7));
+      uid = (await adminAuth.verifyIdToken(header.slice(7))).uid;
     } catch {
       return NextResponse.json(
         { error: 'Your session has expired. Please sign in again.', code: 'INVALID_AUTH' },
@@ -61,6 +64,7 @@ export async function POST(request: Request) {
     }
 
     const result = scoreWfd(transcript, answer);
+    if (!isInternalRequest(request)) after(() => saveAnswerForReview({ uid, tool: 'wfd', taskType: 'write-from-dictation', prompt: transcript, answer, result }));
 
     return NextResponse.json({
       ...result,

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
+import { useState, useMemo, useEffect } from 'react';
+import { useFirebase, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { levelForScore } from '@/lib/level-test-data';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -293,7 +293,7 @@ function ResultDetail({ result, history }: { result: any, history: any[] }) {
                                     {result.aiFeedback.sentences.map((s: any, idx: number) => {
                                         // The paragraph task (id 25.5) is marked out of 5 and stored separately from the sentences.
                                         const isPara = s.id === 25.5;
-                                        const text = isPara ? result.answers.paragraph : result.answers.sentences?.[s.id];
+                                        const text = isPara ? result.answers?.paragraph : result.answers?.sentences?.[s.id];
                                         return (
                                         <div key={idx} className="p-4 border rounded-xl space-y-2">
                                             <div className="flex justify-between items-center">
@@ -302,13 +302,14 @@ function ResultDetail({ result, history }: { result: any, history: any[] }) {
                                                     ? <Badge variant={s.score > 0 ? 'default' : 'destructive'}>{s.score}/5</Badge>
                                                     : <Badge variant={s.score === 1 ? 'default' : 'destructive'}>{s.score === 1 ? 'Correct' : 'Incorrect'}</Badge>}
                                             </div>
-                                            <p className="font-medium text-slate-800">{text ? `"${text}"` : <span className="italic text-slate-400">{isPara && result.answers.paragraph === undefined ? 'Paragraph text was not saved for tests taken before 26 Nov 2026' : 'No answer'}</span>}</p>
+                                            <p className="font-medium text-slate-800">{text ? `"${text}"` : <span className="italic text-slate-400">{result.answersPurged ? 'Answer deleted after 200 days' : isPara && result.answers?.paragraph === undefined ? 'Paragraph text was not saved for tests taken before 26 Nov 2026' : 'No answer'}</span>}</p>
                                             <p className="text-xs text-muted-foreground">Feedback: {s.feedback}</p>
                                         </div>
                                         );
                                     })}
                                 </TabsContent>
                                 <TabsContent value="speaking" className="pt-4 space-y-4">
+                                    <LevelTestAudio path={result.speakingAudioPath} purged={!!result.answersPurged} />
                                     <div className="p-6 bg-slate-900 text-white rounded-2xl space-y-4">
                                         <h4 className="font-bold text-sm opacity-60 uppercase tracking-widest">Transcribed Audio</h4>
                                         <p className="text-xl italic">"{result.aiFeedback.speaking.transcript || 'No transcript available'}"</p>
@@ -335,6 +336,22 @@ function ResultDetail({ result, history }: { result: any, history: any[] }) {
             </DialogContent>
         </Dialog>
     );
+}
+
+/** The student's own speaking recording (saved since 26 Nov 2026, deleted after 200 days). */
+function LevelTestAudio({ path, purged }: { path?: string; purged: boolean }) {
+    const { user } = useUser();
+    const [url, setUrl] = useState('');
+    useEffect(() => {
+        if (!path || !user) return;
+        let live = true;
+        user.getIdToken()
+            .then(t => fetch(`/api/admin/answer-reviews?audio=${encodeURIComponent(path)}`, { headers: { Authorization: `Bearer ${t}` } }))
+            .then(r => r.json()).then(d => { if (live && d.url) setUrl(d.url); }).catch(() => {});
+        return () => { live = false; };
+    }, [path, user]);
+    if (!path) return <p className="text-sm text-muted-foreground italic">{purged ? 'The recording was deleted after 200 days.' : 'No recording saved (tests before 26 Nov 2026, or the student did not record).'}</p>;
+    return url ? <audio controls preload="none" src={url} className="w-full" /> : <p className="text-sm text-muted-foreground">Loading recording…</p>;
 }
 
 function ScoreBox({ label, value, total }: { label: string, value: number, total: number }) {

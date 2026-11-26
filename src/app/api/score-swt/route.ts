@@ -1,4 +1,6 @@
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
+import { after } from 'next/server';
+import { saveAnswerForReview } from '@/lib/server/answer-reviews';
 import { logAiCall } from '@/lib/services/ai-usage.service';
 import { isInternalRequest } from '@/lib/internal-auth';
 import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
@@ -307,6 +309,8 @@ The system has already scored FORM = ${form.form}/1 (${form.reasons.join(' ')}).
       formReasons: form.reasons,
     };
     await putCachedScore(cacheKey, 'pte-swt', result);
+    // Mock exams store their own answers; trainer answers are kept 200 days for admin review.
+    if (!internal) after(() => saveAnswerForReview({ uid, tool: 'swt', prompt: passage, answer: summary, result }));
     return Response.json(result);
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Unknown error';

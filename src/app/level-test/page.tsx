@@ -195,10 +195,18 @@ export default function LevelTestPage() {
 
             // 3. Save to Firestore
             if (firestore) {
-                await addDoc(collection(firestore, 'levelTestResults'), {
+                const saved = await addDoc(collection(firestore, 'levelTestResults'), {
                     ...resultData,
                     timestamp: serverTimestamp()
                 });
+                // Keep the voice recording for admin review (deleted after 200 days). Never blocks the result.
+                if (answers.speaking.audioBase64 && user) {
+                    user.getIdToken().then(token => fetch('/api/level-test/audio', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                        body: JSON.stringify({ resultId: saved.id, audioDataUri: answers.speaking.audioBase64 }),
+                    })).catch(() => {});
+                }
             }
 
             setTestResult(resultData);

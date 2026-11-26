@@ -144,6 +144,11 @@ export const adminNavigation: {title:string;items:AdminTool[]}[] = [
         "href": "/admin/dashboard/level-tests"
       },
       {
+        "title": "Student Answers",
+        "description": "Review what students wrote and said in the PTE AI trainers (kept 200 days)",
+        "href": "/admin/dashboard/answer-reviews"
+      },
+      {
         "title": "Skimming Mastery",
         "description": "Edit the IELTS skimming challenge passages, questions, answers & feedback",
         "href": "/admin/dashboard/skimming"

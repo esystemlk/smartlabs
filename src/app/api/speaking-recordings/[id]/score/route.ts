@@ -5,6 +5,8 @@ import { verifyAuthed } from '@/lib/api-auth';
 import { adminDb } from '@/lib/firebase-admin';
 import { recordingAudio, recordingsFor, validRecordingId } from '@/lib/server/speaking-recordings';
 import { scorePteSpeaking } from '@/ai/flows/score-pte-speaking';
+import { after } from 'next/server';
+import { saveAnswerForReview } from '@/lib/server/answer-reviews';
 import { hasCreditFor, deductionFor } from '@/lib/services/ai-credits';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -51,6 +53,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       const doc = await transaction.get(ref);
       if (doc.exists && doc.data()!.scoringLease === lease) transaction.update(ref, { score, status: 'scored', scoringUntil: 0, reservedCredit: null });
     });
+    // A copy for admin review (the student can delete their own recording; this copy expires after 200 days).
+    after(() => saveAnswerForReview({ uid: auth.uid, tool: 'speaking', taskType: answer.taskType, prompt: answer.promptText || answer.title || '', result: score, audio: { bytes: audio, mimeType: answer.mimeType } }));
     return NextResponse.json({ score }, { headers });
   } catch (error) {
     const message = error instanceof Error ? error.message : '';

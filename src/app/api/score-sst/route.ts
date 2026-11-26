@@ -1,4 +1,6 @@
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
+import { after } from 'next/server';
+import { saveAnswerForReview } from '@/lib/server/answer-reviews';
 import { logAiCall } from '@/lib/services/ai-usage.service';
 import { isInternalRequest } from '@/lib/internal-auth';
 import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
@@ -337,6 +339,7 @@ Score CONTENT (0-4) and VOCABULARY BASE (0-2), and list EVERY grammar and spelli
       formReason: form.reason,
     };
     await putCachedScore(cacheKey, 'pte-sst', result);
+    if (!internal) after(() => saveAnswerForReview({ uid, tool: 'sst', prompt: transcript, answer: summary, result }));
     return Response.json(result);
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Unknown error';

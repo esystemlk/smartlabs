@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
+import { saveAnswerForReview } from '@/lib/server/answer-reviews';
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { logAiCall } from '@/lib/services/ai-usage.service';
@@ -816,6 +817,7 @@ Note: Only list criteria in criteriaGaps that are actually below the required th
     // Text lists must hold text: the AI sometimes puts objects there, which crashed the result page.
     const result = { ...normalizeEssayResult(parsed), _metadata: { modelUsed: usedModel } };
     await putCachedScore(cacheKey, 'pte-essay', result);
+    if (!isInternalRequest(request)) after(() => saveAnswerForReview({ uid, tool: 'essay', prompt: String(topic ?? ''), answer: String(essay ?? ''), result }));
     return NextResponse.json(result);
 
   } catch (error: unknown) {

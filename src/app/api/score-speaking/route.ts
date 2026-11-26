@@ -1,4 +1,6 @@
 import { adminDb, adminAuth } from '@/lib/firebase-admin';
+import { after } from 'next/server';
+import { saveAnswerForReview } from '@/lib/server/answer-reviews';
 import { isInternalRequest } from '@/lib/internal-auth';
 import { scorePteSpeaking } from '@/ai/flows/score-pte-speaking';
 import { hasCreditFor, deductionFor, type PoolConfig } from '@/lib/services/ai-credits';
@@ -114,6 +116,7 @@ export async function POST(request: Request) {
       try { await deductSpeakingCredit(uid); } catch (e) { console.warn('[score-speaking] credit deduct failed:', e); }
     }
 
+    if (!internal) after(() => saveAnswerForReview({ uid, tool: 'speaking', taskType, prompt: promptText ?? '', result, audio: { dataUri: audioDataUri } }));
     return Response.json(result);
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Unknown error';
